@@ -3,19 +3,16 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
+
     <groupId>me.eccentric_nz.tardisschematicviewer</groupId>
     <artifactId>TARDISSchematicViewer</artifactId>
     <version>1.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
+
     <name>TARDISSchematicViewer</name>
     <description>Java OpenGL Viewer for .tschm files</description>
     <url>https://github.com/eccentricdevotion/TARDISSchematicViewer</url>
     <inceptionYear>2015</inceptionYear>
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>16</maven.compiler.source>
-        <maven.compiler.target>16</maven.compiler.target>
-    </properties>
     <licenses>
         <license>
             <name>GNU General Public License v3.0</name>
@@ -23,27 +20,66 @@
             <distribution>repo</distribution>
         </license>
     </licenses>
-    <issueManagement>
-        <system>GitHub Issues</system>
-        <url>https://github.com/eccentricdevotion/TARDISSchematicViewer/issues</url>
-    </issueManagement>
+
     <scm>
         <connection>scm:git:ssh://github.com/eccentricdevotion/TARDISSchematicViewer</connection>
         <developerConnection>scm:git:ssh://github.com/eccentricdevotion/TARDISSchematicViewer</developerConnection>
     </scm>
+    <issueManagement>
+        <system>GitHub Issues</system>
+        <url>https://github.com/eccentricdevotion/TARDISSchematicViewer/issues</url>
+    </issueManagement>
     <ciManagement>
         <system>Jenkins</system>
         <url>http://tardisjenkins.duckdns.org:8080</url>
     </ciManagement>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>16</maven.compiler.source>
+        <maven.compiler.target>16</maven.compiler.target>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <!-- GlueGen Runtime -->
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt-main</artifactId>
+            <version>2.3.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <!-- JOGL -->
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all-main</artifactId>
+            <version>2.3.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <!-- JOCL -->
+            <groupId>org.jogamp.jocl</groupId>
+            <artifactId>jocl-main</artifactId>
+            <version>2.3.2</version>
+            <scope>compile</scope>
+        </dependency>
+        <dependency>
+            <!-- JOAL (audio) -->
+            <groupId>org.jogamp.joal</groupId>
+            <artifactId>joal-main</artifactId>
+            <version>2.3.2</version>
+            <scope>compile</scope>
+        </dependency>
+    </dependencies>
+
     <build>
+        <finalName>${project.name}-${project.version}</finalName>
+        <defaultGoal>clean package</defaultGoal>
         <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
         <resources>
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
             </resource>
         </resources>
-        <finalName>${project.name}-${project.version}</finalName>
-        <defaultGoal>clean package</defaultGoal>
         <plugins>
             <plugin>
                 <!-- Compile -->
@@ -53,7 +89,6 @@
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
-                    <encoding>${project.build.sourceEncoding}</encoding>
                 </configuration>
             </plugin>
             <plugin>
@@ -86,34 +121,4 @@
             </plugin>
         </plugins>
     </build>
-    <dependencies>
-        <dependency>
-            <!-- GlueGen Runtime -->
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt-main</artifactId>
-            <version>2.3.2</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <!-- JOGL -->
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all-main</artifactId>
-            <version>2.3.2</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <!-- JOCL -->
-            <groupId>org.jogamp.jocl</groupId>
-            <artifactId>jocl-main</artifactId>
-            <version>2.3.2</version>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <!-- JOAL (audio) -->
-            <groupId>org.jogamp.joal</groupId>
-            <artifactId>joal-main</artifactId>
-            <version>2.3.2</version>
-            <scope>compile</scope>
-        </dependency>
-    </dependencies>
 </project>
