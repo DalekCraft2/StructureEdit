@@ -47,6 +47,7 @@
             <artifactId>gluegen-rt-main</artifactId>
             <version>2.3.2</version>
             <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <!-- JOGL -->
@@ -54,6 +55,7 @@
             <artifactId>jogl-all-main</artifactId>
             <version>2.3.2</version>
             <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <!-- JOCL -->
@@ -61,6 +63,7 @@
             <artifactId>jocl-main</artifactId>
             <version>2.3.2</version>
             <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
         <dependency>
             <!-- JOAL (audio) -->
@@ -68,6 +71,7 @@
             <artifactId>joal-main</artifactId>
             <version>2.3.2</version>
             <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
@@ -78,6 +82,10 @@
         <resources>
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>**/*</include>
+                </includes>
             </resource>
         </resources>
         <plugins>
