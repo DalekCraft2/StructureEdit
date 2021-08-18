@@ -389,7 +389,7 @@ public final class JsonArray {
     /**
      * Get the optional boolean value associated with an index. It returns the
      * defaultValue if there is no value at that index or if it is not a Boolean
-     * or the String "true" or "false" (case insensitive).
+     * or the String "true" or "false" (case-insensitive).
      *
      * @param index        The index must be between 0 and length() - 1.
      * @param defaultValue A boolean default.
@@ -593,7 +593,7 @@ public final class JsonArray {
     }
 
     /**
-     * Append an long value. This increases the array's length by one.
+     * Append a long value. This increases the array's length by one.
      *
      * @param value A long value.
      * @return this.
@@ -712,7 +712,7 @@ public final class JsonArray {
      * @param index The subscript.
      * @param value The Map value.
      * @return this.
-     * @throws JsonException If the index is negative or if the the value is an
+     * @throws JsonException If the index is negative or if the value is an
      *                       invalid number.
      */
     public JsonArray put(int index, Map value) throws JsonException {
@@ -730,7 +730,7 @@ public final class JsonArray {
      *              Boolean, Double, Integer, JSONArray, JSONObject, Long, or String, or the
      *              JSONObject.NULL object.
      * @return this.
-     * @throws JsonException If the index is negative or if the the value is an
+     * @throws JsonException If the index is negative or if the value is an
      *                       invalid number.
      */
     @SuppressWarnings("unchecked")

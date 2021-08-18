@@ -209,12 +209,12 @@ public class JsonObject {
     /**
      * Construct a JSONObject from an Object using bean getters. It reflects on
      * all of the public methods of the object. For each of the methods with no
-     * parameters and a name starting with <code>"get"</code> or
-     * <code>"is"</code> followed by an uppercase letter, the method is invoked,
+     * parameters and a name starting with {@code "get"} or
+     * {@code "is"} followed by an uppercase letter, the method is invoked,
      * and a key and the value returned from the getter method are put into the
      * new JSONObject.
      * <p>
-     * The key is formed by removing the <code>"get"</code> or <code>"is"</code>
+     * The key is formed by removing the {@code "get"} or {@code "is"}
      * prefix. If the second remaining character is not upper case, then the
      * first character is converted to lower case.
      * <p>
@@ -548,7 +548,7 @@ public class JsonObject {
     }
 
     /**
-     * Make a JSON text of an Object value. If the object has an
+     * Make a JSON text of an Object value. If the object has a
      * value.toJSONString() method, then that method will be used to produce the
      * JSON text. The method is required to produce a strictly conforming text.
      * If the object does not contain a toJSONString method (which is the most
@@ -606,7 +606,7 @@ public class JsonObject {
      * Wrap an object, if necessary. If the object is null, return the NULL
      * object. If it is an array or collection, wrap it in a JSONArray. If it is
      * a map, wrap it in a JSONObject. If it is a standard property (Double,
-     * String, et al) then it is already wrapped. Otherwise, if it comes from
+     * String, et al.) then it is already wrapped. Otherwise, if it comes from
      * one of the java packages, turn it into a string. And if it doesn't, try
      * to wrap it in a JSONObject. If the wrapping fails, then null is returned.
      *
@@ -1002,7 +1002,7 @@ public class JsonObject {
     /**
      * Get an optional boolean associated with a key. It returns the
      * defaultValue if there is no such key, or if it is not a Boolean or the
-     * String "true" or "false" (case insensitive).
+     * String "true" or "false" (case-insensitive).
      *
      * @param key          A key string.
      * @param defaultValue The default.
@@ -1492,7 +1492,7 @@ public class JsonObject {
          * @return NULL.
          */
         @Override
-        protected final Object clone() throws CloneNotSupportedException {
+        protected Object clone() throws CloneNotSupportedException {
             return super.clone();
         }
 

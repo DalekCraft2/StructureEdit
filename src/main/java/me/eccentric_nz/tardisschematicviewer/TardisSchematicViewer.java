@@ -94,7 +94,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                 @Override
                 public void windowClosing(WindowEvent e) {
 
-                    // Use a dedicate thread to run the stop() to ensure that the
+                    // Use a dedicated thread to run the stop() to ensure that the
                     // animator stops before program exits.
                     new Thread(() -> {
                         if (animator.isStarted()) {
@@ -125,7 +125,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         gl.glEnable(GL_DEPTH_TEST); // enables depth testing
         gl.glDepthFunc(GL_LEQUAL);  // the type of depth test to do
         gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
-        gl.glShadeModel(GLLightingFunc.GL_SMOOTH); // blends colors nicely, and smoothes out lighting
+        gl.glShadeModel(GLLightingFunc.GL_SMOOTH); // blends colors nicely, and smooths out lighting
         glad.getGL().setSwapInterval(1);
         // Set up the lighting for Light-1
         // Ambient light does not come from a particular direction. Need some ambient
