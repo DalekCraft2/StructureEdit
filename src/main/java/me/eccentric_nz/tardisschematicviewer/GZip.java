@@ -16,6 +16,8 @@
  */
 package me.eccentric_nz.tardisschematicviewer;
 
+import org.json.JSONObject;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
@@ -42,7 +44,7 @@ public class GZip {
         }
     }
 
-    public static JsonObject unzip(String inString) {
+    public static JSONObject unzip(String inString) {
         InputStreamReader inputStreamReader = null;
         StringWriter stringWriter = null;
         String string = "";
@@ -70,6 +72,6 @@ public class GZip {
                 Logger.getLogger(TardisSchematicViewer.class.getName()).log(Level.SEVERE, e.getMessage());
             }
         }
-        return (string.startsWith("{")) ? new JsonObject(string) : null;
+        return (string.startsWith("{")) ? new JSONObject(string) : null;
     }
 }

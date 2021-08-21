@@ -16,6 +16,9 @@
  */
 package me.eccentric_nz.tardisschematicviewer;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
@@ -35,7 +38,7 @@ public class Editor extends JPanel {
     private final TardisSchematicViewer viewer;
     private final List<SquareButton> buttons;
     private SquareButton selected;
-    private JsonObject schematic;
+    private JSONObject schematic;
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton close;
     private javax.swing.JComboBox<?> dataComboBox;
@@ -118,22 +121,22 @@ public class Editor extends JPanel {
         layoutArea.setLayout(null);
         schematic = viewer.getSchematic();
         if (schematic != null) {
-            JsonObject d = (JsonObject) schematic.get("dimensions");
+            JSONObject d = (JSONObject) schematic.get("dimensions");
             int current = viewer.getHeight() - 1;
-            JsonArray level = ((JsonArray) schematic.get("input")).getJSONArray(current);
+            JSONArray level = ((JSONArray) schematic.get("input")).getJSONArray(current);
             int xx = d.getInt("width");
             int w = layoutArea.getWidth() / xx;
             for (int i = 0; i < xx; i++) {
-                JsonArray row = (JsonArray) level.get(i);
+                JSONArray row = (JSONArray) level.get(i);
                 for (int j = 0; j < xx; j++) {
-                    JsonObject col = (JsonObject) row.get(j);
+                    JSONObject col = (JSONObject) row.get(j);
                     Material m = Material.valueOf(col.getString("type"));
                     SquareButton sb = new SquareButton(w, m.getColor());
                     sb.setText(col.getString("type").substring(0, 1));
                     sb.setPreferredSize(new Dimension(w, w));
                     sb.setBounds(i * w, j * w, w, w);
                     sb.setBorder(new LineBorder(Color.BLACK));
-                    sb.setToolTipText(col.getString("type") + ":" + col.getByte("data"));
+                    sb.setToolTipText(col.getString("type") + ":" + (byte) col.getInt("data"));
                     sb.addActionListener(actionListener);
                     layoutArea.add(sb);
                     buttons.add(sb);

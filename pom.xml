@@ -42,6 +42,14 @@
 
     <dependencies>
         <dependency>
+            <!-- JSON in Java -->
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20210307</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <!-- GlueGen Runtime -->
             <groupId>org.jogamp.gluegen</groupId>
             <artifactId>gluegen-rt-main</artifactId>

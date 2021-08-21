@@ -22,6 +22,8 @@ import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.FPSAnimator;
+import org.json.JSONArray;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -53,8 +55,8 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     private int mouseX = FRAME_WIDTH / 2;
     private int mouseY = FRAME_HEIGHT / 2;
     private int height, width, length, max;
-    private JsonObject schematic;
-    private JsonArray array;
+    private JSONObject schematic;
+    private JSONArray array;
     private float[] columnAnglesX;
     private float[] rowAnglesY;
     private float[] faceAnglesZ;
@@ -167,14 +169,14 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
             int lastIndexY = height - 1;
             int lastIndexZ = length - 1;
             for (int h = 0; h < height; h++) {
-                JsonArray level = (JsonArray) array.get(h);
+                JSONArray level = (JSONArray) array.get(h);
                 for (int w = 0; w < width; w++) {
-                    JsonArray row = (JsonArray) level.get(w);
+                    JSONArray row = (JSONArray) level.get(w);
                     for (int l = 0; l < length; l++) {
-                        JsonObject col = (JsonObject) row.get(l);
+                        JSONObject col = (JSONObject) row.get(l);
 
                         Material material = Material.valueOf((String) col.get("type"));
-                        byte data = col.getByte("data");
+                        byte data = (byte) col.getInt("data");
                         if (!notThese.contains(material)) {
                             gl.glPushMatrix();
 
@@ -371,7 +373,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         this.pathSet = true;
     }
 
-    public JsonObject getSchematic() {
+    public JSONObject getSchematic() {
         return schematic;
     }
 
@@ -380,7 +382,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         // Filename relative to the project root.
         schematic = GZip.unzip(path);
         // get dimensions
-        JsonObject d = (JsonObject) schematic.get("dimensions");
+        JSONObject d = (JSONObject) schematic.get("dimensions");
         height = d.getInt("height");
         max = height;
         width = d.getInt("width");
@@ -388,6 +390,6 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         columnAnglesX = new float[width];
         rowAnglesY = new float[height];
         faceAnglesZ = new float[length];
-        array = (JsonArray) schematic.get("input");
+        array = (JSONArray) schematic.get("input");
     }
 }
