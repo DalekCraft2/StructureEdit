@@ -119,8 +119,8 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     }
 
     @Override
-    public void init(GLAutoDrawable glad) {
-        GL2 gl = glad.getGL().getGL2();      // get the OpenGL graphics context
+    public void init(GLAutoDrawable drawable) {
+        GL2 gl = drawable.getGL().getGL2();      // get the OpenGL graphics context
         glu = new GLU();                         // get GL Utilities
         gl.glClearColor(0.8f, 0.8f, 0.8f, 0.0f); // set background (grey) color
         gl.glClearDepth(1.0f);      // set clear depth value to farthest
@@ -128,7 +128,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         gl.glDepthFunc(GL_LEQUAL);  // the type of depth test to do
         gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
         gl.glShadeModel(GLLightingFunc.GL_SMOOTH); // blends colors nicely, and smooths out lighting
-        glad.getGL().setSwapInterval(1);
+        drawable.getGL().setSwapInterval(1);
         // Set up the lighting for Light-1
         // Ambient light does not come from a particular direction. Need some ambient
         // light to light up the scene. Ambient's value in RGBA
