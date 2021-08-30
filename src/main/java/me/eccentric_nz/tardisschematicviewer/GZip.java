@@ -47,7 +47,7 @@ public class GZip {
     public static JSONObject unzip(String inString) {
         InputStreamReader inputStreamReader = null;
         StringWriter stringWriter = null;
-        String string = "";
+        String s = "";
         try {
             GZIPInputStream gzipInputStream = new GZIPInputStream(new FileInputStream(inString));
             inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8);
@@ -57,7 +57,7 @@ public class GZip {
             while ((len = inputStreamReader.read(buffer)) > 0) {
                 stringWriter.write(buffer, 0, len);
             }
-            string = stringWriter.toString();
+            s = stringWriter.toString();
         } catch (IOException e) {
             Logger.getLogger(TardisSchematicViewer.class.getName()).log(Level.SEVERE, e.getMessage());
         } finally {
@@ -72,6 +72,6 @@ public class GZip {
                 Logger.getLogger(TardisSchematicViewer.class.getName()).log(Level.SEVERE, e.getMessage());
             }
         }
-        return (string.startsWith("{")) ? new JSONObject(string) : null;
+        return (s.startsWith("{")) ? new JSONObject(s) : null;
     }
 }

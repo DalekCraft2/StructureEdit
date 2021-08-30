@@ -70,8 +70,8 @@ public class UserInterface extends JPanel {
         browseButton.setFocusTraversalKeysEnabled(false);
         browseButton.setFocusable(false);
         browseButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                browseButtonMouseReleased(evt);
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                browseButtonMouseReleased(e);
             }
         });
 
@@ -89,8 +89,8 @@ public class UserInterface extends JPanel {
         loadButton.setFocusTraversalKeysEnabled(false);
         loadButton.setFocusable(false);
         loadButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                loadButtonMouseReleased(evt);
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                loadButtonMouseReleased(e);
             }
         });
 
@@ -99,8 +99,8 @@ public class UserInterface extends JPanel {
         editLayerButton.setFocusTraversalKeysEnabled(false);
         editLayerButton.setFocusable(false);
         editLayerButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                editLayerButtonMouseReleased(evt);
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                editLayerButtonMouseReleased(e);
             }
         });
 
@@ -109,13 +109,13 @@ public class UserInterface extends JPanel {
         saveButton.setFocusTraversalKeysEnabled(false);
         saveButton.setFocusable(false);
         saveButton.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                saveButtonMouseReleased(evt);
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                saveButtonMouseReleased(e);
             }
         });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
+        setLayout(layout);
         layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addGap(18, 18, 18).addComponent(editLayerButton).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(saveButton).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(loadButton)).addGroup(layout.createSequentialGroup().addComponent(schematicLabel).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(fileTextField, javax.swing.GroupLayout.DEFAULT_SIZE, 794, Short.MAX_VALUE).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addComponent(browseButton)))));
         layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(browseButton).addComponent(fileTextField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addComponent(schematicLabel)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(loadButton).addComponent(editLayerButton).addComponent(saveButton)).addContainerGap(9, Short.MAX_VALUE)));
     }// </editor-fold>//GEN-END:initComponents
@@ -131,7 +131,7 @@ public class UserInterface extends JPanel {
     }//GEN-LAST:event_saveButtonMouseReleased
 
     private void browseButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_browseButtonMouseReleased
-        this.choose(fileTextField, "TARDIS Schematic", "tschm");
+        choose(fileTextField, "TARDIS Schematic", "tschm");
     }//GEN-LAST:event_browseButtonMouseReleased
 
     private void loadButtonMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_loadButtonMouseReleased

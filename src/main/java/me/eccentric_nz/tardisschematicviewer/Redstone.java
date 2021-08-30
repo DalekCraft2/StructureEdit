@@ -31,12 +31,12 @@ public class Redstone {
     static List<Float[]> translations;
 
     static {
-        Redstone.translations = new ArrayList<>();
-        Redstone.translations.add(new Float[]{0.0f, 0.0f, 0.0f});
-        Redstone.translations.add(new Float[]{0.0f, 0.0f, -0.75f});
-        Redstone.translations.add(new Float[]{0.75f, 0.0f, 0.75f});
-        Redstone.translations.add(new Float[]{-0.75f, 0.0f, 0.75f});
-        Redstone.translations.add(new Float[]{-0.75f, 0.0f, -0.75f});
+        translations = new ArrayList<>();
+        translations.add(new Float[]{0.0f, 0.0f, 0.0f});
+        translations.add(new Float[]{0.0f, 0.0f, -0.75f});
+        translations.add(new Float[]{0.75f, 0.0f, 0.75f});
+        translations.add(new Float[]{-0.75f, 0.0f, 0.75f});
+        translations.add(new Float[]{-0.75f, 0.0f, -0.75f});
     }
 
     public static void drawWire(GL2 gl, float size) {

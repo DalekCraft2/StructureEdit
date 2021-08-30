@@ -32,12 +32,12 @@ public final class SquareButton extends JButton {
 
     public SquareButton(int size, Color color) {
         this.size = size;
-        this.setPreferredSize(getPreferredSize());
-        this.setSize(getPreferredSize());
+        setPreferredSize(getPreferredSize());
+        setSize(getPreferredSize());
         if (color != null) {
-            this.setBackground(color);
+            setBackground(color);
         }
-        this.setOpaque(true);
+        setOpaque(true);
     }
 
     @Override

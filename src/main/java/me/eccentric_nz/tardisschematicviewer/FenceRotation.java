@@ -26,22 +26,22 @@ public class FenceRotation {
     private static final HashMap<Byte, Float> BY_BYTE = new HashMap<>();
 
     static {
-        FenceRotation.BY_BYTE.put((byte) 0, 0.0f);
-        FenceRotation.BY_BYTE.put((byte) 1, 90.0f);
-        FenceRotation.BY_BYTE.put((byte) 2, 0.0f);
-        FenceRotation.BY_BYTE.put((byte) 3, 90.0f);
-        FenceRotation.BY_BYTE.put((byte) 4, 0.0f);
-        FenceRotation.BY_BYTE.put((byte) 5, 90.0f);
-        FenceRotation.BY_BYTE.put((byte) 6, 0.0f);
-        FenceRotation.BY_BYTE.put((byte) 7, 90.0f);
-        FenceRotation.BY_BYTE.put((byte) 8, 0.0f);
-        FenceRotation.BY_BYTE.put((byte) 9, 90.0f);
-        FenceRotation.BY_BYTE.put((byte) 10, 0.0f);
-        FenceRotation.BY_BYTE.put((byte) 11, 90.0f);
-        FenceRotation.BY_BYTE.put((byte) 12, 0.0f);
-        FenceRotation.BY_BYTE.put((byte) 13, 90.0f);
-        FenceRotation.BY_BYTE.put((byte) 14, 0.0f);
-        FenceRotation.BY_BYTE.put((byte) 15, 90.0f);
+        BY_BYTE.put((byte) 0, 0.0f);
+        BY_BYTE.put((byte) 1, 90.0f);
+        BY_BYTE.put((byte) 2, 0.0f);
+        BY_BYTE.put((byte) 3, 90.0f);
+        BY_BYTE.put((byte) 4, 0.0f);
+        BY_BYTE.put((byte) 5, 90.0f);
+        BY_BYTE.put((byte) 6, 0.0f);
+        BY_BYTE.put((byte) 7, 90.0f);
+        BY_BYTE.put((byte) 8, 0.0f);
+        BY_BYTE.put((byte) 9, 90.0f);
+        BY_BYTE.put((byte) 10, 0.0f);
+        BY_BYTE.put((byte) 11, 90.0f);
+        BY_BYTE.put((byte) 12, 0.0f);
+        BY_BYTE.put((byte) 13, 90.0f);
+        BY_BYTE.put((byte) 14, 0.0f);
+        BY_BYTE.put((byte) 15, 90.0f);
     }
 
     public static HashMap<Byte, Float> getByByte() {

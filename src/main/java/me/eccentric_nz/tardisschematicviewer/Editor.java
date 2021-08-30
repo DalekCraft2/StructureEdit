@@ -44,7 +44,7 @@ public class Editor extends JPanel {
     private javax.swing.JComboBox<?> dataComboBox;
     private javax.swing.JLabel dataLabel;
     private javax.swing.JInternalFrame layoutArea;
-    private javax.swing.JLabel matLabel;
+    private javax.swing.JLabel materialLabel;
     private javax.swing.JComboBox<?> materialComboBox;
     ActionListener actionListener = this::squareActionPerformed;
 
@@ -53,7 +53,7 @@ public class Editor extends JPanel {
      */
     public Editor(TardisSchematicViewer viewer) {
         this.viewer = viewer;
-        this.buttons = new ArrayList<>();
+        buttons = new ArrayList<>();
         initComponents();
     }
 
@@ -68,15 +68,15 @@ public class Editor extends JPanel {
 
         close = new javax.swing.JButton();
         layoutArea = new javax.swing.JInternalFrame();
-        matLabel = new javax.swing.JLabel();
+        materialLabel = new javax.swing.JLabel();
         dataLabel = new javax.swing.JLabel();
         materialComboBox = new javax.swing.JComboBox<>();
         dataComboBox = new javax.swing.JComboBox<>();
 
         close.setText("Close");
         close.addMouseListener(new java.awt.event.MouseAdapter() {
-            public void mouseReleased(java.awt.event.MouseEvent evt) {
-                closeMouseReleased(evt);
+            public void mouseReleased(java.awt.event.MouseEvent e) {
+                closeMouseReleased(e);
             }
         });
         close.addActionListener(this::closeActionPerformed);
@@ -91,7 +91,7 @@ public class Editor extends JPanel {
         layoutAreaLayout.setHorizontalGroup(layoutAreaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 598, Short.MAX_VALUE));
         layoutAreaLayout.setVerticalGroup(layoutAreaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 598, Short.MAX_VALUE));
 
-        matLabel.setText("Material:");
+        materialLabel.setText("Material:");
 
         dataLabel.setText("Data:");
 
@@ -100,9 +100,9 @@ public class Editor extends JPanel {
         dataComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"}));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addComponent(close)).addGroup(layout.createSequentialGroup().addGap(16, 16, 16).addComponent(layoutArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addGap(34, 34, 34).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(matLabel).addComponent(dataLabel)).addGap(18, 18, 18).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false).addComponent(materialComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(dataComboBox, 0, 280, Short.MAX_VALUE)))).addContainerGap(22, Short.MAX_VALUE)));
-        layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap(19, Short.MAX_VALUE).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(layoutArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(matLabel).addComponent(materialComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(dataLabel).addComponent(dataComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(close).addContainerGap()));
+        setLayout(layout);
+        layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addComponent(close)).addGroup(layout.createSequentialGroup().addGap(16, 16, 16).addComponent(layoutArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addGap(34, 34, 34).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(materialLabel).addComponent(dataLabel)).addGap(18, 18, 18).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false).addComponent(materialComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(dataComboBox, 0, 280, Short.MAX_VALUE)))).addContainerGap(22, Short.MAX_VALUE)));
+        layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap(19, Short.MAX_VALUE).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(layoutArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(materialLabel).addComponent(materialComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(dataLabel).addComponent(dataComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(close).addContainerGap()));
     }// </editor-fold>//GEN-END:initComponents
 
     private void closeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeActionPerformed
@@ -110,7 +110,7 @@ public class Editor extends JPanel {
     }//GEN-LAST:event_closeActionPerformed
 
     private void closeMouseReleased(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_closeMouseReleased
-        this.setVisible(false);
+        setVisible(false);
     }//GEN-LAST:event_closeMouseReleased
 
     public void loadLayer() {
@@ -121,25 +121,25 @@ public class Editor extends JPanel {
         layoutArea.setLayout(null);
         schematic = viewer.getSchematic();
         if (schematic != null) {
-            JSONObject d = (JSONObject) schematic.get("dimensions");
+            JSONObject dimensions = (JSONObject) schematic.get("dimensions");
             int current = viewer.getHeight() - 1;
             JSONArray level = ((JSONArray) schematic.get("input")).getJSONArray(current);
-            int xx = d.getInt("width");
-            int w = layoutArea.getWidth() / xx;
-            for (int i = 0; i < xx; i++) {
+            int width = dimensions.getInt("width");
+            int layoutWidth = layoutArea.getWidth() / width;
+            for (int i = 0; i < width; i++) {
                 JSONArray row = (JSONArray) level.get(i);
-                for (int j = 0; j < xx; j++) {
-                    JSONObject col = (JSONObject) row.get(j);
-                    Material m = Material.valueOf(col.getString("type"));
-                    SquareButton sb = new SquareButton(w, m.getColor());
-                    sb.setText(col.getString("type").substring(0, 1));
-                    sb.setPreferredSize(new Dimension(w, w));
-                    sb.setBounds(i * w, j * w, w, w);
-                    sb.setBorder(new LineBorder(Color.BLACK));
-                    sb.setToolTipText(col.getString("type") + ":" + (byte) col.getInt("data"));
-                    sb.addActionListener(actionListener);
-                    layoutArea.add(sb);
-                    buttons.add(sb);
+                for (int j = 0; j < width; j++) {
+                    JSONObject column = (JSONObject) row.get(j);
+                    Material material = Material.valueOf(column.getString("type"));
+                    SquareButton squareButton = new SquareButton(layoutWidth, material.getColor());
+                    squareButton.setText(column.getString("type").substring(0, 1));
+                    squareButton.setPreferredSize(new Dimension(layoutWidth, layoutWidth));
+                    squareButton.setBounds(i * layoutWidth, j * layoutWidth, layoutWidth, layoutWidth);
+                    squareButton.setBorder(new LineBorder(Color.BLACK));
+                    squareButton.setToolTipText(column.getString("type") + ":" + (byte) column.getInt("data"));
+                    squareButton.addActionListener(actionListener);
+                    layoutArea.add(squareButton);
+                    buttons.add(squareButton);
                 }
             }
         } else {

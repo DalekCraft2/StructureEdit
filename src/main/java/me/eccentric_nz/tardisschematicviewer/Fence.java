@@ -30,7 +30,7 @@ public class Fence {
 
     public static void drawFence(GL2 gl, Color color, float size, float thickness, float height, float angle, boolean glass) {
 
-        float h = -size + height;
+        float height1 = -size + height;
         float[] components = color.getColorComponents(null);
         // rotate if necessary
         if (angle > 0.0f) {
@@ -49,24 +49,24 @@ public class Fence {
         gl.glNormal3f(0.0f, 0.0f, size);
         gl.glVertex3f(-size, -size, thickness); // bottom-left of the quad
         gl.glVertex3f(size, -size, thickness);  // bottom-right of the quad
-        gl.glVertex3f(size, h, thickness);   // top-right of the quad
-        gl.glVertex3f(-size, h, thickness);  // top-left of the quad
+        gl.glVertex3f(size, height1, thickness);   // top-right of the quad
+        gl.glVertex3f(-size, height1, thickness);  // top-left of the quad
 
         // Back Face wide
         gl.glColor3f(components[0], components[1], components[2]);
         gl.glNormal3f(0.0f, 0.0f, -size);
         gl.glVertex3f(-size, -size, -thickness);
-        gl.glVertex3f(-size, h, -thickness);
-        gl.glVertex3f(size, h, -thickness);
+        gl.glVertex3f(-size, height1, -thickness);
+        gl.glVertex3f(size, height1, -thickness);
         gl.glVertex3f(size, -size, -thickness);
 
         // Top Face LR
         gl.glColor3f(components[0], components[1], components[2]);
         gl.glNormal3f(0.0f, size, 0.0f);
-        gl.glVertex3f(-size, h, -thickness);
-        gl.glVertex3f(-size, h, thickness);
-        gl.glVertex3f(size, h, thickness);
-        gl.glVertex3f(size, h, -thickness);
+        gl.glVertex3f(-size, height1, -thickness);
+        gl.glVertex3f(-size, height1, thickness);
+        gl.glVertex3f(size, height1, thickness);
+        gl.glVertex3f(size, height1, -thickness);
 
         // Bottom Face LR
         gl.glColor3f(components[0], components[1], components[2]);
@@ -80,8 +80,8 @@ public class Fence {
         gl.glColor3f(components[0], components[1], components[2]);
         gl.glNormal3f(size, 0.0f, 0.0f);
         gl.glVertex3f(size, -size, -thickness);
-        gl.glVertex3f(size, h, -thickness);
-        gl.glVertex3f(size, h, thickness);
+        gl.glVertex3f(size, height1, -thickness);
+        gl.glVertex3f(size, height1, thickness);
         gl.glVertex3f(size, -size, thickness);
 
         // Left Face LR
@@ -89,8 +89,8 @@ public class Fence {
         gl.glNormal3f(-size, 0.0f, 0.0f);
         gl.glVertex3f(-size, -size, -thickness);
         gl.glVertex3f(-size, -size, thickness);
-        gl.glVertex3f(-size, h, thickness);
-        gl.glVertex3f(-size, h, -thickness);
+        gl.glVertex3f(-size, height1, thickness);
+        gl.glVertex3f(-size, height1, -thickness);
 
         gl.glEnd();
     }

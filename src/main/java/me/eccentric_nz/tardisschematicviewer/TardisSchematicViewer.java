@@ -18,7 +18,6 @@ package me.eccentric_nz.tardisschematicviewer;
 
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLJPanel;
-import com.jogamp.opengl.fixedfunc.GLLightingFunc;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.FPSAnimator;
@@ -72,7 +71,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
             GLProfile profile = GLProfile.getDefault();
             GLCapabilities capabilities = new GLCapabilities(profile);
             GLJPanel canvas = new GLJPanel(capabilities);
-            canvas.setBackground(Color.gray);
+            canvas.setBackground(Color.GRAY);
             JFrame frame = new JFrame();
             TardisSchematicViewer tardisSchematicViewer = new TardisSchematicViewer();
             JPanel ui = new UserInterface(tardisSchematicViewer);
@@ -127,7 +126,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         gl.glEnable(GL_DEPTH_TEST); // enables depth testing
         gl.glDepthFunc(GL_LEQUAL);  // the type of depth test to do
         gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
-        gl.glShadeModel(GLLightingFunc.GL_SMOOTH); // blends colors nicely, and smooths out lighting
+        gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
         drawable.getGL().setSwapInterval(1);
         // Set up the lighting for Light-1
         // Ambient light does not come from a particular direction. Need some ambient
@@ -147,18 +146,18 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     }
 
     @Override
-    public void dispose(GLAutoDrawable glad) {
+    public void dispose(GLAutoDrawable drawable) {
     }
 
     @Override
-    public void display(GLAutoDrawable glad) {
+    public void display(GLAutoDrawable drawable) {
         if (!schematicParsed) {
             if (pathSet) {
                 setSchematic(path);
                 schematicParsed = true;
             }
         } else {
-            GL2 gl = glad.getGL().getGL2();
+            GL2 gl = drawable.getGL().getGL2();
             gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             gl.glLoadIdentity();  // reset the model-view matrix
             gl.glTranslatef(0.0f, 0.0f, z);         // translate into the screen
@@ -168,27 +167,27 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
             int lastIndexX = width - 1;
             int lastIndexY = height - 1;
             int lastIndexZ = length - 1;
-            for (int h = 0; h < height; h++) {
-                JSONArray level = (JSONArray) array.get(h);
-                for (int w = 0; w < width; w++) {
-                    JSONArray row = (JSONArray) level.get(w);
-                    for (int l = 0; l < length; l++) {
-                        JSONObject col = (JSONObject) row.get(l);
+            for (int height = 0; height < this.height; height++) {
+                JSONArray level = (JSONArray) array.get(height);
+                for (int width = 0; width < this.width; width++) {
+                    JSONArray row = (JSONArray) level.get(width);
+                    for (int length = 0; length < this.length; length++) {
+                        JSONObject col = (JSONObject) row.get(length);
 
                         Material material = Material.valueOf((String) col.get("type"));
                         byte data = (byte) col.getInt("data");
                         if (!notThese.contains(material)) {
                             gl.glPushMatrix();
 
-                            gl.glRotatef(columnAnglesX[w], ONE_F, ZERO_F, ZERO_F);
-                            gl.glRotatef(rowAnglesY[h], ZERO_F, ONE_F, ZERO_F);
-                            gl.glRotatef(faceAnglesZ[l], ZERO_F, ZERO_F, ONE_F);
+                            gl.glRotatef(columnAnglesX[width], ONE_F, ZERO_F, ZERO_F);
+                            gl.glRotatef(rowAnglesY[height], ZERO_F, ONE_F, ZERO_F);
+                            gl.glRotatef(faceAnglesZ[length], ZERO_F, ZERO_F, ONE_F);
 
                             // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
-                            float tx = (float) lastIndexX / 2.0f;
-                            float ty = (float) lastIndexY / 2.0f;
-                            float tz = (float) lastIndexZ / 2.0f;
-                            gl.glTranslatef((w - tx) * CUBIE_TRANSLATION_FACTOR, (h - ty) * CUBIE_TRANSLATION_FACTOR, -(l - tz) * CUBIE_TRANSLATION_FACTOR);
+                            float translateX = (float) lastIndexX / 2.0f;
+                            float translateY = (float) lastIndexY / 2.0f;
+                            float translateZ = (float) lastIndexZ / 2.0f;
+                            gl.glTranslatef((width - translateX) * CUBIE_TRANSLATION_FACTOR, (height - translateY) * CUBIE_TRANSLATION_FACTOR, -(length - translateZ) * CUBIE_TRANSLATION_FACTOR);
                             Color color;
                             if (material.isStained()) {
                                 color = BlockColor.getStained().get(data);
@@ -225,44 +224,44 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                                 Stair.drawStair(gl, color, ONE_F, data);
                             } else if (material.isPlantLike()) {
                                 float thickness;
-                                float height;
+                                float height1;
                                 switch (material) {
                                     case BROWN_MUSHROOM, RED_MUSHROOM, CARROT, DEAD_BUSH, LONG_GRASS, NETHER_WARTS, POTATO -> {
                                         thickness = 0.125f;
-                                        height = 0.5f;
+                                        height1 = 0.5f;
                                     }
                                     case CROPS, RED_ROSE, YELLOW_FLOWER -> {
                                         thickness = 0.125f;
-                                        height = 0.8f;
+                                        height1 = 0.8f;
                                     }
                                     default -> {
                                         thickness = 0.25f;
-                                        height = ONE_F;
+                                        height1 = ONE_F;
                                     }
                                 }
-                                X.drawX(gl, color, ONE_F, thickness, height);
+                                X.drawX(gl, color, ONE_F, thickness, height1);
                             } else if (material.isFence()) {
                                 float thickness;
-                                float height;
+                                float height1;
                                 switch (material) {
                                     case ACACIA_FENCE, BIRCH_FENCE, COBBLE_WALL, DARK_OAK_FENCE, FENCE, IRON_FENCE, JUNGLE_FENCE, NETHER_FENCE, SPRUCE_FENCE -> {
                                         thickness = 0.25f;
-                                        height = 1.9f;
+                                        height1 = 1.9f;
                                     }
                                     case ACACIA_FENCE_GATE, BIRCH_FENCE_GATE, DARK_OAK_FENCE_GATE, FENCE_GATE, JUNGLE_FENCE_GATE, SPRUCE_FENCE_GATE -> {
                                         thickness = 0.25f;
-                                        height = 1.7f;
+                                        height1 = 1.7f;
                                     }
                                     case PORTAL, SIGN_POST, STAINED_GLASS_PANE, STANDING_BANNER, THIN_GLASS -> {
                                         thickness = 0.125f;
-                                        height = 2.0f;
+                                        height1 = 2.0f;
                                     }
                                     default -> {
                                         thickness = 0.25f;
-                                        height = ONE_F;
+                                        height1 = ONE_F;
                                     }
                                 }
-                                Fence.drawFence(gl, color, ONE_F, thickness, height, FenceRotation.getByByte().get(data), material.isGlass());
+                                Fence.drawFence(gl, color, ONE_F, thickness, height1, FenceRotation.getByByte().get(data), material.isGlass());
                             } else {
                                 Cube.drawCube(gl, color, ONE_F, material.isGlass());
                             }
@@ -275,8 +274,8 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     }
 
     @Override
-    public void reshape(GLAutoDrawable glad, int x, int z, int width, int height) {
-        GL2 gl = glad.getGL().getGL2();  // get the OpenGL 2 graphics context
+    public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
+        GL2 gl = drawable.getGL().getGL2();  // get the OpenGL 2 graphics context
         if (height == 0) {
             height = 1;   // prevent divide by zero
         }
@@ -369,8 +368,8 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
 
     public void setPath(String path) {
         this.path = path;
-        this.schematicParsed = false;
-        this.pathSet = true;
+        schematicParsed = false;
+        pathSet = true;
     }
 
     public JSONObject getSchematic() {
@@ -382,11 +381,11 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         // Filename relative to the project root.
         schematic = GZip.unzip(path);
         // get dimensions
-        JSONObject d = (JSONObject) schematic.get("dimensions");
-        height = d.getInt("height");
+        JSONObject dimensions = (JSONObject) schematic.get("dimensions");
+        height = dimensions.getInt("height");
         max = height;
-        width = d.getInt("width");
-        length = d.getInt("length");
+        width = dimensions.getInt("width");
+        length = dimensions.getInt("length");
         columnAnglesX = new float[width];
         rowAnglesY = new float[height];
         faceAnglesZ = new float[length];

@@ -26,14 +26,14 @@ public class StairRotation {
     private static final HashMap<Byte, Float> BY_BYTE = new HashMap<>();
 
     static {
-        StairRotation.BY_BYTE.put((byte) 0, 90.0f);
-        StairRotation.BY_BYTE.put((byte) 1, -90.0f);
-        StairRotation.BY_BYTE.put((byte) 2, 180.0f);
-        StairRotation.BY_BYTE.put((byte) 3, 0.0f);
-        StairRotation.BY_BYTE.put((byte) 4, 90.0f);
-        StairRotation.BY_BYTE.put((byte) 5, -90.0f);
-        StairRotation.BY_BYTE.put((byte) 6, 0.0f);
-        StairRotation.BY_BYTE.put((byte) 7, 180.0f);
+        BY_BYTE.put((byte) 0, 90.0f);
+        BY_BYTE.put((byte) 1, -90.0f);
+        BY_BYTE.put((byte) 2, 180.0f);
+        BY_BYTE.put((byte) 3, 0.0f);
+        BY_BYTE.put((byte) 4, 90.0f);
+        BY_BYTE.put((byte) 5, -90.0f);
+        BY_BYTE.put((byte) 6, 0.0f);
+        BY_BYTE.put((byte) 7, 180.0f);
     }
 
     public static HashMap<Byte, Float> getByByte() {
