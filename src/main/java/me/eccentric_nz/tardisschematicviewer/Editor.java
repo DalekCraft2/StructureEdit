@@ -26,6 +26,7 @@ import java.awt.event.ActionListener;
 import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * @author eccentric_nz
@@ -130,13 +131,15 @@ public class Editor extends JPanel {
                 JSONArray row = (JSONArray) level.get(i);
                 for (int j = 0; j < width; j++) {
                     JSONObject column = (JSONObject) row.get(j);
-                    Material material = Material.valueOf(column.getString("type"));
+                    String data = column.getString("data");
+                    String materialName = data.split(":")[1].split("\\[")[0].toUpperCase(Locale.ROOT);
+                    Material material = Material.valueOf(materialName);
                     SquareButton squareButton = new SquareButton(layoutWidth, material.getColor());
-                    squareButton.setText(column.getString("type").substring(0, 1));
+                    squareButton.setText(materialName.substring(0, 1));
                     squareButton.setPreferredSize(new Dimension(layoutWidth, layoutWidth));
                     squareButton.setBounds(i * layoutWidth, j * layoutWidth, layoutWidth, layoutWidth);
                     squareButton.setBorder(new LineBorder(Color.BLACK));
-                    squareButton.setToolTipText(column.getString("type") + ":" + (byte) column.getInt("data"));
+                    squareButton.setToolTipText(data);
                     squareButton.addActionListener(actionListener);
                     layoutArea.add(squareButton);
                     buttons.add(squareButton);

@@ -23,20 +23,16 @@ import java.util.HashMap;
  */
 public class StairRotation {
 
-    private static final HashMap<Byte, Float> BY_BYTE = new HashMap<>();
+    private static final HashMap<String, Float> BY_STRING = new HashMap<>();
 
     static {
-        BY_BYTE.put((byte) 0, 90.0f);
-        BY_BYTE.put((byte) 1, -90.0f);
-        BY_BYTE.put((byte) 2, 180.0f);
-        BY_BYTE.put((byte) 3, 0.0f);
-        BY_BYTE.put((byte) 4, 90.0f);
-        BY_BYTE.put((byte) 5, -90.0f);
-        BY_BYTE.put((byte) 6, 0.0f);
-        BY_BYTE.put((byte) 7, 180.0f);
+        BY_STRING.put("facing=north", 0.0f);
+        BY_STRING.put("facing=east", 90.0f);
+        BY_STRING.put("facing=south", 180.0f);
+        BY_STRING.put("facing=west", -90.0f);
     }
 
-    public static HashMap<Byte, Float> getByByte() {
-        return BY_BYTE;
+    public static HashMap<String, Float> getByString() {
+        return BY_STRING;
     }
 }

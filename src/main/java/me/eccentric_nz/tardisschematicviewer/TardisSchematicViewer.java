@@ -29,6 +29,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2ES1.GL_PERSPECTIVE_CORRECTION_HINT;
@@ -48,7 +49,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     public static JPanel editor;
     private static float angleX = 45.0f; // rotational angle for x-axis in degree
     private static float angleY = 45.0f; // rotational angle for y-axis in degree
-    private final List<Material> notThese = Arrays.asList(Material.AIR, Material.SPONGE, Material.PISTON_EXTENSION);
+    private final List<Material> notThese = Arrays.asList(Material.AIR, Material.SPONGE, Material.PISTON_HEAD);
     private GLU glu; // for the GL Utility
     private float z = -60.0f; // z-location
     private int mouseX = FRAME_WIDTH / 2;
@@ -172,10 +173,10 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                 for (int width = 0; width < this.width; width++) {
                     JSONArray row = (JSONArray) level.get(width);
                     for (int length = 0; length < this.length; length++) {
-                        JSONObject col = (JSONObject) row.get(length);
-
-                        Material material = Material.valueOf((String) col.get("type"));
-                        byte data = (byte) col.getInt("data");
+                        JSONObject column = (JSONObject) row.get(length);
+                        String data = column.getString("data");
+                        String materialName = data.split(":")[1].split("\\[")[0].toUpperCase(Locale.ROOT);
+                        Material material = Material.valueOf(materialName);
                         if (!notThese.contains(material)) {
                             gl.glPushMatrix();
 
@@ -188,82 +189,74 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                             float translateY = (float) lastIndexY / 2.0f;
                             float translateZ = (float) lastIndexZ / 2.0f;
                             gl.glTranslatef((width - translateX) * CUBIE_TRANSLATION_FACTOR, (height - translateY) * CUBIE_TRANSLATION_FACTOR, -(length - translateZ) * CUBIE_TRANSLATION_FACTOR);
-                            Color color;
-                            if (material.isStained()) {
-                                color = BlockColor.getStained().get(data);
-                            } else if (material.equals(Material.LEAVES)) {
-                                color = BlockColor.getLeaves().get(data);
-                            } else if (material.equals(Material.LEAVES_2)) {
-                                color = BlockColor.getLeaves2().get(data);
-                            } else if (material.equals(Material.LOG)) {
-                                color = BlockColor.getLog().get(data);
-                            } else if (material.equals(Material.LOG_2)) {
-                                color = BlockColor.getLog2().get(data);
-                            } else if (material.equals(Material.WOOD) || material.equals(Material.WOOD_STEP)) {
-                                color = BlockColor.getWood().get(data);
-                            } else if (material.equals(Material.PRISMARINE)) {
-                                color = BlockColor.getPrismarine().get(data);
-                            } else if (material.equals(Material.STEP)) {
-                                color = BlockColor.getSlab().get(data);
-                            } else {
-                                color = material.getColor();
-                            }
-                            if (material.isSlab()) {
-                                if (data < 8) {
-                                    Slab.drawSlab(gl, color, ONE_F, 0);
-                                } else {
-                                    SlabUpper.drawUpperSlab(gl, color, ONE_F);
+                            Color color = material.getColor();
+                            switch (material.getBlockShape()) {
+                                case SLAB:
+                                    if (data.contains("type=bottom")) {
+                                        Slab.drawSlab(gl, color, ONE_F, 0);
+                                    } else if (data.contains("type=top")) {
+                                        SlabUpper.drawUpperSlab(gl, color, ONE_F);
+                                    } else {
+                                        Cube.drawCube(gl, color, ONE_F, false);
+                                    }
+                                    break;
+                                case FLAT:
+                                    if (material.equals(Material.REDSTONE_WIRE)) {
+                                        Redstone.drawWire(gl, ONE_F);
+                                    } else {
+                                        Slab.drawSlab(gl, color, ONE_F, 0.8f);
+                                    }
+                                    break;
+                                case STAIR:
+                                    Stair.drawStair(gl, color, ONE_F, data);
+                                    break;
+                                case PLANT: {
+                                    float thickness;
+                                    float height1;
+                                    switch (material) {
+                                        case BROWN_MUSHROOM, RED_MUSHROOM, CARROTS, DEAD_BUSH, GRASS, NETHER_WART, POTATOES -> {
+                                            thickness = 0.125f;
+                                            height1 = 0.5f;
+                                        }
+                                        case WHEAT, POPPY, DANDELION -> {
+                                            thickness = 0.125f;
+                                            height1 = 0.8f;
+                                        }
+                                        default -> {
+                                            thickness = 0.25f;
+                                            height1 = ONE_F;
+                                        }
+                                    }
+                                    X.drawX(gl, color, ONE_F, thickness, height1);
+                                    break;
                                 }
-                            } else if (material.isThin()) {
-                                if (material.equals(Material.REDSTONE_WIRE)) {
-                                    Redstone.drawWire(gl, ONE_F);
-                                } else {
-                                    Slab.drawSlab(gl, color, ONE_F, 0.8f);
+                                case FENCE: {
+                                    float thickness;
+                                    float height1;
+                                    switch (material) {
+                                        case ACACIA_FENCE, BIRCH_FENCE, COBBLESTONE_WALL, DARK_OAK_FENCE, OAK_FENCE, IRON_BARS, JUNGLE_FENCE, NETHER_BRICK_FENCE, SPRUCE_FENCE -> {
+                                            thickness = 0.25f;
+                                            height1 = 1.9f;
+                                        }
+                                        case ACACIA_FENCE_GATE, BIRCH_FENCE_GATE, DARK_OAK_FENCE_GATE, OAK_FENCE_GATE, JUNGLE_FENCE_GATE, SPRUCE_FENCE_GATE -> {
+                                            thickness = 0.25f;
+                                            height1 = 1.7f;
+                                        }
+                                        case NETHER_PORTAL, OAK_SIGN, GREEN_STAINED_GLASS_PANE, BLACK_BANNER, GLASS_PANE -> {
+                                            thickness = 0.125f;
+                                            height1 = 2.0f;
+                                        }
+                                        default -> {
+                                            thickness = 0.25f;
+                                            height1 = ONE_F;
+                                        }
+                                    }
+                                    Fence.drawFence(gl, color, ONE_F, thickness, height1, data, material.isGlass());
+                                    break;
                                 }
-                            } else if (material.isStair()) {
-                                Stair.drawStair(gl, color, ONE_F, data);
-                            } else if (material.isPlantLike()) {
-                                float thickness;
-                                float height1;
-                                switch (material) {
-                                    case BROWN_MUSHROOM, RED_MUSHROOM, CARROT, DEAD_BUSH, LONG_GRASS, NETHER_WARTS, POTATO -> {
-                                        thickness = 0.125f;
-                                        height1 = 0.5f;
-                                    }
-                                    case CROPS, RED_ROSE, YELLOW_FLOWER -> {
-                                        thickness = 0.125f;
-                                        height1 = 0.8f;
-                                    }
-                                    default -> {
-                                        thickness = 0.25f;
-                                        height1 = ONE_F;
-                                    }
-                                }
-                                X.drawX(gl, color, ONE_F, thickness, height1);
-                            } else if (material.isFence()) {
-                                float thickness;
-                                float height1;
-                                switch (material) {
-                                    case ACACIA_FENCE, BIRCH_FENCE, COBBLE_WALL, DARK_OAK_FENCE, FENCE, IRON_FENCE, JUNGLE_FENCE, NETHER_FENCE, SPRUCE_FENCE -> {
-                                        thickness = 0.25f;
-                                        height1 = 1.9f;
-                                    }
-                                    case ACACIA_FENCE_GATE, BIRCH_FENCE_GATE, DARK_OAK_FENCE_GATE, FENCE_GATE, JUNGLE_FENCE_GATE, SPRUCE_FENCE_GATE -> {
-                                        thickness = 0.25f;
-                                        height1 = 1.7f;
-                                    }
-                                    case PORTAL, SIGN_POST, STAINED_GLASS_PANE, STANDING_BANNER, THIN_GLASS -> {
-                                        thickness = 0.125f;
-                                        height1 = 2.0f;
-                                    }
-                                    default -> {
-                                        thickness = 0.25f;
-                                        height1 = ONE_F;
-                                    }
-                                }
-                                Fence.drawFence(gl, color, ONE_F, thickness, height1, FenceRotation.getByByte().get(data), material.isGlass());
-                            } else {
-                                Cube.drawCube(gl, color, ONE_F, material.isGlass());
+                                default:
+                                    Cube.drawCube(gl, color, ONE_F, material.isGlass());
+                                    break;
                             }
                             gl.glPopMatrix();
                         }

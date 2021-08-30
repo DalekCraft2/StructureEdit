@@ -26,12 +26,13 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
 /**
  * @author eccentric_nz
  */
-public class Fence {
+public class Fence { // TODO Update fences.
 
-    public static void drawFence(GL2 gl, Color color, float size, float thickness, float height, float angle, boolean glass) {
+    public static void drawFence(GL2 gl, Color color, float size, float thickness, float height, String data, boolean glass) {
 
         float height1 = -size + height;
         float[] components = color.getColorComponents(null);
+        float angle = FenceRotation.getByByte(data);
         // rotate if necessary
         if (angle > 0.0f) {
             gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);

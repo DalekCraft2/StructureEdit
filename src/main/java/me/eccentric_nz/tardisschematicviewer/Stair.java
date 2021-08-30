@@ -27,14 +27,21 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
  */
 public class Stair {
 
-    public static void drawStair(GL2 gl, Color color, float size, byte data) {
+    public static void drawStair(GL2 gl, Color color, float size, String data) {
 
         float[] components = color.getColorComponents(null);
-        float angle = StairRotation.getByByte().get(data);
-        if (data > 3) {
+        if (data.contains("half=top")) {
             gl.glRotatef(180.0f, 0.0f, 0.0f, 0.0f);
         }
-        gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
+        if (data.contains("facing=north")) {
+            gl.glRotatef(0.0f, 0.0f, 1.0f, 0.0f);
+        } else if (data.contains("facing=east")) {
+            gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+        } else if (data.contains("facing=south")) {
+            gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+        } else if (data.contains("facing=west")) {
+            gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+        }
 
         gl.glBegin(GL_QUADS);
 
