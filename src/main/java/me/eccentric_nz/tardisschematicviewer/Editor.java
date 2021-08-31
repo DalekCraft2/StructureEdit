@@ -116,7 +116,7 @@ public class Editor extends JPanel {
 
     public void loadLayer() {
         if (buttons.size() > 0) {
-            buttons.forEach((q) -> layoutArea.remove(q));
+            buttons.forEach((button) -> layoutArea.remove(button));
             buttons.clear();
         }
         layoutArea.setLayout(null);
