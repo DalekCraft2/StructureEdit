@@ -27,7 +27,7 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
  */
 public class Slab {
 
-    public static void drawSlab(GL2 gl, Color color, float size, float depth) {
+    public static void draw(GL2 gl, Color color, float size, float depth) {
 
         float[] components = color.getColorComponents(null);
 

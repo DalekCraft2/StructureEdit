@@ -27,7 +27,7 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
  */
 public class SlabUpper {
 
-    public static void drawUpperSlab(GL2 gl, Color color, float size) {
+    public static void draw(GL2 gl, Color color, float size) {
 
         float[] components = color.getColorComponents(null);
 

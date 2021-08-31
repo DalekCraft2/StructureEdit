@@ -3,15 +3,18 @@ package me.eccentric_nz.tardisschematicviewer;
 public enum BlockShape {
 
     CUBE,
-    DOOR,
+    THIN,
     FENCE,
+    FENCE_GATE,
     FLAT,
     GLASS,
+    GLASS_PANE,
     PLANT,
     SLAB,
     SMALL,
     STAIR,
     STICK,
-    VOID;
+    VOID,
+    WALL;
 
 }

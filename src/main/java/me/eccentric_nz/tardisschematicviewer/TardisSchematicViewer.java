@@ -193,22 +193,22 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                             switch (material.getBlockShape()) {
                                 case SLAB:
                                     if (data.contains("type=bottom")) {
-                                        Slab.drawSlab(gl, color, ONE_F, 0);
+                                        Slab.draw(gl, color, ONE_F, 0);
                                     } else if (data.contains("type=top")) {
-                                        SlabUpper.drawUpperSlab(gl, color, ONE_F);
+                                        SlabUpper.draw(gl, color, ONE_F);
                                     } else {
-                                        Cube.drawCube(gl, color, ONE_F, false);
+                                        Cube.draw(gl, color, ONE_F, false);
                                     }
                                     break;
                                 case FLAT:
                                     if (material.equals(Material.REDSTONE_WIRE)) {
-                                        Redstone.drawWire(gl, ONE_F);
+                                        Redstone.draw(gl, ONE_F);
                                     } else {
-                                        Slab.drawSlab(gl, color, ONE_F, 0.8f);
+                                        Slab.draw(gl, color, ONE_F, 0.8f);
                                     }
                                     break;
                                 case STAIR:
-                                    Stair.drawStair(gl, color, ONE_F, data);
+                                    Stair.draw(gl, color, ONE_F, data);
                                     break;
                                 case PLANT: {
                                     float thickness;
@@ -227,35 +227,31 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                                             height1 = ONE_F;
                                         }
                                     }
-                                    X.drawX(gl, color, ONE_F, thickness, height1);
+                                    Plant.draw(gl, color, ONE_F, thickness, height1);
                                     break;
                                 }
-                                case FENCE: {
-                                    float thickness;
-                                    float height1;
-                                    switch (material) {
-                                        case ACACIA_FENCE, BIRCH_FENCE, COBBLESTONE_WALL, DARK_OAK_FENCE, OAK_FENCE, IRON_BARS, JUNGLE_FENCE, NETHER_BRICK_FENCE, SPRUCE_FENCE -> {
-                                            thickness = 0.25f;
-                                            height1 = 1.9f;
-                                        }
-                                        case ACACIA_FENCE_GATE, BIRCH_FENCE_GATE, DARK_OAK_FENCE_GATE, OAK_FENCE_GATE, JUNGLE_FENCE_GATE, SPRUCE_FENCE_GATE -> {
-                                            thickness = 0.25f;
-                                            height1 = 1.7f;
-                                        }
-                                        case NETHER_PORTAL, OAK_SIGN, GREEN_STAINED_GLASS_PANE, BLACK_BANNER, GLASS_PANE -> {
-                                            thickness = 0.125f;
-                                            height1 = 2.0f;
-                                        }
-                                        default -> {
-                                            thickness = 0.25f;
-                                            height1 = ONE_F;
-                                        }
-                                    }
-                                    Fence.drawFence(gl, color, ONE_F, thickness, height1, data, material.isGlass());
+                                case WALL:
+                                case FENCE:
+                                    Fence.draw(gl, color, ONE_F, 0.25f, 1.9f, data, false);
                                     break;
-                                }
-                                default:
-                                    Cube.drawCube(gl, color, ONE_F, material.isGlass());
+                                case FENCE_GATE:
+                                    ThinCube.draw(gl, color, ONE_F, 0.25f, 1.7f, data, false);
+                                    break;
+                                case THIN:
+                                    ThinCube.draw(gl, color, ONE_F, 0.125f, 2.0f, data, false);
+                                    break;
+                                case GLASS_PANE:
+                                    ThinCube.draw(gl, color, ONE_F, 0.125f, 2.0f, data, true);
+                                    break;
+                                case GLASS:
+                                    Cube.draw(gl, color, ONE_F, true);
+                                    break;
+                                case SMALL:
+                                case STICK:
+                                case CUBE:
+                                    Cube.draw(gl, color, ONE_F, false);
+                                    break;
+                                case VOID:
                                     break;
                             }
                             gl.glPopMatrix();

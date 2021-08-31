@@ -20,29 +20,49 @@ import com.jogamp.opengl.GL2;
 
 import java.awt.*;
 
+import static com.jogamp.opengl.GL.GL_LINES;
 import static com.jogamp.opengl.GL2ES3.GL_QUADS;
 
 /**
  * @author eccentric_nz
  */
-public class X {
+public class ThinCube {
 
-    public static void drawX(GL2 gl, Color color, float size, float thickness, float height) {
+    public static void draw(GL2 gl, Color color, float size, float thickness, float height, String data, boolean glass) {
 
         float height1 = -size + height;
         float[] components = color.getColorComponents(null);
-        // rotate 45 degrees
-        gl.glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+        // rotate if necessary
+        float angle = 0.0f;
+        if (data.contains("facing=")) {
+            if (data.contains("facing=north")) {
+                angle = 0.0f;
+            } else if (data.contains("facing=east")) {
+                angle = 90.0f;
+            } else if (data.contains("facing=south")) {
+                angle = 180.0f;
+            } else if (data.contains("facing=west")) {
+                angle = -90.0f;
+            }
+        } else if (data.contains("rotation=")) {
+            // TODO Sign rotation.
+        }
+        gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
 
-        gl.glBegin(GL_QUADS);
+        if (glass) {
+            gl.glLineWidth(size * 2);
+            gl.glBegin(GL_LINES);
+        } else {
+            gl.glBegin(GL_QUADS);
+        }
 
         // Front Face wide
         gl.glColor3f(components[0], components[1], components[2]);
         gl.glNormal3f(0.0f, 0.0f, size);
         gl.glVertex3f(-size, -size, thickness); // bottom-left of the quad
-        gl.glVertex3f(size, -size, thickness);  // bottom-right of the quad
-        gl.glVertex3f(size, height1, thickness);   // top-right of the quad
-        gl.glVertex3f(-size, height1, thickness);  // top-left of the quad
+        gl.glVertex3f(size, -size, thickness); // bottom-right of the quad
+        gl.glVertex3f(size, height1, thickness); // top-right of the quad
+        gl.glVertex3f(-size, height1, thickness); // top-left of the quad
 
         // Back Face wide
         gl.glColor3f(components[0], components[1], components[2]);
@@ -52,22 +72,6 @@ public class X {
         gl.glVertex3f(size, height1, -thickness);
         gl.glVertex3f(size, -size, -thickness);
 
-        // Front Face thin
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(0.0f, 0.0f, size);
-        gl.glVertex3f(-thickness, -size, size); // bottom-left of the quad
-        gl.glVertex3f(thickness, -size, size);  // bottom-right of the quad
-        gl.glVertex3f(thickness, height1, size);   // top-right of the quad
-        gl.glVertex3f(-thickness, height1, size);  // top-left of the quad
-
-        // Back Face thin
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(0.0f, 0.0f, -size);
-        gl.glVertex3f(-thickness, -size, -size);
-        gl.glVertex3f(-thickness, height1, -size);
-        gl.glVertex3f(thickness, height1, -size);
-        gl.glVertex3f(thickness, -size, -size);
-
         // Top Face LR
         gl.glColor3f(components[0], components[1], components[2]);
         gl.glNormal3f(0.0f, size, 0.0f);
@@ -75,14 +79,6 @@ public class X {
         gl.glVertex3f(-size, height1, thickness);
         gl.glVertex3f(size, height1, thickness);
         gl.glVertex3f(size, height1, -thickness);
-
-        // Top Face FB
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(0.0f, size, 0.0f);
-        gl.glVertex3f(-thickness, height1, -size);
-        gl.glVertex3f(-thickness, height1, size);
-        gl.glVertex3f(thickness, height1, size);
-        gl.glVertex3f(thickness, height1, -size);
 
         // Bottom Face LR
         gl.glColor3f(components[0], components[1], components[2]);
@@ -92,29 +88,13 @@ public class X {
         gl.glVertex3f(size, -size, thickness);
         gl.glVertex3f(-size, -size, thickness);
 
-        // Bottom Face FB
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(0.0f, -size, 0.0f);
-        gl.glVertex3f(-thickness, -size, -size);
-        gl.glVertex3f(thickness, -size, -size);
-        gl.glVertex3f(thickness, -size, size);
-        gl.glVertex3f(-thickness, -size, size);
-
-        // Right face LR
+        // Right Face LR
         gl.glColor3f(components[0], components[1], components[2]);
         gl.glNormal3f(size, 0.0f, 0.0f);
         gl.glVertex3f(size, -size, -thickness);
         gl.glVertex3f(size, height1, -thickness);
         gl.glVertex3f(size, height1, thickness);
         gl.glVertex3f(size, -size, thickness);
-
-        // Right face FB
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(size, 0.0f, 0.0f);
-        gl.glVertex3f(thickness, -size, -size);
-        gl.glVertex3f(thickness, height1, -size);
-        gl.glVertex3f(thickness, height1, size);
-        gl.glVertex3f(thickness, -size, size);
 
         // Left Face LR
         gl.glColor3f(components[0], components[1], components[2]);
@@ -123,14 +103,6 @@ public class X {
         gl.glVertex3f(-size, -size, thickness);
         gl.glVertex3f(-size, height1, thickness);
         gl.glVertex3f(-size, height1, -thickness);
-
-        // Left Face FB
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(-size, 0.0f, 0.0f);
-        gl.glVertex3f(-thickness, -size, -size);
-        gl.glVertex3f(-thickness, -size, size);
-        gl.glVertex3f(-thickness, height1, size);
-        gl.glVertex3f(-thickness, height1, -size);
 
         gl.glEnd();
     }

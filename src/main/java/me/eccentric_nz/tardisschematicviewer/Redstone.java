@@ -39,7 +39,7 @@ public class Redstone {
         translations.add(new Float[]{-0.75f, 0.0f, -0.75f});
     }
 
-    public static void drawWire(GL2 gl, float size) {
+    public static void draw(GL2 gl, float size) {
 
         float quarter = size / 4;
         float height = -size + quarter / 2;

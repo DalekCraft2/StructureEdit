@@ -28,7 +28,7 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
  */
 public class Cube {
 
-    public static void drawCube(GL2 gl, Color color, float size, boolean glass) {
+    public static void draw(GL2 gl, Color color, float size, boolean glass) {
 
         float[] components = color.getColorComponents(null);
 
