@@ -65,22 +65,6 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <!-- JOCL -->
-            <groupId>org.jogamp.jocl</groupId>
-            <artifactId>jocl-main</artifactId>
-            <version>2.3.2</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- JOAL (audio) -->
-            <groupId>org.jogamp.joal</groupId>
-            <artifactId>joal-main</artifactId>
-            <version>2.3.2</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
     </dependencies>
 
     <build>
