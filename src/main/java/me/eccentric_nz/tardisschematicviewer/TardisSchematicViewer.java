@@ -232,7 +232,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                                 }
                                 case WALL:
                                 case FENCE:
-                                    Fence.draw(gl, color, ONE_F, 0.25f, 1.9f, data, false);
+                                    Fence.draw(gl, color, ONE_F, 0.25f, 1.9f, false);
                                     break;
                                 case FENCE_GATE:
                                     ThinCube.draw(gl, color, ONE_F, 0.25f, 1.7f, data, false);

@@ -26,19 +26,12 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
 /**
  * @author eccentric_nz
  */
-public class Fence { // TODO Update fences.
+public class Fence {
 
-    public static void draw(GL2 gl, Color color, float size, float thickness, float height, String data, boolean glass) {
+    public static void draw(GL2 gl, Color color, float size, float thickness, float height, boolean glass) {
 
         float height1 = -size + height;
         float[] components = color.getColorComponents(null);
-        float angle;
-        // angle = FenceRotation.getByByte(data);
-        angle = 0.0f;
-        // rotate if necessary
-        if (angle > 0.0f) {
-            gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
-        }
 
         if (glass) {
             gl.glLineWidth(size * 2);
@@ -51,9 +44,9 @@ public class Fence { // TODO Update fences.
         gl.glColor3f(components[0], components[1], components[2]);
         gl.glNormal3f(0.0f, 0.0f, size);
         gl.glVertex3f(-size, -size, thickness); // bottom-left of the quad
-        gl.glVertex3f(size, -size, thickness); // bottom-right of the quad
-        gl.glVertex3f(size, height1, thickness); // top-right of the quad
-        gl.glVertex3f(-size, height1, thickness); // top-left of the quad
+        gl.glVertex3f(size, -size, thickness);  // bottom-right of the quad
+        gl.glVertex3f(size, height1, thickness);   // top-right of the quad
+        gl.glVertex3f(-size, height1, thickness);  // top-left of the quad
 
         // Back Face wide
         gl.glColor3f(components[0], components[1], components[2]);
@@ -63,6 +56,22 @@ public class Fence { // TODO Update fences.
         gl.glVertex3f(size, height1, -thickness);
         gl.glVertex3f(size, -size, -thickness);
 
+        // Front Face thin
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(0.0f, 0.0f, size);
+        gl.glVertex3f(-thickness, -size, size); // bottom-left of the quad
+        gl.glVertex3f(thickness, -size, size);  // bottom-right of the quad
+        gl.glVertex3f(thickness, height1, size);   // top-right of the quad
+        gl.glVertex3f(-thickness, height1, size);  // top-left of the quad
+
+        // Back Face thin
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(0.0f, 0.0f, -size);
+        gl.glVertex3f(-thickness, -size, -size);
+        gl.glVertex3f(-thickness, height1, -size);
+        gl.glVertex3f(thickness, height1, -size);
+        gl.glVertex3f(thickness, -size, -size);
+
         // Top Face LR
         gl.glColor3f(components[0], components[1], components[2]);
         gl.glNormal3f(0.0f, size, 0.0f);
@@ -70,6 +79,14 @@ public class Fence { // TODO Update fences.
         gl.glVertex3f(-size, height1, thickness);
         gl.glVertex3f(size, height1, thickness);
         gl.glVertex3f(size, height1, -thickness);
+
+        // Top Face FB
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(0.0f, size, 0.0f);
+        gl.glVertex3f(-thickness, height1, -size);
+        gl.glVertex3f(-thickness, height1, size);
+        gl.glVertex3f(thickness, height1, size);
+        gl.glVertex3f(thickness, height1, -size);
 
         // Bottom Face LR
         gl.glColor3f(components[0], components[1], components[2]);
@@ -79,13 +96,29 @@ public class Fence { // TODO Update fences.
         gl.glVertex3f(size, -size, thickness);
         gl.glVertex3f(-size, -size, thickness);
 
-        // Right Face LR
+        // Bottom Face FB
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(0.0f, -size, 0.0f);
+        gl.glVertex3f(-thickness, -size, -size);
+        gl.glVertex3f(thickness, -size, -size);
+        gl.glVertex3f(thickness, -size, size);
+        gl.glVertex3f(-thickness, -size, size);
+
+        // Right face LR
         gl.glColor3f(components[0], components[1], components[2]);
         gl.glNormal3f(size, 0.0f, 0.0f);
         gl.glVertex3f(size, -size, -thickness);
         gl.glVertex3f(size, height1, -thickness);
         gl.glVertex3f(size, height1, thickness);
         gl.glVertex3f(size, -size, thickness);
+
+        // Right face FB
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(size, 0.0f, 0.0f);
+        gl.glVertex3f(thickness, -size, -size);
+        gl.glVertex3f(thickness, height1, -size);
+        gl.glVertex3f(thickness, height1, size);
+        gl.glVertex3f(thickness, -size, size);
 
         // Left Face LR
         gl.glColor3f(components[0], components[1], components[2]);
@@ -94,6 +127,14 @@ public class Fence { // TODO Update fences.
         gl.glVertex3f(-size, -size, thickness);
         gl.glVertex3f(-size, height1, thickness);
         gl.glVertex3f(-size, height1, -thickness);
+
+        // Left Face FB
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(-size, 0.0f, 0.0f);
+        gl.glVertex3f(-thickness, -size, -size);
+        gl.glVertex3f(-thickness, -size, size);
+        gl.glVertex3f(-thickness, height1, size);
+        gl.glVertex3f(-thickness, height1, -size);
 
         gl.glEnd();
     }
