@@ -45,7 +45,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     private static final int CAMERA_ROTATE_STEP_DEGREES = 5;
     private static final float ZERO_F = 0.0f;
     private static final float ONE_F = 1.0f;
-    private static final float CUBIE_TRANSLATION_FACTOR = 2.0f;
+    private static final float CUBE_TRANSLATION_FACTOR = 2.0f;
     private static float angleX = 45.0f; // rotational angle for x-axis in degree
     private static float angleY = 45.0f; // rotational angle for y-axis in degree
     private final List<Block> notThese = Arrays.asList(Block.AIR, Block.SPONGE, Block.PISTON_HEAD);
@@ -74,9 +74,8 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
             canvas.setBackground(Color.GRAY);
             JFrame frame = new JFrame();
             TardisSchematicViewer viewer = new TardisSchematicViewer();
-            UserInterface userInterface = new UserInterface(viewer);
+            JPanel userInterface = new UserInterface(viewer);
             userInterface.setSize(1024, 85);
-            userInterface.setVisible(true);
             frame.getContentPane().add(userInterface, BorderLayout.PAGE_START);
             frame.setTitle("TARDIS Schematic Viewer");
             frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
@@ -183,7 +182,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                             float translateX = (float) lastIndexX / 2.0f;
                             float translateY = (float) lastIndexY / 2.0f;
                             float translateZ = (float) lastIndexZ / 2.0f;
-                            gl.glTranslatef((width - translateX) * CUBIE_TRANSLATION_FACTOR, (height - translateY) * CUBIE_TRANSLATION_FACTOR, -(length - translateZ) * CUBIE_TRANSLATION_FACTOR);
+                            gl.glTranslatef((width - translateX) * CUBE_TRANSLATION_FACTOR, (height - translateY) * CUBE_TRANSLATION_FACTOR, -(length - translateZ) * CUBE_TRANSLATION_FACTOR);
                             Color color = block.getColor();
                             switch (block.getBlockShape()) {
                                 case SLAB:

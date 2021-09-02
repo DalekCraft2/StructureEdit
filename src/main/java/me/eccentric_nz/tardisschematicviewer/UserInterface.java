@@ -28,6 +28,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -37,9 +38,11 @@ import java.util.Locale;
  */
 public class UserInterface extends JPanel {
 
+    @Serial
+    private static final long serialVersionUID = -1098962567729971976L;
     private final TardisSchematicViewer viewer;
-    private final List<SquareButton> buttons;
-    private File lastDir;
+    private final List<SquareButton> buttons = new ArrayList<>();
+    private File lastDirectory;
     private SquareButton selected;
 
     private JButton browseButton;
@@ -51,17 +54,16 @@ public class UserInterface extends JPanel {
     private JLabel schematicLabel;
     private JPanel editorPanel;
     private JButton closeButton;
-    private JInternalFrame layoutArea;
+    private JPanel gridPanel;
     private JLabel blockLabel;
     private JComboBox<String> blockComboBox;
     private JLabel dataLabel;
-    private JComboBox dataComboBox;
+    private JComboBox<String> dataComboBox;
     ActionListener actionListener = this::squareActionPerformed;
 
     public UserInterface(TardisSchematicViewer viewer) {
         this.viewer = viewer;
-        buttons = new ArrayList<>();
-        lastDir = new File(".");
+        lastDirectory = new File(".");
         browseButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -118,30 +120,30 @@ public class UserInterface extends JPanel {
      * @param extension   the file extension
      */
     private void choose(JTextField box, String description, String extension) {
-        JFileChooser chooser = new JFileChooser(lastDir);
+        JFileChooser chooser = new JFileChooser(lastDirectory);
         chooser.setFileFilter(new FileNameExtensionFilter(description, extension));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.showOpenDialog(panel);
 
         if (chooser.getSelectedFile() != null) {
             box.setText(chooser.getSelectedFile().getPath());
-            lastDir = chooser.getCurrentDirectory();
+            lastDirectory = chooser.getCurrentDirectory();
         }
     }
 
     public void loadLayer() {
         if (buttons.size() > 0) {
-            buttons.forEach((button) -> layoutArea.remove(button));
+            buttons.forEach((button) -> gridPanel.remove(button));
             buttons.clear();
         }
-        layoutArea.setLayout(null);
+        gridPanel.setLayout(null);
         JSONObject schematic = viewer.getSchematic();
         if (schematic != null) {
             JSONObject dimensions = (JSONObject) schematic.get("dimensions");
             int current = viewer.getHeight() - 1;
             JSONArray level = ((JSONArray) schematic.get("input")).getJSONArray(current);
             int width = dimensions.getInt("width");
-            int layoutWidth = layoutArea.getWidth() / width;
+            int gridWidth = gridPanel.getWidth() / width;
             for (int i = 0; i < width; i++) {
                 JSONArray row = (JSONArray) level.get(i);
                 for (int j = 0; j < width; j++) {
@@ -149,14 +151,14 @@ public class UserInterface extends JPanel {
                     String data = column.getString("data");
                     String blockName = data.split(":")[1].split("\\[")[0].toUpperCase(Locale.ROOT);
                     Block block = Block.valueOf(blockName);
-                    SquareButton squareButton = new SquareButton(layoutWidth, block.getColor());
+                    SquareButton squareButton = new SquareButton(gridWidth, block.getColor());
                     squareButton.setText(blockName.substring(0, 1));
-                    squareButton.setPreferredSize(new Dimension(layoutWidth, layoutWidth));
-                    squareButton.setBounds(i * layoutWidth, j * layoutWidth, layoutWidth, layoutWidth);
+                    squareButton.setPreferredSize(new Dimension(gridWidth, gridWidth));
+                    squareButton.setBounds(i * gridWidth, j * gridWidth, gridWidth, gridWidth);
                     squareButton.setBorder(new LineBorder(Color.BLACK));
                     squareButton.setToolTipText(data);
                     squareButton.addActionListener(actionListener);
-                    layoutArea.add(squareButton);
+                    gridPanel.add(squareButton);
                     buttons.add(squareButton);
                 }
             }
@@ -165,12 +167,12 @@ public class UserInterface extends JPanel {
         }
     }
 
-    private void squareActionPerformed(ActionEvent evt) {
+    private void squareActionPerformed(ActionEvent e) {
         if (selected != null) {
             // remove selected border
             selected.setBorder(new LineBorder(Color.BLACK));
         }
-        selected = (SquareButton) evt.getSource();
+        selected = (SquareButton) e.getSource();
         int x = selected.getX() / 37;
         int z = selected.getY() / 37;
         System.out.println(x + "," + z);
