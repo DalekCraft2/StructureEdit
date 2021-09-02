@@ -49,7 +49,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     public static JPanel editor;
     private static float angleX = 45.0f; // rotational angle for x-axis in degree
     private static float angleY = 45.0f; // rotational angle for y-axis in degree
-    private final List<Material> notThese = Arrays.asList(Material.AIR, Material.SPONGE, Material.PISTON_HEAD);
+    private final List<Block> notThese = Arrays.asList(Block.AIR, Block.SPONGE, Block.PISTON_HEAD);
     private GLU glu; // for the GL Utility
     private float z = -60.0f; // z-location
     private int mouseX = FRAME_WIDTH / 2;
@@ -176,8 +176,8 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                         JSONObject column = (JSONObject) row.get(length);
                         String data = column.getString("data");
                         String materialName = data.split(":")[1].split("\\[")[0].toUpperCase(Locale.ROOT);
-                        Material material = Material.valueOf(materialName);
-                        if (!notThese.contains(material)) {
+                        Block block = Block.valueOf(materialName);
+                        if (!notThese.contains(block)) {
                             gl.glPushMatrix();
 
                             gl.glRotatef(columnAnglesX[width], ONE_F, ZERO_F, ZERO_F);
@@ -189,8 +189,8 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                             float translateY = (float) lastIndexY / 2.0f;
                             float translateZ = (float) lastIndexZ / 2.0f;
                             gl.glTranslatef((width - translateX) * CUBIE_TRANSLATION_FACTOR, (height - translateY) * CUBIE_TRANSLATION_FACTOR, -(length - translateZ) * CUBIE_TRANSLATION_FACTOR);
-                            Color color = material.getColor();
-                            switch (material.getBlockShape()) {
+                            Color color = block.getColor();
+                            switch (block.getBlockShape()) {
                                 case SLAB:
                                     if (data.contains("type=bottom")) {
                                         Slab.draw(gl, color, ONE_F, 0);
@@ -201,7 +201,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                                     }
                                     break;
                                 case FLAT:
-                                    if (material.equals(Material.REDSTONE_WIRE)) {
+                                    if (block.equals(Block.REDSTONE_WIRE)) {
                                         Redstone.draw(gl, ONE_F);
                                     } else {
                                         Slab.draw(gl, color, ONE_F, 0.8f);
@@ -213,7 +213,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                                 case PLANT: {
                                     float thickness;
                                     float height1;
-                                    switch (material) {
+                                    switch (block) {
                                         case BROWN_MUSHROOM, RED_MUSHROOM, CARROTS, DEAD_BUSH, GRASS, NETHER_WART, POTATOES -> {
                                             thickness = 0.125f;
                                             height1 = 0.5f;
