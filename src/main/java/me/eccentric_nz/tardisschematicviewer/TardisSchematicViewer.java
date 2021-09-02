@@ -46,7 +46,6 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     private static final float ZERO_F = 0.0f;
     private static final float ONE_F = 1.0f;
     private static final float CUBIE_TRANSLATION_FACTOR = 2.0f;
-    public static JPanel editor;
     private static float angleX = 45.0f; // rotational angle for x-axis in degree
     private static float angleY = 45.0f; // rotational angle for y-axis in degree
     private final List<Block> notThese = Arrays.asList(Block.AIR, Block.SPONGE, Block.PISTON_HEAD);
@@ -74,15 +73,11 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
             GLJPanel canvas = new GLJPanel(capabilities);
             canvas.setBackground(Color.GRAY);
             JFrame frame = new JFrame();
-            TardisSchematicViewer tardisSchematicViewer = new TardisSchematicViewer();
-            JPanel ui = new UserInterface(tardisSchematicViewer);
-            ui.setSize(1024, 85);
-            ui.setVisible(true);
-            editor = new Editor(tardisSchematicViewer);
-            editor.setSize(1024, 666);
-            editor.setVisible(false);
-            frame.getContentPane().add(ui, BorderLayout.PAGE_START);
-            frame.getContentPane().add(editor, BorderLayout.SOUTH);
+            TardisSchematicViewer viewer = new TardisSchematicViewer();
+            UserInterface userInterface = new UserInterface(viewer);
+            userInterface.setSize(1024, 85);
+            userInterface.setVisible(true);
+            frame.getContentPane().add(userInterface, BorderLayout.PAGE_START);
             frame.setTitle("TARDIS Schematic Viewer");
             frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
             frame.getContentPane().add(canvas, BorderLayout.CENTER);
@@ -107,10 +102,10 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                     }).start();
                 }
             });
-            canvas.addGLEventListener(tardisSchematicViewer);
+            canvas.addGLEventListener(viewer);
             // For handling KeyEvents
-            canvas.addKeyListener(tardisSchematicViewer);
-            canvas.addMouseMotionListener(tardisSchematicViewer);
+            canvas.addKeyListener(viewer);
+            canvas.addMouseMotionListener(viewer);
             canvas.setFocusable(true);
             canvas.requestFocus();
             canvas.setVisible(true);

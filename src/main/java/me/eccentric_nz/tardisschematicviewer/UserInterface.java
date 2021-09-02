@@ -16,22 +16,31 @@
  */
 package me.eccentric_nz.tardisschematicviewer;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
+
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import javax.swing.filechooser.FileNameExtensionFilter;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
-import java.io.Serial;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Locale;
 
 /**
  * @author eccentric_nz
  */
 public class UserInterface extends JPanel {
 
-    @Serial
-    private static final long serialVersionUID = -1098962567729971976L;
     private final TardisSchematicViewer viewer;
-    private File lastDir = new File(".");
+    private final List<SquareButton> buttons;
+    private File lastDir;
+    private SquareButton selected;
 
     private JButton browseButton;
     private JButton loadButton;
@@ -39,9 +48,20 @@ public class UserInterface extends JPanel {
     private JButton editLayerButton;
     private JButton saveButton;
     private JPanel panel;
+    private JLabel schematicLabel;
+    private JPanel editorPanel;
+    private JButton closeButton;
+    private JInternalFrame layoutArea;
+    private JLabel blockLabel;
+    private JComboBox<String> blockComboBox;
+    private JLabel dataLabel;
+    private JComboBox dataComboBox;
+    ActionListener actionListener = this::squareActionPerformed;
 
     public UserInterface(TardisSchematicViewer viewer) {
         this.viewer = viewer;
+        buttons = new ArrayList<>();
+        lastDir = new File(".");
         browseButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -60,9 +80,8 @@ public class UserInterface extends JPanel {
         editLayerButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                Editor editor = (Editor) TardisSchematicViewer.editor;
-                editor.loadLayer();
-                editor.setVisible(true);
+                loadLayer();
+                editorPanel.setVisible(true);
             }
         });
         saveButton.addMouseListener(new MouseAdapter() {
@@ -71,6 +90,24 @@ public class UserInterface extends JPanel {
                 super.mouseReleased(e); // TODO Finish this.
             }
         });
+        closeButton.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                editorPanel.setVisible(false);
+            }
+        });
+        closeButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Finish this.
+            }
+        });
+    }
+
+    private void createUIComponents() {
+        panel = this;
+        blockComboBox = new JComboBox<>();
+        blockComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(Block.strings()));
     }
 
     /**
@@ -84,7 +121,7 @@ public class UserInterface extends JPanel {
         JFileChooser chooser = new JFileChooser(lastDir);
         chooser.setFileFilter(new FileNameExtensionFilter(description, extension));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.showOpenDialog(this);
+        chooser.showOpenDialog(panel);
 
         if (chooser.getSelectedFile() != null) {
             box.setText(chooser.getSelectedFile().getPath());
@@ -92,7 +129,54 @@ public class UserInterface extends JPanel {
         }
     }
 
-    private void createUIComponents() {
-        panel = this;
+    public void loadLayer() {
+        if (buttons.size() > 0) {
+            buttons.forEach((button) -> layoutArea.remove(button));
+            buttons.clear();
+        }
+        layoutArea.setLayout(null);
+        JSONObject schematic = viewer.getSchematic();
+        if (schematic != null) {
+            JSONObject dimensions = (JSONObject) schematic.get("dimensions");
+            int current = viewer.getHeight() - 1;
+            JSONArray level = ((JSONArray) schematic.get("input")).getJSONArray(current);
+            int width = dimensions.getInt("width");
+            int layoutWidth = layoutArea.getWidth() / width;
+            for (int i = 0; i < width; i++) {
+                JSONArray row = (JSONArray) level.get(i);
+                for (int j = 0; j < width; j++) {
+                    JSONObject column = (JSONObject) row.get(j);
+                    String data = column.getString("data");
+                    String blockName = data.split(":")[1].split("\\[")[0].toUpperCase(Locale.ROOT);
+                    Block block = Block.valueOf(blockName);
+                    SquareButton squareButton = new SquareButton(layoutWidth, block.getColor());
+                    squareButton.setText(blockName.substring(0, 1));
+                    squareButton.setPreferredSize(new Dimension(layoutWidth, layoutWidth));
+                    squareButton.setBounds(i * layoutWidth, j * layoutWidth, layoutWidth, layoutWidth);
+                    squareButton.setBorder(new LineBorder(Color.BLACK));
+                    squareButton.setToolTipText(data);
+                    squareButton.addActionListener(actionListener);
+                    layoutArea.add(squareButton);
+                    buttons.add(squareButton);
+                }
+            }
+        } else {
+            System.out.println("schematic was null");
+        }
+    }
+
+    private void squareActionPerformed(ActionEvent evt) {
+        if (selected != null) {
+            // remove selected border
+            selected.setBorder(new LineBorder(Color.BLACK));
+        }
+        selected = (SquareButton) evt.getSource();
+        int x = selected.getX() / 37;
+        int z = selected.getY() / 37;
+        System.out.println(x + "," + z);
+        String[] split = selected.getToolTipText().split(":");
+        selected.setBorder(new LineBorder(Color.RED));
+        blockComboBox.setSelectedItem(split[0]);
+        dataComboBox.setSelectedItem(split[1]);
     }
 }

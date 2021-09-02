@@ -26,7 +26,6 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.Serial;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -34,15 +33,12 @@ import java.util.Locale;
 /**
  * @author eccentric_nz
  */
-public class Editor extends JPanel {
+public class Editor {
 
-    @Serial
-    private static final long serialVersionUID = 6012462642009590681L;
-    private final TardisSchematicViewer viewer;
     private final List<SquareButton> buttons;
     private SquareButton selected;
-    private JSONObject schematic;
-    private JPanel panel;
+
+    private JPanel editorPanel;
     private JButton closeButton;
     private JComboBox<String> blockComboBox;
     private JComboBox dataComboBox;
@@ -51,13 +47,12 @@ public class Editor extends JPanel {
     private JLabel dataLabel;
     private JInternalFrame layoutArea;
 
-    public Editor(TardisSchematicViewer viewer) {
-        this.viewer = viewer;
+    public Editor() {
         buttons = new ArrayList<>();
         closeButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                setVisible(false);
+                editorPanel.setVisible(false);
             }
         });
         closeButton.addActionListener(new ActionListener() {
@@ -69,18 +64,25 @@ public class Editor extends JPanel {
     }
 
     private void createUIComponents() {
-        panel = this;
         blockComboBox = new JComboBox<>();
         blockComboBox.setModel(new javax.swing.DefaultComboBoxModel<>(Block.strings()));
     }
 
-    public void loadLayer() {
+    public JPanel getPanel() {
+        return editorPanel;
+    }
+
+    public void setPanel(JPanel panel) {
+        this.editorPanel = panel;
+    }
+
+    public void loadLayer(TardisSchematicViewer viewer) {
         if (buttons.size() > 0) {
             buttons.forEach((button) -> layoutArea.remove(button));
             buttons.clear();
         }
         layoutArea.setLayout(null);
-        schematic = viewer.getSchematic();
+        JSONObject schematic = viewer.getSchematic();
         if (schematic != null) {
             JSONObject dimensions = (JSONObject) schematic.get("dimensions");
             int current = viewer.getHeight() - 1;
