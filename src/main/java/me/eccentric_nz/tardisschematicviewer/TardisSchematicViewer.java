@@ -175,8 +175,8 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                     for (int length = 0; length < this.length; length++) {
                         JSONObject column = (JSONObject) row.get(length);
                         String data = column.getString("data");
-                        String materialName = data.split(":")[1].split("\\[")[0].toUpperCase(Locale.ROOT);
-                        Block block = Block.valueOf(materialName);
+                        String blockName = data.split(":")[1].split("\\[")[0].toUpperCase(Locale.ROOT);
+                        Block block = Block.valueOf(blockName);
                         if (!notThese.contains(block)) {
                             gl.glPushMatrix();
 

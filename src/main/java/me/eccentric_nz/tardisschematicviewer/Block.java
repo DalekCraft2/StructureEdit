@@ -934,13 +934,13 @@ public enum Block {
     }
 
     static String[] strings() {
-        String[] materialNames = new String[values().length];
+        String[] blockNames = new String[values().length];
         int i = 0;
         for (Block block : values()) {
-            materialNames[i] = block.toString();
+            blockNames[i] = block.toString();
             i++;
         }
-        return materialNames;
+        return blockNames;
     }
 
     /**

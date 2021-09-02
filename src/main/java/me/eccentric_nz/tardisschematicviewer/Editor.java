@@ -45,8 +45,8 @@ public class Editor extends JPanel {
     private javax.swing.JComboBox<?> dataComboBox;
     private javax.swing.JLabel dataLabel;
     private javax.swing.JInternalFrame layoutArea;
-    private javax.swing.JLabel materialLabel;
-    private javax.swing.JComboBox<?> materialComboBox;
+    private javax.swing.JLabel blockLabel;
+    private javax.swing.JComboBox<?> blockComboBox;
     ActionListener actionListener = this::squareActionPerformed;
 
     /**
@@ -69,9 +69,9 @@ public class Editor extends JPanel {
 
         close = new javax.swing.JButton();
         layoutArea = new javax.swing.JInternalFrame();
-        materialLabel = new javax.swing.JLabel();
+        blockLabel = new javax.swing.JLabel();
         dataLabel = new javax.swing.JLabel();
-        materialComboBox = new javax.swing.JComboBox<>();
+        blockComboBox = new javax.swing.JComboBox<>();
         dataComboBox = new javax.swing.JComboBox<>();
 
         close.setText("Close");
@@ -92,18 +92,18 @@ public class Editor extends JPanel {
         layoutAreaLayout.setHorizontalGroup(layoutAreaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 598, Short.MAX_VALUE));
         layoutAreaLayout.setVerticalGroup(layoutAreaLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGap(0, 598, Short.MAX_VALUE));
 
-        materialLabel.setText("Material:");
+        blockLabel.setText("Material:");
 
         dataLabel.setText("Data:");
 
-        materialComboBox.setModel(new javax.swing.DefaultComboBoxModel(Material.strings()));
+        blockComboBox.setModel(new javax.swing.DefaultComboBoxModel(Block.strings()));
 
         dataComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[]{"0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15"}));
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         setLayout(layout);
-        layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addComponent(close)).addGroup(layout.createSequentialGroup().addGap(16, 16, 16).addComponent(layoutArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addGap(34, 34, 34).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(materialLabel).addComponent(dataLabel)).addGap(18, 18, 18).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false).addComponent(materialComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(dataComboBox, 0, 280, Short.MAX_VALUE)))).addContainerGap(22, Short.MAX_VALUE)));
-        layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap(19, Short.MAX_VALUE).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(layoutArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(materialLabel).addComponent(materialComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(dataLabel).addComponent(dataComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(close).addContainerGap()));
+        layout.setHorizontalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap().addComponent(close)).addGroup(layout.createSequentialGroup().addGap(16, 16, 16).addComponent(layoutArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addGap(34, 34, 34).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(blockLabel).addComponent(dataLabel)).addGap(18, 18, 18).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false).addComponent(blockComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE).addComponent(dataComboBox, 0, 280, Short.MAX_VALUE)))).addContainerGap(22, Short.MAX_VALUE)));
+        layout.setVerticalGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addGroup(layout.createSequentialGroup().addContainerGap(19, Short.MAX_VALUE).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING).addComponent(layoutArea, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE).addGroup(layout.createSequentialGroup().addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(blockLabel).addComponent(blockComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE).addComponent(dataLabel).addComponent(dataComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))).addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED).addComponent(close).addContainerGap()));
     }// </editor-fold>//GEN-END:initComponents
 
     private void closeActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_closeActionPerformed
@@ -132,10 +132,10 @@ public class Editor extends JPanel {
                 for (int j = 0; j < width; j++) {
                     JSONObject column = (JSONObject) row.get(j);
                     String data = column.getString("data");
-                    String materialName = data.split(":")[1].split("\\[")[0].toUpperCase(Locale.ROOT);
-                    Material material = Material.valueOf(materialName);
-                    SquareButton squareButton = new SquareButton(layoutWidth, material.getColor());
-                    squareButton.setText(materialName.substring(0, 1));
+                    String blockName = data.split(":")[1].split("\\[")[0].toUpperCase(Locale.ROOT);
+                    Block block = Block.valueOf(blockName);
+                    SquareButton squareButton = new SquareButton(layoutWidth, block.getColor());
+                    squareButton.setText(blockName.substring(0, 1));
                     squareButton.setPreferredSize(new Dimension(layoutWidth, layoutWidth));
                     squareButton.setBounds(i * layoutWidth, j * layoutWidth, layoutWidth, layoutWidth);
                     squareButton.setBorder(new LineBorder(Color.BLACK));
@@ -161,7 +161,7 @@ public class Editor extends JPanel {
         System.out.println(x + "," + z);
         String[] split = selected.getToolTipText().split(":");
         selected.setBorder(new LineBorder(Color.RED));
-        materialComboBox.setSelectedItem(split[0]);
+        blockComboBox.setSelectedItem(split[0]);
         dataComboBox.setSelectedItem(split[1]);
     }
     // End of variables declaration//GEN-END:variables
