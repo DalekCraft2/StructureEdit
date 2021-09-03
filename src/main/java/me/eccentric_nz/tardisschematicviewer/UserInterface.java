@@ -29,10 +29,7 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.*;
 import java.util.Locale;
 
@@ -72,6 +69,13 @@ public class UserInterface extends JPanel {
     public UserInterface(TardisSchematicViewer viewer) {
         lastDirectory = new File(".");
         $$$setupUI$$$();
+        gridPanel.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent e) {
+                if (schematic != null) {
+                    loadLayer();
+                }
+            }
+        });
         browseButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
@@ -86,21 +90,17 @@ public class UserInterface extends JPanel {
                     viewer.setPath(fileTextField.getText());
                     schematic = viewer.getSchematic();
                     currentLayer = 0;
+                    loadLayer();
                 } else {
                     System.err.println("No file selected!");
                 }
             }
         });
-        // TODO Figure out why the editor is always empty the first time it is opened.
         editButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (!editorPanel.isVisible()) {
-                    loadLayer();
-                    editorPanel.setVisible(true);
-                } else {
-                    editorPanel.setVisible(false);
-                }
+                editorPanel.setVisible(!editorPanel.isVisible());
+                loadLayer();
             }
         });
         saveButton.addMouseListener(new MouseAdapter() {
