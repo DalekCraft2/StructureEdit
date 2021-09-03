@@ -103,9 +103,6 @@ public class UserInterface extends JPanel {
                 }
             }
         });
-        editButton.addActionListener(e -> {
-            // TODO Finish this.
-        });
         saveButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
