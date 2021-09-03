@@ -126,6 +126,15 @@
                         </goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <tags>
+                        <tag>
+                            <name>noinspection</name>
+                            <placement>a</placement>
+                            <head>No inspection:</head>
+                        </tag>
+                    </tags>
+                </configuration>
             </plugin>
             <plugin>
                 <!-- Set main class -->
