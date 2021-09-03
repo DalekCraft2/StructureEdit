@@ -25,9 +25,11 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.*;
-import java.io.File;
-import java.io.Serial;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.*;
 import java.util.Locale;
 
 /**
@@ -37,7 +39,6 @@ public class UserInterface extends JPanel {
 
     @Serial
     private static final long serialVersionUID = -1098962567729971976L;
-    private final TardisSchematicViewer viewer;
     private File lastDirectory;
     private SquareButton selected;
     private int currentLayer;
@@ -62,7 +63,6 @@ public class UserInterface extends JPanel {
     private JLabel layerLabel;
 
     public UserInterface(TardisSchematicViewer viewer) {
-        this.viewer = viewer;
         lastDirectory = new File(".");
         browseButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -76,7 +76,8 @@ public class UserInterface extends JPanel {
                 String path = fileTextField.getText();
                 if (!path.isEmpty() && !path.equals("Select file")) {
                     viewer.setPath(fileTextField.getText());
-                    currentLayer = viewer.getHeight();
+                    schematic = viewer.getSchematic();
+                    currentLayer = 0;
                 }
             }
         });
@@ -84,8 +85,8 @@ public class UserInterface extends JPanel {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (!editorPanel.isVisible()) {
-                    loadLayer();
                     schematic = viewer.getSchematic();
+                    loadLayer();
                     editorPanel.setVisible(true);
                 } else {
                     editorPanel.setVisible(false);
@@ -98,7 +99,23 @@ public class UserInterface extends JPanel {
         saveButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                super.mouseReleased(e); // TODO Finish this.
+                viewer.setSaving(true);
+                String output = viewer.getPath();
+                String input = output.substring(0, output.lastIndexOf(".tschm")) + ".json";
+                File file = new File(input);
+                try {
+                    try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file), 16 * 1024)) {
+                        bufferedWriter.write(schematic.toString());
+                    }
+                    Gzip.zip(input, output);
+                    if (!file.delete()) {
+                        System.err.println("Could not delete temporary JSON file!");
+                    }
+                    System.out.println("Schematic saved successfully.");
+                } catch (IOException e1) {
+                    System.err.println("Error saving schematic: " + e1.getMessage());
+                }
+                viewer.setSaving(false);
             }
         });
         upButton.addMouseListener(new MouseAdapter() {
@@ -199,7 +216,6 @@ public class UserInterface extends JPanel {
         gridPanel.removeAll();
         gridPanel.setLayout(null);
         gridPanel.updateUI();
-        JSONObject schematic = viewer.getSchematic();
         if (schematic != null) {
             layerLabel.setText("Layer: " + currentLayer);
             JSONObject dimensions = (JSONObject) schematic.get("dimensions");
@@ -225,7 +241,7 @@ public class UserInterface extends JPanel {
                 }
             }
         } else {
-            System.out.println("schematic was null");
+            System.err.println("Schematic was null!");
         }
     }
 
@@ -237,7 +253,7 @@ public class UserInterface extends JPanel {
         selected = (SquareButton) e.getSource();
         int x = selected.getX() / 37;
         int z = selected.getY() / 37;
-        System.out.println(x + "," + z);
+        System.err.println(x + "," + z);
         String data = selected.getToolTipText();
         int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
         String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);

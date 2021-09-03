@@ -27,7 +27,6 @@ import org.json.JSONObject;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -48,7 +47,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     private static final float CUBE_TRANSLATION_FACTOR = 2.0f;
     private static float angleX = 45.0f; // rotational angle for x-axis in degree
     private static float angleY = 45.0f; // rotational angle for y-axis in degree
-    private final List<Block> notThese = Arrays.asList(Block.AIR, Block.SPONGE, Block.PISTON_HEAD);
+    private final List<Block> notThese = List.of(Block.SPONGE);
     private GLU glu; // for the GL Utility
     private float z = -60.0f; // z-location
     private int mouseX = FRAME_WIDTH / 2;
@@ -62,6 +61,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     private String path;
     private boolean pathSet = false;
     private boolean schematicParsed = false;
+    private boolean saving = false;
 
     /**
      * @param args the command line arguments
@@ -146,9 +146,9 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
 
     @Override
     public void display(GLAutoDrawable drawable) {
-        if (!schematicParsed) {
+        if (!schematicParsed && !saving) {
             if (pathSet) {
-                setSchematic(path);
+                setSchematicPath(path);
                 schematicParsed = true;
             }
         } else {
@@ -226,6 +226,8 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                                     break;
                                 }
                                 case WALL:
+                                    Fence.draw(gl, color, ONE_F, 0.5f, 1.9f, false);
+                                    break;
                                 case FENCE:
                                     Fence.draw(gl, color, ONE_F, 0.25f, 1.9f, false);
                                     break;
@@ -242,6 +244,8 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
                                     Cube.draw(gl, color, ONE_F, true);
                                     break;
                                 case SMALL:
+                                    Cube.draw(gl, color, 0.5f, false);
+                                    break;
                                 case STICK:
                                 case CUBE:
                                     Cube.draw(gl, color, ONE_F, false);
@@ -360,7 +364,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         return schematic;
     }
 
-    private void setSchematic(String path) {
+    private void setSchematicPath(String path) {
         // Use URL so that can read from JAR and disk file.
         // Filename relative to the project root.
         schematic = Gzip.unzip(path);
@@ -374,5 +378,13 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         rowAnglesY = new float[height];
         faceAnglesZ = new float[length];
         array = (JSONArray) schematic.get("input");
+    }
+
+    public boolean isSaving() {
+        return saving;
+    }
+
+    public void setSaving(boolean saving) {
+        this.saving = saving;
     }
 }

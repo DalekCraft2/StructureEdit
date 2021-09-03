@@ -46,6 +46,10 @@ public class ThinCube {
             }
         } else if (data.contains("rotation=")) {
             // TODO Sign rotation.
+            String rotationToEnd = data.substring(data.indexOf("rotation=") + "rotation".length());
+            int endIndex = rotationToEnd.contains(",") ? rotationToEnd.indexOf(',') : rotationToEnd.indexOf(']');
+            int rotationInt = Integer.parseInt(rotationToEnd.substring(0, endIndex));
+            angle = rotationInt * 22.5f;
         }
         gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
 

@@ -20,28 +20,27 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
 /**
  * @author eccentric_nz
  */
-public class Gzip {
+public final class Gzip {
+
+    private Gzip() {
+        throw new UnsupportedOperationException();
+    }
 
     public static void zip(String inString, String outString) {
-        try {
-            FileInputStream fileInputStream = new FileInputStream(inString);
-            FileOutputStream fileOutputStream = new FileOutputStream(outString);
-            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream);
+        try (FileInputStream fileInputStream = new FileInputStream(inString); FileOutputStream fileOutputStream = new FileOutputStream(outString); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream)) {
             byte[] buffer = new byte[1024 * 16];
             int len;
             while ((len = fileInputStream.read(buffer)) != -1) {
                 gzipOutputStream.write(buffer, 0, len);
             }
         } catch (IOException ioException) {
-            Logger.getLogger(TardisSchematicViewer.class.getName()).log(Level.SEVERE, ioException.getMessage());
+            System.err.println(ioException.getMessage());
         }
     }
 
@@ -60,7 +59,7 @@ public class Gzip {
             }
             s = stringWriter.toString();
         } catch (IOException e) {
-            Logger.getLogger(TardisSchematicViewer.class.getName()).log(Level.SEVERE, e.getMessage());
+            System.err.println(e.getMessage());
         } finally {
             try {
                 if (stringWriter != null) {
@@ -70,7 +69,7 @@ public class Gzip {
                     inputStreamReader.close();
                 }
             } catch (IOException e) {
-                Logger.getLogger(TardisSchematicViewer.class.getName()).log(Level.SEVERE, e.getMessage());
+                System.err.println(e.getMessage());
             }
         }
         return (s.startsWith("{")) ? new JSONObject(s) : null;

@@ -2,7 +2,11 @@ package me.eccentric_nz.tardisschematicviewer;
 
 import java.awt.*;
 
-public abstract class MapColor {
+public final class MapColor {
+
+    private MapColor() {
+        throw new UnsupportedOperationException();
+    }
 
     public static final Color TRANSPARENT = (new Color(0, 0, 0, 0));
     public static final Color GRASS = new Color(127, 178, 56);

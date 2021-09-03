@@ -65,15 +65,14 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-<!--        <dependency>-->
-<!--            &lt;!&ndash; Apache Commons Compress &ndash;&gt;-->
-<!--            <groupId>org.apache.commons</groupId>-->
-<!--            <artifactId>commons-compress</artifactId>-->
-<!--            <version>1.21</version>-->
-<!--            <scope>compile</scope>-->
-<!--            <optional>true</optional>-->
-<!--        </dependency>-->
-
+        <dependency>
+            <!-- JetBrains uiDesigner -->
+            <groupId>com.intellij</groupId>
+            <artifactId>forms_rt</artifactId>
+            <version>7.0.3</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>
