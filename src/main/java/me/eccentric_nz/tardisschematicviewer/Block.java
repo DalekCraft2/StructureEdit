@@ -751,7 +751,7 @@ public enum Block {
     SMITHING_TABLE(BlockShape.CUBE, MapColor.WOOD),
     SMOKER(BlockShape.CUBE, MapColor.STONE),
     SMOOTH_BASALT(BlockShape.CUBE, MapColor.COLOR_BLACK),
-    SMOOTH_QUARTZ_BLOCK(BlockShape.CUBE, MapColor.QUARTZ),
+    SMOOTH_QUARTZ(BlockShape.CUBE, MapColor.QUARTZ),
     SMOOTH_QUARTZ_SLAB(BlockShape.SLAB, MapColor.QUARTZ),
     SMOOTH_QUARTZ_STAIRS(BlockShape.STAIR, MapColor.QUARTZ),
     SMOOTH_RED_SANDSTONE(BlockShape.CUBE, MapColor.COLOR_ORANGE),
