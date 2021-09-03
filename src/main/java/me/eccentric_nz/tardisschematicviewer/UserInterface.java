@@ -41,25 +41,27 @@ public class UserInterface extends JPanel {
     @Serial
     private static final long serialVersionUID = -1098962567729971976L;
     private final TardisSchematicViewer viewer;
-    private final List<SquareButton> buttons = new ArrayList<>();
     private File lastDirectory;
     private SquareButton selected;
+    private int currentLayer;
 
     private JButton browseButton;
     private JButton loadButton;
     private JTextField fileTextField;
-    private JButton editLayerButton;
+    private JButton editButton;
     private JButton saveButton;
     private JPanel panel;
     private JLabel schematicLabel;
     private JPanel editorPanel;
-    private JButton closeButton;
     private JPanel gridPanel;
     private JLabel blockLabel;
     private JComboBox<String> blockComboBox;
     private JLabel dataLabel;
-    private JComboBox<String> dataComboBox;
+    private JTextField dataTextField;
     ActionListener actionListener = this::squareActionPerformed;
+    private JButton upButton;
+    private JButton downButton;
+    private JLabel layerLabel;
 
     public UserInterface(TardisSchematicViewer viewer) {
         this.viewer = viewer;
@@ -76,14 +78,25 @@ public class UserInterface extends JPanel {
                 String path = fileTextField.getText();
                 if (!path.isEmpty() && !path.equals("Select file")) {
                     viewer.setPath(fileTextField.getText());
+                    currentLayer = viewer.getHeight();
                 }
             }
         });
-        editLayerButton.addMouseListener(new MouseAdapter() {
+        editButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                loadLayer();
-                editorPanel.setVisible(true);
+                if (!editorPanel.isVisible()) {
+                    loadLayer();
+                    editorPanel.setVisible(true);
+                } else {
+                    editorPanel.setVisible(false);
+                }
+            }
+        });
+        editButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // TODO Finish this.
             }
         });
         saveButton.addMouseListener(new MouseAdapter() {
@@ -92,16 +105,22 @@ public class UserInterface extends JPanel {
                 super.mouseReleased(e); // TODO Finish this.
             }
         });
-        closeButton.addMouseListener(new MouseAdapter() {
+        upButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                editorPanel.setVisible(false);
+                if (currentLayer < viewer.getHeight() - 1) {
+                    currentLayer++;
+                    loadLayer();
+                }
             }
         });
-        closeButton.addActionListener(new ActionListener() {
+        downButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void actionPerformed(ActionEvent e) {
-                // TODO Finish this.
+            public void mouseReleased(MouseEvent e) {
+                if (currentLayer > 0) {
+                    currentLayer--;
+                    loadLayer();
+                }
             }
         });
     }
@@ -132,34 +151,32 @@ public class UserInterface extends JPanel {
     }
 
     public void loadLayer() {
-        if (buttons.size() > 0) {
-            buttons.forEach((button) -> gridPanel.remove(button));
-            buttons.clear();
-        }
+        gridPanel.removeAll();
         gridPanel.setLayout(null);
+        gridPanel.updateUI();
         JSONObject schematic = viewer.getSchematic();
         if (schematic != null) {
+            layerLabel.setText("Layer: " + currentLayer);
             JSONObject dimensions = (JSONObject) schematic.get("dimensions");
-            int current = viewer.getHeight() - 1;
-            JSONArray level = ((JSONArray) schematic.get("input")).getJSONArray(current);
+            JSONArray level = ((JSONArray) schematic.get("input")).getJSONArray(currentLayer);
             int width = dimensions.getInt("width");
-            int gridWidth = gridPanel.getWidth() / width;
+            int buttonSideLength = gridPanel.getWidth() / width;
             for (int i = 0; i < width; i++) {
                 JSONArray row = (JSONArray) level.get(i);
                 for (int j = 0; j < width; j++) {
                     JSONObject column = (JSONObject) row.get(j);
                     String data = column.getString("data");
-                    String blockName = data.split(":")[1].split("\\[")[0].toUpperCase(Locale.ROOT);
+                    int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
+                    String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
                     Block block = Block.valueOf(blockName);
-                    SquareButton squareButton = new SquareButton(gridWidth, block.getColor());
+                    SquareButton squareButton = new SquareButton(buttonSideLength, block.getColor());
                     squareButton.setText(blockName.substring(0, 1));
-                    squareButton.setPreferredSize(new Dimension(gridWidth, gridWidth));
-                    squareButton.setBounds(i * gridWidth, j * gridWidth, gridWidth, gridWidth);
+                    squareButton.setPreferredSize(new Dimension(buttonSideLength, buttonSideLength));
+                    squareButton.setBounds(i * buttonSideLength, j * buttonSideLength, buttonSideLength, buttonSideLength);
                     squareButton.setBorder(new LineBorder(Color.BLACK));
                     squareButton.setToolTipText(data);
                     squareButton.addActionListener(actionListener);
                     gridPanel.add(squareButton);
-                    buttons.add(squareButton);
                 }
             }
         } else {
@@ -176,9 +193,12 @@ public class UserInterface extends JPanel {
         int x = selected.getX() / 37;
         int z = selected.getY() / 37;
         System.out.println(x + "," + z);
-        String[] split = selected.getToolTipText().split(":");
+        String data = selected.getToolTipText();
+        int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
+        String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
+        String blockData = data.contains("[") ? data.substring(data.indexOf('[')) : "";
         selected.setBorder(new LineBorder(Color.RED));
-        blockComboBox.setSelectedItem(split[0]);
-        dataComboBox.setSelectedItem(split[1]);
+        blockComboBox.setSelectedItem(blockName);
+        dataTextField.setText(blockData);
     }
 }
