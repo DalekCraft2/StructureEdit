@@ -61,7 +61,6 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     private String path;
     private boolean pathSet = false;
     private boolean schematicParsed = false;
-    private boolean saving = false;
 
     /**
      * @param args the command line arguments
@@ -146,9 +145,9 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
 
     @Override
     public void display(GLAutoDrawable drawable) {
-        if (!schematicParsed && !saving) {
+        if (!schematicParsed) {
             if (pathSet) {
-                setSchematicPath(path);
+                parseSchematic(path);
                 schematicParsed = true;
             }
         } else {
@@ -358,13 +357,18 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         this.path = path;
         schematicParsed = false;
         pathSet = true;
+        parseSchematic(path);
     }
 
     public JSONObject getSchematic() {
         return schematic;
     }
 
-    private void setSchematicPath(String path) {
+    public void setSchematic(JSONObject schematic) {
+        this.schematic = schematic;
+    }
+
+    private void parseSchematic(String path) {
         // Use URL so that can read from JAR and disk file.
         // Filename relative to the project root.
         schematic = Gzip.unzip(path);
@@ -378,13 +382,5 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         rowAnglesY = new float[height];
         faceAnglesZ = new float[length];
         array = (JSONArray) schematic.get("input");
-    }
-
-    public boolean isSaving() {
-        return saving;
-    }
-
-    public void setSaving(boolean saving) {
-        this.saving = saving;
     }
 }

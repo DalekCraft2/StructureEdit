@@ -83,14 +83,16 @@ public class UserInterface extends JPanel {
                     viewer.setPath(fileTextField.getText());
                     schematic = viewer.getSchematic();
                     currentLayer = 0;
+                } else {
+                    System.err.println("No file selected!");
                 }
             }
         });
+        // TODO Figure out why the editor is always empty the first time it is opened.
         editButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (!editorPanel.isVisible()) {
-                    schematic = viewer.getSchematic();
                     loadLayer();
                     editorPanel.setVisible(true);
                 } else {
@@ -104,23 +106,26 @@ public class UserInterface extends JPanel {
         saveButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                viewer.setSaving(true);
-                String output = viewer.getPath();
-                String input = output.substring(0, output.lastIndexOf(".tschm")) + ".json";
-                File file = new File(input);
-                try {
-                    try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file), 16 * 1024)) {
-                        bufferedWriter.write(schematic.toString());
+                if (schematic != null) {
+                    String output = viewer.getPath();
+                    String input = output.substring(0, output.lastIndexOf(".tschm")) + ".json";
+                    File file = new File(input);
+                    try {
+                        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file), 16 * 1024)) {
+                            bufferedWriter.write(schematic.toString());
+                        }
+                        Gzip.zip(input, output);
+                        System.out.println("Schematic saved successfully.");
+                    } catch (IOException e1) {
+                        System.err.println("Error saving schematic: " + e1.getMessage());
+                    } finally {
+                        if (!file.delete()) {
+                            System.err.println("Could not delete temporary JSON file!");
+                        }
                     }
-                    Gzip.zip(input, output);
-                    if (!file.delete()) {
-                        System.err.println("Could not delete temporary JSON file!");
-                    }
-                    System.out.println("Schematic saved successfully.");
-                } catch (IOException e1) {
-                    System.err.println("Error saving schematic: " + e1.getMessage());
+                } else {
+                    System.err.println("Schematic was null!");
                 }
-                viewer.setSaving(false);
             }
         });
         upButton.addMouseListener(new MouseAdapter() {
@@ -155,7 +160,10 @@ public class UserInterface extends JPanel {
                 level.put(selected.getXCoord(), row);
                 input.put(selected.getYCoord(), level);
                 schematic.put("input", input);
+                viewer.setSchematic(schematic);
                 loadLayer();
+            } else {
+                System.err.println("Schematic was null!");
             }
         });
         dataTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -184,7 +192,10 @@ public class UserInterface extends JPanel {
                     level.put(selected.getXCoord(), row);
                     input.put(selected.getYCoord(), level);
                     schematic.put("input", input);
+                    viewer.setSchematic(schematic);
                     loadLayer();
+                } else {
+                    System.err.println("Schematic was null!");
                 }
             }
 

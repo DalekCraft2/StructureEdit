@@ -45,13 +45,8 @@ public final class Gzip {
     }
 
     public static JSONObject unzip(String inString) {
-        InputStreamReader inputStreamReader = null;
-        StringWriter stringWriter = null;
         String s = "";
-        try {
-            GZIPInputStream gzipInputStream = new GZIPInputStream(new FileInputStream(inString));
-            inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8);
-            stringWriter = new StringWriter();
+        try (GZIPInputStream gzipInputStream = new GZIPInputStream(new FileInputStream(inString)); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
             int len;
             while ((len = inputStreamReader.read(buffer)) > 0) {
@@ -60,18 +55,7 @@ public final class Gzip {
             s = stringWriter.toString();
         } catch (IOException e) {
             System.err.println(e.getMessage());
-        } finally {
-            try {
-                if (stringWriter != null) {
-                    stringWriter.close();
-                }
-                if (inputStreamReader != null) {
-                    inputStreamReader.close();
-                }
-            } catch (IOException e) {
-                System.err.println(e.getMessage());
-            }
         }
-        return (s.startsWith("{")) ? new JSONObject(s) : null;
+        return new JSONObject(s);
     }
 }
