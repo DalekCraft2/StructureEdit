@@ -28,16 +28,17 @@ import java.util.zip.GZIPOutputStream;
 /**
  * @author eccentric_nz
  */
-public class GZip {
+public class Gzip {
 
     public static void zip(String inString, String outString) {
         try {
-            try (FileInputStream fileInputStream = new FileInputStream(inString); FileOutputStream fileOutputStream = new FileOutputStream(outString); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream)) {
-                byte[] buffer = new byte[1024 * 16];
-                int len;
-                while ((len = fileInputStream.read(buffer)) != -1) {
-                    gzipOutputStream.write(buffer, 0, len);
-                }
+            FileInputStream fileInputStream = new FileInputStream(inString);
+            FileOutputStream fileOutputStream = new FileOutputStream(outString);
+            GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream);
+            byte[] buffer = new byte[1024 * 16];
+            int len;
+            while ((len = fileInputStream.read(buffer)) != -1) {
+                gzipOutputStream.write(buffer, 0, len);
             }
         } catch (IOException ioException) {
             Logger.getLogger(TardisSchematicViewer.class.getName()).log(Level.SEVERE, ioException.getMessage());

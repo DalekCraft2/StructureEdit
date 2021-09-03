@@ -29,15 +29,31 @@ public final class SquareButton extends JButton {
     private static final long serialVersionUID = 7623333770238989633L;
 
     private final int size;
+    private final int xCoord, yCoord, zCoord;
 
-    public SquareButton(int size, Color color) {
+    public SquareButton(int size, Color color, int xCoord, int yCoord, int zCoord) {
         this.size = size;
+        this.xCoord = xCoord;
+        this.yCoord = yCoord;
+        this.zCoord = zCoord;
         setPreferredSize(getPreferredSize());
         setSize(getPreferredSize());
         if (color != null) {
             setBackground(color);
         }
         setOpaque(true);
+    }
+
+    public int getXCoord() {
+        return xCoord;
+    }
+
+    public int getYCoord() {
+        return yCoord;
+    }
+
+    public int getZCoord() {
+        return zCoord;
     }
 
     @Override

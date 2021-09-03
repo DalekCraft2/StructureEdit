@@ -21,16 +21,13 @@ import org.json.JSONObject;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.Serial;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 /**
@@ -44,6 +41,7 @@ public class UserInterface extends JPanel {
     private File lastDirectory;
     private SquareButton selected;
     private int currentLayer;
+    private JSONObject schematic;
 
     private JButton browseButton;
     private JButton loadButton;
@@ -87,17 +85,15 @@ public class UserInterface extends JPanel {
             public void mouseReleased(MouseEvent e) {
                 if (!editorPanel.isVisible()) {
                     loadLayer();
+                    schematic = viewer.getSchematic();
                     editorPanel.setVisible(true);
                 } else {
                     editorPanel.setVisible(false);
                 }
             }
         });
-        editButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // TODO Finish this.
-            }
+        editButton.addActionListener(e -> {
+            // TODO Finish this.
         });
         saveButton.addMouseListener(new MouseAdapter() {
             @Override
@@ -122,6 +118,55 @@ public class UserInterface extends JPanel {
                     loadLayer();
                 }
             }
+        });
+        blockComboBox.addItemListener(e -> {
+            if (selected != null) {
+                JSONArray input = (JSONArray) schematic.get("input");
+                JSONArray level = input.getJSONArray(selected.getYCoord());
+                JSONArray row = (JSONArray) level.get(selected.getXCoord());
+                JSONObject column = (JSONObject) row.get(selected.getZCoord());
+                String data = column.getString("data");
+                String blockData = data.contains("[") ? data.substring(data.indexOf('[')) : "";
+                data = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase() + blockData;
+                column.put("data", data);
+                row.put(selected.getZCoord(), column);
+                level.put(selected.getXCoord(), row);
+                input.put(selected.getYCoord(), level);
+                schematic.put("input", input);
+                loadLayer();
+            }
+        });
+        dataTextField.getDocument().addDocumentListener(new DocumentListener() {
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                if (selected != null) {
+                    JSONArray input = (JSONArray) schematic.get("input");
+                    JSONArray level = input.getJSONArray(selected.getYCoord());
+                    JSONArray row = (JSONArray) level.get(selected.getXCoord());
+                    JSONObject column = (JSONObject) row.get(selected.getZCoord());
+                    String data = column.getString("data");
+                    int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
+                    String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
+                    data = blockName + dataTextField.getText();
+                    column.put("data", data);
+                    row.put(selected.getZCoord(), column);
+                    level.put(selected.getXCoord(), row);
+                    input.put(selected.getYCoord(), level);
+                    schematic.put("input", input);
+                    loadLayer();
+                }
+            }
+
+
         });
     }
 
@@ -169,7 +214,7 @@ public class UserInterface extends JPanel {
                     int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
                     String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
                     Block block = Block.valueOf(blockName);
-                    SquareButton squareButton = new SquareButton(buttonSideLength, block.getColor());
+                    SquareButton squareButton = new SquareButton(buttonSideLength, block.getColor(), i, currentLayer, j);
                     squareButton.setText(blockName.substring(0, 1));
                     squareButton.setPreferredSize(new Dimension(buttonSideLength, buttonSideLength));
                     squareButton.setBounds(i * buttonSideLength, j * buttonSideLength, buttonSideLength, buttonSideLength);

@@ -363,7 +363,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     private void setSchematic(String path) {
         // Use URL so that can read from JAR and disk file.
         // Filename relative to the project root.
-        schematic = GZip.unzip(path);
+        schematic = Gzip.unzip(path);
         // get dimensions
         JSONObject dimensions = (JSONObject) schematic.get("dimensions");
         height = dimensions.getInt("height");
