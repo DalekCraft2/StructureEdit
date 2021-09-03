@@ -8,7 +8,7 @@ public final class MapColor {
         throw new UnsupportedOperationException();
     }
 
-    public static final Color TRANSPARENT = (new Color(0, 0, 0, 0));
+    public static final Color TRANSPARENT = (new Color(255, 255, 255));
     public static final Color GRASS = new Color(127, 178, 56);
     public static final Color SAND = new Color(247, 233, 163);
     public static final Color WOOL = new Color(199, 199, 199);

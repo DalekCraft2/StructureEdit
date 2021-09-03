@@ -929,7 +929,7 @@ public enum Block {
     }
 
     Block(BlockShape blockShape) {
-        color = Color.BLACK;
+        color = MapColor.TRANSPARENT;
         this.blockShape = blockShape;
     }
 

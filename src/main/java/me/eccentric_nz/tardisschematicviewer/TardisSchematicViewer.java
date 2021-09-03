@@ -113,12 +113,12 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
 
     @Override
     public void init(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2();      // get the OpenGL graphics context
-        glu = new GLU();                         // get GL Utilities
+        GL2 gl = drawable.getGL().getGL2(); // get the OpenGL graphics context
+        glu = new GLU(); // get GL Utilities
         gl.glClearColor(0.8f, 0.8f, 0.8f, 0.0f); // set background (grey) color
-        gl.glClearDepth(1.0f);      // set clear depth value to farthest
+        gl.glClearDepth(1.0f); // set clear depth value to farthest
         gl.glEnable(GL_DEPTH_TEST); // enables depth testing
-        gl.glDepthFunc(GL_LEQUAL);  // the type of depth test to do
+        gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
         gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
         gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
         drawable.getGL().setSwapInterval(1);
@@ -135,7 +135,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         gl.glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuseValue, 0);
         gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
         gl.glEnable(GL_LIGHTING); // enable lighting
-        gl.glEnable(GL_LIGHT1);    // Enable Light-1
+        gl.glEnable(GL_LIGHT1); // Enable Light-1
         gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
     }
 
@@ -147,14 +147,14 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
     public void display(GLAutoDrawable drawable) {
         if (!schematicParsed) {
             if (pathSet) {
-                parseSchematic(path);
+                setSchematic(path);
                 schematicParsed = true;
             }
         } else {
             GL2 gl = drawable.getGL().getGL2();
             gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            gl.glLoadIdentity();  // reset the model-view matrix
-            gl.glTranslatef(0.0f, 0.0f, z);         // translate into the screen
+            gl.glLoadIdentity(); // reset the model-view matrix
+            gl.glTranslatef(0.0f, 0.0f, z); // translate into the screen
             gl.glRotatef(angleX, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
             gl.glRotatef(angleY, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
             // draw a cube
@@ -262,9 +262,9 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
 
     @Override
     public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-        GL2 gl = drawable.getGL().getGL2();  // get the OpenGL 2 graphics context
+        GL2 gl = drawable.getGL().getGL2(); // get the OpenGL 2 graphics context
         if (height == 0) {
-            height = 1;   // prevent divide by zero
+            height = 1; // prevent divide by zero
         }
         float aspect = (float) width / height;
         // Set the view port (display area) to cover the entire window
@@ -357,22 +357,32 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
         this.path = path;
         schematicParsed = false;
         pathSet = true;
-        parseSchematic(path);
+        setSchematic(path);
     }
 
     public JSONObject getSchematic() {
         return schematic;
     }
 
-    public void setSchematic(JSONObject schematic) {
-        this.schematic = schematic;
-    }
-
-    private void parseSchematic(String path) {
+    public void setSchematic(String path) {
         // Use URL so that can read from JAR and disk file.
         // Filename relative to the project root.
         schematic = Gzip.unzip(path);
         // get dimensions
+        JSONObject dimensions = (JSONObject) schematic.get("dimensions");
+        height = dimensions.getInt("height");
+        max = height;
+        width = dimensions.getInt("width");
+        length = dimensions.getInt("length");
+        columnAnglesX = new float[width];
+        rowAnglesY = new float[height];
+        faceAnglesZ = new float[length];
+        array = (JSONArray) schematic.get("input");
+    }
+
+    public void setSchematic(JSONObject schematic) {
+        // get dimensions
+        this.schematic = schematic;
         JSONObject dimensions = (JSONObject) schematic.get("dimensions");
         height = dimensions.getInt("height");
         max = height;
