@@ -45,7 +45,6 @@ public class ThinCube {
                 angle = -90.0f;
             }
         } else if (data.contains("rotation=")) {
-            // TODO Sign rotation.
             String rotationToEnd = data.substring(data.indexOf("rotation=") + "rotation".length() + 1);
             int endIndex = rotationToEnd.contains(",") ? rotationToEnd.indexOf(',') : rotationToEnd.indexOf(']');
             int rotationInt = Integer.parseInt(rotationToEnd.substring(0, endIndex));
