@@ -66,7 +66,7 @@ public class UserInterface extends JPanel {
     private JLabel blockPositionLabel;
     private JTextField layerTextField;
 
-    public UserInterface(TardisSchematicViewer viewer) {
+    public UserInterface(SchematicRenderer renderer) {
         lastDirectory = new File(".");
         $$$setupUI$$$();
         gridPanel.addComponentListener(new ComponentAdapter() {
@@ -79,7 +79,7 @@ public class UserInterface extends JPanel {
         browseButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                choose(fileTextField, "TARDIS Schematic", "tschm");
+                choose(fileTextField, "TARDIS schematic file", "tschm");
             }
         });
         loadButton.addMouseListener(new MouseAdapter() {
@@ -87,8 +87,8 @@ public class UserInterface extends JPanel {
             public void mouseReleased(MouseEvent e) {
                 String path = fileTextField.getText();
                 if (!path.isEmpty() && !path.equals("Select file")) {
-                    viewer.setPath(fileTextField.getText());
-                    schematic = viewer.getSchematic();
+                    renderer.setPath(fileTextField.getText());
+                    schematic = renderer.getSchematic();
                     currentLayer = 0;
                     loadLayer();
                 } else {
@@ -107,7 +107,7 @@ public class UserInterface extends JPanel {
             @Override
             public void mouseReleased(MouseEvent e) {
                 if (schematic != null) {
-                    String output = viewer.getPath();
+                    String output = renderer.getPath();
                     String input = output.substring(0, output.lastIndexOf(".tschm")) + ".json";
                     File file = new File(input);
                     try {
@@ -115,7 +115,7 @@ public class UserInterface extends JPanel {
                             bufferedWriter.write(schematic.toString());
                         }
                         Gzip.zip(input, output);
-                        System.out.println("Schematic saved successfully.");
+                        System.out.println("Schematic saved to \"" + output + "\" successfully.");
                     } catch (IOException e1) {
                         System.err.println("Error saving schematic: " + e1.getMessage());
                     } finally {
@@ -131,7 +131,7 @@ public class UserInterface extends JPanel {
         plusButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseReleased(MouseEvent e) {
-                if (currentLayer < viewer.getHeight() - 1) {
+                if (currentLayer < renderer.getHeight() - 1) {
                     currentLayer++;
                     loadLayer();
                 }
@@ -160,7 +160,7 @@ public class UserInterface extends JPanel {
                 level.put(selected.getXCoord(), row);
                 input.put(selected.getYCoord(), level);
                 schematic.put("input", input);
-                viewer.setSchematic(schematic);
+                renderer.setSchematic(schematic);
                 loadLayer();
             } else {
                 System.err.println("Schematic was null!");
@@ -192,7 +192,7 @@ public class UserInterface extends JPanel {
                     level.put(selected.getXCoord(), row);
                     input.put(selected.getYCoord(), level);
                     schematic.put("input", input);
-                    viewer.setSchematic(schematic);
+                    renderer.setSchematic(schematic);
                     loadLayer();
                 } else {
                     System.err.println("Schematic was null!");
