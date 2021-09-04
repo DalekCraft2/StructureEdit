@@ -24,9 +24,12 @@ import com.jogamp.opengl.util.FPSAnimator;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 
@@ -77,6 +80,11 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
             userInterface.setSize(1024, 85);
             frame.getContentPane().add(userInterface, BorderLayout.PAGE_START);
             frame.setTitle("TARDIS Schematic Viewer");
+            try {
+                frame.setIconImage(ImageIO.read(TardisSchematicViewer.class.getClassLoader().getResourceAsStream("icon.png")));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
             frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
             frame.getContentPane().add(canvas, BorderLayout.CENTER);
             frame.setVisible(true);
