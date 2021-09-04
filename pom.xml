@@ -76,7 +76,7 @@
     </dependencies>
 
     <build>
-        <finalName>${project.name}-${project.version}</finalName>
+        <finalName>${project.name}</finalName>
         <defaultGoal>clean package</defaultGoal>
         <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
         <resources>
