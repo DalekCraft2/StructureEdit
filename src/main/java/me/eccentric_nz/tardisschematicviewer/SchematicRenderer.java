@@ -25,10 +25,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.util.List;
 import java.util.Locale;
 
@@ -41,7 +38,6 @@ import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
  */
 public class SchematicRenderer implements GLEventListener, KeyListener, MouseMotionListener {
 
-    private static final int CAMERA_ROTATE_STEP_DEGREES = 5;
     private static final float ZERO_F = 0.0f;
     private static final float ONE_F = 1.0f;
     private static final float CUBE_TRANSLATION_FACTOR = 2.0f;
@@ -58,6 +54,14 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
      * The GL Utility.
      */
     private GLU glu;
+    /**
+     * X location.
+     */
+    private float x = 0.0f;
+    /**
+     * Y location.
+     */
+    private float y = 0.0f;
     /**
      * Z location.
      */
@@ -117,7 +121,7 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
             GL2 gl = drawable.getGL().getGL2();
             gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             gl.glLoadIdentity(); // reset the model-view matrix
-            gl.glTranslatef(0.0f, 0.0f, z); // translate into the screen
+            gl.glTranslatef(x, y, z); // translate into the screen
             gl.glRotatef(angleX, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
             gl.glRotatef(angleY, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
             // draw a cube
@@ -233,9 +237,9 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
         // Set the view port (display area) to cover the entire window
         gl.glViewport(0, 0, width, height);
         // Setup perspective projection, with aspect ratio matches viewport
-        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION);  // choose projection matrix
-        gl.glLoadIdentity();             // reset projection matrix
-        glu.gluPerspective(45.0, aspect, 0.1, 100.0); // fovy, aspect, zNear, zFar
+        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION); // choose projection matrix
+        gl.glLoadIdentity(); // reset projection matrix
+        glu.gluPerspective(45.0, aspect, 0.1, 200.0); // fovy, aspect, zNear, zFar
         // Enable the model-view transform
         gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
         gl.glLoadIdentity(); // reset
@@ -249,6 +253,12 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
         switch (keyCode) {
+            case KeyEvent.VK_W -> z++;
+            case KeyEvent.VK_S -> z--;
+            case KeyEvent.VK_A -> x++;
+            case KeyEvent.VK_D -> x--;
+            case KeyEvent.VK_SPACE -> y++;
+            case KeyEvent.VK_SHIFT -> y--;
             case KeyEvent.VK_UP -> z++;
             case KeyEvent.VK_DOWN -> z--;
             case KeyEvent.VK_LEFT -> {
@@ -273,16 +283,18 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
     @Override
     public void mouseDragged(MouseEvent e) {
         // change the camera angle
-        final int buffer = 2;
-        if (e.getX() < mouseX - buffer) {
-            angleY -= CAMERA_ROTATE_STEP_DEGREES;
-        } else if (e.getX() > mouseX + buffer) {
-            angleY += CAMERA_ROTATE_STEP_DEGREES;
+        final int buffer = 0;
+        if (e.getX() < mouseX - buffer || e.getX() > mouseX + buffer) {
+            angleY += e.getX() - mouseX;
         }
-        if (e.getY() < mouseY - buffer) {
-            angleX -= CAMERA_ROTATE_STEP_DEGREES;
-        } else if (e.getY() > mouseY + buffer) {
-            angleX += CAMERA_ROTATE_STEP_DEGREES;
+        if (angleX + e.getY() - mouseY > 90) {
+            angleX = 90;
+        } else if (angleX + e.getY() - mouseY < -90) {
+            angleX = -90;
+        } else {
+            if (e.getY() < mouseY - buffer || e.getY() > mouseY + buffer) {
+                angleX += e.getY() - mouseY;
+            }
         }
         mouseX = e.getX();
         mouseY = e.getY();
@@ -290,6 +302,24 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
 
     @Override
     public void mouseMoved(MouseEvent e) {
+        mouseX = e.getX();
+        mouseY = e.getY();
+    }
+
+    public float getX() {
+        return x;
+    }
+
+    public void setX(float x) {
+        this.x = x;
+    }
+
+    public float getY() {
+        return y;
+    }
+
+    public void setY(float y) {
+        this.y = y;
     }
 
     public float getZ() {
@@ -344,8 +374,8 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
     }
 
     public void setSchematic(JSONObject schematic) {
-        // get dimensions
         this.schematic = schematic;
+        // get dimensions
         JSONObject dimensions = (JSONObject) schematic.get("dimensions");
         height = dimensions.getInt("height");
         max = height;
