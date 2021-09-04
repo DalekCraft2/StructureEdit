@@ -29,7 +29,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.IOException;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -76,7 +76,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
             canvas.setBackground(Color.GRAY);
             JFrame frame = new JFrame();
             TardisSchematicViewer viewer = new TardisSchematicViewer();
-            JPanel userInterface = new UserInterface(viewer);
+            UserInterface userInterface = new UserInterface(viewer);
             userInterface.setSize(1024, 85);
             frame.getContentPane().add(userInterface, BorderLayout.PAGE_START);
             frame.setTitle("TARDIS Schematic Viewer");
@@ -116,6 +116,18 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
             canvas.requestFocus();
             canvas.setVisible(true);
             animator.start();
+
+            ArrayList<String> argList = new ArrayList<>(List.of(args));
+            if (argList.contains("-path")) {
+                System.out.println("1");
+                if (argList.size() > argList.indexOf("-path") + 1) {
+                    System.out.println("2");
+                    viewer.setPath(argList.get(argList.indexOf("-path") + 1));
+                    userInterface.setSchematic(viewer.schematic);
+                    userInterface.setCurrentLayer(0);
+                    userInterface.loadLayer();
+                }
+            }
         });
     }
 
