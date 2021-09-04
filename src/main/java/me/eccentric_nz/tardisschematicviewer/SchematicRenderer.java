@@ -45,11 +45,23 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
     private static final float ZERO_F = 0.0f;
     private static final float ONE_F = 1.0f;
     private static final float CUBE_TRANSLATION_FACTOR = 2.0f;
-    private static float angleX = 45.0f; // rotational angle for x-axis in degree
-    private static float angleY = 45.0f; // rotational angle for y-axis in degree
+    /**
+     * Rotational angle for x-axis in degrees.
+     **/
+    private static float angleX = 45.0f;
+    /**
+     * Rotational angle for y-axis in degrees.
+     **/
+    private static float angleY = 45.0f;
     private final List<Block> notThese = List.of();
-    private GLU glu; // for the GL Utility
-    private float z = -60.0f; // z-location
+    /**
+     * The GL Utility.
+     */
+    private GLU glu;
+    /**
+     * Z location.
+     */
+    private float z = -60.0f;
     private int mouseX = TardisSchematicViewer.FRAME_WIDTH / 2;
     private int mouseY = TardisSchematicViewer.FRAME_HEIGHT / 2;
     private int height, width, length, max;
