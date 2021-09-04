@@ -119,9 +119,7 @@ public class TardisSchematicViewer implements GLEventListener, KeyListener, Mous
 
             ArrayList<String> argList = new ArrayList<>(List.of(args));
             if (argList.contains("-path")) {
-                System.out.println("1");
                 if (argList.size() > argList.indexOf("-path") + 1) {
-                    System.out.println("2");
                     viewer.setPath(argList.get(argList.indexOf("-path") + 1));
                     userInterface.setSchematic(viewer.schematic);
                     userInterface.setCurrentLayer(0);
