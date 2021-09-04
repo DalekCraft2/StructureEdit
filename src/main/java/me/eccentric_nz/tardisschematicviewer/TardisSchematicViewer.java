@@ -43,7 +43,7 @@ import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
 public class TardisSchematicViewer implements GLEventListener, KeyListener, MouseMotionListener {
 
     private static final int FRAME_WIDTH = 1024;
-    private static final int FRAME_HEIGHT = 512;
+    private static final int FRAME_HEIGHT = 600;
     private static final int CAMERA_ROTATE_STEP_DEGREES = 5;
     private static final float ZERO_F = 0.0f;
     private static final float ONE_F = 1.0f;
