@@ -249,7 +249,7 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
     public void keyTyped(KeyEvent e) {
     }
 
-    // TODO Find out why this does not work if anything is loaded via the load button, but not via the command line.
+    // TODO Find out why this does not work after any UI button is pressed.
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
