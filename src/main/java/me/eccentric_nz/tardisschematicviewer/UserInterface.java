@@ -164,7 +164,6 @@ public class UserInterface extends JPanel {
                 System.err.println("Schematic was null!");
             }
         });
-        // TODO Make this focusable without screwing up the schematic renderer controls.
         dataTextField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
@@ -310,7 +309,6 @@ public class UserInterface extends JPanel {
         loadButton.setText("Load");
         panel.add(loadButton, new GridConstraints(1, 5, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         fileTextField = new JTextField();
-        fileTextField.setFocusable(false);
         panel.add(fileTextField, new GridConstraints(0, 1, 1, 4, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         schematicLabel = new JLabel();
         schematicLabel.setFocusable(false);
@@ -351,7 +349,6 @@ public class UserInterface extends JPanel {
         editorPanel.add(gridPanel, new GridConstraints(0, 0, 9, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(500, 500), new Dimension(600, 600), 0, false));
         gridPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         dataTextField = new JTextField();
-        dataTextField.setFocusable(false);
         editorPanel.add(dataTextField, new GridConstraints(2, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         blockPositionLabel = new JLabel();
         blockPositionLabel.setFocusable(false);

@@ -34,9 +34,7 @@
             <preferred-size width="150" height="-1"/>
           </grid>
         </constraints>
-        <properties>
-          <focusable value="false"/>
-        </properties>
+        <properties/>
       </component>
       <component id="7afbf" class="javax.swing.JLabel" binding="schematicLabel">
         <constraints>
@@ -137,9 +135,7 @@
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
-            <properties>
-              <focusable value="false"/>
-            </properties>
+            <properties/>
           </component>
           <component id="58cc5" class="javax.swing.JLabel" binding="blockPositionLabel">
             <constraints>

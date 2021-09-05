@@ -18,7 +18,9 @@ package me.eccentric_nz.tardisschematicviewer;
 
 import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLCapabilitiesImmutable;
 import com.jogamp.opengl.GLEventListener;
+import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import org.json.JSONArray;
@@ -26,10 +28,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.awt.*;
-import java.awt.event.KeyEvent;
-import java.awt.event.KeyListener;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseMotionListener;
+import java.awt.event.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -41,7 +40,7 @@ import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
 /**
  * @author eccentric_nz
  */
-public class SchematicRenderer implements GLEventListener, KeyListener, MouseMotionListener {
+public class SchematicRenderer extends GLJPanel {
 
     private static final float ZERO_F = 0.0f;
     private static final float ONE_F = 1.0f;
@@ -83,262 +82,259 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
     private boolean pathSet = false;
     private boolean schematicParsed = false;
 
-    @Override
-    public void init(GLAutoDrawable drawable) {
-        GL2 gl = drawable.getGL().getGL2(); // get the OpenGL graphics context
-        glu = new GLU(); // get GL Utilities
-        gl.glClearColor(0.8f, 0.8f, 0.8f, 0.0f); // set background (grey) color
-        gl.glClearDepth(1.0f); // set clear depth value to farthest
-        gl.glEnable(GL_DEPTH_TEST); // enables depth testing
-        gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
-        gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
-        gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
-        drawable.getGL().setSwapInterval(1);
-        // Set up the lighting for Light-1
-        // Ambient light does not come from a particular direction. Need some ambient
-        // light to light up the scene. Ambient's value in RGBA
-        float[] lightAmbientValue = {0.1f, 0.1f, 0.1f, 1.0f};
-        // Diffuse light comes from a particular location. Diffuse's value in RGBA
-        float[] lightDiffuseValue = {0.75f, 0.75f, 0.75f, 1.0f};
-        // Diffuse light location xyz (in front of the screen).
-        float[] lightDiffusePosition = {8.0f, 0.0f, 8.0f, 1.0f};
+    public SchematicRenderer(GLCapabilitiesImmutable userCapsRequest) {
+        super(userCapsRequest);
+        addGLEventListener(new GLEventListener() {
+            @Override
+            public void init(GLAutoDrawable drawable) {
+                GL2 gl = drawable.getGL().getGL2(); // get the OpenGL graphics context
+                glu = new GLU(); // get GL Utilities
+                gl.glClearColor(0.8f, 0.8f, 0.8f, 0.0f); // set background (grey) color
+                gl.glClearDepth(1.0f); // set clear depth value to farthest
+                gl.glEnable(GL_DEPTH_TEST); // enables depth testing
+                gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
+                gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
+                gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
+                drawable.getGL().setSwapInterval(1);
+                // Set up the lighting for Light-1
+                // Ambient light does not come from a particular direction. Need some ambient
+                // light to light up the scene. Ambient's value in RGBA
+                float[] lightAmbientValue = {0.1f, 0.1f, 0.1f, 1.0f};
+                // Diffuse light comes from a particular location. Diffuse's value in RGBA
+                float[] lightDiffuseValue = {0.75f, 0.75f, 0.75f, 1.0f};
+                // Diffuse light location xyz (in front of the screen).
+                float[] lightDiffusePosition = {8.0f, 0.0f, 8.0f, 1.0f};
 
-        gl.glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbientValue, 0);
-        gl.glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuseValue, 0);
-        gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
-        gl.glEnable(GL_LIGHTING); // enable lighting
-        gl.glEnable(GL_LIGHT1); // Enable Light-1
-        gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
-    }
-
-    @Override
-    public void dispose(GLAutoDrawable drawable) {
-    }
-
-    @Override
-    public void display(GLAutoDrawable drawable) {
-        if (!schematicParsed) {
-            if (pathSet) {
-                setSchematic(path);
-                schematicParsed = true;
+                gl.glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbientValue, 0);
+                gl.glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuseValue, 0);
+                gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
+                gl.glEnable(GL_LIGHTING); // enable lighting
+                gl.glEnable(GL_LIGHT1); // Enable Light-1
+                gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
             }
-        } else {
-            GL2 gl = drawable.getGL().getGL2();
-            gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            gl.glLoadIdentity(); // reset the model-view matrix
-            gl.glTranslatef(x, y, z); // translate into the screen
-            gl.glRotatef(angleX, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
-            gl.glRotatef(angleY, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
-            // draw a cube
-            int lastIndexX = width - 1;
-            int lastIndexY = height - 1;
-            int lastIndexZ = length - 1;
-            for (int height = 0; height < this.height; height++) {
-                JSONArray level = (JSONArray) input.get(height);
-                for (int width = 0; width < this.width; width++) {
-                    JSONArray row = (JSONArray) level.get(width);
-                    for (int length = 0; length < this.length; length++) {
-                        JSONObject column = (JSONObject) row.get(length);
-                        String data = column.getString("data");
-                        int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
-                        String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
-                        Block block = Block.valueOf(blockName);
-                        if (!notThese.contains(block)) {
-                            gl.glPushMatrix();
 
-                            gl.glRotatef(columnAnglesX[width], ONE_F, ZERO_F, ZERO_F);
-                            gl.glRotatef(rowAnglesY[height], ZERO_F, ONE_F, ZERO_F);
-                            gl.glRotatef(faceAnglesZ[length], ZERO_F, ZERO_F, ONE_F);
+            @Override
+            public void dispose(GLAutoDrawable drawable) {
+            }
 
-                            // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
-                            float translateX = (float) lastIndexX / 2.0f;
-                            float translateY = (float) lastIndexY / 2.0f;
-                            float translateZ = (float) lastIndexZ / 2.0f;
-                            gl.glTranslatef((width - translateX) * CUBE_TRANSLATION_FACTOR, (height - translateY) * CUBE_TRANSLATION_FACTOR, -(length - translateZ) * CUBE_TRANSLATION_FACTOR);
-                            Color color = block.getColor();
-                            switch (block.getBlockShape()) {
-                                case SLAB:
-                                    if (data.contains("type=bottom")) {
-                                        Slab.draw(gl, color, ONE_F, 0);
-                                    } else if (data.contains("type=top")) {
-                                        SlabUpper.draw(gl, color, ONE_F);
-                                    } else {
-                                        Cube.draw(gl, color, ONE_F, false);
-                                    }
-                                    break;
-                                case FLAT:
-                                    if (block.equals(Block.REDSTONE_WIRE)) {
-                                        Redstone.draw(gl, ONE_F);
-                                    } else {
-                                        Slab.draw(gl, color, ONE_F, 0.8f);
-                                    }
-                                    break;
-                                case STAIR:
-                                    Stair.draw(gl, color, ONE_F, data);
-                                    break;
-                                case PLANT: {
-                                    float thickness;
-                                    float height1;
-                                    switch (block) {
-                                        case BROWN_MUSHROOM, RED_MUSHROOM, CARROTS, DEAD_BUSH, GRASS, NETHER_WART, POTATOES -> {
-                                            thickness = 0.125f;
-                                            height1 = 0.5f;
+            @Override
+            public void display(GLAutoDrawable drawable) {
+                if (!schematicParsed) {
+                    if (pathSet) {
+                        setSchematic(path);
+                        schematicParsed = true;
+                    }
+                } else {
+                    GL2 gl = drawable.getGL().getGL2();
+                    gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                    gl.glLoadIdentity(); // reset the model-view matrix
+                    gl.glTranslatef(x, y, z); // translate into the screen
+                    gl.glRotatef(angleX, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
+                    gl.glRotatef(angleY, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
+                    // draw a cube
+                    int lastIndexX = width - 1;
+                    int lastIndexY = height - 1;
+                    int lastIndexZ = length - 1;
+                    for (int height = 0; height < SchematicRenderer.this.height; height++) {
+                        JSONArray level = (JSONArray) input.get(height);
+                        for (int width = 0; width < SchematicRenderer.this.width; width++) {
+                            JSONArray row = (JSONArray) level.get(width);
+                            for (int length = 0; length < SchematicRenderer.this.length; length++) {
+                                JSONObject column = (JSONObject) row.get(length);
+                                String data = column.getString("data");
+                                int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
+                                String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
+                                Block block = Block.valueOf(blockName);
+                                if (!notThese.contains(block)) {
+                                    gl.glPushMatrix();
+
+                                    gl.glRotatef(columnAnglesX[width], ONE_F, ZERO_F, ZERO_F);
+                                    gl.glRotatef(rowAnglesY[height], ZERO_F, ONE_F, ZERO_F);
+                                    gl.glRotatef(faceAnglesZ[length], ZERO_F, ZERO_F, ONE_F);
+
+                                    // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
+                                    float translateX = (float) lastIndexX / 2.0f;
+                                    float translateY = (float) lastIndexY / 2.0f;
+                                    float translateZ = (float) lastIndexZ / 2.0f;
+                                    gl.glTranslatef((width - translateX) * CUBE_TRANSLATION_FACTOR, (height - translateY) * CUBE_TRANSLATION_FACTOR, -(length - translateZ) * CUBE_TRANSLATION_FACTOR);
+                                    Color color = block.getColor();
+                                    switch (block.getBlockShape()) {
+                                        case SLAB:
+                                            if (data.contains("type=bottom")) {
+                                                Slab.draw(gl, color, ONE_F, 0);
+                                            } else if (data.contains("type=top")) {
+                                                SlabUpper.draw(gl, color, ONE_F);
+                                            } else {
+                                                Cube.draw(gl, color, ONE_F, false);
+                                            }
+                                            break;
+                                        case FLAT:
+                                            if (block.equals(Block.REDSTONE_WIRE)) {
+                                                Redstone.draw(gl, ONE_F);
+                                            } else {
+                                                Slab.draw(gl, color, ONE_F, 0.8f);
+                                            }
+                                            break;
+                                        case STAIR:
+                                            Stair.draw(gl, color, ONE_F, data);
+                                            break;
+                                        case PLANT: {
+                                            float thickness;
+                                            float height1;
+                                            switch (block) {
+                                                case BROWN_MUSHROOM, RED_MUSHROOM, CARROTS, DEAD_BUSH, GRASS, NETHER_WART, POTATOES -> {
+                                                    thickness = 0.125f;
+                                                    height1 = 0.5f;
+                                                }
+                                                case WHEAT, POPPY, DANDELION -> {
+                                                    thickness = 0.125f;
+                                                    height1 = 0.8f;
+                                                }
+                                                default -> {
+                                                    thickness = 0.25f;
+                                                    height1 = ONE_F;
+                                                }
+                                            }
+                                            Plant.draw(gl, color, ONE_F, thickness, height1);
+                                            break;
                                         }
-                                        case WHEAT, POPPY, DANDELION -> {
-                                            thickness = 0.125f;
-                                            height1 = 0.8f;
-                                        }
-                                        default -> {
-                                            thickness = 0.25f;
-                                            height1 = ONE_F;
-                                        }
+                                        case WALL:
+                                            Fence.draw(gl, color, ONE_F, 0.5f, 1.9f, false);
+                                            break;
+                                        case FENCE:
+                                            Fence.draw(gl, color, ONE_F, 0.25f, 1.9f, false);
+                                            break;
+                                        case FENCE_GATE:
+                                            ThinCube.draw(gl, color, ONE_F, 0.25f, 1.7f, data, false);
+                                            break;
+                                        case THIN:
+                                            ThinCube.draw(gl, color, ONE_F, 0.125f, 2.0f, data, false);
+                                            break;
+                                        case GLASS_PANE:
+                                            ThinCube.draw(gl, color, ONE_F, 0.125f, 2.0f, data, true);
+                                            break;
+                                        case GLASS:
+                                            Cube.draw(gl, color, ONE_F, true);
+                                            break;
+                                        case SMALL:
+                                            Cube.draw(gl, color, 0.5f, false);
+                                            break;
+                                        case STICK:
+                                        case CUBE:
+                                            Cube.draw(gl, color, ONE_F, false);
+                                            break;
+                                        case VOID:
+                                            break;
                                     }
-                                    Plant.draw(gl, color, ONE_F, thickness, height1);
-                                    break;
+                                    gl.glPopMatrix();
                                 }
-                                case WALL:
-                                    Fence.draw(gl, color, ONE_F, 0.5f, 1.9f, false);
-                                    break;
-                                case FENCE:
-                                    Fence.draw(gl, color, ONE_F, 0.25f, 1.9f, false);
-                                    break;
-                                case FENCE_GATE:
-                                    ThinCube.draw(gl, color, ONE_F, 0.25f, 1.7f, data, false);
-                                    break;
-                                case THIN:
-                                    ThinCube.draw(gl, color, ONE_F, 0.125f, 2.0f, data, false);
-                                    break;
-                                case GLASS_PANE:
-                                    ThinCube.draw(gl, color, ONE_F, 0.125f, 2.0f, data, true);
-                                    break;
-                                case GLASS:
-                                    Cube.draw(gl, color, ONE_F, true);
-                                    break;
-                                case SMALL:
-                                    Cube.draw(gl, color, 0.5f, false);
-                                    break;
-                                case STICK:
-                                case CUBE:
-                                    Cube.draw(gl, color, ONE_F, false);
-                                    break;
-                                case VOID:
-                                    break;
                             }
-                            gl.glPopMatrix();
                         }
                     }
                 }
             }
-        }
-    }
 
-    @Override
-    public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-        GL2 gl = drawable.getGL().getGL2(); // get the OpenGL 2 graphics context
-        if (height == 0) {
-            height = 1; // prevent divide by zero
-        }
-        float aspect = (float) width / height;
-        // Set the view port (display area) to cover the entire window
-        gl.glViewport(0, 0, width, height);
-        // Setup perspective projection, with aspect ratio matches viewport
-        gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION); // choose projection matrix
-        gl.glLoadIdentity(); // reset projection matrix
-        glu.gluPerspective(45.0, aspect, 0.1, 200.0); // fovy, aspect, zNear, zFar
-        // Enable the model-view transform
-        gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
-        gl.glLoadIdentity(); // reset
-    }
+            @Override
+            public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
+                GL2 gl = drawable.getGL().getGL2(); // get the OpenGL 2 graphics context
+                if (height == 0) {
+                    height = 1; // prevent divide by zero
+                }
+                float aspect = (float) width / height;
+                // Set the view port (display area) to cover the entire window
+                gl.glViewport(0, 0, width, height);
+                // Setup perspective projection, with aspect ratio matches viewport
+                gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION); // choose projection matrix
+                gl.glLoadIdentity(); // reset projection matrix
+                glu.gluPerspective(45.0, aspect, 0.1, 200.0); // fovy, aspect, zNear, zFar
+                // Enable the model-view transform
+                gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
+                gl.glLoadIdentity(); // reset
+            }
+        });
+        addKeyListener(new KeyListener() {
+            @Override
+            public void keyTyped(KeyEvent e) {
+            }
 
-    @Override
-    public void keyTyped(KeyEvent e) {
-    }
-
-    @Override
-    public void keyPressed(KeyEvent e) {
-        int keyCode = e.getKeyCode();
-        switch (keyCode) {
-            case KeyEvent.VK_W, KeyEvent.VK_UP -> z++;
-            case KeyEvent.VK_S, KeyEvent.VK_DOWN -> z--;
-            case KeyEvent.VK_A -> x++;
-            case KeyEvent.VK_D -> x--;
-            case KeyEvent.VK_SPACE -> y++;
-            case KeyEvent.VK_SHIFT -> y--;
-            case KeyEvent.VK_LEFT -> {
-                height--;
-                if (height < 0) {
-                    height = 0;
+            @Override
+            public void keyPressed(KeyEvent e) {
+                int keyCode = e.getKeyCode();
+                switch (keyCode) {
+                    case KeyEvent.VK_W, KeyEvent.VK_UP -> z++;
+                    case KeyEvent.VK_S, KeyEvent.VK_DOWN -> z--;
+                    case KeyEvent.VK_A -> x++;
+                    case KeyEvent.VK_D -> x--;
+                    case KeyEvent.VK_SPACE -> y++;
+                    case KeyEvent.VK_SHIFT -> y--;
+                    case KeyEvent.VK_LEFT -> {
+                        height--;
+                        if (height < 0) {
+                            height = 0;
+                        }
+                    }
+                    case KeyEvent.VK_RIGHT -> {
+                        height++;
+                        if (height > max) {
+                            height = max;
+                        }
+                    }
                 }
             }
-            case KeyEvent.VK_RIGHT -> {
-                height++;
-                if (height > max) {
-                    height = max;
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+            }
+        });
+        addMouseMotionListener(new MouseMotionListener() {
+            @Override
+            public void mouseDragged(MouseEvent e) {
+                // change the camera angle
+                final int buffer = 0;
+                if (e.getX() < mouseX - buffer || e.getX() > mouseX + buffer) {
+                    angleY += e.getX() - mouseX;
                 }
+                if (angleX + e.getY() - mouseY > 90) {
+                    angleX = 90;
+                } else if (angleX + e.getY() - mouseY < -90) {
+                    angleX = -90;
+                } else {
+                    if (e.getY() < mouseY - buffer || e.getY() > mouseY + buffer) {
+                        angleX += e.getY() - mouseY;
+                    }
+                }
+                mouseX = e.getX();
+                mouseY = e.getY();
             }
-        }
-    }
 
-    @Override
-    public void keyReleased(KeyEvent e) {
-    }
-
-    @Override
-    public void mouseDragged(MouseEvent e) {
-        // change the camera angle
-        final int buffer = 0;
-        if (e.getX() < mouseX - buffer || e.getX() > mouseX + buffer) {
-            angleY += e.getX() - mouseX;
-        }
-        if (angleX + e.getY() - mouseY > 90) {
-            angleX = 90;
-        } else if (angleX + e.getY() - mouseY < -90) {
-            angleX = -90;
-        } else {
-            if (e.getY() < mouseY - buffer || e.getY() > mouseY + buffer) {
-                angleX += e.getY() - mouseY;
+            @Override
+            public void mouseMoved(MouseEvent e) {
+                mouseX = e.getX();
+                mouseY = e.getY();
             }
-        }
-        mouseX = e.getX();
-        mouseY = e.getY();
-    }
+        });
+        addMouseListener(new MouseListener() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                requestFocus();
+            }
 
-    @Override
-    public void mouseMoved(MouseEvent e) {
-        mouseX = e.getX();
-        mouseY = e.getY();
-    }
+            @Override
+            public void mousePressed(MouseEvent e) {
+            }
 
-    public float getX() {
-        return x;
-    }
+            @Override
+            public void mouseReleased(MouseEvent e) {
+            }
 
-    public void setX(float x) {
-        this.x = x;
-    }
+            @Override
+            public void mouseEntered(MouseEvent e) {
+            }
 
-    public float getY() {
-        return y;
-    }
-
-    public void setY(float y) {
-        this.y = y;
-    }
-
-    public float getZ() {
-        return z;
-    }
-
-    public void setZ(float z) {
-        this.z = z;
-    }
-
-    public int getHeight() {
-        return height;
-    }
-
-    public void setHeight(int height) {
-        this.height = height;
+            @Override
+            public void mouseExited(MouseEvent e) {
+            }
+        });
     }
 
     public int getMax() {

@@ -42,10 +42,9 @@ public class TardisSchematicViewer {
         SwingUtilities.invokeLater(() -> {
             GLProfile profile = GLProfile.getDefault();
             GLCapabilities capabilities = new GLCapabilities(profile);
-            GLJPanel canvas = new GLJPanel(capabilities);
-            canvas.setBackground(Color.GRAY);
+            SchematicRenderer renderer = new SchematicRenderer(capabilities);
+            renderer.setBackground(Color.GRAY);
             JFrame frame = new JFrame();
-            SchematicRenderer renderer = new SchematicRenderer();
             UserInterface userInterface = new UserInterface(renderer);
             userInterface.setSize(1024, 85);
             frame.getContentPane().add(userInterface, BorderLayout.PAGE_START);
@@ -56,9 +55,9 @@ public class TardisSchematicViewer {
                 e.printStackTrace();
             }
             frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
-            frame.getContentPane().add(canvas, BorderLayout.CENTER);
+            frame.getContentPane().add(renderer, BorderLayout.CENTER);
             frame.setVisible(true);
-            FPSAnimator animator = new FPSAnimator(canvas, 30, true);
+            FPSAnimator animator = new FPSAnimator(renderer, 30, true);
 
             // by default, an AWT Frame doesn't do anything when you click
             // the close button; this bit of code will terminate the program when
@@ -78,13 +77,9 @@ public class TardisSchematicViewer {
                     }).start();
                 }
             });
-            canvas.addGLEventListener(renderer);
-            // For handling KeyEvents
-            canvas.addKeyListener(renderer);
-            canvas.addMouseMotionListener(renderer);
-            canvas.setFocusable(true);
-            canvas.requestFocus();
-            canvas.setVisible(true);
+            renderer.setFocusable(true);
+            renderer.requestFocus();
+            renderer.setVisible(true);
             animator.start();
 
             ArrayList<String> argList = new ArrayList<>(List.of(args));
