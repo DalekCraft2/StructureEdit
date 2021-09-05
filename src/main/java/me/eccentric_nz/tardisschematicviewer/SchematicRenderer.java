@@ -25,7 +25,10 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseMotionListener;
 import java.util.List;
 import java.util.Locale;
 
@@ -249,19 +252,16 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
     public void keyTyped(KeyEvent e) {
     }
 
-    // TODO Find out why this does not work after any UI button is pressed.
     @Override
     public void keyPressed(KeyEvent e) {
         int keyCode = e.getKeyCode();
         switch (keyCode) {
-            case KeyEvent.VK_W -> z++;
-            case KeyEvent.VK_S -> z--;
+            case KeyEvent.VK_W, KeyEvent.VK_UP -> z++;
+            case KeyEvent.VK_S, KeyEvent.VK_DOWN -> z--;
             case KeyEvent.VK_A -> x++;
             case KeyEvent.VK_D -> x--;
             case KeyEvent.VK_SPACE -> y++;
             case KeyEvent.VK_SHIFT -> y--;
-            case KeyEvent.VK_UP -> z++;
-            case KeyEvent.VK_DOWN -> z--;
             case KeyEvent.VK_LEFT -> {
                 height--;
                 if (height < 0) {
