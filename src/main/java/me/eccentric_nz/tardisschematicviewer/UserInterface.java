@@ -164,6 +164,7 @@ public class UserInterface extends JPanel {
                 System.err.println("Schematic was null!");
             }
         });
+        // TODO Make this focusable without screwing up the schematic renderer controls.
         dataTextField.getDocument().addDocumentListener(new DocumentListener() {
 
             @Override
