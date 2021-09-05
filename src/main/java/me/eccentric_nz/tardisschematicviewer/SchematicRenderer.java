@@ -29,6 +29,7 @@ import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseMotionListener;
+import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
 
@@ -361,7 +362,11 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
     public void setSchematic(String path) {
         // Use URL so that can read from JAR and disk file.
         // Filename relative to the project root.
-        schematic = Gzip.unzip(path);
+        try {
+            schematic = Gzip.unzip(path);
+        } catch (IOException e) {
+            System.err.println("Error reading schematic: " + e.getMessage());
+        }
         // get dimensions
         JSONObject dimensions = (JSONObject) schematic.get("dimensions");
         height = dimensions.getInt("height");

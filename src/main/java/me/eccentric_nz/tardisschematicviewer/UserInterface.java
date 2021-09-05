@@ -110,10 +110,8 @@ public class UserInterface extends JPanel {
                     String output = renderer.getPath();
                     String input = output.substring(0, output.lastIndexOf(".tschm")) + ".json";
                     File file = new File(input);
-                    try {
-                        try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file), 16 * 1024)) {
-                            bufferedWriter.write(schematic.toString());
-                        }
+                    try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file), 16 * 1024)) {
+                        bufferedWriter.write(schematic.toString());
                         Gzip.zip(input, output);
                         System.out.println("Schematic saved to \"" + output + "\" successfully.");
                     } catch (IOException e1) {

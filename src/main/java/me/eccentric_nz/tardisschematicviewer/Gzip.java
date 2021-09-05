@@ -32,19 +32,17 @@ public final class Gzip {
         throw new UnsupportedOperationException();
     }
 
-    public static void zip(String inString, String outString) {
+    public static void zip(String inString, String outString) throws IOException {
         try (FileInputStream fileInputStream = new FileInputStream(inString); FileOutputStream fileOutputStream = new FileOutputStream(outString); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream)) {
             byte[] buffer = new byte[1024 * 16];
             int len;
             while ((len = fileInputStream.read(buffer)) != -1) {
                 gzipOutputStream.write(buffer, 0, len);
             }
-        } catch (IOException ioException) {
-            System.err.println(ioException.getMessage());
         }
     }
 
-    public static JSONObject unzip(String inString) {
+    public static JSONObject unzip(String inString) throws IOException {
         String s = "";
         try (GZIPInputStream gzipInputStream = new GZIPInputStream(new FileInputStream(inString)); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
@@ -53,8 +51,6 @@ public final class Gzip {
                 stringWriter.write(buffer, 0, len);
             }
             s = stringWriter.toString();
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
         }
         return new JSONObject(s);
     }
