@@ -22,6 +22,7 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -364,19 +365,19 @@ public class SchematicRenderer implements GLEventListener, KeyListener, MouseMot
         // Filename relative to the project root.
         try {
             schematic = Gzip.unzip(path);
-        } catch (IOException e) {
+            // get dimensions
+            JSONObject dimensions = (JSONObject) schematic.get("dimensions");
+            height = dimensions.getInt("height");
+            max = height;
+            width = dimensions.getInt("width");
+            length = dimensions.getInt("length");
+            columnAnglesX = new float[width];
+            rowAnglesY = new float[height];
+            faceAnglesZ = new float[length];
+            input = (JSONArray) schematic.get("input");
+        } catch (IOException | JSONException e) {
             System.err.println("Error reading schematic: " + e.getMessage());
         }
-        // get dimensions
-        JSONObject dimensions = (JSONObject) schematic.get("dimensions");
-        height = dimensions.getInt("height");
-        max = height;
-        width = dimensions.getInt("width");
-        length = dimensions.getInt("length");
-        columnAnglesX = new float[width];
-        rowAnglesY = new float[height];
-        faceAnglesZ = new float[length];
-        input = (JSONArray) schematic.get("input");
     }
 
     public void setSchematic(JSONObject schematic) {
