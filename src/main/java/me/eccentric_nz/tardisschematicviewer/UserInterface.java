@@ -105,6 +105,7 @@ public class UserInterface extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 editorPanel.setVisible(!editorPanel.isVisible());
+                renderer.setVisible(!editorPanel.isVisible());
                 loadLayer();
             }
         });
