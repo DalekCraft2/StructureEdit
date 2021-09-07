@@ -26,6 +26,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,7 +87,11 @@ public class TardisSchematicViewer {
             if (argList.contains("-path")) {
                 if (argList.size() > argList.indexOf("-path") + 1) {
                     try {
-                        renderer.setPath(argList.get(argList.indexOf("-path") + 1));
+                        String relativePath = argList.get(argList.indexOf("-path") + 1);
+                        File file = new File(relativePath);
+                        String absolutePath = file.getAbsolutePath();
+                        renderer.setPath(absolutePath);
+                        userInterface.setPath(absolutePath);
                         userInterface.setSchematic(renderer.getSchematic());
                         userInterface.setCurrentLayer(0);
                         userInterface.loadLayer();

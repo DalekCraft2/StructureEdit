@@ -45,14 +45,13 @@ public class UserInterface extends JPanel {
     private SquareButton selected;
     private int currentLayer;
     private JSONObject schematic;
+    private SchematicRenderer renderer;
 
-    private JButton browseButton;
-    private JButton loadButton;
+    private JButton openButton;
     private JTextField fileTextField;
     private JButton editButton;
     private JButton saveButton;
     private JPanel panel;
-    private JLabel schematicLabel;
     private JPanel editorPanel;
     private JPanel gridPanel;
     private JLabel blockLabel;
@@ -68,6 +67,7 @@ public class UserInterface extends JPanel {
     private JTextField layerTextField;
 
     public UserInterface(SchematicRenderer renderer) {
+        this.renderer = renderer;
         lastDirectory = new File(".");
         $$$setupUI$$$();
         gridPanel.addComponentListener(new ComponentAdapter() {
@@ -77,35 +77,17 @@ public class UserInterface extends JPanel {
                 }
             }
         });
-        browseButton.addMouseListener(new MouseAdapter() {
+        openButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                choose(fileTextField, "TARDIS schematic file", "tschm");
-            }
-        });
-        loadButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                String path = fileTextField.getText();
-                if (!path.isEmpty() && !path.equals("Select file")) {
-                    try {
-                        renderer.setPath(fileTextField.getText());
-                        schematic = renderer.getSchematic();
-                        currentLayer = 0;
-                        loadLayer();
-                    } catch (IOException | JSONException e1) {
-                        System.err.println("Error reading schematic: " + e1.getMessage());
-                    }
-                } else {
-                    System.err.println("No file selected!");
-                }
+                choose(fileTextField);
             }
         });
         editButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 editorPanel.setVisible(!editorPanel.isVisible());
-                renderer.setVisible(!editorPanel.isVisible());
+                UserInterface.this.renderer.setVisible(!editorPanel.isVisible());
                 loadLayer();
             }
         });
@@ -113,7 +95,7 @@ public class UserInterface extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (schematic != null) {
-                    String output = renderer.getPath();
+                    String output = UserInterface.this.renderer.getPath();
                     String input = output.substring(0, output.lastIndexOf(".tschm")) + ".json";
                     File file = new File(input);
                     try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file), 16 * 1024)) {
@@ -135,7 +117,7 @@ public class UserInterface extends JPanel {
         plusButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (currentLayer < renderer.getMax() - 1) {
+                if (currentLayer < UserInterface.this.renderer.getMax() - 1) {
                     currentLayer++;
                     loadLayer();
                 }
@@ -164,7 +146,7 @@ public class UserInterface extends JPanel {
                 level.put(selected.getXCoord(), row);
                 input.put(selected.getYCoord(), level);
                 schematic.put("input", input);
-                renderer.setSchematic(schematic);
+                this.renderer.setSchematic(schematic);
                 loadLayer();
             } else {
                 System.err.println("Schematic was null!");
@@ -196,7 +178,7 @@ public class UserInterface extends JPanel {
                     level.put(selected.getXCoord(), row);
                     input.put(selected.getYCoord(), level);
                     schematic.put("input", input);
-                    renderer.setSchematic(schematic);
+                    UserInterface.this.renderer.setSchematic(schematic);
                     loadLayer();
                 } else {
                     System.err.println("Schematic was null!");
@@ -214,19 +196,30 @@ public class UserInterface extends JPanel {
     /**
      * Opens a file chooser.
      *
-     * @param box         the text field to target
-     * @param description a String describing the file type
-     * @param extension   the file extension
+     * @param box the text field to target
      */
-    private void choose(JTextField box, String description, String extension) {
+    private void choose(JTextField box) {
         JFileChooser chooser = new JFileChooser(lastDirectory);
-        chooser.setFileFilter(new FileNameExtensionFilter(description, extension));
+        chooser.setFileFilter(new FileNameExtensionFilter("TARDIS schematic file", "tschm"));
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.showOpenDialog(panel);
 
         if (chooser.getSelectedFile() != null) {
             box.setText(chooser.getSelectedFile().getPath());
             lastDirectory = chooser.getCurrentDirectory();
+            String path = chooser.getSelectedFile().getPath();
+            if (!path.isEmpty()) {
+                try {
+                    renderer.setPath(path);
+                    schematic = renderer.getSchematic();
+                    currentLayer = 0;
+                    loadLayer();
+                } catch (IOException | JSONException e1) {
+                    System.err.println("Error reading schematic: " + e1.getMessage());
+                }
+            } else {
+                System.err.println("No file selected!");
+            }
         }
     }
 
@@ -295,6 +288,10 @@ public class UserInterface extends JPanel {
         this.currentLayer = currentLayer;
     }
 
+    public void setPath(String path) {
+        fileTextField.setText(path);
+    }
+
     /**
      * Method generated by IntelliJ IDEA GUI Designer
      * >>> IMPORTANT!! <<<
@@ -304,34 +301,15 @@ public class UserInterface extends JPanel {
      */
     private void $$$setupUI$$$() {
         createUIComponents();
-        panel.setLayout(new GridLayoutManager(3, 7, new Insets(0, 0, 0, 0), -1, -1));
-        browseButton = new JButton();
-        browseButton.setText("Browse");
-        panel.add(browseButton, new GridConstraints(0, 5, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        loadButton = new JButton();
-        loadButton.setText("Load");
-        panel.add(loadButton, new GridConstraints(1, 5, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        fileTextField = new JTextField();
-        panel.add(fileTextField, new GridConstraints(0, 1, 1, 4, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        schematicLabel = new JLabel();
-        schematicLabel.setText("TARDIS Schematic:");
-        panel.add(schematicLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        editButton = new JButton();
-        editButton.setText("Edit");
-        panel.add(editButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        saveButton = new JButton();
-        saveButton.setText("Save");
-        panel.add(saveButton, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        final Spacer spacer1 = new Spacer();
-        panel.add(spacer1, new GridConstraints(1, 2, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        panel.setLayout(new GridLayoutManager(3, 4, new Insets(0, 0, 0, 0), -1, -1));
         editorPanel = new JPanel();
         editorPanel.setLayout(new GridLayoutManager(9, 6, new Insets(0, 0, 0, 0), -1, -1));
         editorPanel.setVisible(false);
-        panel.add(editorPanel, new GridConstraints(2, 0, 1, 7, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel.add(editorPanel, new GridConstraints(2, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        final Spacer spacer1 = new Spacer();
+        editorPanel.add(spacer1, new GridConstraints(5, 4, 4, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final Spacer spacer2 = new Spacer();
-        editorPanel.add(spacer2, new GridConstraints(5, 4, 4, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        final Spacer spacer3 = new Spacer();
-        editorPanel.add(spacer3, new GridConstraints(5, 2, 4, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        editorPanel.add(spacer2, new GridConstraints(5, 2, 4, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         blockLabel = new JLabel();
         blockLabel.setText("Block:");
         editorPanel.add(blockLabel, new GridConstraints(1, 2, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -363,8 +341,22 @@ public class UserInterface extends JPanel {
         layerLabel = new JLabel();
         layerLabel.setText("Layer:");
         editorPanel.add(layerLabel, new GridConstraints(3, 2, 2, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        final Spacer spacer3 = new Spacer();
+        editorPanel.add(spacer3, new GridConstraints(0, 5, 5, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        fileTextField = new JTextField();
+        fileTextField.setEditable(false);
+        panel.add(fileTextField, new GridConstraints(0, 0, 1, 4, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        openButton = new JButton();
+        openButton.setText("Open");
+        panel.add(openButton, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editButton = new JButton();
+        editButton.setText("Edit");
+        panel.add(editButton, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        saveButton = new JButton();
+        saveButton.setText("Save");
+        panel.add(saveButton, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         final Spacer spacer4 = new Spacer();
-        editorPanel.add(spacer4, new GridConstraints(0, 5, 5, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        panel.add(spacer4, new GridConstraints(1, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
     }
 
     /**
