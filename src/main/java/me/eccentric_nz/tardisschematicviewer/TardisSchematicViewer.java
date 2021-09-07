@@ -18,8 +18,8 @@ package me.eccentric_nz.tardisschematicviewer;
 
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.util.FPSAnimator;
+import org.json.JSONException;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -85,10 +85,14 @@ public class TardisSchematicViewer {
             ArrayList<String> argList = new ArrayList<>(List.of(args));
             if (argList.contains("-path")) {
                 if (argList.size() > argList.indexOf("-path") + 1) {
-                    renderer.setPath(argList.get(argList.indexOf("-path") + 1));
-                    userInterface.setSchematic(renderer.getSchematic());
-                    userInterface.setCurrentLayer(0);
-                    userInterface.loadLayer();
+                    try {
+                        renderer.setPath(argList.get(argList.indexOf("-path") + 1));
+                        userInterface.setSchematic(renderer.getSchematic());
+                        userInterface.setCurrentLayer(0);
+                        userInterface.loadLayer();
+                    } catch (IOException | JSONException e) {
+                        System.err.println("Error reading schematic: " + e.getMessage());
+                    }
                 }
             }
         });

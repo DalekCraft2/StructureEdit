@@ -20,6 +20,7 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.swing.*;
@@ -78,19 +79,23 @@ public class UserInterface extends JPanel {
         });
         browseButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseReleased(MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 choose(fileTextField, "TARDIS schematic file", "tschm");
             }
         });
         loadButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseReleased(MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 String path = fileTextField.getText();
                 if (!path.isEmpty() && !path.equals("Select file")) {
-                    renderer.setPath(fileTextField.getText());
-                    schematic = renderer.getSchematic();
-                    currentLayer = 0;
-                    loadLayer();
+                    try {
+                        renderer.setPath(fileTextField.getText());
+                        schematic = renderer.getSchematic();
+                        currentLayer = 0;
+                        loadLayer();
+                    } catch (IOException | JSONException e1) {
+                        System.err.println("Error reading schematic: " + e1.getMessage());
+                    }
                 } else {
                     System.err.println("No file selected!");
                 }
@@ -98,14 +103,14 @@ public class UserInterface extends JPanel {
         });
         editButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseReleased(MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 editorPanel.setVisible(!editorPanel.isVisible());
                 loadLayer();
             }
         });
         saveButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseReleased(MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 if (schematic != null) {
                     String output = renderer.getPath();
                     String input = output.substring(0, output.lastIndexOf(".tschm")) + ".json";
@@ -128,7 +133,7 @@ public class UserInterface extends JPanel {
         });
         plusButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseReleased(MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 if (currentLayer < renderer.getMax() - 1) {
                     currentLayer++;
                     loadLayer();
@@ -137,7 +142,7 @@ public class UserInterface extends JPanel {
         });
         minusButton.addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseReleased(MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 if (currentLayer > 0) {
                     currentLayer--;
                     loadLayer();

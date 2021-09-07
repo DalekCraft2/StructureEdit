@@ -44,15 +44,14 @@ public final class Gzip {
     }
 
     public static JSONObject unzip(String inString) throws IOException, JSONException {
-        String s;
         try (GZIPInputStream gzipInputStream = new GZIPInputStream(new FileInputStream(inString)); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
             int len;
             while ((len = inputStreamReader.read(buffer)) > 0) {
                 stringWriter.write(buffer, 0, len);
             }
-            s = stringWriter.toString();
+            String jsonString = stringWriter.toString();
+            return new JSONObject(jsonString);
         }
-        return new JSONObject(s);
     }
 }

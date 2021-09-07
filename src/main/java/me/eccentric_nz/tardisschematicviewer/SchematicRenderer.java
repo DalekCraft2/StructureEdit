@@ -28,7 +28,10 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
@@ -79,7 +82,6 @@ public class SchematicRenderer extends GLJPanel {
     private float[] rowAnglesY;
     private float[] faceAnglesZ;
     private String path;
-    private boolean pathSet = false;
     private boolean schematicParsed = false;
 
     public SchematicRenderer(GLCapabilitiesImmutable userCapsRequest) {
@@ -120,9 +122,13 @@ public class SchematicRenderer extends GLJPanel {
             @Override
             public void display(GLAutoDrawable drawable) {
                 if (!schematicParsed) {
-                    if (pathSet) {
-                        setSchematic(path);
-                        schematicParsed = true;
+                    if (path != null) {
+                        try {
+                            setPath(path);
+                        } catch (IOException | JSONException e) {
+                            System.err.println("Error reading schematic: " + e.getMessage());
+                            schematicParsed = false;
+                        }
                     }
                 } else {
                     GL2 gl = drawable.getGL().getGL2();
@@ -252,11 +258,7 @@ public class SchematicRenderer extends GLJPanel {
                 gl.glLoadIdentity(); // reset
             }
         });
-        addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
-            }
-
+        addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
@@ -281,14 +283,11 @@ public class SchematicRenderer extends GLJPanel {
                     }
                 }
             }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-            }
         });
-        addMouseMotionListener(new MouseMotionListener() {
+        addMouseMotionListener(new MouseAdapter() {
             @Override
             public void mouseDragged(MouseEvent e) {
+                requestFocus();
                 // change the camera angle
                 final int buffer = 0;
                 if (e.getX() < mouseX - buffer || e.getX() > mouseX + buffer) {
@@ -313,26 +312,10 @@ public class SchematicRenderer extends GLJPanel {
                 mouseY = e.getY();
             }
         });
-        addMouseListener(new MouseListener() {
+        addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 requestFocus();
-            }
-
-            @Override
-            public void mousePressed(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseReleased(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseEntered(MouseEvent e) {
-            }
-
-            @Override
-            public void mouseExited(MouseEvent e) {
             }
         });
     }
@@ -345,35 +328,14 @@ public class SchematicRenderer extends GLJPanel {
         return path;
     }
 
-    public void setPath(String path) {
+    public void setPath(String path) throws IOException, JSONException {
         this.path = path;
-        schematicParsed = false;
-        pathSet = true;
-        setSchematic(path);
+        setSchematic(Gzip.unzip(path));
+        schematicParsed = true;
     }
 
     public JSONObject getSchematic() {
         return schematic;
-    }
-
-    public void setSchematic(String path) {
-        // Use URL so that can read from JAR and disk file.
-        // Filename relative to the project root.
-        try {
-            schematic = Gzip.unzip(path);
-            // get dimensions
-            JSONObject dimensions = (JSONObject) schematic.get("dimensions");
-            height = dimensions.getInt("height");
-            max = height;
-            width = dimensions.getInt("width");
-            length = dimensions.getInt("length");
-            columnAnglesX = new float[width];
-            rowAnglesY = new float[height];
-            faceAnglesZ = new float[length];
-            input = (JSONArray) schematic.get("input");
-        } catch (IOException | JSONException e) {
-            System.err.println("Error reading schematic: " + e.getMessage());
-        }
     }
 
     public void setSchematic(JSONObject schematic) {
