@@ -180,19 +180,8 @@ public class UserInterface extends JPanel {
                     int z1 = position.get(2).asInt();
                     if (x == x1 && y == y1 && z == z1) {
                         CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
-                        CompoundTag properties = null;
-                        try {
-                            if (!dataTextField.getText().equals("") && dataTextField != null) {
-                                properties = (CompoundTag) SNBTUtil.fromSNBT(dataTextField.getText());
-                            }
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                        if (properties != null) {
-                            paletteTag.put("Properties", properties);
-                        } else {
-                            paletteTag.remove("Properties");
-                        }
+                        String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
+                        paletteTag.putString("Name", name);
                         if (!palette.contains(paletteTag)) {
                             palette.add(paletteTag);
                         }
@@ -272,8 +261,19 @@ public class UserInterface extends JPanel {
                     int z1 = position.get(2).asInt();
                     if (x == x1 && y == y1 && z == z1) {
                         CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
-                        String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
-                        paletteTag.putString("Name", name);
+                        CompoundTag properties = null;
+                        try {
+                            if (!dataTextField.getText().equals("") && dataTextField != null) {
+                                properties = (CompoundTag) SNBTUtil.fromSNBT(dataTextField.getText());
+                            }
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        if (properties != null) {
+                            paletteTag.put("Properties", properties);
+                        } else {
+                            paletteTag.remove("Properties");
+                        }
                         if (!palette.contains(paletteTag)) {
                             palette.add(paletteTag);
                         }
