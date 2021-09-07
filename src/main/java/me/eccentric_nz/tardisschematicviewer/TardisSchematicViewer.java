@@ -19,7 +19,9 @@ package me.eccentric_nz.tardisschematicviewer;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.FPSAnimator;
+import net.querz.nbt.io.NBTUtil;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -93,8 +95,13 @@ public class TardisSchematicViewer {
                         renderer.setPath(absolutePath);
                         userInterface.setPath(absolutePath);
                         userInterface.setSchematic(renderer.getSchematic());
+                        if (absolutePath.endsWith(".tschm")) {
+                            userInterface.setSchematic(new JSONObject(Gzip.unzip(absolutePath)));
+                        } else if (absolutePath.endsWith(".nbt")) {
+                            userInterface.setSchematic(NBTUtil.read(absolutePath));
+                        }
                         userInterface.setCurrentLayer(0);
-                        userInterface.loadLayer();
+                        userInterface.loadLayer(absolutePath);
                     } catch (IOException | JSONException e) {
                         System.err.println("Error reading schematic: " + e.getMessage());
                     }

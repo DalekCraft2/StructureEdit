@@ -16,9 +16,6 @@
  */
 package me.eccentric_nz.tardisschematicviewer;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
@@ -43,15 +40,14 @@ public final class Gzip {
         }
     }
 
-    public static JSONObject unzip(String inString) throws IOException, JSONException {
+    public static String unzip(String inString) throws IOException {
         try (GZIPInputStream gzipInputStream = new GZIPInputStream(new FileInputStream(inString)); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
             int len;
             while ((len = inputStreamReader.read(buffer)) > 0) {
                 stringWriter.write(buffer, 0, len);
             }
-            String jsonString = stringWriter.toString();
-            return new JSONObject(jsonString);
+            return stringWriter.toString();
         }
     }
 }

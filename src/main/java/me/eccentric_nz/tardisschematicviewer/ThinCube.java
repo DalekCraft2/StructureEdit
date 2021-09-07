@@ -17,6 +17,7 @@
 package me.eccentric_nz.tardisschematicviewer;
 
 import com.jogamp.opengl.GL2;
+import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
 
@@ -48,6 +49,86 @@ public class ThinCube {
             String rotationToEnd = data.substring(data.indexOf("rotation=") + "rotation".length() + 1);
             int endIndex = rotationToEnd.contains(",") ? rotationToEnd.indexOf(',') : rotationToEnd.indexOf(']');
             int rotationInt = Integer.parseInt(rotationToEnd.substring(0, endIndex));
+            angle = rotationInt * 22.5f;
+        }
+        gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
+
+        if (glass) {
+            gl.glLineWidth(size * 2);
+            gl.glBegin(GL_LINES);
+        } else {
+            gl.glBegin(GL_QUADS);
+        }
+
+        // Front Face wide
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(0.0f, 0.0f, size);
+        gl.glVertex3f(-size, -size, thickness); // bottom-left of the quad
+        gl.glVertex3f(size, -size, thickness); // bottom-right of the quad
+        gl.glVertex3f(size, height1, thickness); // top-right of the quad
+        gl.glVertex3f(-size, height1, thickness); // top-left of the quad
+
+        // Back Face wide
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(0.0f, 0.0f, -size);
+        gl.glVertex3f(-size, -size, -thickness);
+        gl.glVertex3f(-size, height1, -thickness);
+        gl.glVertex3f(size, height1, -thickness);
+        gl.glVertex3f(size, -size, -thickness);
+
+        // Top Face LR
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(0.0f, size, 0.0f);
+        gl.glVertex3f(-size, height1, -thickness);
+        gl.glVertex3f(-size, height1, thickness);
+        gl.glVertex3f(size, height1, thickness);
+        gl.glVertex3f(size, height1, -thickness);
+
+        // Bottom Face LR
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(0.0f, -size, 0.0f);
+        gl.glVertex3f(-size, -size, -thickness);
+        gl.glVertex3f(size, -size, -thickness);
+        gl.glVertex3f(size, -size, thickness);
+        gl.glVertex3f(-size, -size, thickness);
+
+        // Right Face LR
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(size, 0.0f, 0.0f);
+        gl.glVertex3f(size, -size, -thickness);
+        gl.glVertex3f(size, height1, -thickness);
+        gl.glVertex3f(size, height1, thickness);
+        gl.glVertex3f(size, -size, thickness);
+
+        // Left Face LR
+        gl.glColor3f(components[0], components[1], components[2]);
+        gl.glNormal3f(-size, 0.0f, 0.0f);
+        gl.glVertex3f(-size, -size, -thickness);
+        gl.glVertex3f(-size, -size, thickness);
+        gl.glVertex3f(-size, height1, thickness);
+        gl.glVertex3f(-size, height1, -thickness);
+
+        gl.glEnd();
+    }
+
+    public static void draw(GL2 gl, Color color, float size, float thickness, float height, CompoundTag properties, boolean glass) {
+
+        float height1 = -size + height;
+        float[] components = color.getColorComponents(null);
+        // rotate if necessary
+        float angle = 0.0f;
+        if (properties.containsKey("facing")) {
+            if (properties.getString("facing").equals("north")) {
+                angle = 0.0f;
+            } else if (properties.getString("facing").equals("east")) {
+                angle = 90.0f;
+            } else if (properties.getString("facing").equals("south")) {
+                angle = 180.0f;
+            } else if (properties.getString("facing").equals("west")) {
+                angle = -90.0f;
+            }
+        } else if (properties.containsKey("rotation")) {
+            int rotationInt = properties.getInt("rotation");
             angle = rotationInt * 22.5f;
         }
         gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
