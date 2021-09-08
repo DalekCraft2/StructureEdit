@@ -38,7 +38,9 @@ import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.Serial;
 import java.util.Locale;
 
 /**
@@ -127,18 +129,11 @@ public class UserInterface extends JPanel {
 
             public void mouseClickedTschm(MouseEvent e) {
                 String output = UserInterface.this.renderer.getPath();
-                String input = output.substring(0, output.lastIndexOf(".tschm")) + ".json";
-                File file = new File(input);
-                try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file), 16 * 1024)) {
-                    bufferedWriter.write(schematic.toString());
-                    Gzip.zip(input, output);
+                try {
+                    Gzip.zip(schematic, output);
                     System.out.println("Schematic saved to \"" + output + "\" successfully.");
                 } catch (IOException e1) {
                     System.err.println("Error saving schematic: " + e1.getMessage());
-                } finally {
-                    if (!file.delete()) {
-                        System.err.println("Could not delete temporary JSON file!");
-                    }
                 }
             }
 
@@ -187,17 +182,10 @@ public class UserInterface extends JPanel {
             }
 
             public void itemStateChangedTschm(ItemEvent e) {
-                JSONArray input = ((JSONObject) schematic).getJSONArray("input");
-                JSONArray level = input.getJSONArray(selected.getYCoord());
-                JSONArray row = level.getJSONArray(selected.getXCoord());
-                JSONObject column = row.getJSONObject(selected.getZCoord());
+                JSONObject blockObject = (JSONObject) selected.getBlockObject();
                 String data = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase() + selected.getProperties();
                 selected.setBlock(Block.valueOf(blockComboBox.getSelectedItem().toString()));
-                column.put("data", data);
-                row.put(selected.getZCoord(), column);
-                level.put(selected.getXCoord(), row);
-                input.put(selected.getYCoord(), level);
-                ((JSONObject) schematic).put("input", input);
+                blockObject.put("data", data);
                 UserInterface.this.renderer.setSchematic((JSONObject) schematic);
                 loadLayer(UserInterface.this.renderer.getPath());
             }
@@ -242,17 +230,10 @@ public class UserInterface extends JPanel {
             }
 
             public void changedUpdateTschm(DocumentEvent e) {
-                JSONArray input = ((JSONObject) schematic).getJSONArray("input");
-                JSONArray level = input.getJSONArray(selected.getYCoord());
-                JSONArray row = level.getJSONArray(selected.getXCoord());
-                JSONObject column = row.getJSONObject(selected.getZCoord());
+                JSONObject blockObject = (JSONObject) selected.getBlockObject();
                 String data = "minecraft:" + selected.getBlock().name().toLowerCase() + propertiesTextField.getText();
                 selected.setProperties(propertiesTextField.getText());
-                column.put("data", data);
-                row.put(selected.getZCoord(), column);
-                level.put(selected.getXCoord(), row);
-                input.put(selected.getYCoord(), level);
-                ((JSONObject) schematic).put("input", input);
+                blockObject.put("data", data);
                 UserInterface.this.renderer.setSchematic((JSONObject) schematic);
                 loadLayer(UserInterface.this.renderer.getPath());
             }

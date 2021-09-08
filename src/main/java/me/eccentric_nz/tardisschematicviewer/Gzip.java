@@ -30,22 +30,18 @@ public final class Gzip {
         throw new UnsupportedOperationException();
     }
 
-    public static void zip(String inString, String outString) throws IOException {
-        try (FileInputStream fileInputStream = new FileInputStream(inString); FileOutputStream fileOutputStream = new FileOutputStream(outString); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream)) {
-            byte[] buffer = new byte[1024 * 16];
-            int len;
-            while ((len = fileInputStream.read(buffer)) != -1) {
-                gzipOutputStream.write(buffer, 0, len);
-            }
+    public static void zip(Object o, String path) throws IOException {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(path); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream)) {
+            gzipOutputStream.write(o.toString().getBytes());
         }
     }
 
-    public static String unzip(String inString) throws IOException {
-        try (GZIPInputStream gzipInputStream = new GZIPInputStream(new FileInputStream(inString)); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
+    public static String unzip(String path) throws IOException {
+        try (GZIPInputStream gzipInputStream = new GZIPInputStream(new FileInputStream(path)); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
-            int len;
-            while ((len = inputStreamReader.read(buffer)) > 0) {
-                stringWriter.write(buffer, 0, len);
+            int length;
+            while ((length = inputStreamReader.read(buffer)) > 0) {
+                stringWriter.write(buffer, 0, length);
             }
             return stringWriter.toString();
         }
