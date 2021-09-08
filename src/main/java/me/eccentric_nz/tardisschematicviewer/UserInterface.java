@@ -34,6 +34,7 @@ import javax.swing.border.LineBorder;
 import javax.swing.border.TitledBorder;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.filechooser.FileFilter;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
@@ -47,7 +48,10 @@ public class UserInterface extends JPanel {
 
     @Serial
     private static final long serialVersionUID = -1098962567729971976L;
+    private static final FileNameExtensionFilter TSCHM_FILTER = new FileNameExtensionFilter("TARDIS schematic file", "tschm");
+    private static final FileNameExtensionFilter NBT_FILTER = new FileNameExtensionFilter("NBT file", "nbt");
     private File lastDirectory;
+    private FileFilter lastFileFilter;
     private SquareButton selected;
     private int currentLayer;
     private Object schematic;
@@ -74,6 +78,7 @@ public class UserInterface extends JPanel {
     public UserInterface(SchematicRenderer renderer) {
         this.renderer = renderer;
         lastDirectory = new File(".");
+        lastFileFilter = TSCHM_FILTER;
         $$$setupUI$$$();
         gridPanel.addComponentListener(new ComponentAdapter() {
             public void componentResized(ComponentEvent e) {
@@ -208,18 +213,18 @@ public class UserInterface extends JPanel {
                         if (!palette.contains(paletteTag)) {
                             palette.add(paletteTag);
                         }
-//                        for (int i = 0; i < palette.size(); i++) {
-//                            boolean used = false;
-//                            for (CompoundTag blockTag1 : blocks) {
-//                                if (blockTag1.getInt("state") == i) {
-//                                    used = true;
-//                                }
-//                            }
-//                            if (!used) {
-//                                palette.remove(i);
-//                                i--;
-//                            }
-//                        }
+                        //                        for (int i = 0; i < palette.size(); i++) {
+                        //                            boolean used = false;
+                        //                            for (CompoundTag blockTag1 : blocks) {
+                        //                                if (blockTag1.getInt("state") == i) {
+                        //                                    used = true;
+                        //                                }
+                        //                            }
+                        //                            if (!used) {
+                        //                                palette.remove(i);
+                        //                                i--;
+                        //                            }
+                        //                        }
                         blockTag.putInt("state", palette.indexOf(paletteTag));
                         CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
                         compoundTag.put("palette", palette);
@@ -303,18 +308,18 @@ public class UserInterface extends JPanel {
                         if (!palette.contains(paletteTag)) {
                             palette.add(paletteTag);
                         }
-//                        for (int i = 0; i < palette.size(); i++) {
-//                            boolean used = false;
-//                            for (CompoundTag blockTag1 : blocks) {
-//                                if (blockTag1.getInt("state") == i) {
-//                                    used = true;
-//                                }
-//                            }
-//                            if (!used) {
-//                                palette.remove(i);
-//                                i--;
-//                            }
-//                        }
+                        //                        for (int i = 0; i < palette.size(); i++) {
+                        //                            boolean used = false;
+                        //                            for (CompoundTag blockTag1 : blocks) {
+                        //                                if (blockTag1.getInt("state") == i) {
+                        //                                    used = true;
+                        //                                }
+                        //                            }
+                        //                            if (!used) {
+                        //                                palette.remove(i);
+                        //                                i--;
+                        //                            }
+                        //                        }
                         CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
                         compoundTag.put("palette", palette);
                         ((NamedTag) schematic).setTag(compoundTag);
@@ -340,14 +345,16 @@ public class UserInterface extends JPanel {
      */
     private void choose(JTextField box) {
         JFileChooser chooser = new JFileChooser(lastDirectory);
-        chooser.setFileFilter(new FileNameExtensionFilter("TARDIS schematic file", "tschm"));
-        chooser.addChoosableFileFilter(new FileNameExtensionFilter("NBT file", "nbt"));
+        chooser.addChoosableFileFilter(TSCHM_FILTER);
+        chooser.addChoosableFileFilter(NBT_FILTER);
+        chooser.setFileFilter(lastFileFilter);
         chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
         chooser.showOpenDialog(panel);
 
         if (chooser.getSelectedFile() != null) {
             box.setText(chooser.getSelectedFile().getPath());
             lastDirectory = chooser.getCurrentDirectory();
+            lastFileFilter = chooser.getFileFilter();
             String path = chooser.getSelectedFile().getPath();
             if (!path.isEmpty()) {
                 try {
