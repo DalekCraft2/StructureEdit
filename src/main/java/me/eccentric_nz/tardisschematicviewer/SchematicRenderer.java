@@ -81,6 +81,7 @@ public class SchematicRenderer extends GLJPanel {
     private int height, width, length, max;
     private Object schematic;
     private Object input;
+    private ListTag<CompoundTag> palette;
     private float[] columnAnglesX;
     private float[] rowAnglesY;
     private float[] faceAnglesZ;
@@ -274,8 +275,8 @@ public class SchematicRenderer extends GLJPanel {
                 int lastIndexX = length - 1;
                 int lastIndexY = height - 1;
                 int lastIndexZ = width - 1;
-                ListTag<CompoundTag> blocks = (ListTag<CompoundTag>) ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("blocks");
-                ListTag<CompoundTag> palette = (ListTag<CompoundTag>) ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("palette");
+                CompoundTag schematicTag = ((CompoundTag) ((NamedTag) schematic).getTag());
+                ListTag<CompoundTag> blocks = (ListTag<CompoundTag>) schematicTag.getListTag("blocks");
                 for (CompoundTag blockTag : blocks) {
                     ListTag<IntTag> position = (ListTag<IntTag>) blockTag.getListTag("pos");
                     int x = position.get(0).asInt();
@@ -435,6 +436,10 @@ public class SchematicRenderer extends GLJPanel {
 
     public int getMax() {
         return max;
+    }
+
+    public void setPalette(ListTag<CompoundTag> palette) {
+        this.palette = palette;
     }
 
     public String getPath() {

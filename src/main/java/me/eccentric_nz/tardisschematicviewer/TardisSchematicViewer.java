@@ -92,19 +92,8 @@ public class TardisSchematicViewer {
                         String relativePath = argList.get(argList.indexOf("-path") + 1);
                         File file = new File(relativePath);
                         String absolutePath = file.getAbsolutePath();
-                        renderer.setPath(absolutePath);
-                        userInterface.setPath(absolutePath);
-                        userInterface.setSchematic(renderer.getSchematic());
-                        if (absolutePath.endsWith(".tschm")) {
-                            userInterface.setSchematic(new JSONObject(Gzip.unzip(absolutePath)));
-                        } else if (absolutePath.endsWith(".nbt")) {
-                            userInterface.setSchematic(NBTUtil.read(absolutePath));
-                        } else {
-                            System.err.println("Not a schematic file!");
-                        }
-                        userInterface.setCurrentLayer(0);
-                        userInterface.loadLayer(absolutePath);
-                    } catch (IOException | JSONException e) {
+                        userInterface.choose(absolutePath);
+                    } catch (JSONException e) {
                         System.err.println("Error reading schematic: " + e.getMessage());
                     }
                 }
