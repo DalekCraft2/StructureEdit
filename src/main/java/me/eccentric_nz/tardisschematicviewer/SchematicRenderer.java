@@ -276,9 +276,9 @@ public class SchematicRenderer extends GLJPanel {
                 int lastIndexY = height - 1;
                 int lastIndexZ = width - 1;
                 CompoundTag schematicTag = ((CompoundTag) ((NamedTag) schematic).getTag());
-                ListTag<CompoundTag> blocks = (ListTag<CompoundTag>) schematicTag.getListTag("blocks");
+                ListTag<CompoundTag> blocks = schematicTag.getListTag("blocks").asCompoundTagList();
                 for (CompoundTag blockTag : blocks) {
-                    ListTag<IntTag> position = (ListTag<IntTag>) blockTag.getListTag("pos");
+                    ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
                     int x = position.get(0).asInt();
                     int y = position.get(1).asInt();
                     int z = position.get(2).asInt();
@@ -481,7 +481,7 @@ public class SchematicRenderer extends GLJPanel {
     public void setSchematic(NamedTag schematic) {
         this.schematic = schematic;
         // get dimensions
-        ListTag<IntTag> size = (ListTag<IntTag>) ((CompoundTag) schematic.getTag()).getListTag("size");
+        ListTag<IntTag> size = ((CompoundTag) schematic.getTag()).getListTag("size").asIntTagList();
         length = size.get(0).asInt();
         height = size.get(1).asInt();
         width = size.get(2).asInt();
