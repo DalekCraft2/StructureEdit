@@ -145,6 +145,9 @@ public class SchematicRenderer extends GLJPanel {
                         displayTschm(gl);
                     } else if (path.endsWith(".nbt")) {
                         displayNbt(gl);
+                    } else {
+                        System.err.println("Not a schematic file!");
+                        schematicParsed = false;
                     }
                 }
             }
@@ -442,10 +445,14 @@ public class SchematicRenderer extends GLJPanel {
         this.path = path;
         if (path.endsWith(".tschm")) {
             setSchematic(new JSONObject(Gzip.unzip(path)));
+            schematicParsed = true;
         } else if (path.endsWith(".nbt")) {
             setSchematic(NBTUtil.read(path));
+            schematicParsed = true;
+        } else {
+            System.err.println("Not a schematic file!");
+            schematicParsed = false;
         }
-        schematicParsed = true;
     }
 
     public Object getSchematic() {

@@ -19,6 +19,7 @@ package me.eccentric_nz.tardisschematicviewer;
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
+import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
@@ -99,22 +100,42 @@ public class UserInterface extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (schematic != null) {
-                    String output = UserInterface.this.renderer.getPath();
-                    String input = output.substring(0, output.lastIndexOf(".tschm")) + ".json";
-                    File file = new File(input);
-                    try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file), 16 * 1024)) {
-                        bufferedWriter.write(schematic.toString());
-                        Gzip.zip(input, output);
-                        System.out.println("Schematic saved to \"" + output + "\" successfully.");
-                    } catch (IOException e1) {
-                        System.err.println("Error saving schematic: " + e1.getMessage());
-                    } finally {
-                        if (!file.delete()) {
-                            System.err.println("Could not delete temporary JSON file!");
-                        }
+                    if (UserInterface.this.renderer.getPath().endsWith(".tschm")) {
+                        mouseClickedTschm(e);
+                    } else if (UserInterface.this.renderer.getPath().endsWith(".nbt")) {
+                        mouseClickedNbt(e);
+                    } else {
+                        System.err.println("Not a schematic file!");
                     }
                 } else {
                     System.err.println("Schematic was null!");
+                }
+            }
+
+            public void mouseClickedTschm(MouseEvent e) {
+                String output = UserInterface.this.renderer.getPath();
+                String input = output.substring(0, output.lastIndexOf(".tschm")) + ".json";
+                File file = new File(input);
+                try (BufferedWriter bufferedWriter = new BufferedWriter(new FileWriter(file), 16 * 1024)) {
+                    bufferedWriter.write(schematic.toString());
+                    Gzip.zip(input, output);
+                    System.out.println("Schematic saved to \"" + output + "\" successfully.");
+                } catch (IOException e1) {
+                    System.err.println("Error saving schematic: " + e1.getMessage());
+                } finally {
+                    if (!file.delete()) {
+                        System.err.println("Could not delete temporary JSON file!");
+                    }
+                }
+            }
+
+            public void mouseClickedNbt(MouseEvent e) {
+                String output = UserInterface.this.renderer.getPath();
+                try {
+                    NBTUtil.write((NamedTag) schematic, output);
+                    System.out.println("Schematic saved to \"" + output + "\" successfully.");
+                } catch (IOException e1) {
+                    System.err.println("Error saving schematic: " + e1.getMessage());
                 }
             }
         });
@@ -144,6 +165,8 @@ public class UserInterface extends JPanel {
                         itemStateChangedTschm(e);
                     } else if (UserInterface.this.renderer.getPath().endsWith(".nbt")) {
                         itemStateChangedNbt(e);
+                    } else {
+                        System.err.println("Not a schematic file!");
                     }
                 } else {
                     System.err.println("Schematic was null!");
@@ -224,6 +247,8 @@ public class UserInterface extends JPanel {
                         changedUpdateTschm(e);
                     } else if (UserInterface.this.renderer.getPath().endsWith(".nbt")) {
                         changedUpdateNbt(e);
+                    } else {
+                        System.err.println("Not a schematic file!");
                     }
                 } else {
                     System.err.println("Schematic was null!");
@@ -433,6 +458,8 @@ public class UserInterface extends JPanel {
             squareActionPerformedTschm(e);
         } else if (renderer.getPath().endsWith(".nbt")) {
             squareActionPerformedNbt(e);
+        } else {
+            System.err.println("Not a schematic file!");
         }
     }
 

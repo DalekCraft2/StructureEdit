@@ -99,6 +99,8 @@ public class TardisSchematicViewer {
                             userInterface.setSchematic(new JSONObject(Gzip.unzip(absolutePath)));
                         } else if (absolutePath.endsWith(".nbt")) {
                             userInterface.setSchematic(NBTUtil.read(absolutePath));
+                        } else {
+                            System.err.println("Not a schematic file!");
                         }
                         userInterface.setCurrentLayer(0);
                         userInterface.loadLayer(absolutePath);
