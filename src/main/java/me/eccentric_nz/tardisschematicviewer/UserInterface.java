@@ -203,24 +203,8 @@ public class UserInterface extends JPanel {
             }
 
             public void itemStateChangedNbt(ItemEvent e) {
-                ListTag<CompoundTag> blocks = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("blocks").asCompoundTagList();
-                int x = selected.getXCoord();
-                int y = selected.getYCoord();
-                int z = selected.getZCoord();
-                CompoundTag blockTag = null;
-                int index = 0;
-                for (CompoundTag blockTag1 : blocks) {
-                    ListTag<IntTag> position = blockTag1.getListTag("pos").asIntTagList();
-                    int x1 = position.get(0).asInt();
-                    int y1 = position.get(1).asInt();
-                    int z1 = position.get(2).asInt();
-                    if (x == x1 && y == y1 && z == z1) {
-                        blockTag = blockTag1;
-                        index = blocks.indexOf(blockTag1);
-                        break;
-                    }
-                }
-                CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
+                CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
+                CompoundTag paletteTag = palette.get(blockTag.getInt("state")).clone();
                 String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
                 selected.setBlock(Block.valueOf(blockComboBox.getSelectedItem().toString()));
                 paletteTag.putString("Name", name);
@@ -228,12 +212,6 @@ public class UserInterface extends JPanel {
                     palette.add(paletteTag);
                 }
                 blockTag.putInt("state", palette.indexOf(paletteTag));
-                blocks.set(index, blockTag);
-                CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
-                // TODO Make this work with multiple palettes.
-                compoundTag.put("palette", palette);
-                compoundTag.put("blocks", blocks);
-                ((NamedTag) schematic).setTag(compoundTag);
                 UserInterface.this.renderer.setSchematic((NamedTag) schematic);
                 loadLayer(UserInterface.this.renderer.getPath());
             }
@@ -280,24 +258,8 @@ public class UserInterface extends JPanel {
             }
 
             public void changedUpdateNbt(DocumentEvent e) {
-                ListTag<CompoundTag> blocks = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("blocks").asCompoundTagList();
-                int x = selected.getXCoord();
-                int y = selected.getYCoord();
-                int z = selected.getZCoord();
-                CompoundTag blockTag = null;
-                int index = 0;
-                for (CompoundTag blockTag1 : blocks) {
-                    ListTag<IntTag> position = blockTag1.getListTag("pos").asIntTagList();
-                    int x1 = position.get(0).asInt();
-                    int y1 = position.get(1).asInt();
-                    int z1 = position.get(2).asInt();
-                    if (x == x1 && y == y1 && z == z1) {
-                        blockTag = blockTag1;
-                        index = blocks.indexOf(blockTag1);
-                        break;
-                    }
-                }
-                CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
+                CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
+                CompoundTag paletteTag = palette.get(blockTag.getInt("state")).clone();
                 CompoundTag properties = null;
                 try {
                     properties = (CompoundTag) SNBTUtil.fromSNBT(propertiesTextField.getText());
@@ -314,11 +276,6 @@ public class UserInterface extends JPanel {
                     palette.add(paletteTag);
                 }
                 blockTag.putInt("state", palette.indexOf(paletteTag));
-                blocks.set(index, blockTag);
-                CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
-                compoundTag.put("palette", palette);
-                compoundTag.put("blocks", blocks);
-                ((NamedTag) schematic).setTag(compoundTag);
                 UserInterface.this.renderer.setSchematic((NamedTag) schematic);
                 loadLayer(UserInterface.this.renderer.getPath());
             }
@@ -337,23 +294,7 @@ public class UserInterface extends JPanel {
             public void changedUpdate(DocumentEvent e) {
                 if (selected != null) {
                     if (UserInterface.this.renderer.getPath().endsWith(".nbt")) {
-                        ListTag<CompoundTag> blocks = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("blocks").asCompoundTagList();
-                        int x = selected.getXCoord();
-                        int y = selected.getYCoord();
-                        int z = selected.getZCoord();
-                        CompoundTag blockTag = null;
-                        int index = 0;
-                        for (CompoundTag blockTag1 : blocks) {
-                            ListTag<IntTag> position = blockTag1.getListTag("pos").asIntTagList();
-                            int x1 = position.get(0).asInt();
-                            int y1 = position.get(1).asInt();
-                            int z1 = position.get(2).asInt();
-                            if (x == x1 && y == y1 && z == z1) {
-                                blockTag = blockTag1;
-                                index = blocks.indexOf(blockTag1);
-                                break;
-                            }
-                        }
+                        CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
                         CompoundTag nbt = null;
                         try {
                             nbt = (CompoundTag) SNBTUtil.fromSNBT(nbtTextField.getText());
@@ -366,10 +307,6 @@ public class UserInterface extends JPanel {
                         } else {
                             blockTag.remove("nbt");
                         }
-                        blocks.set(index, blockTag);
-                        CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
-                        compoundTag.put("blocks", blocks);
-                        ((NamedTag) schematic).setTag(compoundTag);
                         UserInterface.this.renderer.setSchematic((NamedTag) schematic);
                         loadLayer(UserInterface.this.renderer.getPath());
                     } else {
@@ -392,31 +329,19 @@ public class UserInterface extends JPanel {
         blockPaletteComboBox.addItemListener(e -> {
             if (selected != null) {
                 if (this.renderer.getPath().endsWith(".nbt")) {
-                    ListTag<CompoundTag> blocks = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("blocks").asCompoundTagList();
-                    int x = selected.getXCoord();
-                    int y = selected.getYCoord();
-                    int z = selected.getZCoord();
-                    for (CompoundTag blockTag : blocks) {
-                        ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
-                        int x1 = position.get(0).asInt();
-                        int y1 = position.get(1).asInt();
-                        int z1 = position.get(2).asInt();
-                        if (x == x1 && y == y1 && z == z1) {
-                            CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
-                            String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
-                            paletteTag.putString("Name", name);
-                            if (!palette.contains(paletteTag)) {
-                                palette.add(paletteTag);
-                            }
-                            blockTag.putInt("state", palette.indexOf(paletteTag));
-                            CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
-                            compoundTag.put("palette", palette);
-                            ((NamedTag) schematic).setTag(compoundTag);
-                            this.renderer.setSchematic((NamedTag) schematic);
-                            loadLayer(this.renderer.getPath());
-                            return;
-                        }
+                    CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
+                    CompoundTag paletteTag = palette.get(blockTag.getInt("state")).clone();
+                    String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
+                    paletteTag.putString("Name", name);
+                    if (!palette.contains(paletteTag)) {
+                        palette.add(paletteTag);
                     }
+                    blockTag.putInt("state", palette.indexOf(paletteTag));
+                    CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
+                    compoundTag.put("palette", palette);
+                    ((NamedTag) schematic).setTag(compoundTag);
+                    this.renderer.setSchematic((NamedTag) schematic);
+                    loadLayer(this.renderer.getPath());
                 } else {
                     System.err.println("Not a schematic file!");
                 }
@@ -527,7 +452,7 @@ public class UserInterface extends JPanel {
                     String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
                     String blockData = data.contains("[") ? data.substring(data.indexOf('[')) : "";
                     Block block = Block.valueOf(blockName);
-                    SquareButton squareButton = new SquareButton(buttonSideLength, block, x, currentLayer, z, blockData);
+                    SquareButton squareButton = new SquareButton(buttonSideLength, block, x, currentLayer, z, blockData, column);
                     squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
                     squareButton.addActionListener(actionListener);
                     gridPanel.add(squareButton);
@@ -565,7 +490,7 @@ public class UserInterface extends JPanel {
                 }
                 CompoundTag nbt = blockTag.getCompoundTag("nbt");
                 if (y == currentLayer) {
-                    SquareButton squareButton = new SquareButton(buttonSideLength, block, x, y, z, propertiesString, nbt);
+                    SquareButton squareButton = new SquareButton(buttonSideLength, block, x, y, z, propertiesString, blockTag, nbt);
                     squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
                     squareButton.addActionListener(actionListener);
                     gridPanel.add(squareButton);

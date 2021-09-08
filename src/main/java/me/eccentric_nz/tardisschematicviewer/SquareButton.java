@@ -38,18 +38,20 @@ public final class SquareButton extends JButton {
     private Block block;
     private String properties;
     private CompoundTag nbt;
+    private Object blockObject;
 
-    public SquareButton(int size, Block block, int xCoord, int yCoord, int zCoord, String properties) {
-        this(size, block, xCoord, yCoord, zCoord, properties, null);
+    public SquareButton(int size, Block block, int xCoord, int yCoord, int zCoord, String properties, Object blockObject) {
+        this(size, block, xCoord, yCoord, zCoord, properties, blockObject, null);
     }
 
-    public SquareButton(int size, Block block, int xCoord, int yCoord, int zCoord, String properties, CompoundTag nbt) {
+    public SquareButton(int size, Block block, int xCoord, int yCoord, int zCoord, String properties, Object blockObject, CompoundTag nbt) {
         this.size = size;
         this.xCoord = xCoord;
         this.yCoord = yCoord;
         this.zCoord = zCoord;
         this.block = block;
         this.properties = properties;
+        this.blockObject = blockObject;
         this.nbt = nbt;
         setPreferredSize(new Dimension(size, size));
         setSize(getPreferredSize());
@@ -89,6 +91,14 @@ public final class SquareButton extends JButton {
 
     public void setProperties(String properties) {
         this.properties = properties;
+    }
+
+    public Object getBlockObject() {
+        return blockObject;
+    }
+
+    public void setBlockObject(Object blockObject) {
+        this.blockObject = blockObject;
     }
 
     public CompoundTag getNbt() {
