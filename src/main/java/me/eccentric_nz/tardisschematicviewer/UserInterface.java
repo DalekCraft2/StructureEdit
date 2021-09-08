@@ -193,8 +193,8 @@ public class UserInterface extends JPanel {
             public void itemStateChangedNbt(ItemEvent e) {
                 ListTag<CompoundTag> blocks = (ListTag<CompoundTag>) ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("blocks");
                 ListTag<CompoundTag> palette = (ListTag<CompoundTag>) ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("palette");
-                int y = selected.getYCoord();
                 int x = selected.getXCoord();
+                int y = selected.getYCoord();
                 int z = selected.getZCoord();
                 for (CompoundTag blockTag : blocks) {
                     ListTag<IntTag> position = (ListTag<IntTag>) blockTag.getListTag("pos");
@@ -202,24 +202,25 @@ public class UserInterface extends JPanel {
                     int y1 = position.get(1).asInt();
                     int z1 = position.get(2).asInt();
                     if (x == x1 && y == y1 && z == z1) {
-                        CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
+                        CompoundTag paletteTag = palette.get(blockTag.getInt("state")).clone();
                         String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
                         paletteTag.putString("Name", name);
                         if (!palette.contains(paletteTag)) {
                             palette.add(paletteTag);
                         }
-                        for (int i = 0; i < palette.size(); i++) {
-                            boolean used = false;
-                            for (CompoundTag blockTag1 : blocks) {
-                                if (blockTag1.getInt("state") == i) {
-                                    used = true;
-                                }
-                            }
-                            if (!used) {
-                                palette.remove(i);
-                                i--;
-                            }
-                        }
+//                        for (int i = 0; i < palette.size(); i++) {
+//                            boolean used = false;
+//                            for (CompoundTag blockTag1 : blocks) {
+//                                if (blockTag1.getInt("state") == i) {
+//                                    used = true;
+//                                }
+//                            }
+//                            if (!used) {
+//                                palette.remove(i);
+//                                i--;
+//                            }
+//                        }
+                        blockTag.putInt("state", palette.indexOf(paletteTag));
                         CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
                         compoundTag.put("palette", palette);
                         ((NamedTag) schematic).setTag(compoundTag);
@@ -276,8 +277,8 @@ public class UserInterface extends JPanel {
             public void changedUpdateNbt(DocumentEvent e) {
                 ListTag<CompoundTag> blocks = (ListTag<CompoundTag>) ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("blocks");
                 ListTag<CompoundTag> palette = (ListTag<CompoundTag>) ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("palette");
-                int y = selected.getYCoord();
                 int x = selected.getXCoord();
+                int y = selected.getYCoord();
                 int z = selected.getZCoord();
                 for (CompoundTag blockTag : blocks) {
                     ListTag<IntTag> position = (ListTag<IntTag>) blockTag.getListTag("pos");
@@ -302,18 +303,18 @@ public class UserInterface extends JPanel {
                         if (!palette.contains(paletteTag)) {
                             palette.add(paletteTag);
                         }
-                        for (int i = 0; i < palette.size(); i++) {
-                            boolean used = false;
-                            for (CompoundTag blockTag1 : blocks) {
-                                if (blockTag1.getInt("state") == i) {
-                                    used = true;
-                                }
-                            }
-                            if (!used) {
-                                palette.remove(i);
-                                i--;
-                            }
-                        }
+//                        for (int i = 0; i < palette.size(); i++) {
+//                            boolean used = false;
+//                            for (CompoundTag blockTag1 : blocks) {
+//                                if (blockTag1.getInt("state") == i) {
+//                                    used = true;
+//                                }
+//                            }
+//                            if (!used) {
+//                                palette.remove(i);
+//                                i--;
+//                            }
+//                        }
                         CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
                         compoundTag.put("palette", palette);
                         ((NamedTag) schematic).setTag(compoundTag);
