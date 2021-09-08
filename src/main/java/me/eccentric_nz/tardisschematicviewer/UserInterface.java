@@ -191,9 +191,8 @@ public class UserInterface extends JPanel {
                 JSONArray level = input.getJSONArray(selected.getYCoord());
                 JSONArray row = level.getJSONArray(selected.getXCoord());
                 JSONObject column = row.getJSONObject(selected.getZCoord());
-                String data = column.getString("data");
-                String blockData = data.contains("[") ? data.substring(data.indexOf('[')) : "";
-                data = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase() + blockData;
+                String data = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase() + selected.getProperties();
+                selected.setBlock(Block.valueOf(blockComboBox.getSelectedItem().toString()));
                 column.put("data", data);
                 row.put(selected.getZCoord(), column);
                 level.put(selected.getXCoord(), row);
@@ -208,39 +207,35 @@ public class UserInterface extends JPanel {
                 int x = selected.getXCoord();
                 int y = selected.getYCoord();
                 int z = selected.getZCoord();
-                for (CompoundTag blockTag : blocks) {
-                    ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
+                CompoundTag blockTag = null;
+                int index = 0;
+                for (CompoundTag blockTag1 : blocks) {
+                    ListTag<IntTag> position = blockTag1.getListTag("pos").asIntTagList();
                     int x1 = position.get(0).asInt();
                     int y1 = position.get(1).asInt();
                     int z1 = position.get(2).asInt();
                     if (x == x1 && y == y1 && z == z1) {
-                        CompoundTag paletteTag = palette.get(blockTag.getInt("state")).clone();
-                        String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
-                        paletteTag.putString("Name", name);
-                        if (!palette.contains(paletteTag)) {
-                            palette.add(paletteTag);
-                        }
-                        //                        for (int i = 0; i < palette.size(); i++) {
-                        //                            boolean used = false;
-                        //                            for (CompoundTag blockTag1 : blocks) {
-                        //                                if (blockTag1.getInt("state") == i) {
-                        //                                    used = true;
-                        //                                }
-                        //                            }
-                        //                            if (!used) {
-                        //                                palette.remove(i);
-                        //                                i--;
-                        //                            }
-                        //                        }
-                        blockTag.putInt("state", palette.indexOf(paletteTag));
-                        CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
-                        compoundTag.put("palette", palette);
-                        ((NamedTag) schematic).setTag(compoundTag);
-                        UserInterface.this.renderer.setSchematic((NamedTag) schematic);
-                        loadLayer(UserInterface.this.renderer.getPath());
-                        return;
+                        blockTag = blockTag1;
+                        index = blocks.indexOf(blockTag1);
+                        break;
                     }
                 }
+                CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
+                String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
+                selected.setBlock(Block.valueOf(blockComboBox.getSelectedItem().toString()));
+                paletteTag.putString("Name", name);
+                if (!palette.contains(paletteTag)) {
+                    palette.add(paletteTag);
+                }
+                blockTag.putInt("state", palette.indexOf(paletteTag));
+                blocks.set(index, blockTag);
+                CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
+                // TODO Make this work with multiple palettes.
+                compoundTag.put("palette", palette);
+                compoundTag.put("blocks", blocks);
+                ((NamedTag) schematic).setTag(compoundTag);
+                UserInterface.this.renderer.setSchematic((NamedTag) schematic);
+                loadLayer(UserInterface.this.renderer.getPath());
             }
         });
         propertiesTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -273,10 +268,8 @@ public class UserInterface extends JPanel {
                 JSONArray level = input.getJSONArray(selected.getYCoord());
                 JSONArray row = level.getJSONArray(selected.getXCoord());
                 JSONObject column = row.getJSONObject(selected.getZCoord());
-                String data = column.getString("data");
-                int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
-                String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
-                data = blockName + propertiesTextField.getText();
+                String data = "minecraft:" + selected.getBlock().name().toLowerCase() + propertiesTextField.getText();
+                selected.setProperties(propertiesTextField.getText());
                 column.put("data", data);
                 row.put(selected.getZCoord(), column);
                 level.put(selected.getXCoord(), row);
@@ -291,49 +284,43 @@ public class UserInterface extends JPanel {
                 int x = selected.getXCoord();
                 int y = selected.getYCoord();
                 int z = selected.getZCoord();
-                for (CompoundTag blockTag : blocks) {
-                    ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
+                CompoundTag blockTag = null;
+                int index = 0;
+                for (CompoundTag blockTag1 : blocks) {
+                    ListTag<IntTag> position = blockTag1.getListTag("pos").asIntTagList();
                     int x1 = position.get(0).asInt();
                     int y1 = position.get(1).asInt();
                     int z1 = position.get(2).asInt();
                     if (x == x1 && y == y1 && z == z1) {
-                        CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
-                        CompoundTag properties = null;
-                        try {
-                            if (!propertiesTextField.getText().equals("") && propertiesTextField != null) {
-                                properties = (CompoundTag) SNBTUtil.fromSNBT(propertiesTextField.getText());
-                            }
-                        } catch (IOException e1) {
-                            e1.printStackTrace();
-                        }
-                        if (properties != null) {
-                            paletteTag.put("Properties", properties);
-                        } else {
-                            paletteTag.remove("Properties");
-                        }
-                        if (!palette.contains(paletteTag)) {
-                            palette.add(paletteTag);
-                        }
-                        //                        for (int i = 0; i < palette.size(); i++) {
-                        //                            boolean used = false;
-                        //                            for (CompoundTag blockTag1 : blocks) {
-                        //                                if (blockTag1.getInt("state") == i) {
-                        //                                    used = true;
-                        //                                }
-                        //                            }
-                        //                            if (!used) {
-                        //                                palette.remove(i);
-                        //                                i--;
-                        //                            }
-                        //                        }
-                        CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
-                        compoundTag.put("palette", palette);
-                        ((NamedTag) schematic).setTag(compoundTag);
-                        UserInterface.this.renderer.setSchematic((NamedTag) schematic);
-                        loadLayer(UserInterface.this.renderer.getPath());
-                        return;
+                        blockTag = blockTag1;
+                        index = blocks.indexOf(blockTag1);
+                        break;
                     }
                 }
+                CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
+                CompoundTag properties = null;
+                try {
+                    properties = (CompoundTag) SNBTUtil.fromSNBT(propertiesTextField.getText());
+                } catch (IOException e1) {
+                    e1.printStackTrace();
+                }
+                selected.setProperties(propertiesTextField.getText());
+                if (properties != null) {
+                    paletteTag.put("Properties", properties);
+                } else {
+                    paletteTag.remove("Properties");
+                }
+                if (!palette.contains(paletteTag)) {
+                    palette.add(paletteTag);
+                }
+                blockTag.putInt("state", palette.indexOf(paletteTag));
+                blocks.set(index, blockTag);
+                CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
+                compoundTag.put("palette", palette);
+                compoundTag.put("blocks", blocks);
+                ((NamedTag) schematic).setTag(compoundTag);
+                UserInterface.this.renderer.setSchematic((NamedTag) schematic);
+                loadLayer(UserInterface.this.renderer.getPath());
             }
         });
         nbtTextField.getDocument().addDocumentListener(new DocumentListener() {
@@ -354,35 +341,37 @@ public class UserInterface extends JPanel {
                         int x = selected.getXCoord();
                         int y = selected.getYCoord();
                         int z = selected.getZCoord();
-                        for (CompoundTag blockTag : blocks) {
-                            ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
+                        CompoundTag blockTag = null;
+                        int index = 0;
+                        for (CompoundTag blockTag1 : blocks) {
+                            ListTag<IntTag> position = blockTag1.getListTag("pos").asIntTagList();
                             int x1 = position.get(0).asInt();
                             int y1 = position.get(1).asInt();
                             int z1 = position.get(2).asInt();
                             if (x == x1 && y == y1 && z == z1) {
-                                int index = blocks.indexOf(blockTag);
-                                CompoundTag nbt = null;
-                                try {
-                                    if (!nbtTextField.getText().equals("") && nbtTextField != null) {
-                                        nbt = (CompoundTag) SNBTUtil.fromSNBT(nbtTextField.getText());
-                                    }
-                                } catch (IOException e1) {
-                                    e1.printStackTrace();
-                                }
-                                if (nbt != null) {
-                                    blockTag.put("nbt", nbt);
-                                } else {
-                                    blockTag.remove("nbt");
-                                }
-                                blocks.set(index, blockTag);
-                                CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
-                                compoundTag.put("blocks", blocks);
-                                ((NamedTag) schematic).setTag(compoundTag);
-                                UserInterface.this.renderer.setSchematic((NamedTag) schematic);
-                                loadLayer(UserInterface.this.renderer.getPath());
-                                return;
+                                blockTag = blockTag1;
+                                index = blocks.indexOf(blockTag1);
+                                break;
                             }
                         }
+                        CompoundTag nbt = null;
+                        try {
+                            nbt = (CompoundTag) SNBTUtil.fromSNBT(nbtTextField.getText());
+                        } catch (IOException e1) {
+                            e1.printStackTrace();
+                        }
+                        selected.setNbt(nbt);
+                        if (nbt != null) {
+                            blockTag.put("nbt", nbt);
+                        } else {
+                            blockTag.remove("nbt");
+                        }
+                        blocks.set(index, blockTag);
+                        CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
+                        compoundTag.put("blocks", blocks);
+                        ((NamedTag) schematic).setTag(compoundTag);
+                        UserInterface.this.renderer.setSchematic((NamedTag) schematic);
+                        loadLayer(UserInterface.this.renderer.getPath());
                     } else {
                         System.err.println("Not a schematic file!");
                     }
@@ -413,7 +402,7 @@ public class UserInterface extends JPanel {
                         int y1 = position.get(1).asInt();
                         int z1 = position.get(2).asInt();
                         if (x == x1 && y == y1 && z == z1) {
-                            CompoundTag paletteTag = palette.get(blockTag.getInt("state")).clone();
+                            CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
                             String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
                             paletteTag.putString("Name", name);
                             if (!palette.contains(paletteTag)) {
@@ -496,6 +485,9 @@ public class UserInterface extends JPanel {
                         paletteComboBox.setVisible(false);
                         blockPaletteComboBox.setVisible(false);
                     }
+                } else {
+                    nbtLabel.setVisible(false);
+                    nbtTextField.setVisible(false);
                 }
                 loadLayer(renderer.getPath());
             } catch (IOException | JSONException e1) {
@@ -526,20 +518,17 @@ public class UserInterface extends JPanel {
             JSONArray level = ((JSONObject) schematic).getJSONArray("input").getJSONArray(currentLayer);
             int width = dimensions.getInt("width");
             int buttonSideLength = gridPanel.getWidth() / width;
-            for (int i = 0; i < width; i++) {
-                JSONArray row = level.getJSONArray(i);
-                for (int j = 0; j < width; j++) {
-                    JSONObject column = row.getJSONObject(j);
+            for (int x = 0; x < width; x++) {
+                JSONArray row = level.getJSONArray(x);
+                for (int z = 0; z < width; z++) {
+                    JSONObject column = row.getJSONObject(z);
                     String data = column.getString("data");
                     int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
                     String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
+                    String blockData = data.contains("[") ? data.substring(data.indexOf('[')) : "";
                     Block block = Block.valueOf(blockName);
-                    SquareButton squareButton = new SquareButton(buttonSideLength, block.getColor(), i, currentLayer, j);
-                    squareButton.setText(blockName.substring(0, 1));
-                    squareButton.setPreferredSize(new Dimension(buttonSideLength, buttonSideLength));
-                    squareButton.setBounds(i * buttonSideLength, j * buttonSideLength, buttonSideLength, buttonSideLength);
-                    squareButton.setBorder(new LineBorder(Color.BLACK));
-                    squareButton.setToolTipText(data);
+                    SquareButton squareButton = new SquareButton(buttonSideLength, block, x, currentLayer, z, blockData);
+                    squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
                     squareButton.addActionListener(actionListener);
                     gridPanel.add(squareButton);
                 }
@@ -574,13 +563,10 @@ public class UserInterface extends JPanel {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
+                CompoundTag nbt = blockTag.getCompoundTag("nbt");
                 if (y == currentLayer) {
-                    SquareButton squareButton = new SquareButton(buttonSideLength, block.getColor(), x, y, z);
-                    squareButton.setText(blockName.substring(0, 1));
-                    squareButton.setPreferredSize(new Dimension(buttonSideLength, buttonSideLength));
+                    SquareButton squareButton = new SquareButton(buttonSideLength, block, x, y, z, propertiesString, nbt);
                     squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
-                    squareButton.setBorder(new LineBorder(Color.BLACK));
-                    squareButton.setToolTipText(namespacedBlockName + propertiesString);
                     squareButton.addActionListener(actionListener);
                     gridPanel.add(squareButton);
                 }
@@ -596,54 +582,14 @@ public class UserInterface extends JPanel {
             selected.setBorder(new LineBorder(Color.BLACK));
         }
         selected = (SquareButton) e.getSource();
-        if (renderer.getPath().endsWith(".tschm")) {
-            squareActionPerformedTschm(e);
-        } else if (renderer.getPath().endsWith(".nbt")) {
-            squareActionPerformedNbt(e);
+        if (renderer.getPath().endsWith(".tschm") || renderer.getPath().endsWith(".nbt")) {
+            selected.setBorder(new LineBorder(Color.RED));
+            blockComboBox.setSelectedItem(selected.getBlock().name());
+            propertiesTextField.setText(selected.getProperties());
+            blockPositionTextField.setText(selected.getXCoord() + ", " + selected.getYCoord() + ", " + selected.getZCoord());
+            nbtTextField.setText(selected.getSnbt());
         } else {
             System.err.println("Not a schematic file!");
-        }
-    }
-
-    private void squareActionPerformedTschm(ActionEvent e) {
-        String data = selected.getToolTipText();
-        int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
-        String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
-        String blockData = data.contains("[") ? data.substring(data.indexOf('[')) : "";
-        selected.setBorder(new LineBorder(Color.RED));
-        blockComboBox.setSelectedItem(blockName);
-        propertiesTextField.setText(blockData);
-        blockPositionTextField.setText(selected.getXCoord() + ", " + selected.getYCoord() + ", " + selected.getZCoord());
-    }
-
-    private void squareActionPerformedNbt(ActionEvent e) {
-        String data = selected.getToolTipText();
-        int nameEndIndex = data.contains("{") ? data.indexOf('{') : data.length();
-        String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
-        String blockData = data.contains("{") ? data.substring(data.indexOf('{')) : "";
-        selected.setBorder(new LineBorder(Color.RED));
-        blockComboBox.setSelectedItem(blockName);
-        propertiesTextField.setText(blockData);
-        blockPositionTextField.setText(selected.getXCoord() + ", " + selected.getYCoord() + ", " + selected.getZCoord());
-        ListTag<CompoundTag> blocks = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("blocks").asCompoundTagList();
-        int x = selected.getXCoord();
-        int y = selected.getYCoord();
-        int z = selected.getZCoord();
-        for (CompoundTag blockTag : blocks) {
-            ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
-            int x1 = position.get(0).asInt();
-            int y1 = position.get(1).asInt();
-            int z1 = position.get(2).asInt();
-            if (x == x1 && y == y1 && z == z1) {
-                CompoundTag nbtTag = blockTag.getCompoundTag("nbt");
-                String snbt = "";
-                try {
-                    snbt = nbtTag == null ? "" : SNBTUtil.toSNBT(nbtTag);
-                } catch (IOException e1) {
-                    e1.printStackTrace();
-                }
-                nbtTextField.setText(snbt);
-            }
         }
     }
 
@@ -658,65 +604,65 @@ public class UserInterface extends JPanel {
         createUIComponents();
         panel.setLayout(new GridLayoutManager(3, 4, new Insets(0, 0, 0, 0), -1, -1));
         editorPanel = new JPanel();
-        editorPanel.setLayout(new GridLayoutManager(9, 5, new Insets(0, 0, 0, 0), -1, -1));
-        editorPanel.setVisible(true);
+        editorPanel.setLayout(new GridLayoutManager(9, 4, new Insets(0, 0, 0, 0), -1, -1));
+        editorPanel.setVisible(false);
         panel.add(editorPanel, new GridConstraints(2, 0, 1, 4, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         final Spacer spacer1 = new Spacer();
-        editorPanel.add(spacer1, new GridConstraints(8, 4, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        editorPanel.add(spacer1, new GridConstraints(8, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         final Spacer spacer2 = new Spacer();
-        editorPanel.add(spacer2, new GridConstraints(8, 2, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        editorPanel.add(spacer2, new GridConstraints(8, 1, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_VERTICAL, 1, GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         blockLabel = new JLabel();
         blockLabel.setText("Block:");
-        editorPanel.add(blockLabel, new GridConstraints(4, 2, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        editorPanel.add(blockComboBox, new GridConstraints(4, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(blockLabel, new GridConstraints(4, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(blockComboBox, new GridConstraints(4, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         propertiesLabel = new JLabel();
         propertiesLabel.setText("Properties:");
-        editorPanel.add(propertiesLabel, new GridConstraints(5, 2, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(propertiesLabel, new GridConstraints(5, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         gridPanel = new JPanel();
         gridPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        editorPanel.add(gridPanel, new GridConstraints(0, 0, 9, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(500, 500), new Dimension(600, 600), 0, false));
+        editorPanel.add(gridPanel, new GridConstraints(0, 0, 9, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(500, 500), new Dimension(600, 600), 0, false));
         gridPanel.setBorder(BorderFactory.createTitledBorder(BorderFactory.createLineBorder(Color.black), null, TitledBorder.DEFAULT_JUSTIFICATION, TitledBorder.DEFAULT_POSITION, null, null));
         propertiesTextField = new JTextField();
-        editorPanel.add(propertiesTextField, new GridConstraints(5, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        editorPanel.add(propertiesTextField, new GridConstraints(5, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         blockPositionLabel = new JLabel();
         blockPositionLabel.setText("Block Position:");
-        editorPanel.add(blockPositionLabel, new GridConstraints(3, 2, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(77, 33), null, 0, false));
+        editorPanel.add(blockPositionLabel, new GridConstraints(3, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(77, 33), null, 0, false));
         blockPositionTextField = new JTextField();
         blockPositionTextField.setEditable(false);
-        editorPanel.add(blockPositionTextField, new GridConstraints(3, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 33), null, 0, false));
+        editorPanel.add(blockPositionTextField, new GridConstraints(3, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 33), null, 0, false));
         layerLabel = new JLabel();
         layerLabel.setText("Layer:");
-        editorPanel.add(layerLabel, new GridConstraints(0, 2, 2, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(layerLabel, new GridConstraints(0, 1, 2, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         plusButton = new JButton();
         plusButton.setText("+");
-        editorPanel.add(plusButton, new GridConstraints(0, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(plusButton, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         minusButton = new JButton();
         minusButton.setText("-");
-        editorPanel.add(minusButton, new GridConstraints(1, 3, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(minusButton, new GridConstraints(1, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         layerTextField = new JTextField();
         layerTextField.setEditable(false);
-        editorPanel.add(layerTextField, new GridConstraints(0, 4, 2, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        editorPanel.add(layerTextField, new GridConstraints(0, 3, 2, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         nbtTextField = new JTextField();
         nbtTextField.setVisible(false);
-        editorPanel.add(nbtTextField, new GridConstraints(6, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        editorPanel.add(nbtTextField, new GridConstraints(6, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         paletteLabel = new JLabel();
         paletteLabel.setText("Palette:");
         paletteLabel.setVisible(false);
-        editorPanel.add(paletteLabel, new GridConstraints(2, 2, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(paletteLabel, new GridConstraints(2, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         paletteComboBox = new JComboBox();
         paletteComboBox.setVisible(false);
-        editorPanel.add(paletteComboBox, new GridConstraints(2, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(paletteComboBox, new GridConstraints(2, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         nbtLabel = new JLabel();
         nbtLabel.setText("NBT:");
         nbtLabel.setVisible(false);
-        editorPanel.add(nbtLabel, new GridConstraints(6, 2, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(nbtLabel, new GridConstraints(6, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPaletteLabel = new JLabel();
         blockPaletteLabel.setText("Block Palette:");
         blockPaletteLabel.setVisible(false);
-        editorPanel.add(blockPaletteLabel, new GridConstraints(7, 2, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(blockPaletteLabel, new GridConstraints(7, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPaletteComboBox = new JComboBox();
         blockPaletteComboBox.setVisible(false);
-        editorPanel.add(blockPaletteComboBox, new GridConstraints(7, 4, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(blockPaletteComboBox, new GridConstraints(7, 3, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         fileTextField = new JTextField();
         fileTextField.setEditable(false);
         panel.add(fileTextField, new GridConstraints(0, 0, 1, 4, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));

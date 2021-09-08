@@ -16,8 +16,13 @@
  */
 package me.eccentric_nz.tardisschematicviewer;
 
+import net.querz.nbt.io.SNBTUtil;
+import net.querz.nbt.tag.CompoundTag;
+
 import javax.swing.*;
+import javax.swing.border.LineBorder;
 import java.awt.*;
+import java.io.IOException;
 import java.io.Serial;
 
 /**
@@ -30,18 +35,32 @@ public final class SquareButton extends JButton {
 
     private final int size;
     private final int xCoord, yCoord, zCoord;
+    private Block block;
+    private String properties;
+    private CompoundTag nbt;
 
-    public SquareButton(int size, Color color, int xCoord, int yCoord, int zCoord) {
+    public SquareButton(int size, Block block, int xCoord, int yCoord, int zCoord, String properties) {
+        this(size, block, xCoord, yCoord, zCoord, properties, null);
+    }
+
+    public SquareButton(int size, Block block, int xCoord, int yCoord, int zCoord, String properties, CompoundTag nbt) {
         this.size = size;
         this.xCoord = xCoord;
         this.yCoord = yCoord;
         this.zCoord = zCoord;
-        setPreferredSize(getPreferredSize());
+        this.block = block;
+        this.properties = properties;
+        this.nbt = nbt;
+        setPreferredSize(new Dimension(size, size));
         setSize(getPreferredSize());
+        Color color = block.getColor();
         if (color != null) {
             setBackground(color);
         }
         setOpaque(true);
+        setText(block.name().substring(0, 1));
+        setToolTipText("minecraft:" + block.name().toLowerCase());
+        setBorder(new LineBorder(Color.BLACK));
     }
 
     public int getXCoord() {
@@ -54,6 +73,48 @@ public final class SquareButton extends JButton {
 
     public int getZCoord() {
         return zCoord;
+    }
+
+    public Block getBlock() {
+        return block;
+    }
+
+    public void setBlock(Block block) {
+        this.block = block;
+    }
+
+    public String getProperties() {
+        return properties;
+    }
+
+    public void setProperties(String properties) {
+        this.properties = properties;
+    }
+
+    public CompoundTag getNbt() {
+        return nbt;
+    }
+
+    public void setNbt(CompoundTag nbt) {
+        this.nbt = nbt;
+    }
+
+    public String getSnbt() {
+        String snbt = null;
+        try {
+            snbt = nbt == null ? null : SNBTUtil.toSNBT(nbt);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        return snbt;
+    }
+
+    public void setSnbt(String snbt) {
+        try {
+            nbt = (CompoundTag) SNBTUtil.fromSNBT(snbt);
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
     }
 
     @Override
