@@ -36,11 +36,11 @@ public class ThinCube {
         // rotate if necessary
         float angle = 0.0f;
         if (data.contains("facing=")) {
-            if (data.contains("facing=north")) {
+            if (data.contains("facing=south")) {
                 angle = 0.0f;
             } else if (data.contains("facing=east")) {
                 angle = 90.0f;
-            } else if (data.contains("facing=south")) {
+            } else if (data.contains("facing=north")) {
                 angle = 180.0f;
             } else if (data.contains("facing=west")) {
                 angle = -90.0f;
@@ -118,11 +118,11 @@ public class ThinCube {
         // rotate if necessary
         float angle = 0.0f;
         if (properties.containsKey("facing")) {
-            if (properties.getString("facing").equals("north")) {
+            if (properties.getString("facing").equals("south")) {
                 angle = 0.0f;
             } else if (properties.getString("facing").equals("east")) {
                 angle = 90.0f;
-            } else if (properties.getString("facing").equals("south")) {
+            } else if (properties.getString("facing").equals("north")) {
                 angle = 180.0f;
             } else if (properties.getString("facing").equals("west")) {
                 angle = -90.0f;

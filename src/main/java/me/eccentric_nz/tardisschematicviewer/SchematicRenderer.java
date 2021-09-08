@@ -171,27 +171,27 @@ public class SchematicRenderer extends GLJPanel {
                 int lastIndexX = width - 1;
                 int lastIndexY = height - 1;
                 int lastIndexZ = length - 1;
-                for (int height = 0; height < SchematicRenderer.this.height; height++) {
-                    JSONArray level = ((JSONArray) input).getJSONArray(height);
-                    for (int width = 0; width < SchematicRenderer.this.width; width++) {
-                        JSONArray row = level.getJSONArray(width);
-                        for (int length = 0; length < SchematicRenderer.this.length; length++) {
-                            JSONObject column = row.getJSONObject(length);
+                for (int y = 0; y < height; y++) {
+                    JSONArray level = ((JSONArray) input).getJSONArray(y);
+                    for (int x = 0; x < width; x++) {
+                        JSONArray row = level.getJSONArray(x);
+                        for (int z = 0; z < length; z++) {
+                            JSONObject column = row.getJSONObject(z);
                             String data = column.getString("data");
                             int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
                             String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
                             Block block = Block.valueOf(blockName);
                             gl.glPushMatrix();
 
-                            gl.glRotatef(columnAnglesX[width], ONE_F, ZERO_F, ZERO_F);
-                            gl.glRotatef(rowAnglesY[height], ZERO_F, ONE_F, ZERO_F);
-                            gl.glRotatef(faceAnglesZ[length], ZERO_F, ZERO_F, ONE_F);
+                            gl.glRotatef(columnAnglesX[x], ONE_F, ZERO_F, ZERO_F);
+                            gl.glRotatef(rowAnglesY[y], ZERO_F, ONE_F, ZERO_F);
+                            gl.glRotatef(faceAnglesZ[z], ZERO_F, ZERO_F, ONE_F);
 
                             // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
                             float translateX = (float) lastIndexX / 2.0f;
                             float translateY = (float) lastIndexY / 2.0f;
                             float translateZ = (float) lastIndexZ / 2.0f;
-                            gl.glTranslatef((width - translateX) * CUBE_TRANSLATION_FACTOR, (height - translateY) * CUBE_TRANSLATION_FACTOR, -(length - translateZ) * CUBE_TRANSLATION_FACTOR);
+                            gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
                             Color color = block.getColor();
                             switch (block.getBlockShape()) {
                                 case SLAB:
@@ -463,7 +463,7 @@ public class SchematicRenderer extends GLJPanel {
         columnAnglesX = new float[width];
         rowAnglesY = new float[height];
         faceAnglesZ = new float[length];
-        input = schematic.getJSONObject("input");
+        input = schematic.getJSONArray("input");
     }
 
     public void setSchematic(NamedTag schematic) {

@@ -31,11 +31,11 @@ public class Stair {
     public static void draw(GL2 gl, Color color, float size, String data) {
 
         float[] components = color.getColorComponents(null);
-        if (data.contains("facing=north")) {
+        if (data.contains("facing=south")) {
             gl.glRotatef(0.0f, 0.0f, 1.0f, 0.0f);
         } else if (data.contains("facing=east")) {
             gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-        } else if (data.contains("facing=south")) {
+        } else if (data.contains("facing=north")) {
             gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
         } else if (data.contains("facing=west")) {
             gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
@@ -133,11 +133,11 @@ public class Stair {
     public static void draw(GL2 gl, Color color, float size, CompoundTag properties) {
 
         float[] components = color.getColorComponents(null);
-        if (properties.getString("facing").equals("north")) {
+        if (properties.getString("facing").equals("south")) {
             gl.glRotatef(0.0f, 0.0f, 1.0f, 0.0f);
         } else if (properties.getString("facing").equals("east")) {
             gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-        } else if (properties.getString("facing").equals("south")) {
+        } else if (properties.getString("facing").equals("north")) {
             gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
         } else if (properties.getString("facing").equals("west")) {
             gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
