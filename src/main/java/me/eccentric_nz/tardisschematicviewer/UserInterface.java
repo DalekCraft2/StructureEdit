@@ -311,16 +311,7 @@ public class UserInterface extends JPanel {
             if (selected != null) {
                 if (this.renderer.getPath().endsWith(".nbt")) {
                     CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
-                    CompoundTag paletteTag = palette.get(blockTag.getInt("state")).clone();
-                    String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
-                    paletteTag.putString("Name", name);
-                    if (!palette.contains(paletteTag)) {
-                        palette.add(paletteTag);
-                    }
-                    blockTag.putInt("state", palette.indexOf(paletteTag));
-                    CompoundTag compoundTag = (CompoundTag) ((NamedTag) schematic).getTag();
-                    compoundTag.put("palette", palette);
-                    ((NamedTag) schematic).setTag(compoundTag);
+                    blockTag.putInt("state", blockPaletteComboBox.getSelectedIndex());
                     this.renderer.setSchematic((NamedTag) schematic);
                     loadLayer(this.renderer.getPath());
                 } else {
@@ -366,8 +357,6 @@ public class UserInterface extends JPanel {
                 schematic = renderer.getSchematic();
                 currentLayer = 0;
                 if (path.endsWith(".nbt")) {
-                    nbtLabel.setVisible(true);
-                    nbtTextField.setVisible(true);
                     if (((CompoundTag) ((NamedTag) schematic).getTag()).containsKey("palettes")) {
                         int palettesSize = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("palettes").size();
                         Integer[] palettes = new Integer[palettesSize];
@@ -375,25 +364,33 @@ public class UserInterface extends JPanel {
                             palettes[i] = i;
                         }
                         paletteComboBox.setModel(new DefaultComboBoxModel<>(palettes));
-                        blockPaletteComboBox.setModel(new DefaultComboBoxModel<>(palettes));
                         paletteComboBox.setSelectedItem("0");
                         palette = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("palettes").asListTagList().get(Integer.parseInt(paletteComboBox.getSelectedItem().toString())).asCompoundTagList();
                         renderer.setPalette(palette);
                         paletteLabel.setVisible(true);
-                        blockPaletteLabel.setVisible(true);
                         paletteComboBox.setVisible(true);
-                        blockPaletteComboBox.setVisible(true);
                     } else {
                         palette = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("palette").asCompoundTagList();
                         renderer.setPalette(palette);
                         paletteLabel.setVisible(false);
-                        blockPaletteLabel.setVisible(false);
                         paletteComboBox.setVisible(false);
-                        blockPaletteComboBox.setVisible(false);
+
                     }
+                    int paletteSize = palette.size();
+                    Integer[] paletteIds = new Integer[paletteSize];
+                    for (int i = 0; i < paletteSize; i++) {
+                        paletteIds[i] = i;
+                    }
+                    nbtLabel.setVisible(true);
+                    nbtTextField.setVisible(true);
+                    blockPaletteLabel.setVisible(true);
+                    blockPaletteComboBox.setModel(new DefaultComboBoxModel<>(paletteIds));
+                    blockPaletteComboBox.setVisible(true);
                 } else {
                     nbtLabel.setVisible(false);
                     nbtTextField.setVisible(false);
+                    blockPaletteLabel.setVisible(false);
+                    blockPaletteComboBox.setVisible(false);
                 }
                 loadLayer(renderer.getPath());
             } catch (IOException | JSONException e1) {
