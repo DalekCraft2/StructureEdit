@@ -130,7 +130,7 @@ public class UserInterface extends JPanel {
             public void mouseClickedTschm(MouseEvent e) {
                 String output = UserInterface.this.renderer.getPath();
                 try {
-                    Gzip.zip(schematic, output);
+                    GzipUtils.zip(schematic, output);
                     System.out.println("Schematic saved to \"" + output + "\" successfully.");
                 } catch (IOException e1) {
                     System.err.println("Error saving schematic: " + e1.getMessage());

@@ -24,9 +24,9 @@ import java.util.zip.GZIPOutputStream;
 /**
  * @author eccentric_nz
  */
-public final class Gzip {
+public final class GzipUtils {
 
-    private Gzip() {
+    private GzipUtils() {
         throw new UnsupportedOperationException();
     }
 

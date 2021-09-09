@@ -449,7 +449,7 @@ public class SchematicRenderer extends GLJPanel {
     public void setPath(String path) throws IOException, JSONException {
         this.path = path;
         if (path.endsWith(".tschm")) {
-            setSchematic(new JSONObject(Gzip.unzip(path)));
+            setSchematic(new JSONObject(GzipUtils.unzip(path)));
             schematicParsed = true;
         } else if (path.endsWith(".nbt")) {
             setSchematic(NBTUtil.read(path));
