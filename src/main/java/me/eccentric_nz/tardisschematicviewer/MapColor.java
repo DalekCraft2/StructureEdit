@@ -4,10 +4,6 @@ import java.awt.*;
 
 public final class MapColor {
 
-    private MapColor() {
-        throw new UnsupportedOperationException();
-    }
-
     public static final Color TRANSPARENT = (new Color(255, 255, 255));
     public static final Color GRASS = new Color(127, 178, 56);
     public static final Color SAND = new Color(247, 233, 163);
@@ -70,4 +66,8 @@ public final class MapColor {
     public static final Color DEEPSLATE = new Color(100, 100, 100);
     public static final Color RAW_IRON = new Color(216, 175, 147);
     public static final Color GLOW_LICHEN = new Color(127, 167, 150);
+
+    private MapColor() {
+        throw new UnsupportedOperationException();
+    }
 }
