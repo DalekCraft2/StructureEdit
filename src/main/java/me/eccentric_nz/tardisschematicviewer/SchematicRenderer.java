@@ -201,7 +201,7 @@ public class SchematicRenderer extends GLJPanel {
                             switch (block.getBlockShape()) {
                                 case SLAB:
                                     if (!data.contains("type=double")) {
-                                        Slab.draw(gl, color, ONE_F, ONE_F, 0.0f, ONE_F, data, false);
+                                        Slab.draw(gl, color, ONE_F, ONE_F, 0.5f, ONE_F, data, false);
                                     } else {
                                         Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, false);
                                     }
@@ -210,7 +210,7 @@ public class SchematicRenderer extends GLJPanel {
                                     if (block.equals(Block.REDSTONE_WIRE)) {
                                         Redstone.draw(gl, color, ONE_F, false);
                                     } else {
-                                        Slab.draw(gl, color, ONE_F, ONE_F, 0.8f, ONE_F, data, false);
+                                        Slab.draw(gl, color, ONE_F, ONE_F, 0.2f, ONE_F, data, false);
                                     }
                                     break;
                                 case STAIR:
@@ -301,7 +301,7 @@ public class SchematicRenderer extends GLJPanel {
                         switch (block.getBlockShape()) {
                             case SLAB:
                                 if (!properties.getString("type").equals("double")) {
-                                    Slab.draw(gl, color, ONE_F, ONE_F, 0.0f, ONE_F, properties, false);
+                                    Slab.draw(gl, color, ONE_F, ONE_F, 0.5f, ONE_F, properties, false);
                                 } else {
                                     Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, false);
                                 }
@@ -310,7 +310,7 @@ public class SchematicRenderer extends GLJPanel {
                                 if (block.equals(Block.REDSTONE_WIRE)) {
                                     Redstone.draw(gl, color, ONE_F, false);
                                 } else {
-                                    Slab.draw(gl, color, ONE_F, ONE_F, 0.8f, ONE_F, properties, false);
+                                    Slab.draw(gl, color, ONE_F, ONE_F, 0.2f, ONE_F, properties, false);
                                 }
                                 break;
                             case STAIR:
