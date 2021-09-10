@@ -30,13 +30,11 @@ public class Slab {
 
         if (properties instanceof String) {
             if (((String) properties).contains("type=top") || ((String) properties).contains("half=top")) {
-                gl.glRotatef(180.0f, 0.0f, 0.0f, 0.0f);
-                gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+                gl.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
             }
         } else if (properties instanceof CompoundTag) {
             if (((CompoundTag) properties).getString("type").equals("top") || ((CompoundTag) properties).getString("half").equals("top")) {
-                gl.glRotatef(180.0f, 0.0f, 0.0f, 0.0f);
-                gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+                gl.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
             }
         }
 

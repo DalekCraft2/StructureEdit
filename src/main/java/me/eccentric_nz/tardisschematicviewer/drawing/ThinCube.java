@@ -29,41 +29,41 @@ public class ThinCube {
     public static void draw(GL2 gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties, boolean transparent) {
 
         // rotate if necessary
-        float angle = 0.0f;
+        float yaw = 0.0f;
         if (properties instanceof String) {
             if (((String) properties).contains("facing=")) {
                 if (((String) properties).contains("facing=south")) {
-                    angle = 0.0f;
+                    yaw = 0.0f;
                 } else if (((String) properties).contains("facing=east")) {
-                    angle = 90.0f;
+                    yaw = 90.0f;
                 } else if (((String) properties).contains("facing=north")) {
-                    angle = 180.0f;
+                    yaw = 180.0f;
                 } else if (((String) properties).contains("facing=west")) {
-                    angle = -90.0f;
+                    yaw = -90.0f;
                 }
             } else if (((String) properties).contains("rotation=")) {
                 String rotationToEnd = ((String) properties).substring(((String) properties).indexOf("rotation=") + "rotation".length() + 1);
                 int endIndex = rotationToEnd.contains(",") ? rotationToEnd.indexOf(',') : rotationToEnd.indexOf(']');
                 int rotationInt = Integer.parseInt(rotationToEnd.substring(0, endIndex));
-                angle = rotationInt * 22.5f;
+                yaw = rotationInt * 22.5f;
             }
         } else if (properties instanceof CompoundTag) {
             if (((CompoundTag) properties).containsKey("facing")) {
                 if (((CompoundTag) properties).getString("facing").equals("south")) {
-                    angle = 0.0f;
+                    yaw = 0.0f;
                 } else if (((CompoundTag) properties).getString("facing").equals("east")) {
-                    angle = 90.0f;
+                    yaw = 90.0f;
                 } else if (((CompoundTag) properties).getString("facing").equals("north")) {
-                    angle = 180.0f;
+                    yaw = 180.0f;
                 } else if (((CompoundTag) properties).getString("facing").equals("west")) {
-                    angle = -90.0f;
+                    yaw = -90.0f;
                 }
             } else if (((CompoundTag) properties).containsKey("rotation")) {
                 int rotationInt = ((CompoundTag) properties).getInt("rotation");
-                angle = rotationInt * 22.5f;
+                yaw = rotationInt * 22.5f;
             }
         }
-        gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
+        gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f);
 
         Cube.draw(gl, color, scale, sizeX, sizeY, sizeZ, transparent);
     }

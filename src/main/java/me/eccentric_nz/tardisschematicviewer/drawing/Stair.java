@@ -28,35 +28,37 @@ public class Stair {
 
     public static void draw(GL2 gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties, boolean transparent) {
 
+        float roll = 0.0f;
+        float yaw = 0.0f;
         if (properties instanceof String) {
             if (((String) properties).contains("facing=south")) {
-                gl.glRotatef(0.0f, 0.0f, 1.0f, 0.0f);
+                yaw = 0.0f;
             } else if (((String) properties).contains("facing=east")) {
-                gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+                yaw = 90.0f;
             } else if (((String) properties).contains("facing=north")) {
-                gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+                yaw = 180.0f;
             } else if (((String) properties).contains("facing=west")) {
-                gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+                yaw = -90.0f;
             }
             if (((String) properties).contains("half=top")) {
-                gl.glRotatef(180.0f, 0.0f, 0.0f, 0.0f);
-                gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+                roll = 180.0f;
             }
         } else if (properties instanceof CompoundTag) {
             if (((CompoundTag) properties).getString("facing").equals("south")) {
-                gl.glRotatef(0.0f, 0.0f, 1.0f, 0.0f);
+                yaw = 0.0f;
             } else if (((CompoundTag) properties).getString("facing").equals("east")) {
-                gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+                yaw = 90.0f;
             } else if (((CompoundTag) properties).getString("facing").equals("north")) {
-                gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+                yaw = 180.0f;
             } else if (((CompoundTag) properties).getString("facing").equals("west")) {
-                gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+                yaw = -90.0f;
             }
             if (((CompoundTag) properties).getString("half").equals("top")) {
-                gl.glRotatef(180.0f, 0.0f, 0.0f, 0.0f);
-                gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+                roll = 180.0f;
             }
         }
+        gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f);
+        gl.glRotatef(roll, 0.0f, 0.0f, 1.0f);
 
         gl.glTranslatef(0.0f, -sizeY / 2.0f, 0.0f);
 

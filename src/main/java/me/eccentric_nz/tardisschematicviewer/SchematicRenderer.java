@@ -56,11 +56,11 @@ public class SchematicRenderer extends GLJPanel {
     /**
      * Rotational angle for x-axis in degrees.
      **/
-    private static float angleX = 45.0f;
+    private static float pitch = 45.0f;
     /**
      * Rotational angle for y-axis in degrees.
      **/
-    private static float angleY = 45.0f;
+    private static float yaw = 45.0f;
     /**
      * The GL Utility.
      */
@@ -140,8 +140,8 @@ public class SchematicRenderer extends GLJPanel {
                     gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                     gl.glLoadIdentity(); // reset the model-view matrix
                     gl.glTranslatef(x, y, z); // translate into the screen
-                    gl.glRotatef(angleX, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
-                    gl.glRotatef(angleY, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
+                    gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
+                    gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
                     // draw a cube
                     if (path.endsWith(".tschm")) {
                         displayTschm(gl);
@@ -402,15 +402,15 @@ public class SchematicRenderer extends GLJPanel {
                 // change the camera angle
                 final int buffer = 0;
                 if (e.getX() < mouseX - buffer || e.getX() > mouseX + buffer) {
-                    angleY += e.getX() - mouseX;
+                    yaw += e.getX() - mouseX;
                 }
-                if (angleX + e.getY() - mouseY > 90) {
-                    angleX = 90;
-                } else if (angleX + e.getY() - mouseY < -90) {
-                    angleX = -90;
+                if (pitch + e.getY() - mouseY > 90) {
+                    pitch = 90;
+                } else if (pitch + e.getY() - mouseY < -90) {
+                    pitch = -90;
                 } else {
                     if (e.getY() < mouseY - buffer || e.getY() > mouseY + buffer) {
-                        angleX += e.getY() - mouseY;
+                        pitch += e.getY() - mouseY;
                     }
                 }
                 mouseX = e.getX();
