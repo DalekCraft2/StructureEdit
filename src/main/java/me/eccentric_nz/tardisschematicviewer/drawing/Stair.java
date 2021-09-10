@@ -21,17 +21,12 @@ import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
 
-import static com.jogamp.opengl.GL.GL_LINES;
-import static com.jogamp.opengl.GL2ES3.GL_QUADS;
-
 /**
  * @author eccentric_nz
  */
 public class Stair {
 
     public static void draw(GL2 gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties, boolean transparent) {
-
-        float[] components = color.getComponents(null);
 
         if (properties instanceof String) {
             if (((String) properties).contains("facing=south")) {
@@ -63,93 +58,12 @@ public class Stair {
             }
         }
 
-        if (transparent) {
-            gl.glLineWidth(scale * 2);
-            gl.glBegin(GL_LINES);
-        } else {
-            gl.glBegin(GL_QUADS);
-        }
+        gl.glTranslatef(0.0f, -sizeY / 2.0f, 0.0f);
 
-        // Front Face same as cube
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(0.0f, 0.0f, scale);
-        gl.glVertex3f(-scale, -scale, scale); // bottom-left of the quad
-        gl.glVertex3f(scale, -scale, scale);  // bottom-right of the quad
-        gl.glVertex3f(scale, scale, scale);   // top-right of the quad
-        gl.glVertex3f(-scale, scale, scale);  // top-left of the quad
+        Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ, transparent);
 
-        // Back Face top
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(0.0f, 0.0f, -scale);
-        gl.glVertex3f(-scale, scale, 0.0f); // bottom-left of the quad
-        gl.glVertex3f(scale, scale, 0.0f);  // bottom-right of the quad
-        gl.glVertex3f(scale, 0.0f, 0.0f);   // top-right of the quad
-        gl.glVertex3f(-scale, 0.0f, 0.0f);  // top-left of the quad
+        gl.glTranslatef(0.0f, sizeY, sizeY / 2.0f);
 
-        // Back Face same as slab
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(0.0f, 0.0f, -scale);
-        gl.glVertex3f(-scale, -scale, -scale);
-        gl.glVertex3f(-scale, 0.0f, -scale);
-        gl.glVertex3f(scale, 0.0f, -scale);
-        gl.glVertex3f(scale, -scale, -scale);
-
-        // Top Face back
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(0.0f, scale, 0.0f);
-        gl.glVertex3f(-scale, scale, 0.0f);
-        gl.glVertex3f(-scale, scale, scale);
-        gl.glVertex3f(scale, scale, scale);
-        gl.glVertex3f(scale, scale, 0.0f);
-
-        // Top Face front
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(0.0f, scale, 0.0f);
-        gl.glVertex3f(-scale, 0.0f, 0.0f);
-        gl.glVertex3f(-scale, 0.0f, -scale);
-        gl.glVertex3f(scale, 0.0f, -scale);
-        gl.glVertex3f(scale, 0.0f, 0.0f);
-
-        // Bottom Face same as cube
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(0.0f, -scale, 0.0f);
-        gl.glVertex3f(-scale, -scale, -scale);
-        gl.glVertex3f(scale, -scale, -scale);
-        gl.glVertex3f(scale, -scale, scale);
-        gl.glVertex3f(-scale, -scale, scale);
-
-        // Right face front
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(scale, 0.0f, 0.0f);
-        gl.glVertex3f(scale, -scale, -scale);
-        gl.glVertex3f(scale, 0.0f, -scale);
-        gl.glVertex3f(scale, 0.0f, 0.0f);
-        gl.glVertex3f(scale, -scale, 0.0f);
-
-        // Right face back
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(scale, 0.0f, 0.0f);
-        gl.glVertex3f(scale, -scale, 0.0f);
-        gl.glVertex3f(scale, scale, 0.0f);
-        gl.glVertex3f(scale, scale, scale);
-        gl.glVertex3f(scale, -scale, scale);
-
-        // Left Face front
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(-scale, 0.0f, 0.0f);
-        gl.glVertex3f(-scale, -scale, -scale);
-        gl.glVertex3f(-scale, 0.0f, -scale);
-        gl.glVertex3f(-scale, 0.0f, 0.0f);
-        gl.glVertex3f(-scale, -scale, 0.0f);
-
-        // Left Face back
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(-scale, 0.0f, 0.0f);
-        gl.glVertex3f(-scale, -scale, 0.0f);
-        gl.glVertex3f(-scale, scale, 0.0f);
-        gl.glVertex3f(-scale, scale, scale);
-        gl.glVertex3f(-scale, -scale, scale);
-
-        gl.glEnd();
+        Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
     }
 }
