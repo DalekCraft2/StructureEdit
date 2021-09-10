@@ -378,8 +378,8 @@ public class SchematicRenderer extends GLJPanel {
                     case KeyEvent.VK_S, KeyEvent.VK_DOWN -> z--;
                     case KeyEvent.VK_A -> x++;
                     case KeyEvent.VK_D -> x--;
-                    case KeyEvent.VK_SPACE -> y++;
-                    case KeyEvent.VK_SHIFT -> y--;
+                    case KeyEvent.VK_SHIFT -> y++;
+                    case KeyEvent.VK_SPACE -> y--;
                     case KeyEvent.VK_LEFT -> {
                         height--;
                         if (height < 0) {
