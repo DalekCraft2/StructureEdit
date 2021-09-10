@@ -1,4 +1,4 @@
-package me.eccentric_nz.tardisschematicviewer;
+package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import java.awt.*;
 

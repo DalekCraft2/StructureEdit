@@ -16,6 +16,7 @@
  */
 package me.eccentric_nz.tardisschematicviewer;
 
+import me.eccentric_nz.tardisschematicviewer.drawing.Block;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 
