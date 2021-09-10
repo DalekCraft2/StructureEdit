@@ -31,9 +31,6 @@ public class ThinCube {
 
     public static void draw(GL2 gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties, boolean transparent) {
 
-        sizeY -= scale;
-        float[] components = color.getComponents(null);
-
         // rotate if necessary
         float angle = 0.0f;
         if (properties instanceof String) {
@@ -71,61 +68,6 @@ public class ThinCube {
         }
         gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
 
-        if (transparent) {
-            gl.glLineWidth(scale * 2);
-            gl.glBegin(GL_LINES);
-        } else {
-            gl.glBegin(GL_QUADS);
-        }
-
-        // Front Face wide
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(0.0f, 0.0f, scale);
-        gl.glVertex3f(-sizeX, -scale, sizeZ); // bottom-left of the quad
-        gl.glVertex3f(sizeX, -scale, sizeZ); // bottom-right of the quad
-        gl.glVertex3f(sizeX, sizeY, sizeZ); // top-right of the quad
-        gl.glVertex3f(-sizeX, sizeY, sizeZ); // top-left of the quad
-
-        // Back Face wide
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(0.0f, 0.0f, -scale);
-        gl.glVertex3f(-sizeX, -scale, -sizeZ);
-        gl.glVertex3f(-sizeX, sizeY, -sizeZ);
-        gl.glVertex3f(sizeX, sizeY, -sizeZ);
-        gl.glVertex3f(sizeX, -scale, -sizeZ);
-
-        // Top Face LR
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(0.0f, scale, 0.0f);
-        gl.glVertex3f(-sizeX, sizeY, -sizeZ);
-        gl.glVertex3f(-sizeX, sizeY, sizeZ);
-        gl.glVertex3f(sizeX, sizeY, sizeZ);
-        gl.glVertex3f(sizeX, sizeY, -sizeZ);
-
-        // Bottom Face LR
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(0.0f, -scale, 0.0f);
-        gl.glVertex3f(-sizeX, -scale, -sizeZ);
-        gl.glVertex3f(sizeX, -scale, -sizeZ);
-        gl.glVertex3f(sizeX, -scale, sizeZ);
-        gl.glVertex3f(-sizeX, -scale, sizeZ);
-
-        // Right Face LR
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(scale, 0.0f, 0.0f);
-        gl.glVertex3f(sizeX, -scale, -sizeZ);
-        gl.glVertex3f(sizeX, sizeY, -sizeZ);
-        gl.glVertex3f(sizeX, sizeY, sizeZ);
-        gl.glVertex3f(sizeX, -scale, sizeZ);
-
-        // Left Face LR
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
-        gl.glNormal3f(-scale, 0.0f, 0.0f);
-        gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
-        gl.glVertex3f(-sizeX, -sizeY, sizeZ);
-        gl.glVertex3f(-sizeX, sizeY, sizeZ);
-        gl.glVertex3f(-sizeX, sizeY, -sizeZ);
-
-        gl.glEnd();
+        Cube.draw(gl, color, scale, sizeX, sizeY, sizeZ, transparent);
     }
 }

@@ -40,8 +40,10 @@ public class Cube {
             gl.glBegin(GL_QUADS);
         }
 
-        // Front Face
+        // Set color
         gl.glColor4f(components[0], components[1], components[2], components[3]);
+
+        // Front Face
         gl.glNormal3f(0.0f, 0.0f, scale);
         gl.glVertex3f(-sizeX, -sizeY, sizeZ); // bottom-left of the quad
         gl.glVertex3f(sizeX, -sizeY, sizeZ);  // bottom-right of the quad
@@ -49,7 +51,6 @@ public class Cube {
         gl.glVertex3f(-sizeX, sizeY, sizeZ);  // top-left of the quad
 
         // Back Face
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
         gl.glNormal3f(0.0f, 0.0f, -scale);
         gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
         gl.glVertex3f(-sizeX, sizeY, -sizeZ);
@@ -57,7 +58,6 @@ public class Cube {
         gl.glVertex3f(sizeX, -sizeY, -sizeZ);
 
         // Top Face
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
         gl.glNormal3f(0.0f, scale, 0.0f);
         gl.glVertex3f(-sizeX, sizeY, -sizeZ);
         gl.glVertex3f(-sizeX, sizeY, sizeZ);
@@ -65,7 +65,6 @@ public class Cube {
         gl.glVertex3f(sizeX, sizeY, -sizeZ);
 
         // Bottom Face
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
         gl.glNormal3f(0.0f, -scale, 0.0f);
         gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
         gl.glVertex3f(sizeX, -sizeY, -sizeZ);
@@ -73,7 +72,6 @@ public class Cube {
         gl.glVertex3f(-sizeX, -sizeY, sizeZ);
 
         // Right face
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
         gl.glNormal3f(scale, 0.0f, 0.0f);
         gl.glVertex3f(sizeX, -sizeY, -sizeZ);
         gl.glVertex3f(sizeX, sizeY, -sizeZ);
@@ -81,7 +79,6 @@ public class Cube {
         gl.glVertex3f(sizeX, -sizeY, sizeZ);
 
         // Left Face
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
         gl.glNormal3f(-scale, 0.0f, 0.0f);
         gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
         gl.glVertex3f(-sizeX, -sizeY, sizeZ);
