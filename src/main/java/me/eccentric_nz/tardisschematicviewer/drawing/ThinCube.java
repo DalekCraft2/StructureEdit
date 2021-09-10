@@ -21,9 +21,6 @@ import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
 
-import static com.jogamp.opengl.GL.GL_LINES;
-import static com.jogamp.opengl.GL2ES3.GL_QUADS;
-
 /**
  * @author eccentric_nz
  */
