@@ -17,6 +17,7 @@
 package me.eccentric_nz.tardisschematicviewer;
 
 import com.jogamp.opengl.GL2;
+import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
 
@@ -27,9 +28,20 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
  */
 public class Slab {
 
-    public static void draw(GL2 gl, Color color, float size, float depth) {
+    public static void draw(GL2 gl, Color color, float size, float depth, Object properties) {
 
         float[] components = color.getColorComponents(null);
+        if (properties instanceof String) {
+            if (((String) properties).contains("type=top") || ((String) properties).contains("half=top")) {
+                gl.glRotatef(180.0f, 0.0f, 0.0f, 0.0f);
+                gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+            }
+        } else if (properties instanceof CompoundTag) {
+            if (((CompoundTag) properties).getString("type").equals("top") || ((CompoundTag) properties).getString("half").equals("top")) {
+                gl.glRotatef(180.0f, 0.0f, 0.0f, 0.0f);
+                gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
+            }
+        }
 
         gl.glBegin(GL_QUADS);
 

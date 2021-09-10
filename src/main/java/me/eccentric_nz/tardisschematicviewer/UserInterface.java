@@ -52,13 +52,13 @@ public class UserInterface extends JPanel {
     private static final long serialVersionUID = -1098962567729971976L;
     private static final FileNameExtensionFilter TSCHM_FILTER = new FileNameExtensionFilter("TARDIS schematic file", "tschm");
     private static final FileNameExtensionFilter NBT_FILTER = new FileNameExtensionFilter("NBT file", "nbt");
+    private final SchematicRenderer renderer;
     private File lastDirectory;
     private FileFilter lastFileFilter;
     private SquareButton selected;
     private int currentLayer;
     private Object schematic;
     private ListTag<CompoundTag> palette;
-    private SchematicRenderer renderer;
     private JButton openButton;
     private JTextField fileTextField;
     private JButton editButton;
@@ -77,7 +77,7 @@ public class UserInterface extends JPanel {
     private JLabel blockPositionLabel;
     private JTextField layerTextField;
     private JTextField nbtTextField;
-    ActionListener actionListener = this::squareActionPerformed;
+    private final ActionListener actionListener = this::squareActionPerformed;
     private JLabel nbtLabel;
     private JLabel paletteLabel;
     private JComboBox<Integer> paletteComboBox;
@@ -282,7 +282,7 @@ public class UserInterface extends JPanel {
                         } catch (IOException e1) {
                             e1.printStackTrace();
                         }
-                        selected.setNbt(nbt);
+                        selected.setSnbt(nbtTextField.getText());
                         if (nbt != null) {
                             blockTag.put("nbt", nbt);
                         } else {

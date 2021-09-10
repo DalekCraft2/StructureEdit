@@ -29,107 +29,44 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
  */
 public class ThinCube {
 
-    public static void draw(GL2 gl, Color color, float size, float thickness, float height, String data, boolean glass) {
+    public static void draw(GL2 gl, Color color, float size, float thickness, float height, Object properties, boolean glass) {
 
         float height1 = -size + height;
         float[] components = color.getColorComponents(null);
         // rotate if necessary
         float angle = 0.0f;
-        if (data.contains("facing=")) {
-            if (data.contains("facing=south")) {
-                angle = 0.0f;
-            } else if (data.contains("facing=east")) {
-                angle = 90.0f;
-            } else if (data.contains("facing=north")) {
-                angle = 180.0f;
-            } else if (data.contains("facing=west")) {
-                angle = -90.0f;
+        if (properties instanceof String) {
+            if (((String) properties).contains("facing=")) {
+                if (((String) properties).contains("facing=south")) {
+                    angle = 0.0f;
+                } else if (((String) properties).contains("facing=east")) {
+                    angle = 90.0f;
+                } else if (((String) properties).contains("facing=north")) {
+                    angle = 180.0f;
+                } else if (((String) properties).contains("facing=west")) {
+                    angle = -90.0f;
+                }
+            } else if (((String) properties).contains("rotation=")) {
+                String rotationToEnd = ((String) properties).substring(((String) properties).indexOf("rotation=") + "rotation".length() + 1);
+                int endIndex = rotationToEnd.contains(",") ? rotationToEnd.indexOf(',') : rotationToEnd.indexOf(']');
+                int rotationInt = Integer.parseInt(rotationToEnd.substring(0, endIndex));
+                angle = rotationInt * 22.5f;
             }
-        } else if (data.contains("rotation=")) {
-            String rotationToEnd = data.substring(data.indexOf("rotation=") + "rotation".length() + 1);
-            int endIndex = rotationToEnd.contains(",") ? rotationToEnd.indexOf(',') : rotationToEnd.indexOf(']');
-            int rotationInt = Integer.parseInt(rotationToEnd.substring(0, endIndex));
-            angle = rotationInt * 22.5f;
-        }
-        gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
-
-        if (glass) {
-            gl.glLineWidth(size * 2);
-            gl.glBegin(GL_LINES);
-        } else {
-            gl.glBegin(GL_QUADS);
-        }
-
-        // Front Face wide
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(0.0f, 0.0f, size);
-        gl.glVertex3f(-size, -size, thickness); // bottom-left of the quad
-        gl.glVertex3f(size, -size, thickness); // bottom-right of the quad
-        gl.glVertex3f(size, height1, thickness); // top-right of the quad
-        gl.glVertex3f(-size, height1, thickness); // top-left of the quad
-
-        // Back Face wide
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(0.0f, 0.0f, -size);
-        gl.glVertex3f(-size, -size, -thickness);
-        gl.glVertex3f(-size, height1, -thickness);
-        gl.glVertex3f(size, height1, -thickness);
-        gl.glVertex3f(size, -size, -thickness);
-
-        // Top Face LR
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(0.0f, size, 0.0f);
-        gl.glVertex3f(-size, height1, -thickness);
-        gl.glVertex3f(-size, height1, thickness);
-        gl.glVertex3f(size, height1, thickness);
-        gl.glVertex3f(size, height1, -thickness);
-
-        // Bottom Face LR
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(0.0f, -size, 0.0f);
-        gl.glVertex3f(-size, -size, -thickness);
-        gl.glVertex3f(size, -size, -thickness);
-        gl.glVertex3f(size, -size, thickness);
-        gl.glVertex3f(-size, -size, thickness);
-
-        // Right Face LR
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(size, 0.0f, 0.0f);
-        gl.glVertex3f(size, -size, -thickness);
-        gl.glVertex3f(size, height1, -thickness);
-        gl.glVertex3f(size, height1, thickness);
-        gl.glVertex3f(size, -size, thickness);
-
-        // Left Face LR
-        gl.glColor3f(components[0], components[1], components[2]);
-        gl.glNormal3f(-size, 0.0f, 0.0f);
-        gl.glVertex3f(-size, -size, -thickness);
-        gl.glVertex3f(-size, -size, thickness);
-        gl.glVertex3f(-size, height1, thickness);
-        gl.glVertex3f(-size, height1, -thickness);
-
-        gl.glEnd();
-    }
-
-    public static void draw(GL2 gl, Color color, float size, float thickness, float height, CompoundTag properties, boolean glass) {
-
-        float height1 = -size + height;
-        float[] components = color.getColorComponents(null);
-        // rotate if necessary
-        float angle = 0.0f;
-        if (properties.containsKey("facing")) {
-            if (properties.getString("facing").equals("south")) {
-                angle = 0.0f;
-            } else if (properties.getString("facing").equals("east")) {
-                angle = 90.0f;
-            } else if (properties.getString("facing").equals("north")) {
-                angle = 180.0f;
-            } else if (properties.getString("facing").equals("west")) {
-                angle = -90.0f;
+        } else if (properties instanceof CompoundTag) {
+            if (((CompoundTag) properties).containsKey("facing")) {
+                if (((CompoundTag) properties).getString("facing").equals("south")) {
+                    angle = 0.0f;
+                } else if (((CompoundTag) properties).getString("facing").equals("east")) {
+                    angle = 90.0f;
+                } else if (((CompoundTag) properties).getString("facing").equals("north")) {
+                    angle = 180.0f;
+                } else if (((CompoundTag) properties).getString("facing").equals("west")) {
+                    angle = -90.0f;
+                }
+            } else if (((CompoundTag) properties).containsKey("rotation")) {
+                int rotationInt = ((CompoundTag) properties).getInt("rotation");
+                angle = rotationInt * 22.5f;
             }
-        } else if (properties.containsKey("rotation")) {
-            int rotationInt = properties.getInt("rotation");
-            angle = rotationInt * 22.5f;
         }
         gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
 

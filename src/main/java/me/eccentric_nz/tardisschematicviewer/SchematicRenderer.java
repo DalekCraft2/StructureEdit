@@ -199,19 +199,17 @@ public class SchematicRenderer extends GLJPanel {
                             Color color = block.getColor();
                             switch (block.getBlockShape()) {
                                 case SLAB:
-                                    if (data.contains("type=bottom")) {
-                                        Slab.draw(gl, color, ONE_F, 0);
-                                    } else if (data.contains("type=top")) {
-                                        SlabUpper.draw(gl, color, ONE_F);
+                                    if (!data.contains("type=double")) {
+                                        Slab.draw(gl, color, ONE_F, 0, data);
                                     } else {
                                         Cube.draw(gl, color, ONE_F, false);
                                     }
                                     break;
                                 case FLAT:
                                     if (block.equals(Block.REDSTONE_WIRE)) {
-                                        Redstone.draw(gl, ONE_F);
+                                        Redstone.draw(gl, color, ONE_F);
                                     } else {
-                                        Slab.draw(gl, color, ONE_F, 0.8f);
+                                        Slab.draw(gl, color, ONE_F, 0.8f, data);
                                     }
                                     break;
                                 case STAIR:
@@ -301,19 +299,17 @@ public class SchematicRenderer extends GLJPanel {
                         Color color = block.getColor();
                         switch (block.getBlockShape()) {
                             case SLAB:
-                                if (properties.getString("type").equals("bottom")) {
-                                    Slab.draw(gl, color, ONE_F, 0);
-                                } else if (properties.getString("type").equals("top")) {
-                                    SlabUpper.draw(gl, color, ONE_F);
+                                if (!properties.getString("type").equals("double")) {
+                                    Slab.draw(gl, color, ONE_F, 0, properties);
                                 } else {
                                     Cube.draw(gl, color, ONE_F, false);
                                 }
                                 break;
                             case FLAT:
                                 if (block.equals(Block.REDSTONE_WIRE)) {
-                                    Redstone.draw(gl, ONE_F);
+                                    Redstone.draw(gl, color, ONE_F);
                                 } else {
-                                    Slab.draw(gl, color, ONE_F, 0.8f);
+                                    Slab.draw(gl, color, ONE_F, 0.8f, properties);
                                 }
                                 break;
                             case STAIR:

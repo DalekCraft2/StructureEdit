@@ -19,9 +19,7 @@ package me.eccentric_nz.tardisschematicviewer;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.FPSAnimator;
-import net.querz.nbt.io.NBTUtil;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
