@@ -208,7 +208,7 @@ public class SchematicRenderer extends GLJPanel {
                                     break;
                                 case FLAT:
                                     if (block.equals(Block.REDSTONE_WIRE)) {
-                                        Redstone.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.125f, ONE_F,data, false);
+                                        Redstone.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.125f, ONE_F, data, false);
                                     } else {
                                         Slab.draw(gl, color, ONE_F, ONE_F, 0.2f, ONE_F, data, false);
                                     }
@@ -308,7 +308,7 @@ public class SchematicRenderer extends GLJPanel {
                                 break;
                             case FLAT:
                                 if (block.equals(Block.REDSTONE_WIRE)) {
-                                    Redstone.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.125f, ONE_F,properties, false);
+                                    Redstone.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.125f, ONE_F, properties, false);
                                 } else {
                                     Slab.draw(gl, color, ONE_F, ONE_F, 0.2f, ONE_F, properties, false);
                                 }
