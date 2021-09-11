@@ -83,9 +83,6 @@ public class SchematicRenderer extends GLJPanel {
     private Object schematic;
     private Object input;
     private ListTag<CompoundTag> palette;
-    private float[] columnAnglesX;
-    private float[] rowAnglesY;
-    private float[] faceAnglesZ;
     private String path;
     private boolean schematicParsed = false;
 
@@ -188,10 +185,6 @@ public class SchematicRenderer extends GLJPanel {
                             Block block = Block.valueOf(blockName);
                             gl.glPushMatrix();
 
-                            gl.glRotatef(columnAnglesX[x], ONE_F, ZERO_F, ZERO_F);
-                            gl.glRotatef(rowAnglesY[y], ZERO_F, ONE_F, ZERO_F);
-                            gl.glRotatef(faceAnglesZ[z], ZERO_F, ZERO_F, ONE_F);
-
                             // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
                             float translateX = (float) lastIndexX / 2.0f;
                             float translateY = (float) lastIndexY / 2.0f;
@@ -214,22 +207,22 @@ public class SchematicRenderer extends GLJPanel {
                                     break;
                                 case PLANT: {
                                     float thickness;
-                                    float height1;
+                                    float sizeY;
                                     switch (block) {
                                         case BROWN_MUSHROOM, RED_MUSHROOM, CARROTS, DEAD_BUSH, GRASS, NETHER_WART, POTATOES -> {
                                             thickness = 0.125f;
-                                            height1 = 0.5f;
+                                            sizeY = 0.5f;
                                         }
                                         case WHEAT, POPPY, DANDELION -> {
                                             thickness = 0.125f;
-                                            height1 = 0.8f;
+                                            sizeY = 0.8f;
                                         }
                                         default -> {
                                             thickness = 0.25f;
-                                            height1 = ONE_F;
+                                            sizeY = ONE_F;
                                         }
                                     }
-                                    Plant.draw(gl, color, ONE_F, thickness, ONE_F, height1, ONE_F);
+                                    Plant.draw(gl, color, ONE_F, thickness, ONE_F, sizeY, ONE_F);
                                     break;
                                 }
                                 case WALL:
@@ -281,10 +274,6 @@ public class SchematicRenderer extends GLJPanel {
                         CompoundTag properties = palette.get(blockTag.getInt("state")).getCompoundTag("Properties");
                         gl.glPushMatrix();
 
-                        gl.glRotatef(columnAnglesX[x], ONE_F, ZERO_F, ZERO_F);
-                        gl.glRotatef(rowAnglesY[y], ZERO_F, ONE_F, ZERO_F);
-                        gl.glRotatef(faceAnglesZ[z], ZERO_F, ZERO_F, ONE_F);
-
                         // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
                         float translateX = (float) lastIndexX / 2.0f;
                         float translateY = (float) lastIndexY / 2.0f;
@@ -307,22 +296,22 @@ public class SchematicRenderer extends GLJPanel {
                                 break;
                             case PLANT: {
                                 float thickness;
-                                float height1;
+                                float sizeY;
                                 switch (block) {
                                     case BROWN_MUSHROOM, RED_MUSHROOM, CARROTS, DEAD_BUSH, GRASS, NETHER_WART, POTATOES -> {
                                         thickness = 0.125f;
-                                        height1 = 0.5f;
+                                        sizeY = 0.5f;
                                     }
                                     case WHEAT, POPPY, DANDELION -> {
                                         thickness = 0.125f;
-                                        height1 = 0.8f;
+                                        sizeY = 0.8f;
                                     }
                                     default -> {
                                         thickness = 0.25f;
-                                        height1 = ONE_F;
+                                        sizeY = ONE_F;
                                     }
                                 }
-                                Plant.draw(gl, color, ONE_F, thickness, ONE_F, height1, ONE_F);
+                                Plant.draw(gl, color, ONE_F, thickness, ONE_F, sizeY, ONE_F);
                                 break;
                             }
                             case WALL:
@@ -460,9 +449,6 @@ public class SchematicRenderer extends GLJPanel {
         sizeX = dimensions.getInt("length");
         sizeY = dimensions.getInt("height");
         sizeZ = dimensions.getInt("width");
-        columnAnglesX = new float[sizeZ];
-        rowAnglesY = new float[sizeY];
-        faceAnglesZ = new float[sizeX];
         input = schematic.getJSONArray("input");
     }
 
@@ -473,9 +459,6 @@ public class SchematicRenderer extends GLJPanel {
         sizeX = size.get(0).asInt();
         sizeY = size.get(1).asInt();
         sizeZ = size.get(2).asInt();
-        columnAnglesX = new float[sizeX];
-        rowAnglesY = new float[sizeY];
-        faceAnglesZ = new float[sizeZ];
         input = ((CompoundTag) schematic.getTag()).getListTag("blocks");
     }
 }
