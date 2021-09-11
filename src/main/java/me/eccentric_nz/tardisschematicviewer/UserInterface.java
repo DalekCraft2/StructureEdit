@@ -304,6 +304,7 @@ public class UserInterface extends JPanel {
                 System.err.println("Not a schematic file!");
             }
         });
+        // TODO Blockbench-style palette editor, with a list of palettes and palette IDs?
         blockPaletteComboBox.addItemListener(e -> {
             if (selected != null) {
                 if (this.renderer.getPath().endsWith(".nbt")) {
@@ -475,6 +476,7 @@ public class UserInterface extends JPanel {
         }
     }
 
+    // TODO Fix preservation of changes to block properties and NBT for NBT files.
     private void squareActionPerformed(ActionEvent e) {
         if (selected != null) {
             // remove selected border
