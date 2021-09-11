@@ -48,15 +48,12 @@ public class Stair {
                 roll = 180.0f;
             }
         } else if (properties instanceof CompoundTag) {
-            if (((CompoundTag) properties).getString("facing").equals("south")) {
-                yaw = 0.0f;
-            } else if (((CompoundTag) properties).getString("facing").equals("east")) {
-                yaw = 90.0f;
-            } else if (((CompoundTag) properties).getString("facing").equals("north")) {
-                yaw = 180.0f;
-            } else if (((CompoundTag) properties).getString("facing").equals("west")) {
-                yaw = -90.0f;
-            }
+            yaw = switch (((CompoundTag) properties).getString("facing")) {
+                case "south" -> 0.0f;
+                case "east" -> 90.0f;
+                case "west" -> -90.0f;
+                default -> 180.0f;
+            };
             if (((CompoundTag) properties).getString("half").equals("top")) {
                 roll = 180.0f;
             }
@@ -68,9 +65,78 @@ public class Stair {
 
         Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ, transparent);
 
-        gl.glTranslatef(0.0f, sizeY, sizeY / 2.0f);
-
-        // TODO Stair corners.
-        Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+        if (properties instanceof String) {
+            if (((String) properties).contains("shape=inner_left")) {
+                if (roll == 180.0f) {
+                    gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+                }
+                gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
+                Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                gl.glTranslatef(sizeX / 2.0f, 0.0f, -sizeZ);
+                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+            } else if (((String) properties).contains("shape=inner_right")) {
+                if (roll == 180.0f) {
+                    gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+                }
+                gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
+                Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                gl.glTranslatef(-sizeX / 2.0f, 0.0f, -sizeZ);
+                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+            } else if (((String) properties).contains("shape=outer_left")) {
+                if (roll == 180.0f) {
+                    gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+                }
+                gl.glTranslatef(sizeX / 2.0f, sizeY, sizeZ / 2.0f);
+                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+            } else if (((String) properties).contains("shape=outer_right")) {
+                if (roll == 180.0f) {
+                    gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+                }
+                gl.glTranslatef(-sizeX / 2.0f, sizeY, sizeZ / 2.0f);
+                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+            } else {
+                gl.glTranslatef(0.0f, sizeY, sizeY / 2.0f);
+                Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+            }
+        } else if (properties instanceof CompoundTag) {
+            switch (((CompoundTag) properties).getString("shape")) {
+                case "inner_left" -> {
+                    if (roll == 180.0f) {
+                        gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+                    }
+                    gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
+                    Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                    gl.glTranslatef(sizeX / 2.0f, 0.0f, -sizeZ);
+                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                }
+                case "inner_right" -> {
+                    if (roll == 180.0f) {
+                        gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+                    }
+                    gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
+                    Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                    gl.glTranslatef(-sizeX / 2.0f, 0.0f, -sizeZ);
+                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                }
+                case "outer_left" -> {
+                    if (roll == 180.0f) {
+                        gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
+                    }
+                    gl.glTranslatef(sizeX / 2.0f, sizeY, sizeZ / 2.0f);
+                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                }
+                case "outer_right" -> {
+                    if (roll == 180.0f) {
+                        gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
+                    }
+                    gl.glTranslatef(-sizeX / 2.0f, sizeY, sizeZ / 2.0f);
+                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                }
+                default -> {
+                    gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
+                    Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                }
+            }
+        }
     }
 }
