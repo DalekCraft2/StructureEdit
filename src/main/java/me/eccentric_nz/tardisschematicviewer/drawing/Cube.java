@@ -28,12 +28,8 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
  */
 public class Cube {
 
-    // TODO Make all block-drawing classes use this method to draw blocks, and find a way to cull covered faces.
+    // TODO Find a way to cull covered faces.
     public static void draw(GL2 gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, boolean transparent) {
-
-        sizeX *= scale;
-        sizeY *= scale;
-        sizeZ *= scale;
 
         float[] components = color.getComponents(null);
 

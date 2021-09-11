@@ -17,99 +17,103 @@
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL2;
+import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
-import java.util.ArrayList;
-import java.util.List;
-
-import static com.jogamp.opengl.GL.GL_LINES;
-import static com.jogamp.opengl.GL2ES3.GL_QUADS;
 
 /**
  * @author eccentric_nz
  */
 public class Redstone {
 
-    private static final List<Float[]> translations;
+    public static void draw(GL2 gl, Color color, float scale, float thickness, float sizeX, float sizeY, float sizeZ, Object properties, boolean transparent) {
 
-    static {
-        translations = new ArrayList<>();
-        translations.add(new Float[]{0.0f, 0.0f, 0.0f});
-        translations.add(new Float[]{0.0f, 0.0f, -0.75f});
-        translations.add(new Float[]{0.75f, 0.0f, 0.75f});
-        translations.add(new Float[]{-0.75f, 0.0f, 0.75f});
-        translations.add(new Float[]{-0.75f, 0.0f, -0.75f});
-    }
+        sizeX *= scale;
+        sizeY *= scale;
+        sizeZ *= scale;
 
-    public static void draw(GL2 gl, Color color, float scale, boolean transparent) {
+        gl.glTranslatef(0.0f, sizeY - scale, 0.0f);
 
-        float quarter = scale / 4;
-        float height = -scale + quarter / 2;
-        float[] components = color.getComponents(null);
+        Cube.draw(gl, color, scale, thickness, sizeY, thickness, transparent);
 
-        gl.glPushMatrix();
-
-        for (Float[] translation : translations) {
-
-            gl.glTranslatef(translation[0], translation[1], translation[2]);
-
-            if (transparent) {
-                gl.glLineWidth(scale * 2);
-                gl.glBegin(GL_LINES);
-            } else {
-                gl.glBegin(GL_QUADS);
+        if (properties instanceof String) {
+            if (((String) properties).contains("south=side")) {
+                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
+                Cube.draw(gl, color, scale, thickness, sizeY, (sizeZ - thickness) / 2.0f, transparent);
+                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
+            } else if (((String) properties).contains("south=up")) {
+                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
+                Cube.draw(gl, color, scale, thickness, sizeY, (sizeZ - thickness) / 2.0f, transparent);
+                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
+                gl.glTranslatef(0.0f, scale + sizeY, sizeZ - sizeY);
+                gl.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+                Cube.draw(gl, color, scale, thickness, sizeY, sizeZ, transparent);
+                gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+                gl.glTranslatef(0.0f, -scale - sizeY, sizeY - sizeZ);
             }
-
-            // Front Face
-            gl.glColor4f(components[0], components[1], components[2], components[3]);
-            gl.glNormal3f(0.0f, 0.0f, scale);
-            gl.glVertex3f(-quarter, -scale, quarter); // bottom-left of the quad
-            gl.glVertex3f(quarter, -scale, quarter);  // bottom-right of the quad
-            gl.glVertex3f(quarter, height, quarter);   // top-right of the quad
-            gl.glVertex3f(-quarter, height, quarter);  // top-left of the quad
-
-            // Back Face
-            gl.glColor4f(components[0], components[1], components[2], components[3]);
-            gl.glNormal3f(0.0f, 0.0f, -scale);
-            gl.glVertex3f(-quarter, -scale, -quarter);
-            gl.glVertex3f(-quarter, height, -quarter);
-            gl.glVertex3f(quarter, height, -quarter);
-            gl.glVertex3f(quarter, -scale, -quarter);
-
-            // Top Face
-            gl.glColor4f(components[0], components[1], components[2], components[3]);
-            gl.glNormal3f(0.0f, scale, 0.0f);
-            gl.glVertex3f(-quarter, height, -quarter);
-            gl.glVertex3f(-quarter, height, quarter);
-            gl.glVertex3f(quarter, height, quarter);
-            gl.glVertex3f(quarter, height, -quarter);
-
-            // Bottom Face
-            gl.glColor4f(components[0], components[1], components[2], components[3]);
-            gl.glNormal3f(0.0f, -scale, 0.0f);
-            gl.glVertex3f(-quarter, -scale, -quarter);
-            gl.glVertex3f(quarter, -scale, -quarter);
-            gl.glVertex3f(quarter, -scale, quarter);
-            gl.glVertex3f(-quarter, -scale, quarter);
-
-            // Right face
-            gl.glColor4f(components[0], components[1], components[2], components[3]);
-            gl.glNormal3f(scale, 0.0f, 0.0f);
-            gl.glVertex3f(quarter, -scale, -quarter);
-            gl.glVertex3f(quarter, height, -quarter);
-            gl.glVertex3f(quarter, height, quarter);
-            gl.glVertex3f(quarter, -scale, quarter);
-
-            // Left Face
-            gl.glColor4f(components[0], components[1], components[2], components[3]);
-            gl.glNormal3f(-scale, 0.0f, 0.0f);
-            gl.glVertex3f(-quarter, -scale, -quarter);
-            gl.glVertex3f(-quarter, -scale, quarter);
-            gl.glVertex3f(-quarter, height, quarter);
-            gl.glVertex3f(-quarter, height, -quarter);
-
-            gl.glEnd();
+            if (((String) properties).contains("east=side")) {
+                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
+                Cube.draw(gl, color, scale, (sizeX - thickness) / 2.0f, sizeY, thickness, transparent);
+                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
+            } else if (((String) properties).contains("east=up")) {
+                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
+                Cube.draw(gl, color, scale, (sizeX - thickness) / 2.0f, sizeY, thickness, transparent);
+                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
+                gl.glTranslatef(sizeX - sizeY, scale + sizeY, 0.0f);
+                gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
+                Cube.draw(gl, color, scale, sizeX, sizeY, thickness, transparent);
+                gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+                gl.glTranslatef(sizeY - sizeX, -scale - sizeY, 0.0f);
+            }
+            if (((String) properties).contains("north=side")) {
+                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
+                Cube.draw(gl, color, scale, thickness, sizeY, (sizeZ - thickness) / 2.0f, transparent);
+                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
+            } else if (((String) properties).contains("north=up")) {
+                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
+                Cube.draw(gl, color, scale, thickness, sizeY, (sizeZ - thickness) / 2.0f, transparent);
+                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
+                gl.glTranslatef(0.0f, scale + sizeY, sizeY - sizeZ);
+                gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+                Cube.draw(gl, color, scale, thickness, sizeY, sizeZ, transparent);
+                gl.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+                gl.glTranslatef(0.0f, -scale - sizeY, sizeZ - sizeY);
+            }
+            if (((String) properties).contains("west=side")) {
+                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
+                Cube.draw(gl, color, scale, (sizeX - thickness) / 2.0f, sizeY, thickness, transparent);
+                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
+            } else if (((String) properties).contains("west=up")) {
+                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
+                Cube.draw(gl, color, scale, (sizeX - thickness) / 2.0f, sizeY, thickness, transparent);
+                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
+                gl.glTranslatef(sizeY - sizeX, scale + sizeY, 0.0f);
+                gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+                Cube.draw(gl, color, scale, sizeX, sizeY, thickness, transparent);
+                gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
+                gl.glTranslatef(sizeX - sizeY, -scale - sizeY, 0.0f);
+            }
+        } else if (properties instanceof CompoundTag) {
+            if (((CompoundTag) properties).getString("south").equals("side")) {
+                gl.glTranslatef(0.0f, 0.0f, thickness / 2.0f);
+                Cube.draw(gl, color, scale, sizeX, sizeY, (sizeZ - thickness) / 2.0f, transparent);
+                gl.glTranslatef(0.0f, 0.0f, -thickness / 2.0f);
+            }
+            if (((CompoundTag) properties).getString("east").equals("side")) {
+                gl.glTranslatef(thickness / 2.0f, 0.0f, 0.0f);
+                Cube.draw(gl, color, scale, (sizeX + thickness) / 2.0f, sizeY, sizeZ, transparent);
+                gl.glTranslatef(-thickness / 2.0f, 0.0f, 0.0f);
+            }
+            if (((CompoundTag) properties).getString("north").equals("side")) {
+                gl.glTranslatef(0.0f, 0.0f, -thickness / 2.0f);
+                Cube.draw(gl, color, scale, sizeX, sizeY, (sizeZ + thickness) / 2.0f, transparent);
+                gl.glTranslatef(0.0f, 0.0f, thickness / 2.0f);
+            }
+            if (((CompoundTag) properties).getString("west").equals("side")) {
+                gl.glTranslatef(-thickness / 2.0f, 0.0f, 0.0f);
+                Cube.draw(gl, color, scale, (sizeX + thickness) / 2.0f, sizeY, sizeZ, transparent);
+                gl.glTranslatef(thickness / 2.0f, 0.0f, 0.0f);
+            }
         }
-        gl.glPopMatrix();
     }
 }

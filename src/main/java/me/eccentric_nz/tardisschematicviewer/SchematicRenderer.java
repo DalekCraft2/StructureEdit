@@ -208,7 +208,7 @@ public class SchematicRenderer extends GLJPanel {
                                     break;
                                 case FLAT:
                                     if (block.equals(Block.REDSTONE_WIRE)) {
-                                        Redstone.draw(gl, color, ONE_F, false);
+                                        Redstone.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.125f, ONE_F,data, false);
                                     } else {
                                         Slab.draw(gl, color, ONE_F, ONE_F, 0.2f, ONE_F, data, false);
                                     }
@@ -308,7 +308,7 @@ public class SchematicRenderer extends GLJPanel {
                                 break;
                             case FLAT:
                                 if (block.equals(Block.REDSTONE_WIRE)) {
-                                    Redstone.draw(gl, color, ONE_F, false);
+                                    Redstone.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.125f, ONE_F,properties, false);
                                 } else {
                                     Slab.draw(gl, color, ONE_F, ONE_F, 0.2f, ONE_F, properties, false);
                                 }
@@ -343,7 +343,7 @@ public class SchematicRenderer extends GLJPanel {
                                 Fence.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.9f, ONE_F, properties, false);
                                 break;
                             case FENCE_GATE:
-                                ThinCube.draw(gl, color, ONE_F, ONE_F, 0.7f, 0.125f, properties, false);
+                                ThinCube.draw(gl, color, ONE_F, ONE_F, 0.7f, 0.130f, properties, false);
                                 break;
                             case THIN:
                                 ThinCube.draw(gl, color, ONE_F, ONE_F, ONE_F, 0.125f, properties, false);
