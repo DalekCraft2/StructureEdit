@@ -70,6 +70,7 @@ public class Stair {
 
         gl.glTranslatef(0.0f, sizeY, sizeY / 2.0f);
 
+        // TODO Stair corners.
         Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
     }
 }

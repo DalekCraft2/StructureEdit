@@ -26,6 +26,7 @@ import java.awt.*;
  */
 public class Fence {
 
+    // TODO Separate class for walls.
     public static void draw(GL2 gl, Color color, float scale, float thickness, float sizeX, float sizeY, float sizeZ, Object properties, boolean transparent) {
 
         sizeX *= scale;
@@ -54,29 +55,29 @@ public class Fence {
             }
             if (((String) properties).contains("west=true")) {
                 gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, scale,  (sizeX - thickness) / 2.0f, sizeY, thickness, transparent);
+                Cube.draw(gl, color, scale, (sizeX - thickness) / 2.0f, sizeY, thickness, transparent);
                 gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
             }
         } else if (properties instanceof CompoundTag) {
             if (((CompoundTag) properties).getString("south").equals("true")) {
-                gl.glTranslatef(0.0f, 0.0f, thickness / 2.0f);
-                Cube.draw(gl, color, scale, sizeX, sizeY, (sizeZ - thickness) / 2.0f, transparent);
-                gl.glTranslatef(0.0f, 0.0f, -thickness / 2.0f);
+                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
+                Cube.draw(gl, color, scale, thickness, sizeY, (sizeZ - thickness) / 2.0f, transparent);
+                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
             }
             if (((CompoundTag) properties).getString("east").equals("true")) {
-                gl.glTranslatef(thickness / 2.0f, 0.0f, 0.0f);
-                Cube.draw(gl, color, scale, (sizeX + thickness) / 2.0f, sizeY, sizeZ, transparent);
-                gl.glTranslatef(-thickness / 2.0f, 0.0f, 0.0f);
+                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
+                Cube.draw(gl, color, scale, (sizeX - thickness) / 2.0f, sizeY, thickness, transparent);
+                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
             }
             if (((CompoundTag) properties).getString("north").equals("true")) {
-                gl.glTranslatef(0.0f, 0.0f, -thickness / 2.0f);
-                Cube.draw(gl, color, scale, sizeX, sizeY, (sizeZ + thickness) / 2.0f, transparent);
-                gl.glTranslatef(0.0f, 0.0f, thickness / 2.0f);
+                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
+                Cube.draw(gl, color, scale, thickness, sizeY, (sizeZ - thickness) / 2.0f, transparent);
+                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
             }
             if (((CompoundTag) properties).getString("west").equals("true")) {
-                gl.glTranslatef(-thickness / 2.0f, 0.0f, 0.0f);
-                Cube.draw(gl, color, scale, (sizeX + thickness) / 2.0f, sizeY, sizeZ, transparent);
-                gl.glTranslatef(thickness / 2.0f, 0.0f, 0.0f);
+                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
+                Cube.draw(gl, color, scale, (sizeX - thickness) / 2.0f, sizeY, thickness, transparent);
+                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
             }
         }
     }
