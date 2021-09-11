@@ -42,8 +42,8 @@ public class Stair {
         yaw = switch (tag.getString("facing")) {
             case "south" -> 0.0f;
             case "east" -> 90.0f;
+            default -> 180.0f; // north
             case "west" -> -90.0f;
-            default -> 180.0f;
         };
         if (tag.getString("half").equals("top")) {
             roll = 180.0f;
@@ -88,7 +88,7 @@ public class Stair {
                 gl.glTranslatef(-sizeX / 2.0f, sizeY, sizeZ / 2.0f);
                 Cube.draw(gl, color, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
             }
-            default -> {
+            default -> { // straight
                 gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
                 Cube.draw(gl, color, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
             }

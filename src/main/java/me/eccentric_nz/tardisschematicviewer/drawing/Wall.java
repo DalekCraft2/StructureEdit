@@ -25,41 +25,53 @@ public class Wall {
             Cube.draw(gl, color, thickness, 1.0f, thickness);
         }
         gl.glTranslatef(0.0f, 1.0f - sizeY, 0.0f);
-        if (tag.getString("south").equals("low")) {
-            gl.glTranslatef(0.0f, sizeY * 0.8f - 1.0f, thickness * 1.5f);
-            Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
-            gl.glTranslatef(0.0f, 1.0f - sizeY * 0.8f, -thickness * 1.5f);
-        } else if (tag.getString("south").equals("tall")) {
-            gl.glTranslatef(0.0f, 0.0f, thickness * 1.5f);
-            Cube.draw(gl, color, thickness, 1.0f, (sizeZ - thickness) / 2.0f);
-            gl.glTranslatef(0.0f, 0.0f, -thickness * 1.5f);
+        switch (tag.getString("south")) {
+            case "low" -> {
+                gl.glTranslatef(0.0f, sizeY * 0.8f - 1.0f, thickness * 1.5f);
+                Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
+                gl.glTranslatef(0.0f, 1.0f - sizeY * 0.8f, -thickness * 1.5f);
+            }
+            case "tall" -> {
+                gl.glTranslatef(0.0f, 0.0f, thickness * 1.5f);
+                Cube.draw(gl, color, thickness, 1.0f, (sizeZ - thickness) / 2.0f);
+                gl.glTranslatef(0.0f, 0.0f, -thickness * 1.5f);
+            }
         }
-        if (tag.getString("east").equals("low")) {
-            gl.glTranslatef(thickness * 1.5f, sizeY * 0.8f - 1.0f, 0.0f);
-            Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
-            gl.glTranslatef(-thickness * 1.5f, 1.0f - sizeY * 0.8f, 0.0f);
-        } else if (tag.getString("east").equals("tall")) {
-            gl.glTranslatef(thickness * 1.5f, 0.0f, 0.0f);
-            Cube.draw(gl, color, (sizeX - thickness) / 2.0f, 1.0f, thickness);
-            gl.glTranslatef(-thickness * 1.5f, 0.0f, 0.0f);
+        switch (tag.getString("east")) {
+            case "low" -> {
+                gl.glTranslatef(thickness * 1.5f, sizeY * 0.8f - 1.0f, 0.0f);
+                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
+                gl.glTranslatef(-thickness * 1.5f, 1.0f - sizeY * 0.8f, 0.0f);
+            }
+            case "tall" -> {
+                gl.glTranslatef(thickness * 1.5f, 0.0f, 0.0f);
+                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, 1.0f, thickness);
+                gl.glTranslatef(-thickness * 1.5f, 0.0f, 0.0f);
+            }
         }
-        if (tag.getString("north").equals("low")) {
-            gl.glTranslatef(0.0f, sizeY * 0.8f - 1.0f, -thickness * 1.5f);
-            Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
-            gl.glTranslatef(0.0f, 1.0f - sizeY * 0.8f, thickness * 1.5f);
-        } else if (tag.getString("north").equals("tall")) {
-            gl.glTranslatef(0.0f, 0.0f, -thickness * 1.5f);
-            Cube.draw(gl, color, thickness, 1.0f, (sizeZ - thickness) / 2.0f);
-            gl.glTranslatef(0.0f, 0.0f, thickness * 1.5f);
+        switch (tag.getString("north")) {
+            case "low" -> {
+                gl.glTranslatef(0.0f, sizeY * 0.8f - 1.0f, -thickness * 1.5f);
+                Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
+                gl.glTranslatef(0.0f, 1.0f - sizeY * 0.8f, thickness * 1.5f);
+            }
+            case "tall" -> {
+                gl.glTranslatef(0.0f, 0.0f, -thickness * 1.5f);
+                Cube.draw(gl, color, thickness, 1.0f, (sizeZ - thickness) / 2.0f);
+                gl.glTranslatef(0.0f, 0.0f, thickness * 1.5f);
+            }
         }
-        if (tag.getString("west").equals("low")) {
-            gl.glTranslatef(-thickness * 1.5f, sizeY * 0.8f - 1.0f, 0.0f);
-            Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
-            gl.glTranslatef(thickness * 1.5f, 1.0f - sizeY * 0.8f, 0.0f);
-        } else if (tag.getString("east").equals("tall")) {
-            gl.glTranslatef(-thickness * 1.5f, 0.0f, 0.0f);
-            Cube.draw(gl, color, (sizeX - thickness) / 2.0f, 1.0f, thickness);
-            gl.glTranslatef(thickness * 1.5f, 0.0f, 0.0f);
+        switch (tag.getString("west")) {
+            case "low" -> {
+                gl.glTranslatef(-thickness * 1.5f, sizeY * 0.8f - 1.0f, 0.0f);
+                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
+                gl.glTranslatef(thickness * 1.5f, 1.0f - sizeY * 0.8f, 0.0f);
+            }
+            case "tall" -> {
+                gl.glTranslatef(-thickness * 1.5f, 0.0f, 0.0f);
+                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, 1.0f, thickness);
+                gl.glTranslatef(thickness * 1.5f, 0.0f, 0.0f);
+            }
         }
     }
 }

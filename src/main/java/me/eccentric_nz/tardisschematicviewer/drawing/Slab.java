@@ -38,6 +38,7 @@ public class Slab {
         }
         if (tag.getString("type").equals("double")) {
             Cube.draw(gl, color, sizeX, sizeY * 2.0f, sizeZ);
+            return;
         }
         if (tag.getString("type").equals("top") || tag.getString("half").equals("top")) {
             gl.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);

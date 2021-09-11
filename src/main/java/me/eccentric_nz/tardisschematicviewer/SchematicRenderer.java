@@ -234,8 +234,14 @@ public class SchematicRenderer extends GLJPanel {
             public void blockSwitch(GL4bc gl, Block block, Object properties) {
                 Color color = block.getColor();
                 switch (block.getBlockShape()) {
-                    case SLAB:
-                        Slab.draw(gl, color, ONE_F, 0.5f, ONE_F, properties);
+                    case CUBE:
+                        Cube.draw(gl, color, ONE_F, ONE_F, ONE_F);
+                        break;
+                    case FENCE:
+                        Fence.draw(gl, color, 0.25f, ONE_F, ONE_F, ONE_F, properties);
+                        break;
+                    case FENCE_GATE:
+                        Rotational.draw(gl, color, ONE_F, 0.7f, 0.125f, properties);
                         break;
                     case FLAT:
                         if (block.equals(Block.REDSTONE_WIRE)) {
@@ -246,8 +252,8 @@ public class SchematicRenderer extends GLJPanel {
                             Slab.draw(gl, color, ONE_F, 0.2f, ONE_F, properties);
                         }
                         break;
-                    case STAIR:
-                        Stair.draw(gl, color, ONE_F, ONE_F, ONE_F, properties);
+                    case PANE:
+                        Pane.draw(gl, color, 0.125f, ONE_F, ONE_F, ONE_F, properties);
                         break;
                     case PLANT: {
                         float thickness;
@@ -269,32 +275,26 @@ public class SchematicRenderer extends GLJPanel {
                         Plant.draw(gl, color, thickness, ONE_F, sizeY, ONE_F);
                         break;
                     }
-                    case WALL:
-                        Wall.draw(gl, color, 0.5f, ONE_F, ONE_F, ONE_F, properties);
-                        break;
-                    case FENCE:
-                        Fence.draw(gl, color, 0.25f, ONE_F, ONE_F, ONE_F, properties);
-                        break;
-                    case FENCE_GATE:
-                        Rotational.draw(gl, color, ONE_F, 0.7f, 0.125f, properties);
-                        break;
-                    case THIN:
-                        Rotational.draw(gl, color, ONE_F, ONE_F, 0.125f, properties);
-                        break;
-                    case PANE:
-                        Pane.draw(gl, color, 0.125f, ONE_F, ONE_F, ONE_F, properties);
-                        break;
-                    case STICK:
-                        Cube.draw(gl, color, 0.25f, 0.9f, 0.25f);
-                        break;
-                    case WALL_STICK:
-                        WallStick.draw(gl, color, 0.25f, 0.9f, 0.25f, properties);
+                    case SLAB:
+                        Slab.draw(gl, color, ONE_F, 0.5f, ONE_F, properties);
                         break;
                     case SMALL:
                         Cube.draw(gl, color, 0.5f, 0.5f, 0.5f);
                         break;
-                    case CUBE:
-                        Cube.draw(gl, color, ONE_F, ONE_F, ONE_F);
+                    case STAIR:
+                        Stair.draw(gl, color, ONE_F, ONE_F, ONE_F, properties);
+                        break;
+                    case STICK:
+                        Cube.draw(gl, color, 0.25f, 0.9f, 0.25f);
+                        break;
+                    case THIN:
+                        Rotational.draw(gl, color, ONE_F, ONE_F, 0.125f, properties);
+                        break;
+                    case WALL:
+                        Wall.draw(gl, color, 0.5f, ONE_F, ONE_F, ONE_F, properties);
+                        break;
+                    case WALL_STICK:
+                        WallStick.draw(gl, color, 0.25f, 0.9f, 0.25f, properties);
                         break;
                     case VOID:
                         break;

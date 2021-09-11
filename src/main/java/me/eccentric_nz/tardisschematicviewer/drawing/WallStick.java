@@ -21,14 +21,11 @@ public class WallStick {
             tag = (CompoundTag) properties;
         }
         if (tag.containsKey("facing")) {
-            if (tag.getString("facing").equals("south")) {
-                yaw = 0.0f;
-            } else if (tag.getString("facing").equals("east")) {
-                yaw = 90.0f;
-            } else if (tag.getString("facing").equals("north")) {
-                yaw = 180.0f;
-            } else if (tag.getString("facing").equals("west")) {
-                yaw = -90.0f;
+            switch (tag.getString("facing")) {
+                case "south" -> yaw = 0.0f;
+                case "east" -> yaw = 90.0f;
+                default -> yaw = 180.0f; // north
+                case "west" -> yaw = -90.0f;
             }
         }
         gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f);
