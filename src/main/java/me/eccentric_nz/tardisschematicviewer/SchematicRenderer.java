@@ -237,7 +237,7 @@ public class SchematicRenderer extends GLJPanel {
                                     break;
                                 }
                                 case WALL:
-                                    Fence.draw(gl, color, ONE_F, 0.5f, ONE_F, 0.9f, ONE_F, data, false);
+                                    Wall.draw(gl, color, ONE_F, 0.5f, ONE_F, 0.9f, ONE_F, data, false);
                                     break;
                                 case FENCE:
                                     Fence.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.9f, ONE_F, data, false);
@@ -337,7 +337,7 @@ public class SchematicRenderer extends GLJPanel {
                                 break;
                             }
                             case WALL:
-                                Fence.draw(gl, color, ONE_F, 0.5f, ONE_F, 0.9f, ONE_F, properties, false);
+                                Wall.draw(gl, color, ONE_F, 0.5f, ONE_F, 0.9f, ONE_F, properties, false);
                                 break;
                             case FENCE:
                                 Fence.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.9f, ONE_F, properties, false);

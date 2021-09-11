@@ -39,6 +39,7 @@ public class Fence {
 
         if (properties instanceof String) {
             if (((String) properties).contains("south=true")) {
+                // TODO Figure out the actual equation for this instead of using 2.5f.
                 gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
                 Cube.draw(gl, color, scale, thickness, sizeY, (sizeZ - thickness) / 2.0f, transparent);
                 gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
