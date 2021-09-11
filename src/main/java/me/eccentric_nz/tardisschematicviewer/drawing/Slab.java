@@ -17,6 +17,7 @@
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
+import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
 import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
@@ -28,20 +29,18 @@ public class Slab {
 
     public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, Object properties) {
 
+        CompoundTag tag = null;
+
         if (properties instanceof String) {
-            if (((String) properties).contains("type=double")) {
-                Cube.draw(gl, color, sizeX, sizeY * 2.0f, sizeZ);
-            }
-            if (((String) properties).contains("type=top") || ((String) properties).contains("half=top")) {
-                gl.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
-            }
+            tag = BlockStateUtils.toTag((String) properties);
         } else if (properties instanceof CompoundTag) {
-            if (((CompoundTag) properties).getString("type").equals("double")) {
-                Cube.draw(gl, color, sizeX, sizeY * 2.0f, sizeZ);
-            }
-            if (((CompoundTag) properties).getString("type").equals("top") || ((CompoundTag) properties).getString("half").equals("top")) {
-                gl.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
-            }
+            tag = (CompoundTag) properties;
+        }
+        if (tag.getString("type").equals("double")) {
+            Cube.draw(gl, color, sizeX, sizeY * 2.0f, sizeZ);
+        }
+        if (tag.getString("type").equals("top") || tag.getString("half").equals("top")) {
+            gl.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
         }
 
         gl.glTranslatef(0.0f, sizeY - 1.0f, 0.0f);

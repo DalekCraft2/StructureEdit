@@ -17,6 +17,7 @@
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
+import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
 import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
@@ -29,30 +30,23 @@ public class Stair {
     public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, Object properties) {
 
         float roll = 0.0f;
-        float yaw = 0.0f;
+        float yaw;
+
+        CompoundTag tag = null;
+
         if (properties instanceof String) {
-            if (((String) properties).contains("facing=south")) {
-                yaw = 0.0f;
-            } else if (((String) properties).contains("facing=east")) {
-                yaw = 90.0f;
-            } else if (((String) properties).contains("facing=north")) {
-                yaw = 180.0f;
-            } else if (((String) properties).contains("facing=west")) {
-                yaw = -90.0f;
-            }
-            if (((String) properties).contains("half=top")) {
-                roll = 180.0f;
-            }
+            tag = BlockStateUtils.toTag((String) properties);
         } else if (properties instanceof CompoundTag) {
-            yaw = switch (((CompoundTag) properties).getString("facing")) {
-                case "south" -> 0.0f;
-                case "east" -> 90.0f;
-                case "west" -> -90.0f;
-                default -> 180.0f;
-            };
-            if (((CompoundTag) properties).getString("half").equals("top")) {
-                roll = 180.0f;
-            }
+            tag = (CompoundTag) properties;
+        }
+        yaw = switch (tag.getString("facing")) {
+            case "south" -> 0.0f;
+            case "east" -> 90.0f;
+            case "west" -> -90.0f;
+            default -> 180.0f;
+        };
+        if (tag.getString("half").equals("top")) {
+            roll = 180.0f;
         }
         gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f);
         gl.glRotatef(roll, 0.0f, 0.0f, 1.0f);
@@ -61,8 +55,8 @@ public class Stair {
 
         Cube.draw(gl, color, sizeX, sizeY / 2.0f, sizeZ);
 
-        if (properties instanceof String) {
-            if (((String) properties).contains("shape=inner_left")) {
+        switch (tag.getString("shape")) {
+            case "inner_left" -> {
                 if (roll == 180.0f) {
                     gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
                 }
@@ -70,7 +64,8 @@ public class Stair {
                 Cube.draw(gl, color, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
                 gl.glTranslatef(sizeX / 2.0f, 0.0f, -sizeZ);
                 Cube.draw(gl, color, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
-            } else if (((String) properties).contains("shape=inner_right")) {
+            }
+            case "inner_right" -> {
                 if (roll == 180.0f) {
                     gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
                 }
@@ -78,60 +73,24 @@ public class Stair {
                 Cube.draw(gl, color, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
                 gl.glTranslatef(-sizeX / 2.0f, 0.0f, -sizeZ);
                 Cube.draw(gl, color, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
-            } else if (((String) properties).contains("shape=outer_left")) {
+            }
+            case "outer_left" -> {
                 if (roll == 180.0f) {
                     gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
                 }
                 gl.glTranslatef(sizeX / 2.0f, sizeY, sizeZ / 2.0f);
                 Cube.draw(gl, color, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
-            } else if (((String) properties).contains("shape=outer_right")) {
+            }
+            case "outer_right" -> {
                 if (roll == 180.0f) {
                     gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
                 }
                 gl.glTranslatef(-sizeX / 2.0f, sizeY, sizeZ / 2.0f);
                 Cube.draw(gl, color, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
-            } else {
-                gl.glTranslatef(0.0f, sizeY, sizeY / 2.0f);
-                Cube.draw(gl, color, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
             }
-        } else if (properties instanceof CompoundTag) {
-            switch (((CompoundTag) properties).getString("shape")) {
-                case "inner_left" -> {
-                    if (roll == 180.0f) {
-                        gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
-                    }
-                    gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
-                    Cube.draw(gl, color, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
-                    gl.glTranslatef(sizeX / 2.0f, 0.0f, -sizeZ);
-                    Cube.draw(gl, color, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
-                }
-                case "inner_right" -> {
-                    if (roll == 180.0f) {
-                        gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-                    }
-                    gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
-                    Cube.draw(gl, color, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
-                    gl.glTranslatef(-sizeX / 2.0f, 0.0f, -sizeZ);
-                    Cube.draw(gl, color, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
-                }
-                case "outer_left" -> {
-                    if (roll == 180.0f) {
-                        gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
-                    }
-                    gl.glTranslatef(sizeX / 2.0f, sizeY, sizeZ / 2.0f);
-                    Cube.draw(gl, color, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
-                }
-                case "outer_right" -> {
-                    if (roll == 180.0f) {
-                        gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-                    }
-                    gl.glTranslatef(-sizeX / 2.0f, sizeY, sizeZ / 2.0f);
-                    Cube.draw(gl, color, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
-                }
-                default -> {
-                    gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
-                    Cube.draw(gl, color, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
-                }
+            default -> {
+                gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
+                Cube.draw(gl, color, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
             }
         }
     }

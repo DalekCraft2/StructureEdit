@@ -17,6 +17,7 @@
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
+import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
 import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
@@ -32,120 +33,68 @@ public class Redstone {
 
         Cube.draw(gl, color, thickness, sizeY, thickness);
 
+        CompoundTag tag = null;
+
         if (properties instanceof String) {
-            if (((String) properties).contains("south=side")) {
-                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
-                Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
-                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
-            } else if (((String) properties).contains("south=up")) {
-                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
-                Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
-                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
-                gl.glTranslatef(0.0f, 1.0f + sizeY, sizeZ - sizeY);
-                gl.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-                Cube.draw(gl, color, thickness, sizeY, sizeZ);
-                gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-                gl.glTranslatef(0.0f, -1.0f - sizeY, sizeY - sizeZ);
-            }
-            if (((String) properties).contains("east=side")) {
-                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
-                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-            } else if (((String) properties).contains("east=up")) {
-                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
-                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-                gl.glTranslatef(sizeX - sizeY, 1.0f + sizeY, 0.0f);
-                gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-                Cube.draw(gl, color, sizeX, sizeY, thickness);
-                gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-                gl.glTranslatef(sizeY - sizeX, -1.0f - sizeY, 0.0f);
-            }
-            if (((String) properties).contains("north=side")) {
-                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
-                Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
-                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
-            } else if (((String) properties).contains("north=up")) {
-                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
-                Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
-                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
-                gl.glTranslatef(0.0f, 1.0f + sizeY, sizeY - sizeZ);
-                gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-                Cube.draw(gl, color, thickness, sizeY, sizeZ);
-                gl.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-                gl.glTranslatef(0.0f, -1.0f - sizeY, sizeZ - sizeY);
-            }
-            if (((String) properties).contains("west=side")) {
-                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
-                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
-            } else if (((String) properties).contains("west=up")) {
-                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
-                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
-                gl.glTranslatef(sizeY - sizeX, 1.0f + sizeY, 0.0f);
-                gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-                Cube.draw(gl, color, sizeX, sizeY, thickness);
-                gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-                gl.glTranslatef(sizeX - sizeY, -1.0f - sizeY, 0.0f);
-            }
+            tag = BlockStateUtils.toTag((String) properties);
         } else if (properties instanceof CompoundTag) {
-            if (((CompoundTag) properties).getString("south").equals("side")) {
-                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
-                Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
-                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
-            } else if (((CompoundTag) properties).getString("south").equals("up")) {
-                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
-                Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
-                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
-                gl.glTranslatef(0.0f, 1.0f + sizeY, sizeZ - sizeY);
-                gl.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-                Cube.draw(gl, color, thickness, sizeY, sizeZ);
-                gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-                gl.glTranslatef(0.0f, -1.0f - sizeY, sizeY - sizeZ);
-            }
-            if (((CompoundTag) properties).getString("east").equals("side")) {
-                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
-                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-            } else if (((CompoundTag) properties).getString("east").equals("up")) {
-                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
-                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-                gl.glTranslatef(sizeX - sizeY, 1.0f + sizeY, 0.0f);
-                gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-                Cube.draw(gl, color, sizeX, sizeY, thickness);
-                gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-                gl.glTranslatef(sizeY - sizeX, -1.0f - sizeY, 0.0f);
-            }
-            if (((CompoundTag) properties).getString("north").equals("side")) {
-                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
-                Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
-                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
-            } else if (((CompoundTag) properties).getString("north").equals("up")) {
-                gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
-                Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
-                gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
-                gl.glTranslatef(0.0f, 1.0f + sizeY, sizeY - sizeZ);
-                gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-                Cube.draw(gl, color, thickness, sizeY, sizeZ);
-                gl.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-                gl.glTranslatef(0.0f, -1.0f - sizeY, sizeZ - sizeY);
-            }
-            if (((CompoundTag) properties).getString("west").equals("side")) {
-                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
-                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
-            } else if (((CompoundTag) properties).getString("east").equals("up")) {
-                gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
-                gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
-                gl.glTranslatef(sizeY - sizeX, 1.0f + sizeY, 0.0f);
-                gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
-                Cube.draw(gl, color, sizeX, sizeY, thickness);
-                gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
-                gl.glTranslatef(sizeX - sizeY, -1.0f - sizeY, 0.0f);
-            }
+            tag = (CompoundTag) properties;
+        }
+        if (tag.getString("south").equals("side")) {
+            gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
+            Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
+            gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
+        } else if (tag.getString("south").equals("up")) {
+            gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
+            Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
+            gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
+            gl.glTranslatef(0.0f, 1.0f + sizeY, sizeZ - sizeY);
+            gl.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            Cube.draw(gl, color, thickness, sizeY, sizeZ);
+            gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+            gl.glTranslatef(0.0f, -1.0f - sizeY, sizeY - sizeZ);
+        }
+        if (tag.getString("east").equals("side")) {
+            gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
+            Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
+            gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
+        } else if (tag.getString("east").equals("up")) {
+            gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
+            Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
+            gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
+            gl.glTranslatef(sizeX - sizeY, 1.0f + sizeY, 0.0f);
+            gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
+            Cube.draw(gl, color, sizeX, sizeY, thickness);
+            gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+            gl.glTranslatef(sizeY - sizeX, -1.0f - sizeY, 0.0f);
+        }
+        if (tag.getString("north").equals("side")) {
+            gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
+            Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
+            gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
+        } else if (tag.getString("north").equals("up")) {
+            gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
+            Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
+            gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
+            gl.glTranslatef(0.0f, 1.0f + sizeY, sizeY - sizeZ);
+            gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
+            Cube.draw(gl, color, thickness, sizeY, sizeZ);
+            gl.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
+            gl.glTranslatef(0.0f, -1.0f - sizeY, sizeZ - sizeY);
+        }
+        if (tag.getString("west").equals("side")) {
+            gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
+            Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
+            gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
+        } else if (tag.getString("east").equals("up")) {
+            gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
+            Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
+            gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
+            gl.glTranslatef(sizeY - sizeX, 1.0f + sizeY, 0.0f);
+            gl.glRotatef(-90.0f, 0.0f, 0.0f, 1.0f);
+            Cube.draw(gl, color, sizeX, sizeY, thickness);
+            gl.glRotatef(90.0f, 0.0f, 0.0f, 1.0f);
+            gl.glTranslatef(sizeX - sizeY, -1.0f - sizeY, 0.0f);
         }
     }
 }

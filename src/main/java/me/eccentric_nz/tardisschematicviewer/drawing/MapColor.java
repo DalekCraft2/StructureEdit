@@ -16,7 +16,7 @@ public final class MapColor {
     public static final Color CLAY = new Color(164, 168, 184);
     public static final Color DIRT = new Color(151, 109, 77);
     public static final Color STONE = new Color(112, 112, 112);
-    public static final Color WATER = new Color(64, 64, 255);
+    public static final Color WATER = new Color(64, 64, 255, 127);
     public static final Color WOOD = new Color(143, 119, 72);
     public static final Color QUARTZ = new Color(255, 252, 245);
     public static final Color COLOR_ORANGE = new Color(216, 127, 51);

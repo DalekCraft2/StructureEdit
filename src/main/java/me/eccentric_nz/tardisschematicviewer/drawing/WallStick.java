@@ -1,6 +1,7 @@
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
+import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
 import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
@@ -11,29 +12,23 @@ public class WallStick {
 
         // rotate if necessary
         float yaw = 0.0f;
+
+        CompoundTag tag = null;
+
         if (properties instanceof String) {
-            if (((String) properties).contains("facing=")) {
-                if (((String) properties).contains("facing=south")) {
-                    yaw = 0.0f;
-                } else if (((String) properties).contains("facing=east")) {
-                    yaw = 90.0f;
-                } else if (((String) properties).contains("facing=north")) {
-                    yaw = 180.0f;
-                } else if (((String) properties).contains("facing=west")) {
-                    yaw = -90.0f;
-                }
-            }
+            tag = BlockStateUtils.toTag((String) properties);
         } else if (properties instanceof CompoundTag) {
-            if (((CompoundTag) properties).containsKey("facing")) {
-                if (((CompoundTag) properties).getString("facing").equals("south")) {
-                    yaw = 0.0f;
-                } else if (((CompoundTag) properties).getString("facing").equals("east")) {
-                    yaw = 90.0f;
-                } else if (((CompoundTag) properties).getString("facing").equals("north")) {
-                    yaw = 180.0f;
-                } else if (((CompoundTag) properties).getString("facing").equals("west")) {
-                    yaw = -90.0f;
-                }
+            tag = (CompoundTag) properties;
+        }
+        if (tag.containsKey("facing")) {
+            if (tag.getString("facing").equals("south")) {
+                yaw = 0.0f;
+            } else if (tag.getString("facing").equals("east")) {
+                yaw = 90.0f;
+            } else if (tag.getString("facing").equals("north")) {
+                yaw = 180.0f;
+            } else if (tag.getString("facing").equals("west")) {
+                yaw = -90.0f;
             }
         }
         gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f);

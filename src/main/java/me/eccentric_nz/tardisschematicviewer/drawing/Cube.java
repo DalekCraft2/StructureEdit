@@ -33,7 +33,7 @@ public class Cube {
 
         float[] components = color.getComponents(null);
 
-        if (color.getAlpha() < 127) {
+        if (color.getAlpha() == 0) {
             gl.glLineWidth(1.0f * 2);
             gl.glBegin(GL_LINES);
         } else {

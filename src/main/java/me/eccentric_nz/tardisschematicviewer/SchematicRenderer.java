@@ -24,6 +24,7 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import me.eccentric_nz.tardisschematicviewer.drawing.*;
+import me.eccentric_nz.tardisschematicviewer.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
@@ -115,6 +116,9 @@ public class SchematicRenderer extends GLJPanel {
                 gl.glEnable(GL_LIGHTING); // enable lighting
                 gl.glEnable(GL_LIGHT1); // Enable Light-1
                 gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
+
+                gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                gl.glEnable(GL_BLEND);
             }
 
             @Override
@@ -182,6 +186,7 @@ public class SchematicRenderer extends GLJPanel {
                             String data = column.getString("data");
                             int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
                             String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
+                            String blockData = data.contains("[") ? data.substring(data.indexOf('[')) : "";
                             Block block = Block.valueOf(blockName);
                             gl.glPushMatrix();
 
@@ -190,7 +195,7 @@ public class SchematicRenderer extends GLJPanel {
                             float translateY = (float) lastIndexY / 2.0f;
                             float translateZ = (float) lastIndexZ / 2.0f;
                             gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
-                            blockSwitch(gl, block, data);
+                            blockSwitch(gl, block, blockData);
                             gl.glPopMatrix();
                         }
                     }
