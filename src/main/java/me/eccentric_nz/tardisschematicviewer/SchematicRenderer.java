@@ -201,20 +201,20 @@ public class SchematicRenderer extends GLJPanel {
                             switch (block.getBlockShape()) {
                                 case SLAB:
                                     if (!data.contains("type=double")) {
-                                        Slab.draw(gl, color, ONE_F, ONE_F, 0.5f, ONE_F, data, false);
+                                        Slab.draw(gl, color, ONE_F, ONE_F, 0.5f, ONE_F, data);
                                     } else {
-                                        Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, false);
+                                        Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F);
                                     }
                                     break;
                                 case FLAT:
                                     if (block.equals(Block.REDSTONE_WIRE)) {
-                                        Redstone.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.125f, ONE_F, data, false);
+                                        Redstone.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.125f, ONE_F, data);
                                     } else {
-                                        Slab.draw(gl, color, ONE_F, ONE_F, 0.2f, ONE_F, data, false);
+                                        Slab.draw(gl, color, ONE_F, ONE_F, 0.2f, ONE_F, data);
                                     }
                                     break;
                                 case STAIR:
-                                    Stair.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, data, false);
+                                    Stair.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, data);
                                     break;
                                 case PLANT: {
                                     float thickness;
@@ -233,33 +233,30 @@ public class SchematicRenderer extends GLJPanel {
                                             height1 = ONE_F;
                                         }
                                     }
-                                    Plant.draw(gl, color, ONE_F, thickness, ONE_F, height1, ONE_F, false);
+                                    Plant.draw(gl, color, ONE_F, thickness, ONE_F, height1, ONE_F);
                                     break;
                                 }
                                 case WALL:
-                                    Wall.draw(gl, color, ONE_F, 0.5f, ONE_F, 0.9f, ONE_F, data, false);
+                                    Wall.draw(gl, color, ONE_F, 0.5f, ONE_F, ONE_F, ONE_F, data);
                                     break;
                                 case FENCE:
-                                    Fence.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.9f, ONE_F, data, false);
+                                    Fence.draw(gl, color, ONE_F, 0.25f, ONE_F, ONE_F, ONE_F, data);
                                     break;
                                 case FENCE_GATE:
-                                    ThinCube.draw(gl, color, ONE_F, ONE_F, 0.7f, 0.125f, data, false);
+                                    ThinCube.draw(gl, color, ONE_F, ONE_F, 0.7f, 0.125f, data);
                                     break;
                                 case THIN:
-                                    ThinCube.draw(gl, color, ONE_F, ONE_F, ONE_F, 0.125f, data, false);
+                                    ThinCube.draw(gl, color, ONE_F, ONE_F, ONE_F, 0.125f, data);
                                     break;
-                                case GLASS_PANE:
-                                    Fence.draw(gl, color, ONE_F, 0.125f, ONE_F, ONE_F, ONE_F, data, true);
-                                    break;
-                                case GLASS:
-                                    Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, true);
-                                    break;
-                                case SMALL:
-                                    Cube.draw(gl, color, ONE_F, 0.5f, 0.5f, 0.5f, false);
+                                case PANE:
+                                    Pane.draw(gl, color, ONE_F, 0.125f, ONE_F, ONE_F, ONE_F, data);
                                     break;
                                 case STICK:
+                                case SMALL:
+                                    Cube.draw(gl, color, ONE_F, 0.5f, 0.5f, 0.5f);
+                                    break;
                                 case CUBE:
-                                    Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, false);
+                                    Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F);
                                     break;
                                 case VOID:
                                     break;
@@ -301,20 +298,20 @@ public class SchematicRenderer extends GLJPanel {
                         switch (block.getBlockShape()) {
                             case SLAB:
                                 if (!properties.getString("type").equals("double")) {
-                                    Slab.draw(gl, color, ONE_F, ONE_F, 0.5f, ONE_F, properties, false);
+                                    Slab.draw(gl, color, ONE_F, ONE_F, 0.5f, ONE_F, properties);
                                 } else {
-                                    Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, false);
+                                    Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F);
                                 }
                                 break;
                             case FLAT:
                                 if (block.equals(Block.REDSTONE_WIRE)) {
-                                    Redstone.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.125f, ONE_F, properties, false);
+                                    Redstone.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.125f, ONE_F, properties);
                                 } else {
-                                    Slab.draw(gl, color, ONE_F, ONE_F, 0.2f, ONE_F, properties, false);
+                                    Slab.draw(gl, color, ONE_F, ONE_F, 0.2f, ONE_F, properties);
                                 }
                                 break;
                             case STAIR:
-                                Stair.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, properties, false);
+                                Stair.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, properties);
                                 break;
                             case PLANT: {
                                 float thickness;
@@ -333,33 +330,30 @@ public class SchematicRenderer extends GLJPanel {
                                         height1 = ONE_F;
                                     }
                                 }
-                                Plant.draw(gl, color, ONE_F, thickness, ONE_F, height1, ONE_F, false);
+                                Plant.draw(gl, color, ONE_F, thickness, ONE_F, height1, ONE_F);
                                 break;
                             }
                             case WALL:
-                                Wall.draw(gl, color, ONE_F, 0.5f, ONE_F, 0.9f, ONE_F, properties, false);
+                                Wall.draw(gl, color, ONE_F, 0.5f, ONE_F, ONE_F, ONE_F, properties);
                                 break;
                             case FENCE:
-                                Fence.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.9f, ONE_F, properties, false);
+                                Fence.draw(gl, color, ONE_F, 0.25f, ONE_F, ONE_F, ONE_F, properties);
                                 break;
                             case FENCE_GATE:
-                                ThinCube.draw(gl, color, ONE_F, ONE_F, 0.7f, 0.130f, properties, false);
+                                ThinCube.draw(gl, color, ONE_F, ONE_F, 0.7f, 0.130f, properties);
                                 break;
                             case THIN:
-                                ThinCube.draw(gl, color, ONE_F, ONE_F, ONE_F, 0.125f, properties, false);
+                                ThinCube.draw(gl, color, ONE_F, ONE_F, ONE_F, 0.125f, properties);
                                 break;
-                            case GLASS_PANE:
-                                Fence.draw(gl, color, ONE_F, 0.125f, ONE_F, ONE_F, ONE_F, properties, true);
-                                break;
-                            case GLASS:
-                                Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, true);
+                            case PANE:
+                                Pane.draw(gl, color, ONE_F, 0.125f, ONE_F, ONE_F, ONE_F, properties);
                                 break;
                             case SMALL:
-                                Cube.draw(gl, color, ONE_F, 0.5f, 0.5f, 0.5f, false);
+                                Cube.draw(gl, color, ONE_F, 0.5f, 0.5f, 0.5f);
                                 break;
                             case STICK:
                             case CUBE:
-                                Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, false);
+                                Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F);
                                 break;
                             case VOID:
                                 break;

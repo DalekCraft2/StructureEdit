@@ -29,11 +29,11 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
 public class Cube {
 
     // TODO Find a way to cull covered faces.
-    public static void draw(GL4bc gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, boolean transparent) {
+    public static void draw(GL4bc gl, Color color, float scale, float sizeX, float sizeY, float sizeZ) {
 
         float[] components = color.getComponents(null);
 
-        if (transparent) {
+        if (color.getAlpha() < 127) {
             gl.glLineWidth(scale * 2);
             gl.glBegin(GL_LINES);
         } else {

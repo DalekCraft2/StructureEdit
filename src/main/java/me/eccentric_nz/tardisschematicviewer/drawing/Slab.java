@@ -26,7 +26,7 @@ import java.awt.*;
  */
 public class Slab {
 
-    public static void draw(GL4bc gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties, boolean transparent) {
+    public static void draw(GL4bc gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties) {
 
         sizeX *= scale;
         sizeY *= scale;
@@ -44,6 +44,6 @@ public class Slab {
 
         gl.glTranslatef(0.0f, sizeY - scale, 0.0f);
 
-        Cube.draw(gl, color, scale, sizeX, sizeY, sizeZ, transparent);
+        Cube.draw(gl, color, scale, sizeX, sizeY, sizeZ);
     }
 }

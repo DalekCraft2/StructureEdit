@@ -16,7 +16,6 @@
  */
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
-import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL4bc;
 
 import java.awt.*;
@@ -26,7 +25,7 @@ import java.awt.*;
  */
 public class Plant {
 
-    public static void draw(GL4bc gl, Color color, float scale, float thickness, float sizeX, float sizeY, float sizeZ, boolean transparent) {
+    public static void draw(GL4bc gl, Color color, float scale, float thickness, float sizeX, float sizeY, float sizeZ) {
 
         sizeX *= scale;
         sizeY *= scale;
@@ -37,7 +36,7 @@ public class Plant {
 
         gl.glTranslatef(0.0f, sizeY - scale, 0.0f);
 
-        Cube.draw(gl, color, scale, thickness, sizeY, sizeZ, transparent);
-        Cube.draw(gl, color, scale, sizeX, sizeY, thickness, transparent);
+        Cube.draw(gl, color, scale, thickness, sizeY, sizeZ);
+        Cube.draw(gl, color, scale, sizeX, sizeY, thickness);
     }
 }

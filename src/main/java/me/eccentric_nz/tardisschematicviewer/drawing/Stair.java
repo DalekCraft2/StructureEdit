@@ -16,7 +16,6 @@
  */
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
-import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL4bc;
 import net.querz.nbt.tag.CompoundTag;
 
@@ -27,7 +26,7 @@ import java.awt.*;
  */
 public class Stair {
 
-    public static void draw(GL4bc gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties, boolean transparent) {
+    public static void draw(GL4bc gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties) {
 
         sizeX *= scale;
         sizeY *= scale;
@@ -64,7 +63,7 @@ public class Stair {
 
         gl.glTranslatef(0.0f, -sizeY / 2.0f, 0.0f);
 
-        Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ, transparent);
+        Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ);
 
         if (properties instanceof String) {
             if (((String) properties).contains("shape=inner_left")) {
@@ -72,32 +71,32 @@ public class Stair {
                     gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
                 }
                 gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
-                Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
                 gl.glTranslatef(sizeX / 2.0f, 0.0f, -sizeZ);
-                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
             } else if (((String) properties).contains("shape=inner_right")) {
                 if (roll == 180.0f) {
                     gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
                 }
                 gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
-                Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
                 gl.glTranslatef(-sizeX / 2.0f, 0.0f, -sizeZ);
-                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
             } else if (((String) properties).contains("shape=outer_left")) {
                 if (roll == 180.0f) {
                     gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
                 }
                 gl.glTranslatef(sizeX / 2.0f, sizeY, sizeZ / 2.0f);
-                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
             } else if (((String) properties).contains("shape=outer_right")) {
                 if (roll == 180.0f) {
                     gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
                 }
                 gl.glTranslatef(-sizeX / 2.0f, sizeY, sizeZ / 2.0f);
-                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
             } else {
                 gl.glTranslatef(0.0f, sizeY, sizeY / 2.0f);
-                Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
             }
         } else if (properties instanceof CompoundTag) {
             switch (((CompoundTag) properties).getString("shape")) {
@@ -106,36 +105,36 @@ public class Stair {
                         gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
                     }
                     gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
-                    Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                    Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
                     gl.glTranslatef(sizeX / 2.0f, 0.0f, -sizeZ);
-                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
                 }
                 case "inner_right" -> {
                     if (roll == 180.0f) {
                         gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
                     }
                     gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
-                    Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                    Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
                     gl.glTranslatef(-sizeX / 2.0f, 0.0f, -sizeZ);
-                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
                 }
                 case "outer_left" -> {
                     if (roll == 180.0f) {
                         gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
                     }
                     gl.glTranslatef(sizeX / 2.0f, sizeY, sizeZ / 2.0f);
-                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
                 }
                 case "outer_right" -> {
                     if (roll == 180.0f) {
                         gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
                     }
                     gl.glTranslatef(-sizeX / 2.0f, sizeY, sizeZ / 2.0f);
-                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                    Cube.draw(gl, color, scale, sizeX / 2.0f, sizeY / 2.0f, sizeZ / 2.0f);
                 }
                 default -> {
                     gl.glTranslatef(0.0f, sizeY, sizeZ / 2.0f);
-                    Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f, transparent);
+                    Cube.draw(gl, color, scale, sizeX, sizeY / 2.0f, sizeZ / 2.0f);
                 }
             }
         }

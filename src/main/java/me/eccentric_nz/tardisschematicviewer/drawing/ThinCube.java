@@ -16,7 +16,6 @@
  */
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
-import com.jogamp.opengl.GL2;
 import com.jogamp.opengl.GL4bc;
 import net.querz.nbt.tag.CompoundTag;
 
@@ -27,7 +26,7 @@ import java.awt.*;
  */
 public class ThinCube {
 
-    public static void draw(GL4bc gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties, boolean transparent) {
+    public static void draw(GL4bc gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties) {
 
         // rotate if necessary
         float yaw = 0.0f;
@@ -68,6 +67,6 @@ public class ThinCube {
 
         gl.glTranslatef(0.0f, sizeY - scale, 0.0f);
 
-        Cube.draw(gl, color, scale, sizeX, sizeY, sizeZ, transparent);
+        Cube.draw(gl, color, scale, sizeX, sizeY, sizeZ);
     }
 }
