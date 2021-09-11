@@ -174,7 +174,7 @@ public class SchematicRenderer extends GLJPanel {
 
             public void displayTschm(GL4bc gl) {
                 int lastIndexX = width - 1;
-                int lastIndexY = height - 1;
+                int lastIndexY = max - 1;
                 int lastIndexZ = length - 1;
                 for (int y = 0; y < height; y++) {
                     JSONArray level = ((JSONArray) input).getJSONArray(y);
@@ -381,13 +381,17 @@ public class SchematicRenderer extends GLJPanel {
                     case KeyEvent.VK_SHIFT -> y++;
                     case KeyEvent.VK_SPACE -> y--;
                     case KeyEvent.VK_LEFT -> {
-                        height--;
+                        if (height > 0) {
+                            height--;
+                        }
                         if (height < 0) {
                             height = 0;
                         }
                     }
                     case KeyEvent.VK_RIGHT -> {
-                        height++;
+                        if (height < max) {
+                            height++;
+                        }
                         if (height > max) {
                             height = max;
                         }
