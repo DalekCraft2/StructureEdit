@@ -24,9 +24,9 @@ import java.awt.*;
 /**
  * @author eccentric_nz
  */
-public class ThinCube {
+public class Rotational {
 
-    public static void draw(GL4bc gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties) {
+    public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, Object properties) {
 
         // rotate if necessary
         float yaw = 0.0f;
@@ -65,8 +65,8 @@ public class ThinCube {
         }
         gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f);
 
-        gl.glTranslatef(0.0f, sizeY - scale, 0.0f);
+        gl.glTranslatef(0.0f, sizeY - 1.0f, 0.0f);
 
-        Cube.draw(gl, color, scale, sizeX, sizeY, sizeZ);
+        Cube.draw(gl, color, sizeX, sizeY, sizeZ);
     }
 }

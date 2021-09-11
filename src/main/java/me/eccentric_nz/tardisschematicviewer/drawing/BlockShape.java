@@ -14,6 +14,7 @@ public enum BlockShape {
     STAIR,
     STICK,
     VOID,
-    WALL
+    WALL,
+    WALL_STICK
 
 }

@@ -29,12 +29,12 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
 public class Cube {
 
     // TODO Find a way to cull covered faces.
-    public static void draw(GL4bc gl, Color color, float scale, float sizeX, float sizeY, float sizeZ) {
+    public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ) {
 
         float[] components = color.getComponents(null);
 
         if (color.getAlpha() < 127) {
-            gl.glLineWidth(scale * 2);
+            gl.glLineWidth(1.0f * 2);
             gl.glBegin(GL_LINES);
         } else {
             gl.glBegin(GL_QUADS);
@@ -44,42 +44,42 @@ public class Cube {
         gl.glColor4f(components[0], components[1], components[2], components[3]);
 
         // Front Face
-        gl.glNormal3f(0.0f, 0.0f, scale);
+        gl.glNormal3f(0.0f, 0.0f, 1.0f);
         gl.glVertex3f(-sizeX, -sizeY, sizeZ); // bottom-left of the quad
         gl.glVertex3f(sizeX, -sizeY, sizeZ);  // bottom-right of the quad
         gl.glVertex3f(sizeX, sizeY, sizeZ);   // top-right of the quad
         gl.glVertex3f(-sizeX, sizeY, sizeZ);  // top-left of the quad
 
         // Back Face
-        gl.glNormal3f(0.0f, 0.0f, -scale);
+        gl.glNormal3f(0.0f, 0.0f, -1.0f);
         gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
         gl.glVertex3f(-sizeX, sizeY, -sizeZ);
         gl.glVertex3f(sizeX, sizeY, -sizeZ);
         gl.glVertex3f(sizeX, -sizeY, -sizeZ);
 
         // Top Face
-        gl.glNormal3f(0.0f, scale, 0.0f);
+        gl.glNormal3f(0.0f, 1.0f, 0.0f);
         gl.glVertex3f(-sizeX, sizeY, -sizeZ);
         gl.glVertex3f(-sizeX, sizeY, sizeZ);
         gl.glVertex3f(sizeX, sizeY, sizeZ);
         gl.glVertex3f(sizeX, sizeY, -sizeZ);
 
         // Bottom Face
-        gl.glNormal3f(0.0f, -scale, 0.0f);
+        gl.glNormal3f(0.0f, -1.0f, 0.0f);
         gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
         gl.glVertex3f(sizeX, -sizeY, -sizeZ);
         gl.glVertex3f(sizeX, -sizeY, sizeZ);
         gl.glVertex3f(-sizeX, -sizeY, sizeZ);
 
         // Right face
-        gl.glNormal3f(scale, 0.0f, 0.0f);
+        gl.glNormal3f(1.0f, 0.0f, 0.0f);
         gl.glVertex3f(sizeX, -sizeY, -sizeZ);
         gl.glVertex3f(sizeX, sizeY, -sizeZ);
         gl.glVertex3f(sizeX, sizeY, sizeZ);
         gl.glVertex3f(sizeX, -sizeY, sizeZ);
 
         // Left Face
-        gl.glNormal3f(-scale, 0.0f, 0.0f);
+        gl.glNormal3f(-1.0f, 0.0f, 0.0f);
         gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
         gl.glVertex3f(-sizeX, -sizeY, sizeZ);
         gl.glVertex3f(-sizeX, sizeY, sizeZ);

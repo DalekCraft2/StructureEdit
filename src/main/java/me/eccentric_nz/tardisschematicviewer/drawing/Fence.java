@@ -26,57 +26,53 @@ import java.awt.*;
  */
 public class Fence {
 
-    public static void draw(GL4bc gl, Color color, float scale, float thickness, float sizeX, float sizeY, float sizeZ, Object properties) {
+    public static void draw(GL4bc gl, Color color, float thickness, float sizeX, float sizeY, float sizeZ, Object properties) {
 
-        sizeX *= scale;
-        sizeY *= scale;
-        sizeZ *= scale;
+        gl.glTranslatef(0.0f, sizeY - 1.0f, 0.0f);
 
-        gl.glTranslatef(0.0f, sizeY - scale, 0.0f);
-
-        Cube.draw(gl, color, scale, thickness, sizeY, thickness);
+        Cube.draw(gl, color, thickness, sizeY, thickness);
 
         if (properties instanceof String) {
             if (((String) properties).contains("south=true")) {
                 // TODO Figure out the actual equation for this instead of using 2.5f.
                 gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
-                Cube.draw(gl, color, scale, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
+                Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
                 gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
             }
             if (((String) properties).contains("east=true")) {
                 gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, scale, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
+                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
                 gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
             }
             if (((String) properties).contains("north=true")) {
                 gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
-                Cube.draw(gl, color, scale, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
+                Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
                 gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
             }
             if (((String) properties).contains("west=true")) {
                 gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, scale, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
+                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
                 gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
             }
         } else if (properties instanceof CompoundTag) {
             if (((CompoundTag) properties).getString("south").equals("true")) {
                 gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
-                Cube.draw(gl, color, scale, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
+                Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
                 gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
             }
             if (((CompoundTag) properties).getString("east").equals("true")) {
                 gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, scale, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
+                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
                 gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
             }
             if (((CompoundTag) properties).getString("north").equals("true")) {
                 gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
-                Cube.draw(gl, color, scale, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
+                Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
                 gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
             }
             if (((CompoundTag) properties).getString("west").equals("true")) {
                 gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-                Cube.draw(gl, color, scale, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
+                Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
                 gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
             }
         }

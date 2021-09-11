@@ -25,18 +25,14 @@ import java.awt.*;
  */
 public class Plant {
 
-    public static void draw(GL4bc gl, Color color, float scale, float thickness, float sizeX, float sizeY, float sizeZ) {
-
-        sizeX *= scale;
-        sizeY *= scale;
-        sizeZ *= scale;
+    public static void draw(GL4bc gl, Color color, float thickness, float sizeX, float sizeY, float sizeZ) {
 
         // rotate 45 degrees
         gl.glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
 
-        gl.glTranslatef(0.0f, sizeY - scale, 0.0f);
+        gl.glTranslatef(0.0f, sizeY - 1.0f, 0.0f);
 
-        Cube.draw(gl, color, scale, thickness, sizeY, sizeZ);
-        Cube.draw(gl, color, scale, sizeX, sizeY, thickness);
+        Cube.draw(gl, color, thickness, sizeY, sizeZ);
+        Cube.draw(gl, color, sizeX, sizeY, thickness);
     }
 }
