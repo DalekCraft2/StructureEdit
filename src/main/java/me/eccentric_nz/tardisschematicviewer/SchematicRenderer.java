@@ -79,7 +79,7 @@ public class SchematicRenderer extends GLJPanel {
     private float z = -60.0f;
     private int mouseX = TardisSchematicViewer.FRAME_WIDTH / 2;
     private int mouseY = TardisSchematicViewer.FRAME_HEIGHT / 2;
-    private int height, width, length, max;
+    private int sizeX, sizeY, sizeZ, renderedHeight;
     private Object schematic;
     private Object input;
     private ListTag<CompoundTag> palette;
@@ -173,14 +173,14 @@ public class SchematicRenderer extends GLJPanel {
             }
 
             public void displayTschm(GL4bc gl) {
-                int lastIndexX = width - 1;
-                int lastIndexY = max - 1;
-                int lastIndexZ = length - 1;
-                for (int y = 0; y < height; y++) {
+                int lastIndexX = sizeZ - 1;
+                int lastIndexY = sizeY - 1;
+                int lastIndexZ = sizeX - 1;
+                for (int y = 0; y < renderedHeight; y++) {
                     JSONArray level = ((JSONArray) input).getJSONArray(y);
-                    for (int x = 0; x < width; x++) {
+                    for (int x = 0; x < sizeZ; x++) {
                         JSONArray row = level.getJSONArray(x);
-                        for (int z = 0; z < length; z++) {
+                        for (int z = 0; z < sizeX; z++) {
                             JSONObject column = row.getJSONObject(z);
                             String data = column.getString("data");
                             int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
@@ -200,11 +200,7 @@ public class SchematicRenderer extends GLJPanel {
                             Color color = block.getColor();
                             switch (block.getBlockShape()) {
                                 case SLAB:
-                                    if (!data.contains("type=double")) {
-                                        Slab.draw(gl, color, ONE_F, ONE_F, 0.5f, ONE_F, data);
-                                    } else {
-                                        Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F);
-                                    }
+                                    Slab.draw(gl, color, ONE_F, ONE_F, 0.5f, ONE_F, data);
                                     break;
                                 case FLAT:
                                     if (block.equals(Block.REDSTONE_WIRE)) {
@@ -268,9 +264,9 @@ public class SchematicRenderer extends GLJPanel {
             }
 
             public void displayNbt(GL4bc gl) {
-                int lastIndexX = length - 1;
-                int lastIndexY = height - 1;
-                int lastIndexZ = width - 1;
+                int lastIndexX = sizeX - 1;
+                int lastIndexY = sizeY - 1;
+                int lastIndexZ = sizeZ - 1;
                 CompoundTag schematicTag = ((CompoundTag) ((NamedTag) schematic).getTag());
                 ListTag<CompoundTag> blocks = schematicTag.getListTag("blocks").asCompoundTagList();
                 for (CompoundTag blockTag : blocks) {
@@ -278,7 +274,7 @@ public class SchematicRenderer extends GLJPanel {
                     int x = position.get(0).asInt();
                     int y = position.get(1).asInt();
                     int z = position.get(2).asInt();
-                    if (x < length && y < height && z < width) {
+                    if (x < sizeX && y < renderedHeight && z < sizeZ) {
                         String namespacedBlockName = palette.get(blockTag.getInt("state")).getString("Name");
                         String blockName = namespacedBlockName.substring(namespacedBlockName.indexOf(':') + 1).toUpperCase(Locale.ROOT);
                         Block block = Block.valueOf(blockName);
@@ -297,11 +293,7 @@ public class SchematicRenderer extends GLJPanel {
                         Color color = block.getColor();
                         switch (block.getBlockShape()) {
                             case SLAB:
-                                if (!properties.getString("type").equals("double")) {
-                                    Slab.draw(gl, color, ONE_F, ONE_F, 0.5f, ONE_F, properties);
-                                } else {
-                                    Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F);
-                                }
+                                Slab.draw(gl, color, ONE_F, ONE_F, 0.5f, ONE_F, properties);
                                 break;
                             case FLAT:
                                 if (block.equals(Block.REDSTONE_WIRE)) {
@@ -375,19 +367,19 @@ public class SchematicRenderer extends GLJPanel {
                     case KeyEvent.VK_SHIFT -> y++;
                     case KeyEvent.VK_SPACE -> y--;
                     case KeyEvent.VK_LEFT -> {
-                        if (height > 0) {
-                            height--;
+                        if (renderedHeight > 0) {
+                            renderedHeight--;
                         }
-                        if (height < 0) {
-                            height = 0;
+                        if (renderedHeight < 0) {
+                            renderedHeight = 0;
                         }
                     }
                     case KeyEvent.VK_RIGHT -> {
-                        if (height < max) {
-                            height++;
+                        if (renderedHeight < sizeY) {
+                            renderedHeight++;
                         }
-                        if (height > max) {
-                            height = max;
+                        if (renderedHeight > sizeY) {
+                            renderedHeight = sizeY;
                         }
                     }
                 }
@@ -429,8 +421,8 @@ public class SchematicRenderer extends GLJPanel {
         });
     }
 
-    public int getMax() {
-        return max;
+    public int getRenderedHeight() {
+        return renderedHeight;
     }
 
     public void setPalette(ListTag<CompoundTag> palette) {
@@ -445,9 +437,11 @@ public class SchematicRenderer extends GLJPanel {
         this.path = path;
         if (path.endsWith(".tschm")) {
             setSchematic(new JSONObject(GzipUtils.unzip(path)));
+            renderedHeight = sizeY;
             schematicParsed = true;
         } else if (path.endsWith(".nbt")) {
             setSchematic(NBTUtil.read(path));
+            renderedHeight = sizeY;
             schematicParsed = true;
         } else {
             System.err.println("Not a schematic file!");
@@ -463,13 +457,12 @@ public class SchematicRenderer extends GLJPanel {
         this.schematic = schematic;
         // get dimensions
         JSONObject dimensions = schematic.getJSONObject("dimensions");
-        height = dimensions.getInt("height");
-        max = height;
-        width = dimensions.getInt("width");
-        length = dimensions.getInt("length");
-        columnAnglesX = new float[width];
-        rowAnglesY = new float[height];
-        faceAnglesZ = new float[length];
+        sizeX = dimensions.getInt("length");
+        sizeY = dimensions.getInt("height");
+        sizeZ = dimensions.getInt("width");
+        columnAnglesX = new float[sizeZ];
+        rowAnglesY = new float[sizeY];
+        faceAnglesZ = new float[sizeX];
         input = schematic.getJSONArray("input");
     }
 
@@ -477,13 +470,12 @@ public class SchematicRenderer extends GLJPanel {
         this.schematic = schematic;
         // get dimensions
         ListTag<IntTag> size = ((CompoundTag) schematic.getTag()).getListTag("size").asIntTagList();
-        length = size.get(0).asInt();
-        height = size.get(1).asInt();
-        width = size.get(2).asInt();
-        max = height;
-        columnAnglesX = new float[length];
-        rowAnglesY = new float[height];
-        faceAnglesZ = new float[width];
+        sizeX = size.get(0).asInt();
+        sizeY = size.get(1).asInt();
+        sizeZ = size.get(2).asInt();
+        columnAnglesX = new float[sizeX];
+        rowAnglesY = new float[sizeY];
+        faceAnglesZ = new float[sizeZ];
         input = ((CompoundTag) schematic.getTag()).getListTag("blocks");
     }
 }

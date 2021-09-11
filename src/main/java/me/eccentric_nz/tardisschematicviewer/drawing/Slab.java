@@ -33,10 +33,16 @@ public class Slab {
         sizeZ *= scale;
 
         if (properties instanceof String) {
+            if (((String) properties).contains("type=double")) {
+                Cube.draw(gl, color, scale, sizeX, sizeY * 2.0f, sizeZ);
+            }
             if (((String) properties).contains("type=top") || ((String) properties).contains("half=top")) {
                 gl.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
             }
         } else if (properties instanceof CompoundTag) {
+            if (((CompoundTag) properties).getString("type").equals("double")) {
+                Cube.draw(gl, color, scale, sizeX, sizeY * 2.0f, sizeZ);
+            }
             if (((CompoundTag) properties).getString("type").equals("top") || ((CompoundTag) properties).getString("half").equals("top")) {
                 gl.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
             }

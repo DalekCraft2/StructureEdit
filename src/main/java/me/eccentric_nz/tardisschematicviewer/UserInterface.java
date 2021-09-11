@@ -151,7 +151,7 @@ public class UserInterface extends JPanel {
         plusButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (currentLayer < UserInterface.this.renderer.getMax() - 1) {
+                if (currentLayer < UserInterface.this.renderer.getRenderedHeight() - 1) {
                     currentLayer++;
                     loadLayer(UserInterface.this.renderer.getPath());
                 }
