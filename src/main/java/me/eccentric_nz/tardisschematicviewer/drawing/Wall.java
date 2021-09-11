@@ -17,7 +17,7 @@ public class Wall {
         } else if (properties instanceof CompoundTag) {
             tag = (CompoundTag) properties;
         }
-        if (!tag.getBoolean("up")) {
+        if (tag.getString("up").equals("false")) {
             gl.glTranslatef(0.0f, sizeY * 0.8f - 1.0f, 0.0f);
             Cube.draw(gl, color, thickness, sizeY * 0.8f, thickness);
             gl.glTranslatef(0.0f, 1.0f - sizeY * 0.8f, 0.0f);

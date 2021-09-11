@@ -21,22 +21,22 @@ public class Pane {
         } else if (properties instanceof CompoundTag) {
             tag = (CompoundTag) properties;
         }
-        if (tag.getBoolean("south")) {
+        if (tag.getString("south").equals("true")) {
             gl.glTranslatef(0.0f, 0.0f, thickness * 4.5f);
             Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
             gl.glTranslatef(0.0f, 0.0f, -thickness * 4.5f);
         }
-        if (tag.getBoolean("east")) {
+        if (tag.getString("east").equals("true")) {
             gl.glTranslatef(thickness * 4.5f, 0.0f, 0.0f);
             Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
             gl.glTranslatef(-thickness * 4.5f, 0.0f, 0.0f);
         }
-        if (tag.getBoolean("north")) {
+        if (tag.getString("north").equals("true")) {
             gl.glTranslatef(0.0f, 0.0f, -thickness * 4.5f);
             Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
             gl.glTranslatef(0.0f, 0.0f, thickness * 4.5f);
         }
-        if (tag.getBoolean("west")) {
+        if (tag.getString("west").equals("true")) {
             gl.glTranslatef(-thickness * 4.5f, 0.0f, 0.0f);
             Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
             gl.glTranslatef(thickness * 4.5f, 0.0f, 0.0f);

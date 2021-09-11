@@ -40,23 +40,23 @@ public class Fence {
         } else if (properties instanceof CompoundTag) {
             tag = (CompoundTag) properties;
         }
-        if (tag.getBoolean("south")) {
+        if (tag.getString("south").equals("true")) {
             // TODO Figure out the actual equation for this instead of using 2.5f.
             gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
             Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
             gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
         }
-        if (tag.getBoolean("east")) {
+        if (tag.getString("east").equals("true")) {
             gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
             Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
             gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
         }
-        if (tag.getBoolean("north")) {
+        if (tag.getString("north").equals("true")) {
             gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
             Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
             gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
         }
-        if (tag.getBoolean("west")) {
+        if (tag.getString("west").equals("true")) {
             gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
             Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
             gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
