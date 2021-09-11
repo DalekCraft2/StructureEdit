@@ -16,7 +16,7 @@
  */
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
-import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL4bc;
 
 import java.awt.*;
 
@@ -29,7 +29,7 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
 public class Cube {
 
     // TODO Find a way to cull covered faces.
-    public static void draw(GL2 gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, boolean transparent) {
+    public static void draw(GL4bc gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, boolean transparent) {
 
         float[] components = color.getComponents(null);
 

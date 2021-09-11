@@ -16,7 +16,7 @@
  */
 package me.eccentric_nz.tardisschematicviewer;
 
-import com.jogamp.opengl.GL2;
+import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilitiesImmutable;
 import com.jogamp.opengl.GLEventListener;
@@ -94,7 +94,7 @@ public class SchematicRenderer extends GLJPanel {
         addGLEventListener(new GLEventListener() {
             @Override
             public void init(GLAutoDrawable drawable) {
-                GL2 gl = drawable.getGL().getGL2(); // get the OpenGL graphics context
+                GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
                 glu = new GLU(); // get GL Utilities
                 gl.glClearColor(0.8f, 0.8f, 0.8f, 0.0f); // set background (grey) color
                 gl.glClearDepth(1.0f); // set clear depth value to farthest
@@ -136,7 +136,7 @@ public class SchematicRenderer extends GLJPanel {
                         }
                     }
                 } else {
-                    GL2 gl = drawable.getGL().getGL2();
+                    GL4bc gl = drawable.getGL().getGL4bc();
                     gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                     gl.glLoadIdentity(); // reset the model-view matrix
                     gl.glTranslatef(x, y, z); // translate into the screen
@@ -156,7 +156,7 @@ public class SchematicRenderer extends GLJPanel {
 
             @Override
             public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-                GL2 gl = drawable.getGL().getGL2(); // get the OpenGL 2 graphics context
+                GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
                 if (height == 0) {
                     height = 1; // prevent divide by zero
                 }
@@ -172,7 +172,7 @@ public class SchematicRenderer extends GLJPanel {
                 gl.glLoadIdentity(); // reset
             }
 
-            public void displayTschm(GL2 gl) {
+            public void displayTschm(GL4bc gl) {
                 int lastIndexX = width - 1;
                 int lastIndexY = height - 1;
                 int lastIndexZ = length - 1;
@@ -270,7 +270,7 @@ public class SchematicRenderer extends GLJPanel {
                 }
             }
 
-            public void displayNbt(GL2 gl) {
+            public void displayNbt(GL4bc gl) {
                 int lastIndexX = length - 1;
                 int lastIndexY = height - 1;
                 int lastIndexZ = width - 1;
