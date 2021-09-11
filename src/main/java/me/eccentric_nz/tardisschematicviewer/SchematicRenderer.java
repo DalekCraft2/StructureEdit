@@ -163,7 +163,7 @@ public class SchematicRenderer extends GLJPanel {
                 // Setup perspective projection, with aspect ratio matches viewport
                 gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION); // choose projection matrix
                 gl.glLoadIdentity(); // reset projection matrix
-                glu.gluPerspective(45.0, aspect, 5.0, 1000.0); // fovy, aspect, zNear, zFar
+                glu.gluPerspective(45.0, aspect, 2.0, 1000.0); // fovy, aspect, zNear, zFar
                 // Enable the model-view transform
                 gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
                 gl.glLoadIdentity(); // reset
