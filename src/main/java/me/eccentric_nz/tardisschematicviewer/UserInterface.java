@@ -187,7 +187,6 @@ public class UserInterface extends JPanel {
                 String data = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase() + selected.getProperties();
                 selected.setBlock(Block.valueOf(blockComboBox.getSelectedItem().toString()));
                 blockObject.put("data", data);
-                UserInterface.this.renderer.setSchematic((JSONObject) schematic);
                 loadLayer(UserInterface.this.renderer.getPath());
             }
 
@@ -201,7 +200,6 @@ public class UserInterface extends JPanel {
                     palette.add(paletteTag);
                 }
                 blockTag.putInt("state", palette.indexOf(paletteTag));
-                UserInterface.this.renderer.setSchematic((NamedTag) schematic);
                 loadLayer(UserInterface.this.renderer.getPath());
             }
         });
@@ -235,7 +233,6 @@ public class UserInterface extends JPanel {
                 String data = "minecraft:" + selected.getBlock().name().toLowerCase() + propertiesTextField.getText();
                 selected.setProperties(propertiesTextField.getText());
                 blockObject.put("data", data);
-                UserInterface.this.renderer.setSchematic((JSONObject) schematic);
                 loadLayer(UserInterface.this.renderer.getPath());
             }
 
@@ -258,7 +255,6 @@ public class UserInterface extends JPanel {
                     palette.add(paletteTag);
                 }
                 blockTag.putInt("state", palette.indexOf(paletteTag));
-                UserInterface.this.renderer.setSchematic((NamedTag) schematic);
                 loadLayer(UserInterface.this.renderer.getPath());
             }
         });
@@ -289,7 +285,6 @@ public class UserInterface extends JPanel {
                         } else {
                             blockTag.remove("nbt");
                         }
-                        UserInterface.this.renderer.setSchematic((NamedTag) schematic);
                         loadLayer(UserInterface.this.renderer.getPath());
                     } else {
                         System.err.println("Not a schematic file!");
@@ -313,7 +308,6 @@ public class UserInterface extends JPanel {
                 if (this.renderer.getPath().endsWith(".nbt")) {
                     CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
                     blockTag.putInt("state", blockPaletteComboBox.getSelectedIndex());
-                    this.renderer.setSchematic((NamedTag) schematic);
                     loadLayer(this.renderer.getPath());
                 } else {
                     System.err.println("Not a schematic file!");
