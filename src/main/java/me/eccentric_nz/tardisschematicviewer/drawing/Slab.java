@@ -28,6 +28,10 @@ public class Slab {
 
     public static void draw(GL2 gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties, boolean transparent) {
 
+        sizeX *= scale;
+        sizeY *= scale;
+        sizeZ *= scale;
+
         if (properties instanceof String) {
             if (((String) properties).contains("type=top") || ((String) properties).contains("half=top")) {
                 gl.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);

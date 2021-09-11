@@ -28,6 +28,10 @@ public class Stair {
 
     public static void draw(GL2 gl, Color color, float scale, float sizeX, float sizeY, float sizeZ, Object properties, boolean transparent) {
 
+        sizeX *= scale;
+        sizeY *= scale;
+        sizeZ *= scale;
+
         float roll = 0.0f;
         float yaw = 0.0f;
         if (properties instanceof String) {

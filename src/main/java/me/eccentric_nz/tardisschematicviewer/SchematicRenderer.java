@@ -237,10 +237,10 @@ public class SchematicRenderer extends GLJPanel {
                                     break;
                                 }
                                 case WALL:
-                                    Fence.draw(gl, color, ONE_F, 0.5f, ONE_F, 0.9f, ONE_F, false);
+                                    Fence.draw(gl, color, ONE_F, 0.5f, ONE_F, 0.9f, ONE_F, data, false);
                                     break;
                                 case FENCE:
-                                    Fence.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.9f, ONE_F, false);
+                                    Fence.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.9f, ONE_F, data, false);
                                     break;
                                 case FENCE_GATE:
                                     ThinCube.draw(gl, color, ONE_F, ONE_F, 0.7f, 0.125f, data, false);
@@ -249,7 +249,7 @@ public class SchematicRenderer extends GLJPanel {
                                     ThinCube.draw(gl, color, ONE_F, ONE_F, ONE_F, 0.125f, data, false);
                                     break;
                                 case GLASS_PANE:
-                                    Fence.draw(gl, color, ONE_F, 0.125f, ONE_F, ONE_F, ONE_F, true);
+                                    Fence.draw(gl, color, ONE_F, 0.125f, ONE_F, ONE_F, ONE_F, data, true);
                                     break;
                                 case GLASS:
                                     Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, true);
@@ -337,10 +337,10 @@ public class SchematicRenderer extends GLJPanel {
                                 break;
                             }
                             case WALL:
-                                Fence.draw(gl, color, ONE_F, 0.5f, ONE_F, 0.9f, ONE_F, false);
+                                Fence.draw(gl, color, ONE_F, 0.5f, ONE_F, 0.9f, ONE_F, properties, false);
                                 break;
                             case FENCE:
-                                Fence.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.9f, ONE_F, false);
+                                Fence.draw(gl, color, ONE_F, 0.25f, ONE_F, 0.9f, ONE_F, properties, false);
                                 break;
                             case FENCE_GATE:
                                 ThinCube.draw(gl, color, ONE_F, ONE_F, 0.7f, 0.125f, properties, false);
@@ -349,7 +349,7 @@ public class SchematicRenderer extends GLJPanel {
                                 ThinCube.draw(gl, color, ONE_F, ONE_F, ONE_F, 0.125f, properties, false);
                                 break;
                             case GLASS_PANE:
-                                Fence.draw(gl, color, ONE_F, 0.125f, ONE_F, ONE_F, ONE_F, true);
+                                Fence.draw(gl, color, ONE_F, 0.125f, ONE_F, ONE_F, ONE_F, properties, true);
                                 break;
                             case GLASS:
                                 Cube.draw(gl, color, ONE_F, ONE_F, ONE_F, ONE_F, true);

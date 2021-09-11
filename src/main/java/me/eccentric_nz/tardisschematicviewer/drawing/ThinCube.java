@@ -65,6 +65,8 @@ public class ThinCube {
         }
         gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f);
 
+        gl.glTranslatef(0.0f, sizeY - scale, 0.0f);
+
         Cube.draw(gl, color, scale, sizeX, sizeY, sizeZ, transparent);
     }
 }
