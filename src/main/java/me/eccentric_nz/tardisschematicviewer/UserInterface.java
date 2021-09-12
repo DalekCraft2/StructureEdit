@@ -135,7 +135,7 @@ public class UserInterface extends JPanel {
                         System.err.println("Not a schematic file!");
                     }
                 } else {
-                    System.err.println("Schematic was null! 1");
+                    System.err.println("Schematic was null!");
                 }
             }
         });
@@ -426,7 +426,7 @@ public class UserInterface extends JPanel {
                 System.err.println("Not a schematic file!");
             }
         } else {
-            System.err.println("Schematic was null! 2");
+            System.err.println("Schematic was null!");
         }
     }
 
