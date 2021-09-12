@@ -55,8 +55,8 @@ public class UserInterface extends JPanel {
     private static final FileNameExtensionFilter TSCHM_FILTER = new FileNameExtensionFilter("TARDIS schematic file", "tschm");
     private static final FileNameExtensionFilter NBT_FILTER = new FileNameExtensionFilter("NBT file", "nbt");
     private final SchematicRenderer renderer;
-    private File lastDirectory;
-    private FileFilter lastFileFilter;
+    private File lastDirectory = new File(".");
+    private FileFilter lastFileFilter = TSCHM_FILTER;
     private SquareButton selected;
     private int currentLayer;
     private Object schematic;
@@ -88,11 +88,9 @@ public class UserInterface extends JPanel {
 
     public UserInterface(SchematicRenderer renderer) {
         this.renderer = renderer;
-        lastDirectory = new File(".");
-        lastFileFilter = TSCHM_FILTER;
-        palette = null;
         $$$setupUI$$$();
         gridPanel.addComponentListener(new ComponentAdapter() {
+            @Override
             public void componentResized(ComponentEvent e) {
                 if (schematic != null) {
                     loadLayer(UserInterface.this.renderer.getPath());
@@ -118,34 +116,26 @@ public class UserInterface extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (schematic != null) {
                     if (UserInterface.this.renderer.getPath().endsWith(".tschm")) {
-                        mouseClickedTschm(e);
+                        String output = UserInterface.this.renderer.getPath();
+                        try {
+                            GzipUtils.zip(schematic, output);
+                            System.out.println("Schematic saved to \"" + output + "\" successfully.");
+                        } catch (IOException e1) {
+                            System.err.println("Error saving schematic: " + e1.getMessage());
+                        }
                     } else if (UserInterface.this.renderer.getPath().endsWith(".nbt")) {
-                        mouseClickedNbt(e);
+                        String output = UserInterface.this.renderer.getPath();
+                        try {
+                            NBTUtil.write((NamedTag) schematic, output);
+                            System.out.println("Schematic saved to \"" + output + "\" successfully.");
+                        } catch (IOException e1) {
+                            System.err.println("Error saving schematic: " + e1.getMessage());
+                        }
                     } else {
                         System.err.println("Not a schematic file!");
                     }
                 } else {
                     System.err.println("Schematic was null! 1");
-                }
-            }
-
-            public void mouseClickedTschm(MouseEvent e) {
-                String output = UserInterface.this.renderer.getPath();
-                try {
-                    GzipUtils.zip(schematic, output);
-                    System.out.println("Schematic saved to \"" + output + "\" successfully.");
-                } catch (IOException e1) {
-                    System.err.println("Error saving schematic: " + e1.getMessage());
-                }
-            }
-
-            public void mouseClickedNbt(MouseEvent e) {
-                String output = UserInterface.this.renderer.getPath();
-                try {
-                    NBTUtil.write((NamedTag) schematic, output);
-                    System.out.println("Schematic saved to \"" + output + "\" successfully.");
-                } catch (IOException e1) {
-                    System.err.println("Error saving schematic: " + e1.getMessage());
                 }
             }
         });
@@ -167,44 +157,51 @@ public class UserInterface extends JPanel {
                 }
             }
         });
-        blockComboBox.addItemListener(new ItemListener() {
-            @Override
-            public void itemStateChanged(ItemEvent e) {
-                if (selected != null) {
-                    if (UserInterface.this.renderer.getPath().endsWith(".tschm")) {
-                        itemStateChangedTschm(e);
-                    } else if (UserInterface.this.renderer.getPath().endsWith(".nbt")) {
-                        itemStateChangedNbt(e);
-                    } else {
-                        System.err.println("Not a schematic file!");
-                    }
+        blockComboBox.addItemListener(e -> {
+            if (selected != null) {
+                if (this.renderer.getPath().endsWith(".tschm")) {
+                    JSONObject blockObject = (JSONObject) selected.getBlockObject();
+                    String data = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase() + selected.getProperties();
+                    blockObject.put("data", data);
+                    loadLayer(UserInterface.this.renderer.getPath());
+                } else if (this.renderer.getPath().endsWith(".nbt")) {
+                    CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
+                    CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
+                    String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
+                    paletteTag.putString("Name", name);
+                    loadLayer(this.renderer.getPath());
+                } else {
+                    System.err.println("Not a schematic file!");
                 }
-            }
-
-            public void itemStateChangedTschm(ItemEvent e) {
-                JSONObject blockObject = (JSONObject) selected.getBlockObject();
-                String data = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase() + selected.getProperties();
-                blockObject.put("data", data);
-                loadLayer(UserInterface.this.renderer.getPath());
-            }
-
-            public void itemStateChangedNbt(ItemEvent e) {
-                CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
-                CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
-                String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
-                paletteTag.putString("Name", name);
-                loadLayer(UserInterface.this.renderer.getPath());
             }
         });
         propertiesTextField.getDocument().addDocumentListener(new DocumentListener() {
-
             @Override
             public void insertUpdate(DocumentEvent e) {
                 if (selected != null) {
                     if (UserInterface.this.renderer.getPath().endsWith(".tschm")) {
-                        changedUpdateTschm(e);
+                        JSONObject blockObject = (JSONObject) selected.getBlockObject();
+                        String propertiesString = propertiesTextField.getText().isEmpty() || propertiesTextField.getText().equals("[]") || propertiesTextField.getText() == null ? "" : propertiesTextField.getText();
+                        String data = "minecraft:" + selected.getBlock().name().toLowerCase() + propertiesString;
+                        blockObject.put("data", data);
+                        loadLayer(UserInterface.this.renderer.getPath());
                     } else if (UserInterface.this.renderer.getPath().endsWith(".nbt")) {
-                        changedUpdateNbt(e);
+                        CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
+                        CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
+                        CompoundTag properties = new CompoundTag();
+                        try {
+                            properties = (CompoundTag) SNBTUtil.fromSNBT(propertiesTextField.getText());
+                            propertiesTextField.setForeground(Color.BLACK);
+                        } catch (StringIndexOutOfBoundsException ignored) {
+                        } catch (IOException e1) {
+                            propertiesTextField.setForeground(Color.RED);
+                        }
+                        if (properties != null && !properties.entrySet().isEmpty()) {
+                            paletteTag.put("Properties", properties);
+                        } else {
+                            paletteTag.remove("Properties");
+                        }
+                        loadLayer(UserInterface.this.renderer.getPath());
                     } else {
                         System.err.println("Not a schematic file!");
                     }
@@ -219,36 +216,8 @@ public class UserInterface extends JPanel {
             @Override
             public void changedUpdate(DocumentEvent e) {
             }
-
-            public void changedUpdateTschm(DocumentEvent e) {
-                JSONObject blockObject = (JSONObject) selected.getBlockObject();
-                String propertiesString = propertiesTextField.getText().isEmpty() || propertiesTextField.getText().equals("[]") || propertiesTextField.getText() == null ? "" : propertiesTextField.getText();
-                String data = "minecraft:" + selected.getBlock().name().toLowerCase() + propertiesString;
-                blockObject.put("data", data);
-                loadLayer(UserInterface.this.renderer.getPath());
-            }
-
-            public void changedUpdateNbt(DocumentEvent e) {
-                CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
-                CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
-                CompoundTag properties = new CompoundTag();
-                try {
-                    properties = (CompoundTag) SNBTUtil.fromSNBT(propertiesTextField.getText());
-                    propertiesTextField.setForeground(Color.BLACK);
-                } catch (StringIndexOutOfBoundsException ignored) {
-                } catch (IOException e1) {
-                    propertiesTextField.setForeground(Color.RED);
-                }
-                if (properties != null && !properties.entrySet().isEmpty()) {
-                    paletteTag.put("Properties", properties);
-                } else {
-                    paletteTag.remove("Properties");
-                }
-                loadLayer(UserInterface.this.renderer.getPath());
-            }
         });
         nbtTextField.getDocument().addDocumentListener(new DocumentListener() {
-
             @Override
             public void insertUpdate(DocumentEvent e) {
                 if (selected != null) {
@@ -329,11 +298,12 @@ public class UserInterface extends JPanel {
             box.setText(chooser.getSelectedFile().getPath());
             lastDirectory = chooser.getCurrentDirectory();
             lastFileFilter = chooser.getFileFilter();
-            choose(chooser.getSelectedFile().getPath());
+            choose(chooser.getSelectedFile());
         }
     }
 
-    public void choose(String path) {
+    public void choose(File file) {
+        String path = file.getAbsolutePath();
         if (!path.isEmpty()) {
             try {
                 selected = null;
@@ -396,79 +366,67 @@ public class UserInterface extends JPanel {
     }
 
     public void loadLayer(String path) {
-        if (path.endsWith(".tschm")) {
-            loadLayerTschm();
-        } else if (path.endsWith(".nbt")) {
-            loadLayerNbt();
-        } else {
-            System.err.println("Not a schematic file!");
-        }
-    }
-
-    public void loadLayerTschm() {
-        gridPanel.removeAll();
-        gridPanel.setLayout(null);
-        gridPanel.updateUI();
         if (schematic != null) {
-            layerTextField.setText(String.valueOf(currentLayer));
-            JSONObject dimensions = ((JSONObject) schematic).getJSONObject("dimensions");
-            JSONArray level = ((JSONObject) schematic).getJSONArray("input").getJSONArray(currentLayer);
-            int width = dimensions.getInt("width");
-            int buttonSideLength = gridPanel.getWidth() / width;
-            for (int x = 0; x < width; x++) {
-                JSONArray row = level.getJSONArray(x);
-                for (int z = 0; z < width; z++) {
-                    JSONObject column = row.getJSONObject(z);
-                    String data = column.getString("data");
-                    int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
-                    String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
-                    String blockData = data.contains("[") && data.contains("]") ? data.substring(data.indexOf('[')) : "[]";
+            if (path.endsWith(".tschm")) {
+                gridPanel.removeAll();
+                gridPanel.setLayout(null);
+                gridPanel.updateUI();
+                layerTextField.setText(String.valueOf(currentLayer));
+                JSONObject dimensions = ((JSONObject) schematic).getJSONObject("dimensions");
+                JSONArray level = ((JSONObject) schematic).getJSONArray("input").getJSONArray(currentLayer);
+                int width = dimensions.getInt("width");
+                int buttonSideLength = gridPanel.getWidth() / width;
+                for (int x = 0; x < width; x++) {
+                    JSONArray row = level.getJSONArray(x);
+                    for (int z = 0; z < width; z++) {
+                        JSONObject column = row.getJSONObject(z);
+                        String data = column.getString("data");
+                        int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
+                        String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
+                        String blockData = data.contains("[") && data.contains("]") ? data.substring(data.indexOf('[')) : "[]";
+                        Block block = Block.valueOf(blockName);
+                        SquareButton squareButton = new SquareButton(buttonSideLength, block, x, currentLayer, z, blockData, column);
+                        squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
+                        squareButton.addActionListener(actionListener);
+                        gridPanel.add(squareButton);
+                    }
+                }
+            } else if (path.endsWith(".nbt")) {
+                gridPanel.removeAll();
+                gridPanel.setLayout(null);
+                gridPanel.updateUI();
+                layerTextField.setText(String.valueOf(currentLayer));
+                ListTag<IntTag> size = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("size").asIntTagList();
+                ListTag<CompoundTag> blocks = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("blocks").asCompoundTagList();
+                int width = size.get(2).asInt();
+                int buttonSideLength = gridPanel.getWidth() / width;
+                for (CompoundTag blockTag : blocks) {
+                    ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
+                    int x = position.get(0).asInt();
+                    int y = position.get(1).asInt();
+                    int z = position.get(2).asInt();
+                    String namespacedBlockName = palette.get(blockTag.getInt("state")).getString("Name");
+                    String blockName = namespacedBlockName.substring(namespacedBlockName.indexOf(':') + 1).toUpperCase(Locale.ROOT);
                     Block block = Block.valueOf(blockName);
-                    SquareButton squareButton = new SquareButton(buttonSideLength, block, x, currentLayer, z, blockData, column);
-                    squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
-                    squareButton.addActionListener(actionListener);
-                    gridPanel.add(squareButton);
+                    CompoundTag properties = palette.get(blockTag.getInt("state")).getCompoundTag("Properties");
+                    String propertiesString = null;
+                    try {
+                        propertiesString = properties == null ? null : SNBTUtil.toSNBT(properties);
+                    } catch (IOException ignored) {
+                    }
+                    CompoundTag nbt = blockTag.getCompoundTag("nbt");
+                    if (y == currentLayer) {
+                        SquareButton squareButton = new SquareButton(buttonSideLength, block, x, y, z, propertiesString, blockTag, nbt);
+                        squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
+                        squareButton.addActionListener(actionListener);
+                        gridPanel.add(squareButton);
+                    }
                 }
+            } else {
+                System.err.println("Not a schematic file!");
             }
         } else {
-            System.err.println("Schematic was null! 6");
-        }
-    }
-
-    public void loadLayerNbt() {
-        gridPanel.removeAll();
-        gridPanel.setLayout(null);
-        gridPanel.updateUI();
-        if (schematic != null) {
-            layerTextField.setText(String.valueOf(currentLayer));
-            ListTag<IntTag> size = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("size").asIntTagList();
-            ListTag<CompoundTag> blocks = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("blocks").asCompoundTagList();
-            int width = size.get(2).asInt();
-            int buttonSideLength = gridPanel.getWidth() / width;
-            for (CompoundTag blockTag : blocks) {
-                ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
-                int x = position.get(0).asInt();
-                int y = position.get(1).asInt();
-                int z = position.get(2).asInt();
-                String namespacedBlockName = palette.get(blockTag.getInt("state")).getString("Name");
-                String blockName = namespacedBlockName.substring(namespacedBlockName.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-                Block block = Block.valueOf(blockName);
-                CompoundTag properties = palette.get(blockTag.getInt("state")).getCompoundTag("Properties");
-                String propertiesString = null;
-                try {
-                    propertiesString = properties == null ? null : SNBTUtil.toSNBT(properties);
-                } catch (IOException ignored) {
-                }
-                CompoundTag nbt = blockTag.getCompoundTag("nbt");
-                if (y == currentLayer) {
-                    SquareButton squareButton = new SquareButton(buttonSideLength, block, x, y, z, propertiesString, blockTag, nbt);
-                    squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
-                    squareButton.addActionListener(actionListener);
-                    gridPanel.add(squareButton);
-                }
-            }
-        } else {
-            System.err.println("Schematic was null! 7");
+            System.err.println("Schematic was null! 2");
         }
     }
 

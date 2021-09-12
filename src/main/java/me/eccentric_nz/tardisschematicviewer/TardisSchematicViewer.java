@@ -28,6 +28,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +36,7 @@ public class TardisSchematicViewer {
 
     public static final int FRAME_WIDTH = 1024;
     public static final int FRAME_HEIGHT = 600;
+    public static Path assets = null;
 
     /**
      * @param args the command line arguments
@@ -84,13 +86,18 @@ public class TardisSchematicViewer {
             animator.start();
 
             ArrayList<String> argList = new ArrayList<>(List.of(args));
+            if (argList.contains("-assets")) {
+                if (argList.size() > argList.indexOf("-assets") + 1) {
+                    String assetsArg = argList.get(argList.indexOf("-assets") + 1);
+                    assets = Path.of(assetsArg);
+                }
+            }
             if (argList.contains("-path")) {
                 if (argList.size() > argList.indexOf("-path") + 1) {
                     try {
-                        String relativePath = argList.get(argList.indexOf("-path") + 1);
-                        File file = new File(relativePath);
-                        String absolutePath = file.getAbsolutePath();
-                        userInterface.choose(absolutePath);
+                        String path = argList.get(argList.indexOf("-path") + 1);
+                        File file = new File(path);
+                        userInterface.choose(file);
                     } catch (JSONException e) {
                         System.err.println("Error reading schematic: " + e.getMessage());
                     }

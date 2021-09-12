@@ -143,9 +143,59 @@ public class SchematicRenderer extends GLJPanel {
                     gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
                     // draw a cube
                     if (path.endsWith(".tschm")) {
-                        displayTschm(gl);
+                        int lastIndexX = sizeZ - 1;
+                        int lastIndexY = sizeY - 1;
+                        int lastIndexZ = sizeX - 1;
+                        for (int y = 0; y < renderedHeight; y++) {
+                            JSONArray level = ((JSONArray) input).getJSONArray(y);
+                            for (int x = 0; x < sizeZ; x++) {
+                                JSONArray row = level.getJSONArray(x);
+                                for (int z = 0; z < sizeX; z++) {
+                                    JSONObject column = row.getJSONObject(z);
+                                    String data = column.getString("data");
+                                    int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
+                                    String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
+                                    String blockData = data.contains("[") ? data.substring(data.indexOf('[')) : "";
+                                    Block block = Block.valueOf(blockName);
+                                    gl.glPushMatrix();
+
+                                    // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
+                                    float translateX = (float) lastIndexX / 2.0f;
+                                    float translateY = (float) lastIndexY / 2.0f;
+                                    float translateZ = (float) lastIndexZ / 2.0f;
+                                    gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
+                                    blockSwitch(gl, block, blockData);
+                                    gl.glPopMatrix();
+                                }
+                            }
+                        }
                     } else if (path.endsWith(".nbt")) {
-                        displayNbt(gl);
+                        int lastIndexX = sizeX - 1;
+                        int lastIndexY = sizeY - 1;
+                        int lastIndexZ = sizeZ - 1;
+                        CompoundTag schematicTag = ((CompoundTag) ((NamedTag) schematic).getTag());
+                        ListTag<CompoundTag> blocks = schematicTag.getListTag("blocks").asCompoundTagList();
+                        for (CompoundTag blockTag : blocks) {
+                            ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
+                            int x = position.get(0).asInt();
+                            int y = position.get(1).asInt();
+                            int z = position.get(2).asInt();
+                            if (x < sizeX && y < renderedHeight && z < sizeZ) {
+                                String namespacedBlockName = palette.get(blockTag.getInt("state")).getString("Name");
+                                String blockName = namespacedBlockName.substring(namespacedBlockName.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+                                Block block = Block.valueOf(blockName);
+                                CompoundTag properties = palette.get(blockTag.getInt("state")).getCompoundTag("Properties");
+                                gl.glPushMatrix();
+
+                                // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
+                                float translateX = (float) lastIndexX / 2.0f;
+                                float translateY = (float) lastIndexY / 2.0f;
+                                float translateZ = (float) lastIndexZ / 2.0f;
+                                gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
+                                blockSwitch(gl, block, properties);
+                                gl.glPopMatrix();
+                            }
+                        }
                     } else {
                         System.err.println("Not a schematic file!");
                         schematicParsed = false;
@@ -169,64 +219,6 @@ public class SchematicRenderer extends GLJPanel {
                 // Enable the model-view transform
                 gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
                 gl.glLoadIdentity(); // reset
-            }
-
-            public void displayTschm(GL4bc gl) {
-                int lastIndexX = sizeZ - 1;
-                int lastIndexY = sizeY - 1;
-                int lastIndexZ = sizeX - 1;
-                for (int y = 0; y < renderedHeight; y++) {
-                    JSONArray level = ((JSONArray) input).getJSONArray(y);
-                    for (int x = 0; x < sizeZ; x++) {
-                        JSONArray row = level.getJSONArray(x);
-                        for (int z = 0; z < sizeX; z++) {
-                            JSONObject column = row.getJSONObject(z);
-                            String data = column.getString("data");
-                            int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
-                            String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
-                            String blockData = data.contains("[") ? data.substring(data.indexOf('[')) : "";
-                            Block block = Block.valueOf(blockName);
-                            gl.glPushMatrix();
-
-                            // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
-                            float translateX = (float) lastIndexX / 2.0f;
-                            float translateY = (float) lastIndexY / 2.0f;
-                            float translateZ = (float) lastIndexZ / 2.0f;
-                            gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
-                            blockSwitch(gl, block, blockData);
-                            gl.glPopMatrix();
-                        }
-                    }
-                }
-            }
-
-            public void displayNbt(GL4bc gl) {
-                int lastIndexX = sizeX - 1;
-                int lastIndexY = sizeY - 1;
-                int lastIndexZ = sizeZ - 1;
-                CompoundTag schematicTag = ((CompoundTag) ((NamedTag) schematic).getTag());
-                ListTag<CompoundTag> blocks = schematicTag.getListTag("blocks").asCompoundTagList();
-                for (CompoundTag blockTag : blocks) {
-                    ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
-                    int x = position.get(0).asInt();
-                    int y = position.get(1).asInt();
-                    int z = position.get(2).asInt();
-                    if (x < sizeX && y < renderedHeight && z < sizeZ) {
-                        String namespacedBlockName = palette.get(blockTag.getInt("state")).getString("Name");
-                        String blockName = namespacedBlockName.substring(namespacedBlockName.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-                        Block block = Block.valueOf(blockName);
-                        CompoundTag properties = palette.get(blockTag.getInt("state")).getCompoundTag("Properties");
-                        gl.glPushMatrix();
-
-                        // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
-                        float translateX = (float) lastIndexX / 2.0f;
-                        float translateY = (float) lastIndexY / 2.0f;
-                        float translateZ = (float) lastIndexZ / 2.0f;
-                        gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
-                        blockSwitch(gl, block, properties);
-                        gl.glPopMatrix();
-                    }
-                }
             }
 
             public void blockSwitch(GL4bc gl, Block block, Object properties) {
