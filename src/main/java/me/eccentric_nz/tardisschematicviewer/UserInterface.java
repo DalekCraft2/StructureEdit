@@ -190,13 +190,9 @@ public class UserInterface extends JPanel {
 
             public void itemStateChangedNbt(ItemEvent e) {
                 CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
-                CompoundTag paletteTag = palette.get(blockTag.getInt("state")).clone();
+                CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
                 String name = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
                 paletteTag.putString("Name", name);
-                if (!palette.contains(paletteTag)) {
-                    palette.add(paletteTag);
-                }
-                blockTag.putInt("state", palette.indexOf(paletteTag));
                 loadLayer(UserInterface.this.renderer.getPath());
             }
         });
@@ -234,7 +230,7 @@ public class UserInterface extends JPanel {
 
             public void changedUpdateNbt(DocumentEvent e) {
                 CompoundTag blockTag = (CompoundTag) selected.getBlockObject();
-                CompoundTag paletteTag = palette.get(blockTag.getInt("state")).clone();
+                CompoundTag paletteTag = palette.get(blockTag.getInt("state"));
                 CompoundTag properties = new CompoundTag();
                 try {
                     properties = (CompoundTag) SNBTUtil.fromSNBT(propertiesTextField.getText());
@@ -248,10 +244,6 @@ public class UserInterface extends JPanel {
                 } else {
                     paletteTag.remove("Properties");
                 }
-                if (!palette.contains(paletteTag)) {
-                    palette.add(paletteTag);
-                }
-                blockTag.putInt("state", palette.indexOf(paletteTag));
                 loadLayer(UserInterface.this.renderer.getPath());
             }
         });
