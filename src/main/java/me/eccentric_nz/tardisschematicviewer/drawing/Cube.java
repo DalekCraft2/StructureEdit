@@ -33,8 +33,9 @@ public class Cube {
 
         float[] components = color.getComponents(null);
 
-        if (color.getAlpha() == 0) {
-            gl.glLineWidth(1.0f * 2);
+        if (components[3] == 0) {
+            components[3] = 255;
+            gl.glLineWidth(2.0f);
             gl.glBegin(GL_LINES);
         } else {
             gl.glBegin(GL_QUADS);
