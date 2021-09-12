@@ -36,10 +36,10 @@ public final class SquareButton extends JButton {
 
     private final int size;
     private final int xCoord, yCoord, zCoord;
-    private Block block;
-    private String properties;
-    private CompoundTag nbt;
-    private Object blockObject;
+    private final Block block;
+    private final String properties;
+    private final CompoundTag nbt;
+    private final Object blockObject;
 
     public SquareButton(int size, Block block, int xCoord, int yCoord, int zCoord, String properties, Object blockObject) {
         this(size, block, xCoord, yCoord, zCoord, properties, blockObject, null);
@@ -53,7 +53,7 @@ public final class SquareButton extends JButton {
         this.block = block;
         this.properties = properties;
         this.blockObject = blockObject;
-        this.nbt = nbt;
+        this.nbt = nbt == null ? new CompoundTag() : nbt;
         setPreferredSize(new Dimension(size, size));
         setSize(getPreferredSize());
         Color color = block.getColor();
@@ -81,50 +81,32 @@ public final class SquareButton extends JButton {
         return block;
     }
 
-    public void setBlock(Block block) {
-        this.block = block;
-    }
-
     public String getProperties() {
+        if (properties == null || properties.equals("")) {
+            if (blockObject instanceof String) {
+                return "[]";
+            } else if (blockObject instanceof CompoundTag) {
+                return "{}";
+            }
+        }
         return properties;
-    }
-
-    public void setProperties(String properties) {
-        this.properties = properties;
     }
 
     public Object getBlockObject() {
         return blockObject;
     }
 
-    public void setBlockObject(Object blockObject) {
-        this.blockObject = blockObject;
-    }
-
     public CompoundTag getNbt() {
         return nbt;
-    }
-
-    public void setNbt(CompoundTag nbt) {
-        this.nbt = nbt;
     }
 
     public String getSnbt() {
         String snbt = null;
         try {
             snbt = nbt == null ? null : SNBTUtil.toSNBT(nbt);
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException ignored) {
         }
         return snbt;
-    }
-
-    public void setSnbt(String snbt) {
-        try {
-            nbt = (CompoundTag) SNBTUtil.fromSNBT(snbt);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-        }
     }
 
     @Override
