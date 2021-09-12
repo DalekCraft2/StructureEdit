@@ -377,7 +377,6 @@ public class UserInterface extends JPanel {
                         renderer.setPalette(palette);
                         paletteLabel.setVisible(false);
                         paletteComboBox.setVisible(false);
-
                     }
                     int paletteSize = palette.size();
                     Integer[] paletteIds = new Integer[paletteSize];

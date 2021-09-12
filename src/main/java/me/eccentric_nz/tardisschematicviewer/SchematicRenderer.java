@@ -51,8 +51,6 @@ import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
  */
 public class SchematicRenderer extends GLJPanel {
 
-    private static final float ZERO_F = 0.0f;
-    private static final float ONE_F = 1.0f;
     private static final float CUBE_TRANSLATION_FACTOR = 2.0f;
     /**
      * Rotational angle for x-axis in degrees.
@@ -235,25 +233,25 @@ public class SchematicRenderer extends GLJPanel {
                 Color color = block.getColor();
                 switch (block.getBlockShape()) {
                     case CUBE:
-                        Cube.draw(gl, color, ONE_F, ONE_F, ONE_F);
+                        Cube.draw(gl, color, 1.0f, 1.0f, 1.0f);
                         break;
                     case FENCE:
-                        Fence.draw(gl, color, 0.25f, ONE_F, ONE_F, ONE_F, properties);
+                        Fence.draw(gl, color, 0.25f, 1.0f, 1.0f, 1.0f, properties);
                         break;
                     case FENCE_GATE:
-                        Rotational.draw(gl, color, ONE_F, 0.7f, 0.125f, properties);
+                        Rotational.draw(gl, color, 1.0f, 0.7f, 0.125f, properties);
                         break;
                     case FLAT:
                         if (block.equals(Block.REDSTONE_WIRE)) {
-                            Redstone.draw(gl, color, 0.25f, ONE_F, 0.125f, ONE_F, properties);
+                            Redstone.draw(gl, color, 0.25f, 1.0f, 0.125f, 1.0f, properties);
                         } else if (block.equals(Block.TRIPWIRE)) {
-                            Pane.draw(gl, color, 0.125f, ONE_F, 0.125f, ONE_F, properties);
+                            Pane.draw(gl, color, 0.125f, 1.0f, 0.125f, 1.0f, properties);
                         } else {
-                            Slab.draw(gl, color, ONE_F, 0.2f, ONE_F, properties);
+                            Slab.draw(gl, color, 1.0f, 0.2f, 1.0f, properties);
                         }
                         break;
                     case PANE:
-                        Pane.draw(gl, color, 0.125f, ONE_F, ONE_F, ONE_F, properties);
+                        Pane.draw(gl, color, 0.125f, 1.0f, 1.0f, 1.0f, properties);
                         break;
                     case PLANT: {
                         float thickness;
@@ -269,29 +267,29 @@ public class SchematicRenderer extends GLJPanel {
                             }
                             default -> {
                                 thickness = 0.25f;
-                                sizeY = ONE_F;
+                                sizeY = 1.0f;
                             }
                         }
-                        Plant.draw(gl, color, thickness, ONE_F, sizeY, ONE_F);
+                        Plant.draw(gl, color, thickness, 1.0f, sizeY, 1.0f);
                         break;
                     }
                     case SLAB:
-                        Slab.draw(gl, color, ONE_F, 0.5f, ONE_F, properties);
+                        Slab.draw(gl, color, 1.0f, 0.5f, 1.0f, properties);
                         break;
                     case SMALL:
                         Cube.draw(gl, color, 0.5f, 0.5f, 0.5f);
                         break;
                     case STAIR:
-                        Stair.draw(gl, color, ONE_F, ONE_F, ONE_F, properties);
+                        Stair.draw(gl, color, 1.0f, 1.0f, 1.0f, properties);
                         break;
                     case STICK:
                         Cube.draw(gl, color, 0.25f, 0.9f, 0.25f);
                         break;
                     case THIN:
-                        Rotational.draw(gl, color, ONE_F, ONE_F, 0.125f, properties);
+                        Rotational.draw(gl, color, 1.0f, 1.0f, 0.125f, properties);
                         break;
                     case WALL:
-                        Wall.draw(gl, color, 0.5f, ONE_F, ONE_F, ONE_F, properties);
+                        Wall.draw(gl, color, 0.5f, 1.0f, 1.0f, 1.0f, properties);
                         break;
                     case WALL_STICK:
                         WallStick.draw(gl, color, 0.25f, 0.9f, 0.25f, properties);

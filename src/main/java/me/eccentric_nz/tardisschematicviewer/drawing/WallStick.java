@@ -11,7 +11,7 @@ public class WallStick {
     public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, Object properties) {
 
         // rotate if necessary
-        float yaw = 0.0f;
+        float yaw = 180.0f;
 
         CompoundTag tag = null;
 
@@ -24,7 +24,8 @@ public class WallStick {
             switch (tag.getString("facing")) {
                 case "south" -> yaw = 0.0f;
                 case "east" -> yaw = 90.0f;
-                default -> yaw = 180.0f; // north
+                default -> {
+                } // north
                 case "west" -> yaw = -90.0f;
             }
         }
