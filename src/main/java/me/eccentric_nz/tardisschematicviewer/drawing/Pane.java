@@ -14,7 +14,7 @@ public class Pane {
 
         Cube.draw(gl, color, thickness, sizeY, thickness);
 
-        CompoundTag tag = null;
+        CompoundTag tag = new CompoundTag();
 
         if (properties instanceof String) {
             tag = BlockStateUtils.toTag((String) properties);

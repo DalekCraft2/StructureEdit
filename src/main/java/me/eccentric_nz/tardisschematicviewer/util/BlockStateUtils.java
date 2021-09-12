@@ -17,7 +17,7 @@ public class BlockStateUtils {
 
     public static CompoundTag toTag(String properties) {
         String snbt = properties.replace('[', '{').replace(']', '}').replace('=', ':');
-        CompoundTag nbt = null;
+        CompoundTag nbt = new CompoundTag();
         try {
             nbt = (CompoundTag) SNBTUtil.fromSNBT(snbt);
         } catch (IOException e1) {

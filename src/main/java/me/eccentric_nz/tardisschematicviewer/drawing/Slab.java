@@ -29,7 +29,7 @@ public class Slab {
 
     public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, Object properties) {
 
-        CompoundTag tag = null;
+        CompoundTag tag = new CompoundTag();
 
         if (properties instanceof String) {
             tag = BlockStateUtils.toTag((String) properties);

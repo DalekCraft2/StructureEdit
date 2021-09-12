@@ -32,7 +32,7 @@ public class Stair {
         float roll = 0.0f;
         float yaw = 180.0f;
 
-        CompoundTag tag = null;
+        CompoundTag tag = new CompoundTag();
 
         if (properties instanceof String) {
             tag = BlockStateUtils.toTag((String) properties);
