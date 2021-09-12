@@ -80,7 +80,7 @@ public class SchematicRenderer extends GLJPanel {
     private int mouseY = TardisSchematicViewer.FRAME_HEIGHT / 2;
     private int sizeX, sizeY, sizeZ, renderedHeight;
     private Object schematic;
-    private Object input;
+    private Object blocks;
     private ListTag<CompoundTag> palette;
     private String path;
     private boolean schematicParsed = false;
@@ -142,15 +142,15 @@ public class SchematicRenderer extends GLJPanel {
                     gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
                     gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
                     // draw a cube
+                    int lastIndexX = sizeX - 1;
+                    int lastIndexY = sizeY - 1;
+                    int lastIndexZ = sizeZ - 1;
                     if (path.endsWith(".tschm")) {
-                        int lastIndexX = sizeZ - 1;
-                        int lastIndexY = sizeY - 1;
-                        int lastIndexZ = sizeX - 1;
                         for (int y = 0; y < renderedHeight; y++) {
-                            JSONArray level = ((JSONArray) input).getJSONArray(y);
-                            for (int x = 0; x < sizeZ; x++) {
+                            JSONArray level = ((JSONArray) blocks).getJSONArray(y);
+                            for (int x = 0; x < sizeX; x++) {
                                 JSONArray row = level.getJSONArray(x);
-                                for (int z = 0; z < sizeX; z++) {
+                                for (int z = 0; z < sizeZ; z++) {
                                     JSONObject column = row.getJSONObject(z);
                                     String data = column.getString("data");
                                     int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
@@ -170,9 +170,6 @@ public class SchematicRenderer extends GLJPanel {
                             }
                         }
                     } else if (path.endsWith(".nbt")) {
-                        int lastIndexX = sizeX - 1;
-                        int lastIndexY = sizeY - 1;
-                        int lastIndexZ = sizeZ - 1;
                         CompoundTag schematicTag = ((CompoundTag) ((NamedTag) schematic).getTag());
                         ListTag<CompoundTag> blocks = schematicTag.getListTag("blocks").asCompoundTagList();
                         for (CompoundTag blockTag : blocks) {
@@ -393,10 +390,10 @@ public class SchematicRenderer extends GLJPanel {
         this.schematic = schematic;
         // get dimensions
         JSONObject dimensions = schematic.getJSONObject("dimensions");
-        sizeX = dimensions.getInt("length");
+        sizeX = dimensions.getInt("width");
         sizeY = dimensions.getInt("height");
-        sizeZ = dimensions.getInt("width");
-        input = schematic.getJSONArray("input");
+        sizeZ = dimensions.getInt("length");
+        blocks = schematic.getJSONArray("input");
     }
 
     public void setSchematic(NamedTag schematic) {
@@ -406,6 +403,6 @@ public class SchematicRenderer extends GLJPanel {
         sizeX = size.get(0).asInt();
         sizeY = size.get(1).asInt();
         sizeZ = size.get(2).asInt();
-        input = ((CompoundTag) schematic.getTag()).getListTag("blocks");
+        blocks = ((CompoundTag) schematic.getTag()).getListTag("blocks").asCompoundTagList();
     }
 }
