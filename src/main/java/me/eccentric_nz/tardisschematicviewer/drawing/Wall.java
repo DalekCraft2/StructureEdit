@@ -15,7 +15,7 @@ public class Wall {
         if (properties instanceof String) {
             tag = BlockStateUtils.toTag((String) properties);
         } else if (properties instanceof CompoundTag) {
-            tag = (CompoundTag) properties;
+            tag = BlockStateUtils.byteToString((CompoundTag) properties);
         }
         if (tag.containsKey("up") && tag.getString("up").equals("false")) {
             gl.glTranslatef(0.0f, sizeY * 0.8f - 1.0f, 0.0f);

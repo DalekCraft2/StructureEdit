@@ -16,22 +16,23 @@ public class BlockStateUtils {
     }
 
     public static CompoundTag toTag(String properties) {
-        String snbt = properties.replace('[', '{').replace(']', '}').replace('=', ':');
+        return toTag(properties, true);
+    }
+
+    public static CompoundTag toTag(String properties, boolean blockStateFormat) {
+        String snbt;
+        if (blockStateFormat) {
+            snbt = properties.replace('[', '{').replace(']', '}').replace('=', ':');
+        } else {
+            snbt = properties;
+        }
         CompoundTag nbt = new CompoundTag();
         try {
             nbt = (CompoundTag) SNBTUtil.fromSNBT(snbt);
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        for (Map.Entry<String, Tag<?>> map : nbt) {
-            if (map.getValue() instanceof ByteTag) {
-                String key = map.getKey();
-                String value = String.valueOf(((ByteTag) map.getValue()).asBoolean());
-                StringTag tag = new StringTag(value);
-                nbt.put(key, tag);
-            }
-        }
-        return nbt;
+        return byteToString(nbt);
     }
 
     public static String fromTag(CompoundTag nbt) {
@@ -43,5 +44,17 @@ public class BlockStateUtils {
             e1.printStackTrace();
         }
         return snbt;
+    }
+
+    public static CompoundTag byteToString(CompoundTag nbt) {
+        for (Map.Entry<String, Tag<?>> entry : nbt) {
+            if (entry.getValue() instanceof ByteTag) {
+                String key = entry.getKey();
+                String value = String.valueOf(((ByteTag) entry.getValue()).asBoolean());
+                StringTag tag = new StringTag(value);
+                nbt.put(key, tag);
+            }
+        }
+        return nbt;
     }
 }

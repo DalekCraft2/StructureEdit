@@ -38,7 +38,7 @@ public class Redstone {
         if (properties instanceof String) {
             tag = BlockStateUtils.toTag((String) properties);
         } else if (properties instanceof CompoundTag) {
-            tag = (CompoundTag) properties;
+            tag = BlockStateUtils.byteToString((CompoundTag) properties);
         }
         if (tag.containsKey("south")) {
             switch (tag.getString("south")) {

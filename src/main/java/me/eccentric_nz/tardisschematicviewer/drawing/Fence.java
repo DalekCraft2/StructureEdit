@@ -38,7 +38,7 @@ public class Fence {
         if (properties instanceof String) {
             tag = BlockStateUtils.toTag((String) properties);
         } else if (properties instanceof CompoundTag) {
-            tag = (CompoundTag) properties;
+            tag = BlockStateUtils.byteToString((CompoundTag) properties);
         }
         if (tag.containsKey("south") && tag.getString("south").equals("true")) {
             // TODO Figure out the actual equation for this instead of using 2.5f.

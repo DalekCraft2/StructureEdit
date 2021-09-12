@@ -34,7 +34,7 @@ public class Slab {
         if (properties instanceof String) {
             tag = BlockStateUtils.toTag((String) properties);
         } else if (properties instanceof CompoundTag) {
-            tag = (CompoundTag) properties;
+            tag = BlockStateUtils.byteToString((CompoundTag) properties);
         }
         if (tag.containsKey("type") && tag.getString("type").equals("double")) {
             Cube.draw(gl, color, sizeX, sizeY * 2.0f, sizeZ);
