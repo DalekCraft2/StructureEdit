@@ -12,6 +12,11 @@ public class TardisSchematic implements Schematic {
     }
 
     @Override
+    public JSONObject getData() {
+        return schematic;
+    }
+
+    @Override
     public String getFormat() {
         return "tschm";
     }

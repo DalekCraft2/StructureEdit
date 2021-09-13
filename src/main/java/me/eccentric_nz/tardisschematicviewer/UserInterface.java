@@ -27,7 +27,6 @@ import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -59,7 +58,7 @@ public class UserInterface extends JPanel {
     private FileFilter lastFileFilter = TSCHM_FILTER;
     private SquareButton selected;
     private int currentLayer;
-    private Object schematic;
+    private Schematic schematic;
     private ListTag<CompoundTag> palette;
     private JButton openButton;
     private JTextField fileTextField;
@@ -118,7 +117,7 @@ public class UserInterface extends JPanel {
                     if (UserInterface.this.renderer.getPath().endsWith(".tschm")) {
                         String output = UserInterface.this.renderer.getPath();
                         try {
-                            GzipUtils.zip(schematic, output);
+                            GzipUtils.zip(schematic.getData(), output);
                             System.out.println("Schematic saved to \"" + output + "\" successfully.");
                         } catch (IOException e1) {
                             System.err.println("Error saving schematic: " + e1.getMessage());
@@ -126,7 +125,7 @@ public class UserInterface extends JPanel {
                     } else if (UserInterface.this.renderer.getPath().endsWith(".nbt")) {
                         String output = UserInterface.this.renderer.getPath();
                         try {
-                            NBTUtil.write((NamedTag) schematic, output);
+                            NBTUtil.write((NamedTag) schematic.getData(), output);
                             System.out.println("Schematic saved to \"" + output + "\" successfully.");
                         } catch (IOException e1) {
                             System.err.println("Error saving schematic: " + e1.getMessage());
@@ -254,7 +253,7 @@ public class UserInterface extends JPanel {
         });
         paletteComboBox.addItemListener(e -> {
             if (this.renderer.getPath().endsWith(".nbt")) {
-                palette = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("palettes").asListTagList().get(Integer.parseInt(paletteComboBox.getSelectedItem().toString())).asCompoundTagList();
+                palette = ((NbtSchematic) schematic).getPaletteEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
                 this.renderer.setPalette(palette);
                 loadLayer(this.renderer.getPath());
             } else if (!this.renderer.getPath().endsWith(".tschm")) {
@@ -322,20 +321,20 @@ public class UserInterface extends JPanel {
                 schematic = renderer.getSchematic();
                 currentLayer = 0;
                 if (path.endsWith(".nbt")) {
-                    if (((CompoundTag) ((NamedTag) schematic).getTag()).containsKey("palettes")) {
-                        int palettesSize = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("palettes").size();
+                    if (((NbtSchematic) schematic).hasPaletteList()) {
+                        int palettesSize = ((NbtSchematic) schematic).getPalettes().size();
                         Integer[] palettes = new Integer[palettesSize];
                         for (int i = 0; i < palettesSize; i++) {
                             palettes[i] = i;
                         }
                         paletteComboBox.setModel(new DefaultComboBoxModel<>(palettes));
                         paletteComboBox.setSelectedItem("0");
-                        palette = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("palettes").asListTagList().get(Integer.parseInt(paletteComboBox.getSelectedItem().toString())).asCompoundTagList();
+                        palette = ((NbtSchematic) schematic).getPaletteEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
                         renderer.setPalette(palette);
                         paletteLabel.setVisible(true);
                         paletteComboBox.setVisible(true);
                     } else {
-                        palette = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("palette").asCompoundTagList();
+                        palette = ((NbtSchematic) schematic).getPalette();
                         renderer.setPalette(palette);
                         paletteLabel.setVisible(false);
                         paletteComboBox.setVisible(false);
@@ -372,20 +371,16 @@ public class UserInterface extends JPanel {
                 gridPanel.setLayout(null);
                 gridPanel.updateUI();
                 layerTextField.setText(String.valueOf(currentLayer));
-                JSONObject dimensions = ((JSONObject) schematic).getJSONObject("dimensions");
-                JSONArray level = ((JSONObject) schematic).getJSONArray("input").getJSONArray(currentLayer);
-                int width = dimensions.getInt("width");
-                int buttonSideLength = gridPanel.getWidth() / width;
-                for (int x = 0; x < width; x++) {
-                    JSONArray row = level.getJSONArray(x);
-                    for (int z = 0; z < width; z++) {
-                        JSONObject column = row.getJSONObject(z);
-                        String data = column.getString("data");
-                        int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
-                        String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
-                        String blockData = data.contains("[") && data.contains("]") ? data.substring(data.indexOf('[')) : "[]";
-                        Block block = Block.valueOf(blockName);
-                        SquareButton squareButton = new SquareButton(buttonSideLength, block, x, currentLayer, z, blockData, column);
+                int[] size = schematic.getSize();
+                int buttonSideLength = gridPanel.getWidth() / size[0];
+                for (int x = 0; x < size[0]; x++) {
+                    for (int z = 0; z < size[2]; z++) {
+                        Object block = schematic.getBlock(x, currentLayer, z);
+                        String blockId = schematic.getBlockId(x, currentLayer, z);
+                        String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+                        String properties = (String) schematic.getProperties(x, currentLayer, z);
+                        Block blockEnum = Block.valueOf(blockName);
+                        SquareButton squareButton = new SquareButton(buttonSideLength, blockEnum, x, currentLayer, z, properties, block);
                         squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
                         squareButton.addActionListener(actionListener);
                         gridPanel.add(squareButton);
@@ -396,10 +391,9 @@ public class UserInterface extends JPanel {
                 gridPanel.setLayout(null);
                 gridPanel.updateUI();
                 layerTextField.setText(String.valueOf(currentLayer));
-                ListTag<IntTag> size = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("size").asIntTagList();
-                ListTag<CompoundTag> blocks = ((CompoundTag) ((NamedTag) schematic).getTag()).getListTag("blocks").asCompoundTagList();
-                int width = size.get(2).asInt();
-                int buttonSideLength = gridPanel.getWidth() / width;
+                int[] size = schematic.getSize();
+                ListTag<CompoundTag> blocks = ((NbtSchematic) schematic).getBlocks();
+                int buttonSideLength = gridPanel.getWidth() / size[2];
                 for (CompoundTag blockTag : blocks) {
                     ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
                     int x = position.get(0).asInt();

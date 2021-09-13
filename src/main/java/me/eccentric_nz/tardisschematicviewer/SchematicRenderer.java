@@ -30,7 +30,6 @@ import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
-import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -79,7 +78,7 @@ public class SchematicRenderer extends GLJPanel {
     private int mouseX = TardisSchematicViewer.FRAME_WIDTH / 2;
     private int mouseY = TardisSchematicViewer.FRAME_HEIGHT / 2;
     private int sizeX, sizeY, sizeZ, renderedHeight;
-    private Object schematic;
+    private Schematic schematic;
     private Object blocks;
     private ListTag<CompoundTag> palette;
     private String path;
@@ -146,16 +145,12 @@ public class SchematicRenderer extends GLJPanel {
                     int lastIndexY = sizeY - 1;
                     int lastIndexZ = sizeZ - 1;
                     if (path.endsWith(".tschm")) {
-                        for (int y = 0; y < renderedHeight; y++) {
-                            JSONArray level = ((JSONArray) blocks).getJSONArray(y);
-                            for (int x = 0; x < sizeX; x++) {
-                                JSONArray row = level.getJSONArray(x);
+                        for (int x = 0; x < sizeX; x++) {
+                            for (int y = 0; y < renderedHeight; y++) {
                                 for (int z = 0; z < sizeZ; z++) {
-                                    JSONObject column = row.getJSONObject(z);
-                                    String data = column.getString("data");
-                                    int nameEndIndex = data.contains("[") ? data.indexOf('[') : data.length();
-                                    String blockName = data.substring(data.indexOf(':') + 1, nameEndIndex).toUpperCase(Locale.ROOT);
-                                    String blockData = data.contains("[") ? data.substring(data.indexOf('[')) : "";
+                                    String data = schematic.getBlockId(x, y, z);
+                                    String blockName = data.substring(data.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+                                    String blockData = (String) schematic.getProperties(x, y, z);
                                     Block block = Block.valueOf(blockName);
                                     gl.glPushMatrix();
 
@@ -170,8 +165,7 @@ public class SchematicRenderer extends GLJPanel {
                             }
                         }
                     } else if (path.endsWith(".nbt")) {
-                        CompoundTag schematicTag = ((CompoundTag) ((NamedTag) schematic).getTag());
-                        ListTag<CompoundTag> blocks = schematicTag.getListTag("blocks").asCompoundTagList();
+                        ListTag<CompoundTag> blocks = ((NbtSchematic) schematic).getBlocks();
                         for (CompoundTag blockTag : blocks) {
                             ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
                             int x = position.get(0).asInt();
@@ -382,27 +376,27 @@ public class SchematicRenderer extends GLJPanel {
         }
     }
 
-    public Object getSchematic() {
+    public Schematic getSchematic() {
         return schematic;
     }
 
     public void setSchematic(JSONObject schematic) {
-        this.schematic = schematic;
+        this.schematic = new TardisSchematic(schematic);
         // get dimensions
-        JSONObject dimensions = schematic.getJSONObject("dimensions");
-        sizeX = dimensions.getInt("width");
-        sizeY = dimensions.getInt("height");
-        sizeZ = dimensions.getInt("length");
-        blocks = schematic.getJSONArray("input");
+        int[] size = this.schematic.getSize();
+        sizeX = size[0];
+        sizeY = size[1];
+        sizeZ = size[2];
+        blocks = this.schematic;
     }
 
     public void setSchematic(NamedTag schematic) {
-        this.schematic = schematic;
+        this.schematic = new NbtSchematic(schematic);
         // get dimensions
-        ListTag<IntTag> size = ((CompoundTag) schematic.getTag()).getListTag("size").asIntTagList();
-        sizeX = size.get(0).asInt();
-        sizeY = size.get(1).asInt();
-        sizeZ = size.get(2).asInt();
-        blocks = ((CompoundTag) schematic.getTag()).getListTag("blocks").asCompoundTagList();
+        int[] size = this.schematic.getSize();
+        sizeX = size[0];
+        sizeY = size[1];
+        sizeZ = size[2];
+        blocks = ((NbtSchematic) this.schematic).getBlocks();
     }
 }

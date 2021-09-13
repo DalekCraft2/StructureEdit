@@ -2,6 +2,8 @@ package me.eccentric_nz.tardisschematicviewer;
 
 public interface Schematic {
 
+    Object getData();
+
     String getFormat();
 
     int[] getSize();

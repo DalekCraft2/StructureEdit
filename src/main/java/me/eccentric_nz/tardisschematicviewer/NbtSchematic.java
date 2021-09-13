@@ -14,6 +14,11 @@ public class NbtSchematic implements Schematic {
     }
 
     @Override
+    public NamedTag getData() {
+        return schematic;
+    }
+
+    @Override
     public String getFormat() {
         return "nbt";
     }
@@ -114,11 +119,23 @@ public class NbtSchematic implements Schematic {
         ((CompoundTag) schematic.getTag()).put("palette", palette);
     }
 
+    public ListTag<CompoundTag> getPaletteEntry(int index) {
+        return getPalettes().get(index).asCompoundTagList();
+    }
+
+    public void setPaletteEntry(int index, ListTag<CompoundTag> palette) {
+        getPalettes().set(index, palette);
+    }
+
     public ListTag<ListTag<?>> getPalettes() {
         return ((CompoundTag) schematic.getTag()).getListTag("palettes").asListTagList();
     }
 
     public void setPalettes(ListTag<ListTag<?>> palettes) {
         ((CompoundTag) schematic.getTag()).put("palettes", palettes);
+    }
+
+    public boolean hasPaletteList() {
+        return ((CompoundTag) schematic.getTag()).containsKey("palettes");
     }
 }
