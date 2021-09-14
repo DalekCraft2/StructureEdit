@@ -26,9 +26,7 @@ import com.jogamp.opengl.glu.GLU;
 import me.eccentric_nz.tardisschematicviewer.drawing.*;
 import me.eccentric_nz.tardisschematicviewer.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
-import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
-import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -79,7 +77,6 @@ public class SchematicRenderer extends GLJPanel {
     private int mouseY = TardisSchematicViewer.FRAME_HEIGHT / 2;
     private int sizeX, sizeY, sizeZ, renderedHeight;
     private Schematic schematic;
-    private Object blocks;
     private ListTag<CompoundTag> palette;
     private String path;
     private boolean schematicParsed = false;
@@ -141,54 +138,28 @@ public class SchematicRenderer extends GLJPanel {
                     gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
                     gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
                     // draw a cube
-                    int lastIndexX = sizeX - 1;
-                    int lastIndexY = sizeY - 1;
-                    int lastIndexZ = sizeZ - 1;
-                    if (path.endsWith(".tschm")) {
+                    float translateX = (float) (sizeX - 1) / 2.0f;
+                    float translateY = (float) (sizeY - 1) / 2.0f;
+                    float translateZ = (float) (sizeZ - 1) / 2.0f;
+                    if (schematic.getFormat().equals("tschm") || schematic.getFormat().equals("nbt")) {
                         for (int x = 0; x < sizeX; x++) {
                             for (int y = 0; y < renderedHeight; y++) {
                                 for (int z = 0; z < sizeZ; z++) {
-                                    String data = schematic.getBlockId(x, y, z);
-                                    String blockName = data.substring(data.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-                                    String blockData = (String) schematic.getProperties(x, y, z);
+                                    String blockId = schematic.getBlockId(x, y, z);
+                                    String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+                                    Object properties = schematic.getBlockProperties(x, y, z);
                                     Block block = Block.valueOf(blockName);
                                     gl.glPushMatrix();
 
                                     // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
-                                    float translateX = (float) lastIndexX / 2.0f;
-                                    float translateY = (float) lastIndexY / 2.0f;
-                                    float translateZ = (float) lastIndexZ / 2.0f;
                                     gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
-                                    blockSwitch(gl, block, blockData);
+                                    blockSwitch(gl, block, properties);
                                     gl.glPopMatrix();
                                 }
                             }
                         }
-                    } else if (path.endsWith(".nbt")) {
-                        ListTag<CompoundTag> blocks = ((NbtSchematic) schematic).getBlocks();
-                        for (CompoundTag blockTag : blocks) {
-                            ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
-                            int x = position.get(0).asInt();
-                            int y = position.get(1).asInt();
-                            int z = position.get(2).asInt();
-                            if (x < sizeX && y < renderedHeight && z < sizeZ) {
-                                String namespacedBlockName = palette.get(blockTag.getInt("state")).getString("Name");
-                                String blockName = namespacedBlockName.substring(namespacedBlockName.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-                                Block block = Block.valueOf(blockName);
-                                CompoundTag properties = palette.get(blockTag.getInt("state")).getCompoundTag("Properties");
-                                gl.glPushMatrix();
-
-                                // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
-                                float translateX = (float) lastIndexX / 2.0f;
-                                float translateY = (float) lastIndexY / 2.0f;
-                                float translateZ = (float) lastIndexZ / 2.0f;
-                                gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
-                                blockSwitch(gl, block, properties);
-                                gl.glPopMatrix();
-                            }
-                        }
                     } else {
-                        System.err.println("Not a schematic file!");
+                        System.err.println("Not a schematic file!"); // TODO Make this stop spamming.
                         schematicParsed = false;
                     }
                 }
@@ -363,15 +334,15 @@ public class SchematicRenderer extends GLJPanel {
     public void setPath(String path) throws IOException, JSONException {
         this.path = path;
         if (path.endsWith(".tschm")) {
-            setSchematic(new JSONObject(GzipUtils.unzip(path)));
+            setSchematic(new TardisSchematic(new JSONObject(GzipUtils.unzip(path))));
             renderedHeight = sizeY;
             schematicParsed = true;
         } else if (path.endsWith(".nbt")) {
-            setSchematic(NBTUtil.read(path));
+            setSchematic(new NbtSchematic(NBTUtil.read(path)));
             renderedHeight = sizeY;
             schematicParsed = true;
         } else {
-            System.err.println("Not a schematic file!");
+            System.err.println("Not a schematic file! 10");
             schematicParsed = false;
         }
     }
@@ -380,23 +351,12 @@ public class SchematicRenderer extends GLJPanel {
         return schematic;
     }
 
-    public void setSchematic(JSONObject schematic) {
-        this.schematic = new TardisSchematic(schematic);
+    public void setSchematic(Schematic schematic) {
+        this.schematic = schematic;
         // get dimensions
         int[] size = this.schematic.getSize();
         sizeX = size[0];
         sizeY = size[1];
         sizeZ = size[2];
-        blocks = this.schematic;
-    }
-
-    public void setSchematic(NamedTag schematic) {
-        this.schematic = new NbtSchematic(schematic);
-        // get dimensions
-        int[] size = this.schematic.getSize();
-        sizeX = size[0];
-        sizeY = size[1];
-        sizeZ = size[2];
-        blocks = ((NbtSchematic) this.schematic).getBlocks();
     }
 }

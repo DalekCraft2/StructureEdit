@@ -32,16 +32,25 @@ public class BlockStateUtils {
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        return byteToString(nbt);
+        if (blockStateFormat) {
+            return byteToString(nbt);
+        }
+        return nbt;
     }
 
     public static String fromTag(CompoundTag nbt) {
-        String snbt = null;
+        return fromTag(nbt, true);
+    }
+
+    public static String fromTag(CompoundTag nbt, boolean blockStateFormat) {
+        String snbt = "{}";
         try {
             snbt = SNBTUtil.toSNBT(nbt);
-            snbt = snbt.replace('{', '[').replace('}', ']').replace(':', '=');
         } catch (IOException e1) {
             e1.printStackTrace();
+        }
+        if (blockStateFormat) {
+            snbt = snbt.replace('{', '[').replace('}', ']').replace(':', '=');
         }
         return snbt;
     }

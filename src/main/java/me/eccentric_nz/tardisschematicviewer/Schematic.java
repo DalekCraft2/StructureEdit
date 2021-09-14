@@ -1,5 +1,7 @@
 package me.eccentric_nz.tardisschematicviewer;
 
+import net.querz.nbt.tag.CompoundTag;
+
 public interface Schematic {
 
     Object getData();
@@ -18,7 +20,11 @@ public interface Schematic {
 
     void setBlockId(int x, int y, int z, String id);
 
-    Object getProperties(int x, int y, int z);
+    CompoundTag getBlockProperties(int x, int y, int z);
 
-    void setProperties(int x, int y, int z, Object properties);
+    String getBlockPropertiesAsString(int x, int y, int z);
+
+    void setBlockProperties(int x, int y, int z, CompoundTag properties);
+
+    void setBlockPropertiesAsString(int x, int y, int z, String properties);
 }

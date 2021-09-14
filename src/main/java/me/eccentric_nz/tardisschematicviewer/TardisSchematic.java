@@ -1,5 +1,7 @@
 package me.eccentric_nz.tardisschematicviewer;
 
+import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
+import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -65,18 +67,28 @@ public class TardisSchematic implements Schematic {
     @Override
     public void setBlockId(int x, int y, int z, String id) {
         JSONObject block = getBlock(x, y, z);
-        block.put("data", id + getProperties(x, y, z));
+        block.put("data", id + getBlockProperties(x, y, z));
         setBlock(x, y, z, block);
     }
 
     @Override
-    public String getProperties(int x, int y, int z) {
-        String state = getBlock(x, y, z).getString("data");
-        return state.contains("[") ? state.substring(state.indexOf('[')) : null;
+    public CompoundTag getBlockProperties(int x, int y, int z) {
+        return BlockStateUtils.toTag(getBlockPropertiesAsString(x, y, z));
     }
 
     @Override
-    public void setProperties(int x, int y, int z, Object properties) {
+    public String getBlockPropertiesAsString(int x, int y, int z) {
+        String state = getBlock(x, y, z).getString("data");
+        return state.contains("[") ? state.substring(state.indexOf('[')) : "[]";
+    }
+
+    @Override
+    public void setBlockProperties(int x, int y, int z, CompoundTag properties) {
+
+    }
+
+    @Override
+    public void setBlockPropertiesAsString(int x, int y, int z, String properties) {
         JSONObject block = getBlock(x, y, z);
         block.put("data", getBlockId(x, y, z) + properties);
         setBlock(x, y, z, block);

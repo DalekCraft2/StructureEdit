@@ -1,9 +1,13 @@
 package me.eccentric_nz.tardisschematicviewer;
 
+import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class NbtSchematic implements Schematic {
 
@@ -40,8 +44,12 @@ public class NbtSchematic implements Schematic {
 
     @Override
     public CompoundTag getBlock(int x, int y, int z) {
-        for (CompoundTag block : getBlocks()) {
-            int[] position = block.getIntArray("pos");
+        for (CompoundTag block : getBlockList()) {
+            ListTag<IntTag> positionTag = block.getListTag("pos").asIntTagList();
+            int[] position = new int[3];
+            position[0] = positionTag.get(0).asInt();
+            position[1] = positionTag.get(1).asInt();
+            position[2] = positionTag.get(2).asInt();
             if (position[0] == x && position[1] == y && position[2] == z) {
                 return block;
             }
@@ -51,12 +59,12 @@ public class NbtSchematic implements Schematic {
 
     @Override
     public void setBlock(int x, int y, int z, Object block) {
-        ListTag<CompoundTag> blocks = getBlocks();
+        ListTag<CompoundTag> blocks = getBlockList();
         for (CompoundTag block1 : blocks) {
             int[] position = block1.getIntArray("pos");
             if (position[0] == x && position[1] == y && position[2] == z) {
                 blocks.set(blocks.indexOf(block1), (CompoundTag) block);
-                setBlocks(blocks);
+                setBlockList(blocks);
             }
         }
     }
@@ -75,24 +83,47 @@ public class NbtSchematic implements Schematic {
     }
 
     @Override
-    public CompoundTag getProperties(int x, int y, int z) {
+    public CompoundTag getBlockProperties(int x, int y, int z) {
         CompoundTag block = getBlock(x, y, z);
         return getState(block).getCompoundTag("Properties");
     }
 
     @Override
-    public void setProperties(int x, int y, int z, Object properties) {
-        CompoundTag state = getState(getBlock(x, y, z));
-        state.put("Properties", (CompoundTag) properties);
+    public String getBlockPropertiesAsString(int x, int y, int z) {
+        return BlockStateUtils.fromTag(getBlockProperties(x, y, z), false);
     }
 
-    public CompoundTag getNbt(int x, int y, int z) {
+    @Override
+    public void setBlockProperties(int x, int y, int z, CompoundTag properties) {
+        CompoundTag state = getState(getBlock(x, y, z));
+        state.put("Properties", properties);
+    }
+
+    @Override
+    public void setBlockPropertiesAsString(int x, int y, int z, String properties) {
+
+    }
+
+    public CompoundTag getBlockNbt(int x, int y, int z) {
         return getBlock(x, y, z).getCompoundTag("nbt");
     }
 
-    public void setNbt(int x, int y, int z, CompoundTag nbt) {
+    public void setBlockNbt(int x, int y, int z, CompoundTag nbt) {
         CompoundTag block = getBlock(x, y, z);
-        block.put("nbt", nbt);
+        if (nbt != null && !nbt.entrySet().isEmpty()) {
+            block.put("nbt", nbt);
+        } else {
+            block.remove("nbt");
+        }
+    }
+
+    public int getBlockState(int x, int y, int z) {
+        return getBlock(x, y, z).getInt("state");
+    }
+
+    public void setBlockState(int x, int y, int z, int state) {
+        CompoundTag block = getBlock(x, y, z);
+        block.putInt("state", state);
     }
 
     public CompoundTag getState(CompoundTag block) {
@@ -103,11 +134,11 @@ public class NbtSchematic implements Schematic {
         getPalette().set(block.getInt("state"), state);
     }
 
-    public ListTag<CompoundTag> getBlocks() {
+    public ListTag<CompoundTag> getBlockList() {
         return ((CompoundTag) schematic.getTag()).getListTag("blocks").asCompoundTagList();
     }
 
-    public void setBlocks(ListTag<CompoundTag> blocks) {
+    public void setBlockList(ListTag<CompoundTag> blocks) {
         ((CompoundTag) schematic.getTag()).put("blocks", blocks);
     }
 
@@ -119,19 +150,19 @@ public class NbtSchematic implements Schematic {
         ((CompoundTag) schematic.getTag()).put("palette", palette);
     }
 
-    public ListTag<CompoundTag> getPaletteEntry(int index) {
-        return getPalettes().get(index).asCompoundTagList();
+    public ListTag<CompoundTag> getPaletteListEntry(int index) {
+        return getPaletteList().get(index).asCompoundTagList();
     }
 
-    public void setPaletteEntry(int index, ListTag<CompoundTag> palette) {
-        getPalettes().set(index, palette);
+    public void setPaletteListEntry(int index, ListTag<CompoundTag> palette) {
+        getPaletteList().set(index, palette);
     }
 
-    public ListTag<ListTag<?>> getPalettes() {
+    public ListTag<ListTag<?>> getPaletteList() {
         return ((CompoundTag) schematic.getTag()).getListTag("palettes").asListTagList();
     }
 
-    public void setPalettes(ListTag<ListTag<?>> palettes) {
+    public void setPaletteList(ListTag<ListTag<?>> palettes) {
         ((CompoundTag) schematic.getTag()).put("palettes", palettes);
     }
 

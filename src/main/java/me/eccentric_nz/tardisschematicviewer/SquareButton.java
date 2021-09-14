@@ -17,13 +17,10 @@
 package me.eccentric_nz.tardisschematicviewer;
 
 import me.eccentric_nz.tardisschematicviewer.drawing.Block;
-import net.querz.nbt.io.SNBTUtil;
-import net.querz.nbt.tag.CompoundTag;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.io.IOException;
 import java.io.Serial;
 
 /**
@@ -35,25 +32,15 @@ public final class SquareButton extends JButton {
     private static final long serialVersionUID = 7623333770238989633L;
 
     private final int size;
-    private final int xCoord, yCoord, zCoord;
+    private final int[] position = new int[3];
     private final Block block;
-    private final String properties;
-    private final CompoundTag nbt;
-    private final Object blockObject;
 
-    public SquareButton(int size, Block block, int xCoord, int yCoord, int zCoord, String properties, Object blockObject) {
-        this(size, block, xCoord, yCoord, zCoord, properties, blockObject, null);
-    }
-
-    public SquareButton(int size, Block block, int xCoord, int yCoord, int zCoord, String properties, Object blockObject, CompoundTag nbt) {
+    public SquareButton(int size, Block block, int x, int y, int z) {
         this.size = size;
-        this.xCoord = xCoord;
-        this.yCoord = yCoord;
-        this.zCoord = zCoord;
+        position[0] = x;
+        position[1] = y;
+        position[2] = z;
         this.block = block;
-        this.properties = properties;
-        this.blockObject = blockObject;
-        this.nbt = nbt == null ? new CompoundTag() : nbt;
         setPreferredSize(new Dimension(size, size));
         setSize(getPreferredSize());
         Color color = block.getColor();
@@ -65,48 +52,12 @@ public final class SquareButton extends JButton {
         setBorder(new LineBorder(Color.BLACK));
     }
 
-    public int getXCoord() {
-        return xCoord;
-    }
-
-    public int getYCoord() {
-        return yCoord;
-    }
-
-    public int getZCoord() {
-        return zCoord;
+    public int[] getPosition() {
+        return position;
     }
 
     public Block getBlock() {
         return block;
-    }
-
-    public String getProperties() {
-        if (properties == null || properties.equals("")) {
-            if (blockObject instanceof String) {
-                return "[]";
-            } else if (blockObject instanceof CompoundTag) {
-                return "{}";
-            }
-        }
-        return properties;
-    }
-
-    public Object getBlockObject() {
-        return blockObject;
-    }
-
-    public CompoundTag getNbt() {
-        return nbt;
-    }
-
-    public String getSnbt() {
-        String snbt = null;
-        try {
-            snbt = nbt == null ? null : SNBTUtil.toSNBT(nbt);
-        } catch (IOException ignored) {
-        }
-        return snbt;
     }
 
     @Override
