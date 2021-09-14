@@ -307,6 +307,7 @@ public class UserInterface extends JPanel {
         }
     }
 
+    // TODO Fix grid size for schematics with different x and z dimensions.
     public void loadLayer() {
         if (schematic != null) {
             gridPanel.removeAll();
@@ -314,7 +315,7 @@ public class UserInterface extends JPanel {
             gridPanel.updateUI();
             layerTextField.setText(String.valueOf(currentLayer));
             int[] size = schematic.getSize();
-            int buttonSideLength = gridPanel.getWidth() / size[0];
+            int buttonSideLength = Math.min(gridPanel.getWidth() / size[0], gridPanel.getHeight() / size[2]);
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {
                     String blockId = schematic.getBlockId(schematic.getBlock(x, currentLayer, z));
