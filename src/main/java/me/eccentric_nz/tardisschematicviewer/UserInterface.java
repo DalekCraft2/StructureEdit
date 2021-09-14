@@ -307,7 +307,6 @@ public class UserInterface extends JPanel {
         }
     }
 
-    // TODO Fix grid size for schematics with different x and z dimensions.
     public void loadLayer() {
         if (schematic != null) {
             gridPanel.removeAll();
@@ -318,8 +317,9 @@ public class UserInterface extends JPanel {
             int buttonSideLength = Math.min(gridPanel.getWidth() / size[0], gridPanel.getHeight() / size[2]);
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {
-                    if (schematic.getBlock(x, currentLayer, z) != null) {
-                        String blockId = schematic.getBlockId(schematic.getBlock(x, currentLayer, z));
+                    Object block = schematic.getBlock(x, currentLayer, z);
+                    if (block != null) {
+                        String blockId = schematic.getBlockId(block);
                         String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
                         Block blockEnum = Block.valueOf(blockName);
                         SquareButton squareButton = new SquareButton(buttonSideLength, blockEnum, x, currentLayer, z);
@@ -342,6 +342,7 @@ public class UserInterface extends JPanel {
 
         selected = (SquareButton) e.getSource();
         int[] position = selected.getPosition();
+        Object block = schematic.getBlock(position[0], position[1], position[2]);
 
         blockPositionTextField.setEnabled(true);
         blockComboBox.setEnabled(true);
@@ -349,12 +350,12 @@ public class UserInterface extends JPanel {
         if (schematic instanceof NbtSchematic nbtSchematic) {
             nbtTextField.setEnabled(true);
             nbtTextField.setForeground(Color.BLACK);
-            nbtTextField.setText(nbtSchematic.getBlockSnbt(nbtSchematic.getBlock(position[0], position[1], position[2])));
+            nbtTextField.setText(nbtSchematic.getBlockSnbt((CompoundTag) block));
             blockPaletteComboBox.setEnabled(true);
         }
         selected.setBorder(new LineBorder(Color.RED));
         blockComboBox.setSelectedItem(selected.getBlock().name());
-        propertiesTextField.setText(schematic.getBlockPropertiesAsString(schematic.getBlock(position[0], position[1], position[2])));
+        propertiesTextField.setText(schematic.getBlockPropertiesAsString(block));
         propertiesTextField.setForeground(Color.BLACK);
         blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
     }

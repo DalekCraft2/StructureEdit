@@ -119,7 +119,6 @@ public class SchematicRenderer extends GLJPanel {
             public void dispose(GLAutoDrawable drawable) {
             }
 
-            // TODO Optimize NBT schematic rendering.
             @Override
             public void display(GLAutoDrawable drawable) {
                 if (!schematicParsed) {
@@ -145,17 +144,18 @@ public class SchematicRenderer extends GLJPanel {
                     for (int x = 0; x < sizeX; x++) {
                         for (int y = 0; y < renderedHeight; y++) {
                             for (int z = 0; z < sizeZ; z++) {
-                                if (schematic.getBlock(x, y, z) != null) {
-                                    String blockId = schematic.getBlockId(schematic.getBlock(x, y, z));
+                                Object block = schematic.getBlock(x, y, z);
+                                if (block != null) {
+                                    String blockId = schematic.getBlockId(block);
                                     String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-                                    CompoundTag properties = schematic.getBlockProperties(schematic.getBlock(x, y, z));
-                                    Block block = Block.valueOf(blockName);
+                                    CompoundTag properties = schematic.getBlockProperties(block);
+                                    Block blockEnum = Block.valueOf(blockName);
                                     gl.glPushMatrix();
 
                                     // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
                                     gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
-                                    Color color = block.getColor();
-                                    switch (block.getBlockShape()) {
+                                    Color color = blockEnum.getColor();
+                                    switch (blockEnum.getBlockShape()) {
                                         case CUBE:
                                             Cube.draw(gl, color, 1.0f, 1.0f, 1.0f);
                                             break;
@@ -166,9 +166,9 @@ public class SchematicRenderer extends GLJPanel {
                                             Rotational.draw(gl, color, 1.0f, 0.7f, 0.125f, properties);
                                             break;
                                         case FLAT:
-                                            if (block.equals(Block.REDSTONE_WIRE)) {
+                                            if (blockEnum.equals(Block.REDSTONE_WIRE)) {
                                                 Redstone.draw(gl, color, 0.25f, 1.0f, 0.125f, 1.0f, properties);
-                                            } else if (block.equals(Block.TRIPWIRE)) {
+                                            } else if (blockEnum.equals(Block.TRIPWIRE)) {
                                                 Pane.draw(gl, color, 0.125f, 1.0f, 0.125f, 1.0f, properties);
                                             } else {
                                                 Slab.draw(gl, color, 1.0f, 0.2f, 1.0f, properties);
@@ -180,7 +180,7 @@ public class SchematicRenderer extends GLJPanel {
                                         case PLANT: {
                                             float thickness;
                                             float sizeY;
-                                            switch (block) {
+                                            switch (blockEnum) {
                                                 case BROWN_MUSHROOM, RED_MUSHROOM, CARROTS, DEAD_BUSH, GRASS, NETHER_WART, POTATOES -> {
                                                     thickness = 0.125f;
                                                     sizeY = 0.5f;
