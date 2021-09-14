@@ -117,8 +117,8 @@ public class TardisSchematic implements Schematic {
         String replaced = propertiesString.replace('[', '{').replace(']', '}').replace('=', ':');
         try {
             CompoundTag parse = (CompoundTag) SNBTUtil.fromSNBT(replaced);
+            ((JSONObject) block).put("data", getBlockId(block) + propertiesString);
         } catch (StringIndexOutOfBoundsException ignored) {
         }
-        ((JSONObject) block).put("data", getBlockId(block) + propertiesString);
     }
 }
