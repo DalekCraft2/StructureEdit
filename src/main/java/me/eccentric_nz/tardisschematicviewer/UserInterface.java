@@ -318,13 +318,15 @@ public class UserInterface extends JPanel {
             int buttonSideLength = Math.min(gridPanel.getWidth() / size[0], gridPanel.getHeight() / size[2]);
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {
-                    String blockId = schematic.getBlockId(schematic.getBlock(x, currentLayer, z));
-                    String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-                    Block blockEnum = Block.valueOf(blockName);
-                    SquareButton squareButton = new SquareButton(buttonSideLength, blockEnum, x, currentLayer, z);
-                    squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
-                    squareButton.addActionListener(actionListener);
-                    gridPanel.add(squareButton);
+                    if (schematic.getBlock(x, currentLayer, z) != null) {
+                        String blockId = schematic.getBlockId(schematic.getBlock(x, currentLayer, z));
+                        String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+                        Block blockEnum = Block.valueOf(blockName);
+                        SquareButton squareButton = new SquareButton(buttonSideLength, blockEnum, x, currentLayer, z);
+                        squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
+                        squareButton.addActionListener(actionListener);
+                        gridPanel.add(squareButton);
+                    }
                 }
             }
         } else {

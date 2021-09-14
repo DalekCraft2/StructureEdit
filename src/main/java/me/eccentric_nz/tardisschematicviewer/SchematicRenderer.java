@@ -145,82 +145,84 @@ public class SchematicRenderer extends GLJPanel {
                     for (int x = 0; x < sizeX; x++) {
                         for (int y = 0; y < renderedHeight; y++) {
                             for (int z = 0; z < sizeZ; z++) {
-                                String blockId = schematic.getBlockId(schematic.getBlock(x, y, z));
-                                String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-                                CompoundTag properties = schematic.getBlockProperties(schematic.getBlock(x, y, z));
-                                Block block = Block.valueOf(blockName);
-                                gl.glPushMatrix();
+                                if (schematic.getBlock(x, y, z) != null) {
+                                    String blockId = schematic.getBlockId(schematic.getBlock(x, y, z));
+                                    String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+                                    CompoundTag properties = schematic.getBlockProperties(schematic.getBlock(x, y, z));
+                                    Block block = Block.valueOf(blockName);
+                                    gl.glPushMatrix();
 
-                                // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
-                                gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
-                                Color color = block.getColor();
-                                switch (block.getBlockShape()) {
-                                    case CUBE:
-                                        Cube.draw(gl, color, 1.0f, 1.0f, 1.0f);
-                                        break;
-                                    case FENCE:
-                                        Fence.draw(gl, color, 0.25f, 1.0f, 1.0f, 1.0f, properties);
-                                        break;
-                                    case FENCE_GATE:
-                                        Rotational.draw(gl, color, 1.0f, 0.7f, 0.125f, properties);
-                                        break;
-                                    case FLAT:
-                                        if (block.equals(Block.REDSTONE_WIRE)) {
-                                            Redstone.draw(gl, color, 0.25f, 1.0f, 0.125f, 1.0f, properties);
-                                        } else if (block.equals(Block.TRIPWIRE)) {
-                                            Pane.draw(gl, color, 0.125f, 1.0f, 0.125f, 1.0f, properties);
-                                        } else {
-                                            Slab.draw(gl, color, 1.0f, 0.2f, 1.0f, properties);
+                                    // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
+                                    gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
+                                    Color color = block.getColor();
+                                    switch (block.getBlockShape()) {
+                                        case CUBE:
+                                            Cube.draw(gl, color, 1.0f, 1.0f, 1.0f);
+                                            break;
+                                        case FENCE:
+                                            Fence.draw(gl, color, 0.25f, 1.0f, 1.0f, 1.0f, properties);
+                                            break;
+                                        case FENCE_GATE:
+                                            Rotational.draw(gl, color, 1.0f, 0.7f, 0.125f, properties);
+                                            break;
+                                        case FLAT:
+                                            if (block.equals(Block.REDSTONE_WIRE)) {
+                                                Redstone.draw(gl, color, 0.25f, 1.0f, 0.125f, 1.0f, properties);
+                                            } else if (block.equals(Block.TRIPWIRE)) {
+                                                Pane.draw(gl, color, 0.125f, 1.0f, 0.125f, 1.0f, properties);
+                                            } else {
+                                                Slab.draw(gl, color, 1.0f, 0.2f, 1.0f, properties);
+                                            }
+                                            break;
+                                        case PANE:
+                                            Pane.draw(gl, color, 0.125f, 1.0f, 1.0f, 1.0f, properties);
+                                            break;
+                                        case PLANT: {
+                                            float thickness;
+                                            float sizeY;
+                                            switch (block) {
+                                                case BROWN_MUSHROOM, RED_MUSHROOM, CARROTS, DEAD_BUSH, GRASS, NETHER_WART, POTATOES -> {
+                                                    thickness = 0.125f;
+                                                    sizeY = 0.5f;
+                                                }
+                                                case WHEAT, POPPY, DANDELION -> {
+                                                    thickness = 0.125f;
+                                                    sizeY = 0.8f;
+                                                }
+                                                default -> {
+                                                    thickness = 0.25f;
+                                                    sizeY = 1.0f;
+                                                }
+                                            }
+                                            Plant.draw(gl, color, thickness, 1.0f, sizeY, 1.0f);
+                                            break;
                                         }
-                                        break;
-                                    case PANE:
-                                        Pane.draw(gl, color, 0.125f, 1.0f, 1.0f, 1.0f, properties);
-                                        break;
-                                    case PLANT: {
-                                        float thickness;
-                                        float sizeY;
-                                        switch (block) {
-                                            case BROWN_MUSHROOM, RED_MUSHROOM, CARROTS, DEAD_BUSH, GRASS, NETHER_WART, POTATOES -> {
-                                                thickness = 0.125f;
-                                                sizeY = 0.5f;
-                                            }
-                                            case WHEAT, POPPY, DANDELION -> {
-                                                thickness = 0.125f;
-                                                sizeY = 0.8f;
-                                            }
-                                            default -> {
-                                                thickness = 0.25f;
-                                                sizeY = 1.0f;
-                                            }
-                                        }
-                                        Plant.draw(gl, color, thickness, 1.0f, sizeY, 1.0f);
-                                        break;
+                                        case SLAB:
+                                            Slab.draw(gl, color, 1.0f, 0.5f, 1.0f, properties);
+                                            break;
+                                        case SMALL:
+                                            Cube.draw(gl, color, 0.5f, 0.5f, 0.5f);
+                                            break;
+                                        case STAIR:
+                                            Stair.draw(gl, color, 1.0f, 1.0f, 1.0f, properties);
+                                            break;
+                                        case STICK:
+                                            Cube.draw(gl, color, 0.25f, 0.9f, 0.25f);
+                                            break;
+                                        case THIN:
+                                            Rotational.draw(gl, color, 1.0f, 1.0f, 0.125f, properties);
+                                            break;
+                                        case WALL:
+                                            Wall.draw(gl, color, 0.5f, 1.0f, 1.0f, 1.0f, properties);
+                                            break;
+                                        case WALL_STICK:
+                                            WallStick.draw(gl, color, 0.25f, 0.9f, 0.25f, properties);
+                                            break;
+                                        case VOID:
+                                            break;
                                     }
-                                    case SLAB:
-                                        Slab.draw(gl, color, 1.0f, 0.5f, 1.0f, properties);
-                                        break;
-                                    case SMALL:
-                                        Cube.draw(gl, color, 0.5f, 0.5f, 0.5f);
-                                        break;
-                                    case STAIR:
-                                        Stair.draw(gl, color, 1.0f, 1.0f, 1.0f, properties);
-                                        break;
-                                    case STICK:
-                                        Cube.draw(gl, color, 0.25f, 0.9f, 0.25f);
-                                        break;
-                                    case THIN:
-                                        Rotational.draw(gl, color, 1.0f, 1.0f, 0.125f, properties);
-                                        break;
-                                    case WALL:
-                                        Wall.draw(gl, color, 0.5f, 1.0f, 1.0f, 1.0f, properties);
-                                        break;
-                                    case WALL_STICK:
-                                        WallStick.draw(gl, color, 0.25f, 0.9f, 0.25f, properties);
-                                        break;
-                                    case VOID:
-                                        break;
+                                    gl.glPopMatrix();
                                 }
-                                gl.glPopMatrix();
                             }
                         }
                     }
