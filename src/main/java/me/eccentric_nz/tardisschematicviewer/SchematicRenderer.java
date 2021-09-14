@@ -73,8 +73,8 @@ public class SchematicRenderer extends GLJPanel {
      * Z location.
      */
     private float z = -60.0f;
-    private int mouseX = TardisSchematicViewer.FRAME_WIDTH / 2;
-    private int mouseY = TardisSchematicViewer.FRAME_HEIGHT / 2;
+    private int mouseX = Main.FRAME_WIDTH / 2;
+    private int mouseY = Main.FRAME_HEIGHT / 2;
     private int sizeX, sizeY, sizeZ, renderedHeight;
     private Schematic schematic;
     private ListTag<CompoundTag> palette;
@@ -119,6 +119,7 @@ public class SchematicRenderer extends GLJPanel {
             public void dispose(GLAutoDrawable drawable) {
             }
 
+            // TODO Optimize NBT schematic rendering.
             @Override
             public void display(GLAutoDrawable drawable) {
                 if (!schematicParsed) {

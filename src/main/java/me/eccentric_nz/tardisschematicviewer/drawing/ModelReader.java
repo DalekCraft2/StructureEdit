@@ -1,6 +1,6 @@
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
-import me.eccentric_nz.tardisschematicviewer.TardisSchematicViewer;
+import me.eccentric_nz.tardisschematicviewer.Main;
 import org.json.JSONObject;
 
 import java.nio.file.Path;
@@ -11,7 +11,7 @@ public class ModelReader {
     private static Path assets;
 
     static {
-        assets = TardisSchematicViewer.assets;
+        assets = Main.assets;
     }
 
     // TODO Read from Minecraft assets folder to draw block models.

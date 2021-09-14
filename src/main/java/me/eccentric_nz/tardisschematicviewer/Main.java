@@ -32,7 +32,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TardisSchematicViewer {
+public class Main {
 
     public static final int FRAME_WIDTH = 1024;
     public static final int FRAME_HEIGHT = 600;
@@ -53,7 +53,7 @@ public class TardisSchematicViewer {
             frame.getContentPane().add(userInterface, BorderLayout.PAGE_START);
             frame.setTitle("TARDIS Schematic Viewer");
             try {
-                frame.setIconImage(ImageIO.read(TardisSchematicViewer.class.getClassLoader().getResourceAsStream("icon.png")));
+                frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")));
             } catch (IOException e) {
                 e.printStackTrace();
             }
