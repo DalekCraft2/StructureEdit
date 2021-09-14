@@ -27,21 +27,14 @@ import java.awt.*;
  */
 public class Redstone {
 
-    public static void draw(GL4bc gl, Color color, float thickness, float sizeX, float sizeY, float sizeZ, Object properties) {
+    public static void draw(GL4bc gl, Color color, float thickness, float sizeX, float sizeY, float sizeZ, CompoundTag properties) {
 
         gl.glTranslatef(0.0f, sizeY - 1.0f, 0.0f);
 
         Cube.draw(gl, color, thickness, sizeY, thickness);
 
-        CompoundTag tag = new CompoundTag();
-
-        if (properties instanceof String) {
-            tag = BlockStateUtils.toTag((String) properties);
-        } else if (properties instanceof CompoundTag) {
-            tag = BlockStateUtils.byteToString((CompoundTag) properties);
-        }
-        if (tag.containsKey("south")) {
-            switch (tag.getString("south")) {
+        if (properties.containsKey("south")) {
+            switch (properties.getString("south")) {
                 case "side" -> {
                     gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
                     Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
@@ -59,8 +52,8 @@ public class Redstone {
                 }
             }
         }
-        if (tag.containsKey("east")) {
-            switch (tag.getString("east")) {
+        if (properties.containsKey("east")) {
+            switch (properties.getString("east")) {
                 case "side" -> {
                     gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
                     Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);
@@ -78,8 +71,8 @@ public class Redstone {
                 }
             }
         }
-        if (tag.containsKey("north")) {
-            switch (tag.getString("north")) {
+        if (properties.containsKey("north")) {
+            switch (properties.getString("north")) {
                 case "side" -> {
                     gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
                     Cube.draw(gl, color, thickness, sizeY, (sizeZ - thickness) / 2.0f);
@@ -97,8 +90,8 @@ public class Redstone {
                 }
             }
         }
-        if (tag.containsKey("west")) {
-            switch (tag.getString("west")) {
+        if (properties.containsKey("west")) {
+            switch (properties.getString("west")) {
                 case "side" -> {
                     gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
                     Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY, thickness);

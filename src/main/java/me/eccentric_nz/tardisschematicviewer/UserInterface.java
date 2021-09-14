@@ -99,7 +99,18 @@ public class UserInterface extends JPanel {
         openButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                choose(fileTextField);
+                JFileChooser chooser = new JFileChooser(lastDirectory);
+                chooser.addChoosableFileFilter(TSCHM_FILTER);
+                chooser.addChoosableFileFilter(NBT_FILTER);
+                chooser.setFileFilter(lastFileFilter);
+                chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                chooser.showOpenDialog(panel);
+                if (chooser.getSelectedFile() != null) {
+                    fileTextField.setText(chooser.getSelectedFile().getPath());
+                    lastDirectory = chooser.getCurrentDirectory();
+                    lastFileFilter = chooser.getFileFilter();
+                    choose(chooser.getSelectedFile());
+                }
             }
         });
         editButton.addMouseListener(new MouseAdapter() {
@@ -160,7 +171,7 @@ public class UserInterface extends JPanel {
             if (selected != null) {
                 int[] position = selected.getPosition();
                 String blockId = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
-                schematic.setBlockId(position[0], position[1], position[2], blockId);
+                schematic.setBlockId(schematic.getBlock(position[0], position[1], position[2]), blockId);
                 loadLayer();
             }
         });
@@ -169,8 +180,8 @@ public class UserInterface extends JPanel {
             public void insertUpdate(DocumentEvent e) {
                 if (selected != null) {
                     int[] position = selected.getPosition();
-                    String propertiesString = propertiesTextField.getText().isEmpty() || propertiesTextField.getText().equals("[]") || propertiesTextField.getText() == null ? "" : propertiesTextField.getText();
-                    schematic.setBlockPropertiesAsString(position[0], position[1], position[2], propertiesString);
+                    String propertiesString = propertiesTextField.getText().isEmpty() || propertiesTextField.getText().equals("[]") ? "" : propertiesTextField.getText();
+                    schematic.setBlockPropertiesAsString(schematic.getBlock(position[0], position[1], position[2]), propertiesString);
                     loadLayer();
                 }
             }
@@ -197,7 +208,7 @@ public class UserInterface extends JPanel {
                     } catch (IOException e1) {
                         nbtTextField.setForeground(Color.RED);
                     }
-                    ((NbtSchematic) schematic).setBlockNbt(position[0], position[1], position[2], nbt);
+                    ((NbtSchematic) schematic).setBlockNbt((CompoundTag) schematic.getBlock(position[0], position[1], position[2]), nbt);
                     loadLayer();
                 }
             }
@@ -220,7 +231,7 @@ public class UserInterface extends JPanel {
         blockPaletteComboBox.addItemListener(e -> {
             if (selected != null) {
                 int[] position = selected.getPosition();
-                ((NbtSchematic) schematic).setBlockState(position[0], position[1], position[2], blockPaletteComboBox.getSelectedIndex());
+                ((NbtSchematic) schematic).setBlockState((CompoundTag) schematic.getBlock(position[0], position[1], position[2]), blockPaletteComboBox.getSelectedIndex());
                 loadLayer();
             }
         });
@@ -231,26 +242,6 @@ public class UserInterface extends JPanel {
         blockComboBox = new JComboBox<>();
         blockComboBox.setModel(new DefaultComboBoxModel<>(Block.strings()));
         blockComboBox.setSelectedItem(null);
-    }
-
-    /**
-     * Opens a file chooser.
-     *
-     * @param box the text field to target
-     */
-    public void choose(JTextField box) {
-        JFileChooser chooser = new JFileChooser(lastDirectory);
-        chooser.addChoosableFileFilter(TSCHM_FILTER);
-        chooser.addChoosableFileFilter(NBT_FILTER);
-        chooser.setFileFilter(lastFileFilter);
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-        chooser.showOpenDialog(panel);
-        if (chooser.getSelectedFile() != null) {
-            box.setText(chooser.getSelectedFile().getPath());
-            lastDirectory = chooser.getCurrentDirectory();
-            lastFileFilter = chooser.getFileFilter();
-            choose(chooser.getSelectedFile());
-        }
     }
 
     public void choose(File file) {
@@ -326,7 +317,7 @@ public class UserInterface extends JPanel {
             int buttonSideLength = gridPanel.getWidth() / size[0];
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {
-                    String blockId = schematic.getBlockId(x, currentLayer, z);
+                    String blockId = schematic.getBlockId(schematic.getBlock(x, currentLayer, z));
                     String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
                     Block blockEnum = Block.valueOf(blockName);
                     SquareButton squareButton = new SquareButton(buttonSideLength, blockEnum, x, currentLayer, z);
@@ -355,13 +346,12 @@ public class UserInterface extends JPanel {
         if (schematic instanceof NbtSchematic nbtSchematic) {
             nbtTextField.setEnabled(true);
             nbtTextField.setForeground(Color.BLACK);
-            String snbt = BlockStateUtils.fromTag(nbtSchematic.getBlockNbt(position[0], position[1], position[2]), false);
-            nbtTextField.setText(snbt);
+            nbtTextField.setText(nbtSchematic.getBlockSnbt(nbtSchematic.getBlock(position[0], position[1], position[2])));
             blockPaletteComboBox.setEnabled(true);
         }
         selected.setBorder(new LineBorder(Color.RED));
         blockComboBox.setSelectedItem(selected.getBlock().name());
-        propertiesTextField.setText(schematic.getBlockPropertiesAsString(position[0], position[1], position[2]));
+        propertiesTextField.setText(schematic.getBlockPropertiesAsString(schematic.getBlock(position[0], position[1], position[2])));
         propertiesTextField.setForeground(Color.BLACK);
         blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
     }

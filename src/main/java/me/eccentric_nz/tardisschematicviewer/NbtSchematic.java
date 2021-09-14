@@ -2,10 +2,12 @@ package me.eccentric_nz.tardisschematicviewer;
 
 import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
 import net.querz.nbt.io.NamedTag;
+import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -70,46 +72,49 @@ public class NbtSchematic implements Schematic {
     }
 
     @Override
-    public String getBlockId(int x, int y, int z) {
-        return getState(getBlock(x, y, z)).getString("Name");
+    public String getBlockId(Object block) {
+        return getState((CompoundTag) block).getString("Name");
     }
 
     @Override
-    public void setBlockId(int x, int y, int z, String id) {
-        CompoundTag block = getBlock(x, y, z);
-        CompoundTag state = getState(block);
+    public void setBlockId(Object block, String id) {
+        CompoundTag state = getState((CompoundTag) block);
         state.putString("Name", id);
-        setState(block, state);
+        setState((CompoundTag) block, state);
     }
 
     @Override
-    public CompoundTag getBlockProperties(int x, int y, int z) {
-        CompoundTag block = getBlock(x, y, z);
-        return getState(block).getCompoundTag("Properties");
+    public CompoundTag getBlockProperties(Object block) {
+        return BlockStateUtils.byteToString(getState((CompoundTag) block).getCompoundTag("Properties"));
     }
 
     @Override
-    public String getBlockPropertiesAsString(int x, int y, int z) {
-        return BlockStateUtils.fromTag(getBlockProperties(x, y, z), false);
-    }
-
-    @Override
-    public void setBlockProperties(int x, int y, int z, CompoundTag properties) {
-        CompoundTag state = getState(getBlock(x, y, z));
+    public void setBlockProperties(Object block, CompoundTag properties) {
+        CompoundTag state = getState((CompoundTag) block);
         state.put("Properties", properties);
     }
 
     @Override
-    public void setBlockPropertiesAsString(int x, int y, int z, String properties) {
+    public String getBlockPropertiesAsString(Object block) {
+        String properties = "{}";
+        try {
+            properties = SNBTUtil.toSNBT(getBlockNbt((CompoundTag) block));
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        return properties;
+    }
+
+    @Override
+    public void setBlockPropertiesAsString(Object block, String properties) {
 
     }
 
-    public CompoundTag getBlockNbt(int x, int y, int z) {
-        return getBlock(x, y, z).getCompoundTag("nbt");
+    public CompoundTag getBlockNbt(CompoundTag block) {
+        return block.getCompoundTag("nbt");
     }
 
-    public void setBlockNbt(int x, int y, int z, CompoundTag nbt) {
-        CompoundTag block = getBlock(x, y, z);
+    public void setBlockNbt(CompoundTag block, CompoundTag nbt) {
         if (nbt != null && !nbt.entrySet().isEmpty()) {
             block.put("nbt", nbt);
         } else {
@@ -117,12 +122,25 @@ public class NbtSchematic implements Schematic {
         }
     }
 
-    public int getBlockState(int x, int y, int z) {
-        return getBlock(x, y, z).getInt("state");
+    public String getBlockSnbt(CompoundTag block) {
+        String snbt = "{}";
+        try {
+            snbt = SNBTUtil.toSNBT(getBlockNbt(block));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return snbt;
     }
 
-    public void setBlockState(int x, int y, int z, int state) {
-        CompoundTag block = getBlock(x, y, z);
+    public void setBlockSnbt(CompoundTag block, String snbt) {
+
+    }
+
+    public int getBlockState(CompoundTag block) {
+        return block.getInt("state");
+    }
+
+    public void setBlockState(CompoundTag block, int state) {
         block.putInt("state", state);
     }
 

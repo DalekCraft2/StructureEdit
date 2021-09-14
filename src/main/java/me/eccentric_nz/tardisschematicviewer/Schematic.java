@@ -16,15 +16,15 @@ public interface Schematic {
 
     void setBlock(int x, int y, int z, Object block);
 
-    String getBlockId(int x, int y, int z);
+    String getBlockId(Object block);
 
-    void setBlockId(int x, int y, int z, String id);
+    void setBlockId(Object block, String id);
 
-    CompoundTag getBlockProperties(int x, int y, int z);
+    CompoundTag getBlockProperties(Object block);
 
-    String getBlockPropertiesAsString(int x, int y, int z);
+    void setBlockProperties(Object block, CompoundTag properties);
 
-    void setBlockProperties(int x, int y, int z, CompoundTag properties);
+    String getBlockPropertiesAsString(Object block);
 
-    void setBlockPropertiesAsString(int x, int y, int z, String properties);
+    void setBlockPropertiesAsString(Object block, String properties);
 }

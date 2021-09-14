@@ -27,28 +27,21 @@ import java.awt.*;
  */
 public class Rotational {
 
-    public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, Object properties) {
+    public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, CompoundTag properties) {
 
         // rotate if necessary
         float yaw = 180.0f;
 
-        CompoundTag tag = new CompoundTag();
-
-        if (properties instanceof String) {
-            tag = BlockStateUtils.toTag((String) properties);
-        } else if (properties instanceof CompoundTag) {
-            tag = BlockStateUtils.byteToString((CompoundTag) properties);
-        }
-        if (tag.containsKey("facing")) {
-            switch (tag.getString("facing")) {
+        if (properties.containsKey("facing")) {
+            switch (properties.getString("facing")) {
                 case "south" -> yaw = 0.0f;
                 case "east" -> yaw = 90.0f;
                 default -> {
                 } // north
                 case "west" -> yaw = -90.0f;
             }
-        } else if (tag.containsKey("rotation")) {
-            int rotationInt = tag.getInt("rotation");
+        } else if (properties.containsKey("rotation")) {
+            int rotationInt = properties.getInt("rotation");
             yaw = rotationInt * 22.5f;
         }
         gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f);

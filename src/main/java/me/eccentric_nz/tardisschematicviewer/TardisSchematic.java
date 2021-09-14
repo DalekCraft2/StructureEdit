@@ -1,9 +1,12 @@
 package me.eccentric_nz.tardisschematicviewer;
 
 import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
+import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;
 import org.json.JSONObject;
+
+import java.io.IOException;
 
 public class TardisSchematic implements Schematic {
 
@@ -58,39 +61,56 @@ public class TardisSchematic implements Schematic {
     }
 
     @Override
-    public String getBlockId(int x, int y, int z) {
-        String state = getBlock(x, y, z).getString("data");
-        int nameEndIndex = state.contains("[") ? state.indexOf('[') : state.length();
+    public String getBlockId(Object block) {
+        String state = ((JSONObject) block).getString("data");
+        int nameEndIndex = state.length();
+        if (state.contains("[")) {
+            nameEndIndex = state.indexOf('[');
+        } else if (state.contains("{")) {
+            nameEndIndex = state.indexOf('{');
+        }
         return state.substring(0, nameEndIndex);
     }
 
     @Override
-    public void setBlockId(int x, int y, int z, String id) {
-        JSONObject block = getBlock(x, y, z);
-        block.put("data", id + getBlockProperties(x, y, z));
-        setBlock(x, y, z, block);
+    public void setBlockId(Object block, String id) {
+        ((JSONObject) block).put("data", id + getBlockPropertiesAsString(block));
     }
 
     @Override
-    public CompoundTag getBlockProperties(int x, int y, int z) {
-        return BlockStateUtils.toTag(getBlockPropertiesAsString(x, y, z));
+    public CompoundTag getBlockProperties(Object block) {
+        String properties = getBlockPropertiesAsString(block);
+        String replaced = properties.replace('[', '{').replace(']', '}').replace('=', ':');
+        CompoundTag tag = new CompoundTag();
+        try {
+            tag = (CompoundTag) SNBTUtil.fromSNBT(replaced);
+        } catch (StringIndexOutOfBoundsException ignored) {
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return BlockStateUtils.byteToString(tag);
     }
 
     @Override
-    public String getBlockPropertiesAsString(int x, int y, int z) {
-        String state = getBlock(x, y, z).getString("data");
-        return state.contains("[") ? state.substring(state.indexOf('[')) : "[]";
+    public void setBlockProperties(Object block, CompoundTag properties) {
+        String propertiesString = "";
+        try {
+            propertiesString = SNBTUtil.toSNBT(BlockStateUtils.byteToString(properties));
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+        setBlockPropertiesAsString(block, propertiesString);
     }
 
     @Override
-    public void setBlockProperties(int x, int y, int z, CompoundTag properties) {
-
+    public String getBlockPropertiesAsString(Object block) {
+        String state = ((JSONObject) block).getString("data");
+        return !state.substring(getBlockId(block).length()).equals("") ? state.substring(getBlockId(block).length()) : "[]";
     }
 
     @Override
-    public void setBlockPropertiesAsString(int x, int y, int z, String properties) {
-        JSONObject block = getBlock(x, y, z);
-        block.put("data", getBlockId(x, y, z) + properties);
-        setBlock(x, y, z, block);
+    public void setBlockPropertiesAsString(Object block, String properties) {
+        String replaced = properties.replace('{', '[').replace('}', ']').replace(':', '=');
+        ((JSONObject) block).put("data", getBlockId(block) + replaced);
     }
 }

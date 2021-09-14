@@ -27,20 +27,13 @@ import java.awt.*;
  */
 public class Slab {
 
-    public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, Object properties) {
+    public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, CompoundTag properties) {
 
-        CompoundTag tag = new CompoundTag();
-
-        if (properties instanceof String) {
-            tag = BlockStateUtils.toTag((String) properties);
-        } else if (properties instanceof CompoundTag) {
-            tag = BlockStateUtils.byteToString((CompoundTag) properties);
-        }
-        if (tag.containsKey("type") && tag.getString("type").equals("double")) {
+        if (properties.containsKey("type") && properties.getString("type").equals("double")) {
             Cube.draw(gl, color, sizeX, sizeY * 2.0f, sizeZ);
             return;
         }
-        if ((tag.containsKey("type") && tag.getString("type").equals("top")) || (tag.containsKey("half") && tag.getString("half").equals("top"))) {
+        if ((properties.containsKey("type") && properties.getString("type").equals("top")) || (properties.containsKey("half") && properties.getString("half").equals("top"))) {
             gl.glRotatef(180.0f, 0.0f, 0.0f, 1.0f);
         }
 

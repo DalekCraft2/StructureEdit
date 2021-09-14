@@ -27,20 +27,13 @@ import java.awt.*;
  */
 public class Stair {
 
-    public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, Object properties) {
+    public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, CompoundTag properties) {
 
         float roll = 0.0f;
         float yaw = 180.0f;
 
-        CompoundTag tag = new CompoundTag();
-
-        if (properties instanceof String) {
-            tag = BlockStateUtils.toTag((String) properties);
-        } else if (properties instanceof CompoundTag) {
-            tag = BlockStateUtils.byteToString((CompoundTag) properties);
-        }
-        if (tag.containsKey("facing")) {
-            switch (tag.getString("facing")) {
+        if (properties.containsKey("facing")) {
+            switch (properties.getString("facing")) {
                 case "south" -> yaw = 0.0f;
                 case "east" -> yaw = 90.0f;
                 default -> {
@@ -49,7 +42,7 @@ public class Stair {
             }
             ;
         }
-        if (tag.containsKey("half") && tag.getString("half").equals("top")) {
+        if (properties.containsKey("half") && properties.getString("half").equals("top")) {
             roll = 180.0f;
         }
         gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f);
@@ -59,8 +52,8 @@ public class Stair {
 
         Cube.draw(gl, color, sizeX, sizeY / 2.0f, sizeZ);
 
-        if (tag.containsKey("shape")) {
-            switch (tag.getString("shape")) {
+        if (properties.containsKey("shape")) {
+            switch (properties.getString("shape")) {
                 case "inner_left" -> {
                     if (roll == 180.0f) {
                         gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
