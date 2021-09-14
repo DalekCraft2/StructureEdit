@@ -20,7 +20,6 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import me.eccentric_nz.tardisschematicviewer.drawing.Block;
-import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
 import me.eccentric_nz.tardisschematicviewer.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
@@ -106,7 +105,6 @@ public class UserInterface extends JPanel {
                 chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 chooser.showOpenDialog(panel);
                 if (chooser.getSelectedFile() != null) {
-                    fileTextField.setText(chooser.getSelectedFile().getPath());
                     lastDirectory = chooser.getCurrentDirectory();
                     lastFileFilter = chooser.getFileFilter();
                     choose(chooser.getSelectedFile());
@@ -181,7 +179,12 @@ public class UserInterface extends JPanel {
                 if (selected != null) {
                     int[] position = selected.getPosition();
                     String propertiesString = propertiesTextField.getText().isEmpty() || propertiesTextField.getText().equals("[]") ? "" : propertiesTextField.getText();
-                    schematic.setBlockPropertiesAsString(schematic.getBlock(position[0], position[1], position[2]), propertiesString);
+                    try {
+                        schematic.setBlockPropertiesAsString(schematic.getBlock(position[0], position[1], position[2]), propertiesString);
+                        propertiesTextField.setForeground(Color.BLACK);
+                    } catch (IOException e1) {
+                        propertiesTextField.setForeground(Color.RED);
+                    }
                     loadLayer();
                 }
             }
@@ -200,15 +203,12 @@ public class UserInterface extends JPanel {
             public void insertUpdate(DocumentEvent e) {
                 if (selected != null) {
                     int[] position = selected.getPosition();
-                    CompoundTag nbt = new CompoundTag();
                     try {
-                        nbt = (CompoundTag) SNBTUtil.fromSNBT(nbtTextField.getText());
+                        ((NbtSchematic) schematic).setBlockSnbt((CompoundTag) schematic.getBlock(position[0], position[1], position[2]), nbtTextField.getText());
                         nbtTextField.setForeground(Color.BLACK);
-                    } catch (StringIndexOutOfBoundsException ignored) {
                     } catch (IOException e1) {
                         nbtTextField.setForeground(Color.RED);
                     }
-                    ((NbtSchematic) schematic).setBlockNbt((CompoundTag) schematic.getBlock(position[0], position[1], position[2]), nbt);
                     loadLayer();
                 }
             }

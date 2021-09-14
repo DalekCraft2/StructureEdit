@@ -9,9 +9,9 @@ import net.querz.nbt.tag.Tag;
 import java.io.IOException;
 import java.util.Map;
 
-public class BlockStateUtils {
+public class PropertyUtils {
 
-    private BlockStateUtils() {
+    private PropertyUtils() {
         throw new UnsupportedOperationException();
     }
 

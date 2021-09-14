@@ -1,6 +1,6 @@
 package me.eccentric_nz.tardisschematicviewer;
 
-import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
+import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;
@@ -88,18 +88,22 @@ public class TardisSchematic implements Schematic {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return BlockStateUtils.byteToString(tag);
+        return PropertyUtils.byteToString(tag);
     }
 
     @Override
     public void setBlockProperties(Object block, CompoundTag properties) {
         String propertiesString = "";
         try {
-            propertiesString = SNBTUtil.toSNBT(BlockStateUtils.byteToString(properties));
+            propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties));
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        setBlockPropertiesAsString(block, propertiesString);
+        try {
+            setBlockPropertiesAsString(block, propertiesString);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     @Override
@@ -109,8 +113,12 @@ public class TardisSchematic implements Schematic {
     }
 
     @Override
-    public void setBlockPropertiesAsString(Object block, String properties) {
-        String replaced = properties.replace('{', '[').replace('}', ']').replace(':', '=');
-        ((JSONObject) block).put("data", getBlockId(block) + replaced);
+    public void setBlockPropertiesAsString(Object block, String propertiesString) throws IOException {
+        String replaced = propertiesString.replace('[', '{').replace(']', '}').replace('=', ':');
+        try {
+            CompoundTag parse = (CompoundTag) SNBTUtil.fromSNBT(replaced);
+        } catch (StringIndexOutOfBoundsException ignored) {
+        }
+        ((JSONObject) block).put("data", getBlockId(block) + propertiesString);
     }
 }

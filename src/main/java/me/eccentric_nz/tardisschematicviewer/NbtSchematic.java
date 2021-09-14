@@ -1,6 +1,6 @@
 package me.eccentric_nz.tardisschematicviewer;
 
-import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
+import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
@@ -8,8 +8,6 @@ import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 public class NbtSchematic implements Schematic {
 
@@ -85,7 +83,10 @@ public class NbtSchematic implements Schematic {
 
     @Override
     public CompoundTag getBlockProperties(Object block) {
-        return BlockStateUtils.byteToString(getState((CompoundTag) block).getCompoundTag("Properties"));
+        if (getState((CompoundTag) block).getCompoundTag("Properties") == null) {
+            return new CompoundTag();
+        }
+        return PropertyUtils.byteToString(getState((CompoundTag) block).getCompoundTag("Properties"));
     }
 
     @Override
@@ -96,18 +97,24 @@ public class NbtSchematic implements Schematic {
 
     @Override
     public String getBlockPropertiesAsString(Object block) {
-        String properties = "{}";
+        String propertiesString = "{}";
+        CompoundTag properties = getBlockProperties(block) == null ? new CompoundTag() : getBlockProperties(block);
         try {
-            properties = SNBTUtil.toSNBT(getBlockNbt((CompoundTag) block));
+            propertiesString = SNBTUtil.toSNBT(properties);
         } catch (IOException e1) {
             e1.printStackTrace();
         }
-        return properties;
+        return propertiesString;
     }
 
     @Override
-    public void setBlockPropertiesAsString(Object block, String properties) {
-
+    public void setBlockPropertiesAsString(Object block, String propertiesString) throws IOException {
+        CompoundTag properties = new CompoundTag();
+        try {
+            properties = (CompoundTag) SNBTUtil.fromSNBT(propertiesString);
+        } catch (StringIndexOutOfBoundsException ignored) {
+        }
+        setBlockProperties(block, properties);
     }
 
     public CompoundTag getBlockNbt(CompoundTag block) {
@@ -124,16 +131,22 @@ public class NbtSchematic implements Schematic {
 
     public String getBlockSnbt(CompoundTag block) {
         String snbt = "{}";
+        CompoundTag nbt = getBlockNbt(block) == null ? new CompoundTag() : getBlockNbt(block);
         try {
-            snbt = SNBTUtil.toSNBT(getBlockNbt(block));
+            snbt = SNBTUtil.toSNBT(nbt);
         } catch (IOException e) {
             e.printStackTrace();
         }
         return snbt;
     }
 
-    public void setBlockSnbt(CompoundTag block, String snbt) {
-
+    public void setBlockSnbt(CompoundTag block, String snbt) throws IOException {
+        CompoundTag nbt = getBlockNbt(block) == null ? new CompoundTag() : getBlockNbt(block);
+        try {
+            nbt = (CompoundTag) SNBTUtil.fromSNBT(snbt);
+        } catch (StringIndexOutOfBoundsException ignored) {
+        }
+        setBlockNbt(block, nbt);
     }
 
     public int getBlockState(CompoundTag block) {

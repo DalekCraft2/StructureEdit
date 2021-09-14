@@ -2,6 +2,8 @@ package me.eccentric_nz.tardisschematicviewer;
 
 import net.querz.nbt.tag.CompoundTag;
 
+import java.io.IOException;
+
 public interface Schematic {
 
     Object getData();
@@ -26,5 +28,5 @@ public interface Schematic {
 
     String getBlockPropertiesAsString(Object block);
 
-    void setBlockPropertiesAsString(Object block, String properties);
+    void setBlockPropertiesAsString(Object block, String propertiesString) throws IOException;
 }

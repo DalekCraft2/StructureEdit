@@ -24,7 +24,6 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import me.eccentric_nz.tardisschematicviewer.drawing.*;
-import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
 import me.eccentric_nz.tardisschematicviewer.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.tag.CompoundTag;

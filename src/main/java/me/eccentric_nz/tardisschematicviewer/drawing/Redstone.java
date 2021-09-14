@@ -17,7 +17,6 @@
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
-import me.eccentric_nz.tardisschematicviewer.util.BlockStateUtils;
 import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
