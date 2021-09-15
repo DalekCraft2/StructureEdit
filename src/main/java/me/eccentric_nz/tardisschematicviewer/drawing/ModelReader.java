@@ -2,17 +2,19 @@ package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
 import me.eccentric_nz.tardisschematicviewer.Main;
+import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Set;
 
 import static com.jogamp.opengl.GL.GL_LINES;
@@ -21,6 +23,8 @@ import static com.jogamp.opengl.GL2ES3.GL_QUADS;
 public class ModelReader {
 
     private static final Path ASSETS;
+    private static final Map<String, JSONObject> BLOCK_STATES = new HashMap<>();
+    private static final Map<String, JSONObject> MODELS = new HashMap<>();
 
     static {
         ASSETS = Main.assets;
@@ -29,6 +33,13 @@ public class ModelReader {
     // TODO Read from Minecraft assets folder to draw block models.
 
     public JSONObject getAssetFile(String namespacedId, String folder) {
+        if (folder.equals("blockstates") && BLOCK_STATES.containsKey(namespacedId)) {
+            return BLOCK_STATES.get(namespacedId);
+        }
+        if (folder.equals("models") && MODELS.containsKey(namespacedId)) {
+            return MODELS.get(namespacedId);
+        }
+
         String[] split = namespacedId.split(":");
         String namespace = split.length > 1 ? split[0] : "minecraft";
         String id = split.length > 1 ? split[1] : split[0];
@@ -41,6 +52,11 @@ public class ModelReader {
                 stringWriter.write(buffer, 0, length);
             }
             assetJson = new JSONObject(stringWriter.toString());
+            if (folder.equals("blockstates")) {
+                BLOCK_STATES.put(namespacedId, assetJson);
+            } else if (folder.equals("models")) {
+                MODELS.put(namespacedId, assetJson);
+            }
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -54,7 +70,7 @@ public class ModelReader {
         JSONObject blockState = getAssetFile(namespacedId, "blockstates");
         String propertiesString = "";
         try {
-            propertiesString = SNBTUtil.toSNBT(properties).replace('{', '[').replace('}', ']').replace(':', '=');
+            propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace('{', '[').replace('}', ']').replace(':', '=');
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -63,33 +79,56 @@ public class ModelReader {
             Set<String> keySet = variants.keySet();
             for (String variantName : keySet) {
                 String[] states = variantName.split(",");
+                boolean contains = true;
                 for (String state : states) {
-                    if (propertiesString.contains(state)) {
-                        if (variants.get(variantName) instanceof JSONObject variant) {
-                            String modelPath = variant.getString("model");
-                            JSONObject model = getAssetFile(modelPath, "models");
-                            int x = 0;
-                            int y = 0;
-                            boolean uvlock = false;
-                            if (variant.has("x")) {
-                                x = variant.getInt("x");
-                            }
-                            if (variant.has("y")) {
-                                y = variant.getInt("y");
-                            }
-                            if (variant.has("uvlock")) {
-                                uvlock = variant.getBoolean("uvlock");
-                            }
-                            drawModel(gl, model, x, y, uvlock, color);
-                        } else if (variants.get(variantName) instanceof JSONArray variantArray) {
-                            Set<String> variantSet = variants.keySet();
-                            // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
-                        }
+                    if (!propertiesString.contains(state)) {
+                        contains = false;
+                        break;
                     }
+                }
+                if (!contains) {
+                    break;
+                }
+                if (variants.get(variantName) instanceof JSONObject variant) {
+                    String modelPath = variant.getString("model");
+                    JSONObject model = getAssetFile(modelPath, "models");
+                    int x = 0;
+                    int y = 0;
+                    boolean uvlock = false;
+                    if (variant.has("x")) {
+                        x = variant.getInt("x");
+                    }
+                    if (variant.has("y")) {
+                        y = variant.getInt("y");
+                    }
+                    if (variant.has("uvlock")) {
+                        uvlock = variant.getBoolean("uvlock");
+                    }
+                    drawModel(gl, model, x, y, uvlock, color);
+                    return;
+                } else if (variants.get(variantName) instanceof JSONArray variantArray) {
+                    // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
+                    JSONObject variant = variantArray.getJSONObject(0);
+                    String modelPath = variant.getString("model");
+                    JSONObject model = getAssetFile(modelPath, "models");
+                    int x = 0;
+                    int y = 0;
+                    boolean uvlock = false;
+                    if (variant.has("x")) {
+                        x = variant.getInt("x");
+                    }
+                    if (variant.has("y")) {
+                        y = variant.getInt("y");
+                    }
+                    if (variant.has("uvlock")) {
+                        uvlock = variant.getBoolean("uvlock");
+                    }
+                    drawModel(gl, model, x, y, uvlock, color);
+                    return;
                 }
             }
         } else if (blockState.has("multipart")) {
-            // TODO Multipart models. I may have accidentally done how these work in the variants section.
+            // TODO Multipart models.
         }
     }
 
@@ -98,14 +137,17 @@ public class ModelReader {
 
         if (components[3] == 0) {
             components[3] = 255;
-            gl.glLineWidth(2.0f);
+            gl.glLineWidth(1.0f);
             gl.glBegin(GL_LINES);
         } else {
             gl.glBegin(GL_QUADS);
         }
 
-        gl.glRotatef(x, 1.0f, 0.0f, 0.0f);
+        // Set color
+        gl.glColor4f(components[0], components[1], components[2], components[3]);
+
         gl.glRotatef(y, 0.0f, 1.0f, 0.0f);
+        gl.glRotatef(x, 1.0f, 0.0f, 0.0f);
 
         JSONArray elements = getElements(model);
         if (elements != null) {
@@ -126,10 +168,6 @@ public class ModelReader {
                 }
                 boolean shade = !jsonElement.has("shade") || jsonElement.getBoolean("shade");
 
-                if (origin != null) {
-                    gl.glTranslatef(origin.getInt(0) / 16.0f, origin.getInt(1) / 16.0f, origin.getInt(2) / 16.0f);
-                }
-
                 if (axis != null) {
                     switch (axis) {
                         case "x":
@@ -141,9 +179,14 @@ public class ModelReader {
                     }
                 }
 
-                float sizeX = (from.getInt(0) - to.getInt(0)) / 16.0f;
-                float sizeY = (from.getInt(1) - to.getInt(1)) / 16.0f;
-                float sizeZ = (from.getInt(2) - to.getInt(2)) / 16.0f;
+                double fromX = from.getDouble(0) / 16.0;
+                double fromY = from.getDouble(1) / 16.0;
+                double fromZ = from.getDouble(2) / 16.0;
+                double toX = to.getDouble(0) / 16.0;
+                double toY = to.getDouble(1) / 16.0;
+                double toZ = to.getDouble(2) / 16.0;
+
+                gl.glTranslated(fromX, fromY, fromZ);
 
                 JSONObject faces = jsonElement.getJSONObject("faces");
                 Set<String> faceSet = faces.keySet();
@@ -156,48 +199,53 @@ public class ModelReader {
                     int faceRotation = face.has("rotation") ? face.getInt("rotation") : 0;
                     int tintIndex = face.has("tintindex") ? face.getInt("tintindex") : -1;
 
-                    // Set color
-                    gl.glColor4f(components[0], components[1], components[2], components[3]);
-
                     switch (faceName) {
                         case "up" -> {
-                            gl.glVertex3f(-sizeX, sizeY, -sizeZ);
-                            gl.glVertex3f(-sizeX, sizeY, sizeZ);
-                            gl.glVertex3f(sizeX, sizeY, sizeZ);
-                            gl.glVertex3f(sizeX, sizeY, -sizeZ);
+                            gl.glNormal3d(0.0f, 1.0f, 0.0f);
+                            gl.glVertex3d(fromX, toY, fromZ);
+                            gl.glVertex3d(fromX, toY, toZ);
+                            gl.glVertex3d(toX, toY, toZ);
+                            gl.glVertex3d(toX, toY, fromZ);
                         }
                         case "down" -> {
-                            gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
-                            gl.glVertex3f(sizeX, -sizeY, -sizeZ);
-                            gl.glVertex3f(sizeX, -sizeY, sizeZ);
-                            gl.glVertex3f(-sizeX, -sizeY, sizeZ);
+                            gl.glNormal3d(0.0f, -1.0f, 0.0f);
+                            gl.glVertex3d(fromX, fromY, fromZ);
+                            gl.glVertex3d(toX, fromY, fromZ);
+                            gl.glVertex3d(toX, fromY, toZ);
+                            gl.glVertex3d(fromX, fromY, toZ);
                         }
                         case "north" -> {
-                            gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
-                            gl.glVertex3f(-sizeX, sizeY, -sizeZ);
-                            gl.glVertex3f(sizeX, sizeY, -sizeZ);
-                            gl.glVertex3f(sizeX, -sizeY, -sizeZ);
+                            gl.glNormal3d(0.0f, 0.0f, -1.0f);
+                            gl.glVertex3d(fromX, fromY, fromZ);
+                            gl.glVertex3d(fromX, toY, fromZ);
+                            gl.glVertex3d(toX, toY, fromZ);
+                            gl.glVertex3d(toX, fromY, fromZ);
                         }
                         case "south" -> {
-                            gl.glVertex3f(-sizeX, -sizeY, sizeZ); // bottom-left of the quad
-                            gl.glVertex3f(sizeX, -sizeY, sizeZ); // bottom-right of the quad
-                            gl.glVertex3f(sizeX, sizeY, sizeZ); // top-right of the quad
-                            gl.glVertex3f(-sizeX, sizeY, sizeZ); // top-left of the quad
+                            gl.glNormal3d(0.0f, 0.0f, 1.0f);
+                            gl.glVertex3d(fromX, fromY, toZ); // bottom-left of the quad
+                            gl.glVertex3d(toX, fromY, toZ); // bottom-right of the quad
+                            gl.glVertex3d(toX, toY, toZ); // top-right of the quad
+                            gl.glVertex3d(fromX, toY, toZ); // top-left of the quad
                         }
                         case "west" -> {
-                            gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
-                            gl.glVertex3f(-sizeX, -sizeY, sizeZ);
-                            gl.glVertex3f(-sizeX, sizeY, sizeZ);
-                            gl.glVertex3f(-sizeX, sizeY, -sizeZ);
+                            gl.glNormal3d(-1.0f, 0.0f, 0.0f);
+                            gl.glVertex3d(fromX, fromY, fromZ);
+                            gl.glVertex3d(fromX, fromY, toZ);
+                            gl.glVertex3d(fromX, toY, toZ);
+                            gl.glVertex3d(fromX, toY, fromZ);
                         }
                         case "east" -> {
-                            gl.glVertex3f(sizeX, -sizeY, -sizeZ);
-                            gl.glVertex3f(sizeX, sizeY, -sizeZ);
-                            gl.glVertex3f(sizeX, sizeY, sizeZ);
-                            gl.glVertex3f(sizeX, -sizeY, sizeZ);
+                            gl.glNormal3d(1.0f, 0.0f, 0.0f);
+                            gl.glVertex3d(toX, fromY, fromZ);
+                            gl.glVertex3d(toX, toY, fromZ);
+                            gl.glVertex3d(toX, toY, toZ);
+                            gl.glVertex3d(toX, fromY, toZ);
                         }
                     }
                 }
+
+                gl.glTranslated(-fromX, -fromY, -fromZ);
 
                 if (axis != null) {
                     switch (axis) {
@@ -209,11 +257,6 @@ public class ModelReader {
                             gl.glRotatef(-angle, 0.0f, 0.0f, 1.0f);
                     }
                 }
-
-                if (origin != null) {
-                    gl.glTranslatef(-origin.getInt(0) / 16.0f, -origin.getInt(1) / 16.0f, -origin.getInt(2) / 16.0f);
-                }
-
             }
         }
         gl.glEnd();
