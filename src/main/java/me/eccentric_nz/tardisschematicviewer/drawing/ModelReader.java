@@ -7,10 +7,15 @@ import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Locale;
 import java.util.Set;
+
+import static com.jogamp.opengl.GL.GL_LINES;
+import static com.jogamp.opengl.GL2ES3.GL_QUADS;
 
 public class ModelReader {
 
@@ -40,6 +45,9 @@ public class ModelReader {
     }
 
     public void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties) {
+        String blockName = namespacedId.split(":")[1].toUpperCase(Locale.ROOT);
+        Block block = Block.valueOf(blockName);
+        Color color = block.getColor();
         JSONObject blockState = getAssetFile(namespacedId, "blockstates");
         String propertiesString = "";
         try {
@@ -69,7 +77,7 @@ public class ModelReader {
                             if (variant.has("uvlock")) {
                                 uvlock = variant.getBoolean("uvlock");
                             }
-                            drawModel(gl, model, x, y, uvlock);
+                            drawModel(gl, model, x, y, uvlock, color);
                         } else if (variants.get(variantName) instanceof JSONArray variantArray) {
                             Set<String> variantSet = variants.keySet();
                             // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
@@ -82,77 +90,119 @@ public class ModelReader {
         }
     }
 
-    public void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock) {
+    public void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color color) {
+        float[] components = color.getComponents(null);
+
+        if (components[3] == 0) {
+            components[3] = 255;
+            gl.glLineWidth(2.0f);
+            gl.glBegin(GL_LINES);
+        } else {
+            gl.glBegin(GL_QUADS);
+        }
+
         gl.glRotatef(x, 1.0f, 0.0f, 0.0f);
         gl.glRotatef(y, 0.0f, 1.0f, 0.0f);
+
         JSONArray elements = new JSONArray();
         if (!model.has("elements") && model.has("parent")) {
             elements = getAssetFile(model.getString("parent"), "models").getJSONArray("elements"); // TODO Make this recursive until a parent does not exist.
         } else if (model.has("elements")) {
-            for (Object element : elements) {
-                JSONObject jsonElement = (JSONObject) element;
-                JSONArray from = jsonElement.getJSONArray("from");
-                JSONArray to = jsonElement.getJSONArray("to");
-                JSONObject rotation = jsonElement.getJSONObject("rotation");
+            elements = model.getJSONArray("elements");
+        }
+        for (Object element : elements) {
+            JSONObject jsonElement = (JSONObject) element;
+            JSONArray from = jsonElement.getJSONArray("from");
+            JSONArray to = jsonElement.getJSONArray("to");
+            JSONObject rotation = jsonElement.getJSONObject("rotation");
 
-                JSONArray origin = rotation.getJSONArray("origin");
-                String axis = rotation.getString("axis");
-                float angle = rotation.getFloat("angle");
-                boolean rescale = rotation.getBoolean("rescale");
+            JSONArray origin = rotation.getJSONArray("origin");
+            String axis = rotation.getString("axis");
+            float angle = rotation.getFloat("angle");
+            boolean rescale = rotation.getBoolean("rescale");
 
-                boolean shade = jsonElement.getBoolean("shade");
+            boolean shade = jsonElement.getBoolean("shade");
 
-                gl.glTranslatef(origin.getFloat(0), origin.getFloat(1), origin.getFloat(2));
-                switch (axis) {
-                    case "x":
-                        gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
-                    case "y":
-                        gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
-                    case "z":
-                        gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+            gl.glTranslatef(origin.getFloat(0), origin.getFloat(1), origin.getFloat(2));
+            switch (axis) {
+                case "x":
+                    gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
+                case "y":
+                    gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
+                case "z":
+                    gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+            }
+
+            float sizeX = from.getFloat(0) - to.getFloat(0);
+            float sizeY = from.getFloat(1) - to.getFloat(1);
+            float sizeZ = from.getFloat(2) - to.getFloat(2);
+
+            JSONObject faces = jsonElement.getJSONObject("faces");
+            Set<String> faceSet = faces.keySet();
+            for (String faceName : faceSet) {
+                JSONObject face = faces.getJSONObject(faceName);
+
+                JSONArray uv = face.getJSONArray("uv");
+                String texture = face.getString("texture");
+                String cullface = face.getString("cullface");
+                int faceRotation = face.getInt("rotation");
+                int tintIndex = face.getInt("tintindex");
+
+                // Set color
+                gl.glColor4f(components[0], components[1], components[2], components[3]);
+
+                // Up
+                if (faceName.equals("up")) {
+                    gl.glNormal3f(0.0f, 1.0f, 0.0f);
+                    gl.glVertex3f(-sizeX, sizeY, -sizeZ);
+                    gl.glVertex3f(-sizeX, sizeY, sizeZ);
+                    gl.glVertex3f(sizeX, sizeY, sizeZ);
+                    gl.glVertex3f(sizeX, sizeY, -sizeZ);
                 }
 
-                JSONObject faces = jsonElement.getJSONObject("faces");
-                Set<String> faceSet = faces.keySet();
-                for (String faceName : faceSet) {
-                    JSONObject face = faces.getJSONObject(faceName);
-                    switch (faceName) {
-                        case "up":
-                            gl.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-                        case "down":
-                            gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-                        case "north":
-                            gl.glRotatef(180.0f, 0.0f, 1.0f, 0.0f);
-                        case "south":
-                            gl.glRotatef(0.0f, 0.0f, 1.0f, 0.0f);
-                        case "west":
-                            gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-                        case "east":
-                            gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
-                    }
+                // Down
+                else if (faceName.equals("down")) {
+                    gl.glNormal3f(0.0f, -1.0f, 0.0f);
+                    gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
+                    gl.glVertex3f(sizeX, -sizeY, -sizeZ);
+                    gl.glVertex3f(sizeX, -sizeY, sizeZ);
+                    gl.glVertex3f(-sizeX, -sizeY, sizeZ);
+                }
 
-                    JSONArray uv = face.getJSONArray("uv");
-                    String texture = face.getString("texture");
-                    String cullface = face.getString("cullface");
-                    int faceRotation = face.getInt("rotation");
-                    int tintIndex = face.getInt("tintindex");
+                // North
+                else if (faceName.equals("north")) {
+                    gl.glNormal3f(0.0f, 0.0f, -1.0f);
+                    gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
+                    gl.glVertex3f(-sizeX, sizeY, -sizeZ);
+                    gl.glVertex3f(sizeX, sizeY, -sizeZ);
+                    gl.glVertex3f(sizeX, -sizeY, -sizeZ);
+                }
 
+                // South
+                else if (faceName.equals("south")) {
+                    gl.glNormal3f(0.0f, 0.0f, 1.0f);
+                    gl.glVertex3f(-sizeX, -sizeY, sizeZ); // bottom-left of the quad
+                    gl.glVertex3f(sizeX, -sizeY, sizeZ); // bottom-right of the quad
+                    gl.glVertex3f(sizeX, sizeY, sizeZ); // top-right of the quad
+                    gl.glVertex3f(-sizeX, sizeY, sizeZ); // top-left of the quad
+                }
 
+                // West
+                else if (faceName.equals("west")) {
+                    gl.glNormal3f(-1.0f, 0.0f, 0.0f);
+                    gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
+                    gl.glVertex3f(-sizeX, -sizeY, sizeZ);
+                    gl.glVertex3f(-sizeX, sizeY, sizeZ);
+                    gl.glVertex3f(-sizeX, sizeY, -sizeZ);
+                }
 
-                    switch (faceName) {
-                        case "up":
-                            gl.glRotatef(-90.0f, 1.0f, 0.0f, 0.0f);
-                        case "down":
-                            gl.glRotatef(90.0f, 1.0f, 0.0f, 0.0f);
-                        case "north":
-                            gl.glRotatef(-180.0f, 0.0f, 1.0f, 0.0f);
-                        case "south":
-                            gl.glRotatef(0.0f, 0.0f, 1.0f, 0.0f);
-                        case "west":
-                            gl.glRotatef(-90.0f, 0.0f, 1.0f, 0.0f);
-                        case "east":
-                            gl.glRotatef(90.0f, 0.0f, 1.0f, 0.0f);
-                    }
+                // East
+                else if (faceName.equals("east")) {
+                    gl.glNormal3f(1.0f, 0.0f, 0.0f);
+                    gl.glVertex3f(sizeX, -sizeY, -sizeZ);
+                    gl.glVertex3f(sizeX, sizeY, -sizeZ);
+                    gl.glVertex3f(sizeX, sizeY, sizeZ);
+                    gl.glVertex3f(sizeX, -sizeY, sizeZ);
                 }
             }
         }
