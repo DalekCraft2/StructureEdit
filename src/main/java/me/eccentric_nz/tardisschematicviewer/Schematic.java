@@ -24,6 +24,8 @@ public interface Schematic {
         }
     }
 
+    void saveTo(String path) throws IOException;
+
     Object getData();
 
     String getFormat();

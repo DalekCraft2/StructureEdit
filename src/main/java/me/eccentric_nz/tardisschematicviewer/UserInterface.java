@@ -20,9 +20,6 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
 import me.eccentric_nz.tardisschematicviewer.drawing.Block;
-import me.eccentric_nz.tardisschematicviewer.util.GzipUtils;
-import net.querz.nbt.io.NBTUtil;
-import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
 import org.json.JSONException;
@@ -122,24 +119,12 @@ public class UserInterface extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (schematic != null) {
-                    if (schematic.getFormat().equals("tschm")) {
+                    try {
                         String output = UserInterface.this.renderer.getPath();
-                        try {
-                            GzipUtils.zip(schematic.getData(), output);
-                            System.out.println("Schematic saved to \"" + output + "\" successfully.");
-                        } catch (IOException e1) {
-                            System.err.println("Error saving schematic: " + e1.getMessage());
-                        }
-                    } else if (schematic.getFormat().equals("nbt")) {
-                        String output = UserInterface.this.renderer.getPath();
-                        try {
-                            NBTUtil.write((NamedTag) schematic.getData(), output);
-                            System.out.println("Schematic saved to \"" + output + "\" successfully.");
-                        } catch (IOException e1) {
-                            System.err.println("Error saving schematic: " + e1.getMessage());
-                        }
-                    } else {
-                        System.err.println("Not a schematic file!");
+                        schematic.saveTo(output);
+                        System.out.println("Schematic saved to \"" + output + "\" successfully.");
+                    } catch (IOException e1) {
+                        System.err.println("Error saving schematic: " + e1.getMessage());
                     }
                 } else {
                     System.err.println("Schematic was null!");
@@ -263,21 +248,21 @@ public class UserInterface extends JPanel {
                 schematic = renderer.getSchematic();
                 currentLayer = 0;
                 if (schematic != null) {
-                    if (schematic.getFormat().equals("nbt")) {
-                        if (((NbtSchematic) schematic).hasPaletteList()) {
-                            int palettesSize = ((NbtSchematic) schematic).getPaletteList().size();
+                    if (schematic instanceof NbtSchematic nbtSchematic) {
+                        if (nbtSchematic.hasPaletteList()) {
+                            int palettesSize = nbtSchematic.getPaletteList().size();
                             Integer[] palettes = new Integer[palettesSize];
                             for (int i = 0; i < palettesSize; i++) {
                                 palettes[i] = i;
                             }
                             paletteComboBox.setModel(new DefaultComboBoxModel<>(palettes));
                             paletteComboBox.setSelectedItem("0");
-                            palette = ((NbtSchematic) schematic).getPaletteListEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
+                            palette = nbtSchematic.getPaletteListEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
                             renderer.setPalette(palette);
                             paletteLabel.setVisible(true);
                             paletteComboBox.setVisible(true);
                         } else {
-                            palette = ((NbtSchematic) schematic).getPalette();
+                            palette = nbtSchematic.getPalette();
                             renderer.setPalette(palette);
                             paletteLabel.setVisible(false);
                             paletteComboBox.setVisible(false);

@@ -1,6 +1,7 @@
 package me.eccentric_nz.tardisschematicviewer;
 
 import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
+import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
@@ -15,6 +16,11 @@ public class NbtSchematic implements Schematic {
 
     public NbtSchematic(NamedTag schematic) {
         this.schematic = schematic;
+    }
+
+    @Override
+    public void saveTo(String path) throws IOException {
+        NBTUtil.write(getData(), path);
     }
 
     @Override

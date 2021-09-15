@@ -1,5 +1,6 @@
 package me.eccentric_nz.tardisschematicviewer;
 
+import me.eccentric_nz.tardisschematicviewer.util.GzipUtils;
 import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
@@ -14,6 +15,11 @@ public class TardisSchematic implements Schematic {
 
     public TardisSchematic(JSONObject schematic) {
         this.schematic = schematic;
+    }
+
+    @Override
+    public void saveTo(String path) throws IOException {
+        GzipUtils.zip(getData(), path);
     }
 
     @Override
