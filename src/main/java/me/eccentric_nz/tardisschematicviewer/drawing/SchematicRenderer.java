@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package me.eccentric_nz.tardisschematicviewer;
+package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -23,7 +23,10 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
+import me.eccentric_nz.tardisschematicviewer.Main;
 import me.eccentric_nz.tardisschematicviewer.drawing.*;
+import me.eccentric_nz.tardisschematicviewer.schematic.NbtSchematic;
+import me.eccentric_nz.tardisschematicviewer.schematic.Schematic;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
 import org.json.JSONException;
@@ -79,6 +82,7 @@ public class SchematicRenderer extends GLJPanel {
 
     public SchematicRenderer(GLCapabilitiesImmutable userCapsRequest) {
         super(userCapsRequest);
+
         addGLEventListener(new GLEventListener() {
             @Override
             public void init(GLAutoDrawable drawable) {
@@ -115,6 +119,7 @@ public class SchematicRenderer extends GLJPanel {
             public void dispose(GLAutoDrawable drawable) {
             }
 
+            // TODO Make multiple palettes work again.
             @Override
             public void display(GLAutoDrawable drawable) {
                 if (schematic != null) {
@@ -133,9 +138,16 @@ public class SchematicRenderer extends GLJPanel {
                             for (int z = 0; z < sizeZ; z++) {
                                 Object block = schematic.getBlock(x, y, z);
                                 if (block != null) {
-                                    String blockId = schematic.getBlockId(block);
+                                    String blockId;
+                                    CompoundTag properties;
+                                    if (schematic instanceof NbtSchematic nbtSchematic && nbtSchematic.hasPaletteList()) {
+                                        blockId = nbtSchematic.getBlockId(block, palette);
+                                        properties = nbtSchematic.getBlockProperties(block, palette);
+                                    } else {
+                                        blockId = schematic.getBlockId(block);
+                                        properties = schematic.getBlockProperties(block);
+                                    }
                                     String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-                                    CompoundTag properties = schematic.getBlockProperties(block);
                                     Block blockEnum = Block.valueOf(blockName);
                                     gl.glPushMatrix();
 

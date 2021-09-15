@@ -1,5 +1,6 @@
-package me.eccentric_nz.tardisschematicviewer;
+package me.eccentric_nz.tardisschematicviewer.schematic;
 
+import me.eccentric_nz.tardisschematicviewer.schematic.Schematic;
 import me.eccentric_nz.tardisschematicviewer.util.GzipUtils;
 import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;

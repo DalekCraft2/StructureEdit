@@ -33,14 +33,12 @@ public final class SquareButton extends JButton {
 
     private final int size;
     private final int[] position = new int[3];
-    private final Block block;
 
     public SquareButton(int size, Block block, int x, int y, int z) {
         this.size = size;
         position[0] = x;
         position[1] = y;
         position[2] = z;
-        this.block = block;
         setPreferredSize(new Dimension(size, size));
         setSize(getPreferredSize());
         Color color = block.getColor();
@@ -54,10 +52,6 @@ public final class SquareButton extends JButton {
 
     public int[] getPosition() {
         return position;
-    }
-
-    public Block getBlock() {
-        return block;
     }
 
     @Override
