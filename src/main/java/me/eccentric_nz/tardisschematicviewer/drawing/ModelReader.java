@@ -5,6 +5,7 @@ import me.eccentric_nz.tardisschematicviewer.Main;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.awt.*;
@@ -29,7 +30,9 @@ public class ModelReader {
 
     public JSONObject getAssetFile(String namespacedId, String folder) {
         String[] split = namespacedId.split(":");
-        File file = new File(ASSETS.toString() + File.separator + split[0] + File.separator + folder + File.separator + split[1] + ".json");
+        String namespace = split.length > 1 ? split[0] : "minecraft";
+        String id = split.length > 1 ? split[1] : split[0];
+        File file = new File(ASSETS.toString() + File.separator + namespace + File.separator + folder + File.separator + id + ".json");
         JSONObject assetJson = null;
         try (FileInputStream fileInputStream = new FileInputStream(file); InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
@@ -104,12 +107,7 @@ public class ModelReader {
         gl.glRotatef(x, 1.0f, 0.0f, 0.0f);
         gl.glRotatef(y, 0.0f, 1.0f, 0.0f);
 
-        JSONArray elements = null;
-        if (!model.has("elements") && model.has("parent")) {
-            //elements = getAssetFile(model.getString("parent"), "models").getJSONArray("elements"); // TODO Make this recursive until a parent does not exist.
-        } else if (model.has("elements")) {
-            elements = model.getJSONArray("elements");
-        }
+        JSONArray elements = getElements(model);
         if (elements != null) {
             for (Object element : elements) {
                 JSONObject jsonElement = (JSONObject) element;
@@ -129,8 +127,9 @@ public class ModelReader {
                 boolean shade = !jsonElement.has("shade") || jsonElement.getBoolean("shade");
 
                 if (origin != null) {
-                    gl.glTranslatef(origin.getFloat(0) / 16.0f, origin.getFloat(1) / 16.0f, origin.getFloat(2) / 16.0f);
+                    gl.glTranslatef(origin.getInt(0) / 16.0f, origin.getInt(1) / 16.0f, origin.getInt(2) / 16.0f);
                 }
+
                 if (axis != null) {
                     switch (axis) {
                         case "x":
@@ -142,9 +141,9 @@ public class ModelReader {
                     }
                 }
 
-                int sizeX = (from.getInt(0) - to.getInt(0)) / 16;
-                int sizeY = (from.getInt(1) - to.getInt(1)) / 16;
-                int sizeZ = (from.getInt(2) - to.getInt(2)) / 16;
+                float sizeX = (from.getInt(0) - to.getInt(0)) / 16.0f;
+                float sizeY = (from.getInt(1) - to.getInt(1)) / 16.0f;
+                float sizeZ = (from.getInt(2) - to.getInt(2)) / 16.0f;
 
                 JSONObject faces = jsonElement.getJSONObject("faces");
                 Set<String> faceSet = faces.keySet();
@@ -162,42 +161,36 @@ public class ModelReader {
 
                     switch (faceName) {
                         case "up" -> {
-                            gl.glNormal3f(0.0f, 1.0f, 0.0f);
                             gl.glVertex3f(-sizeX, sizeY, -sizeZ);
                             gl.glVertex3f(-sizeX, sizeY, sizeZ);
                             gl.glVertex3f(sizeX, sizeY, sizeZ);
                             gl.glVertex3f(sizeX, sizeY, -sizeZ);
                         }
                         case "down" -> {
-                            gl.glNormal3f(0.0f, -1.0f, 0.0f);
                             gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
                             gl.glVertex3f(sizeX, -sizeY, -sizeZ);
                             gl.glVertex3f(sizeX, -sizeY, sizeZ);
                             gl.glVertex3f(-sizeX, -sizeY, sizeZ);
                         }
                         case "north" -> {
-                            gl.glNormal3f(0.0f, 0.0f, -1.0f);
                             gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
                             gl.glVertex3f(-sizeX, sizeY, -sizeZ);
                             gl.glVertex3f(sizeX, sizeY, -sizeZ);
                             gl.glVertex3f(sizeX, -sizeY, -sizeZ);
                         }
                         case "south" -> {
-                            gl.glNormal3f(0.0f, 0.0f, 1.0f);
                             gl.glVertex3f(-sizeX, -sizeY, sizeZ); // bottom-left of the quad
                             gl.glVertex3f(sizeX, -sizeY, sizeZ); // bottom-right of the quad
                             gl.glVertex3f(sizeX, sizeY, sizeZ); // top-right of the quad
                             gl.glVertex3f(-sizeX, sizeY, sizeZ); // top-left of the quad
                         }
                         case "west" -> {
-                            gl.glNormal3f(-1.0f, 0.0f, 0.0f);
                             gl.glVertex3f(-sizeX, -sizeY, -sizeZ);
                             gl.glVertex3f(-sizeX, -sizeY, sizeZ);
                             gl.glVertex3f(-sizeX, sizeY, sizeZ);
                             gl.glVertex3f(-sizeX, sizeY, -sizeZ);
                         }
                         case "east" -> {
-                            gl.glNormal3f(1.0f, 0.0f, 0.0f);
                             gl.glVertex3f(sizeX, -sizeY, -sizeZ);
                             gl.glVertex3f(sizeX, sizeY, -sizeZ);
                             gl.glVertex3f(sizeX, sizeY, sizeZ);
@@ -205,11 +198,34 @@ public class ModelReader {
                         }
                     }
                 }
+
+                if (axis != null) {
+                    switch (axis) {
+                        case "x":
+                            gl.glRotatef(-angle, 1.0f, 0.0f, 0.0f);
+                        case "y":
+                            gl.glRotatef(-angle, 0.0f, 1.0f, 0.0f);
+                        case "z":
+                            gl.glRotatef(-angle, 0.0f, 0.0f, 1.0f);
+                    }
+                }
+
+                if (origin != null) {
+                    gl.glTranslatef(-origin.getInt(0) / 16.0f, -origin.getInt(1) / 16.0f, -origin.getInt(2) / 16.0f);
+                }
+
             }
         }
-        gl.glRotatef(-y, 0.0f, 1.0f, 0.0f);
-        gl.glRotatef(-x, 1.0f, 0.0f, 0.0f);
-
         gl.glEnd();
+    }
+
+    private JSONArray getElements(JSONObject model) {
+        if (model.has("elements")) {
+            return model.getJSONArray("elements");
+        } else if (model.has("parent")) {
+            return getElements(getAssetFile(model.getString("parent"), "models"));
+        } else {
+            return null;
+        }
     }
 }
