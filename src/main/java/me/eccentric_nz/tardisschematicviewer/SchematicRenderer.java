@@ -24,12 +24,9 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import me.eccentric_nz.tardisschematicviewer.drawing.*;
-import me.eccentric_nz.tardisschematicviewer.util.GzipUtils;
-import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
 import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -79,7 +76,6 @@ public class SchematicRenderer extends GLJPanel {
     private Schematic schematic;
     private ListTag<CompoundTag> palette;
     private String path;
-    private boolean schematicParsed = false;
 
     public SchematicRenderer(GLCapabilitiesImmutable userCapsRequest) {
         super(userCapsRequest);
@@ -121,16 +117,7 @@ public class SchematicRenderer extends GLJPanel {
 
             @Override
             public void display(GLAutoDrawable drawable) {
-                if (!schematicParsed) {
-                    if (path != null) {
-                        try {
-                            setPath(path);
-                        } catch (IOException | JSONException e) {
-                            System.err.println("Error reading schematic: " + e.getMessage());
-                            schematicParsed = false;
-                        }
-                    }
-                } else {
+                if (schematic != null) {
                     GL4bc gl = drawable.getGL().getGL4bc();
                     gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                     gl.glLoadIdentity(); // reset the model-view matrix
@@ -330,17 +317,12 @@ public class SchematicRenderer extends GLJPanel {
 
     public void setPath(String path) throws IOException, JSONException {
         this.path = path;
-        if (path.endsWith(".tschm")) {
-            setSchematic(new TardisSchematic(new JSONObject(GzipUtils.unzip(path))));
+        Schematic schematic = Schematic.openFrom(path);
+        if (schematic != null) {
+            setSchematic(schematic);
             renderedHeight = sizeY;
-            schematicParsed = true;
-        } else if (path.endsWith(".nbt")) {
-            setSchematic(new NbtSchematic(NBTUtil.read(path)));
-            renderedHeight = sizeY;
-            schematicParsed = true;
         } else {
-            System.err.println("Not a schematic file! 10");
-            schematicParsed = false;
+            System.err.println("Not a schematic file!");
         }
     }
 

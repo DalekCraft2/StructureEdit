@@ -23,7 +23,6 @@ import me.eccentric_nz.tardisschematicviewer.drawing.Block;
 import me.eccentric_nz.tardisschematicviewer.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
-import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
 import org.json.JSONException;
@@ -140,7 +139,7 @@ public class UserInterface extends JPanel {
                             System.err.println("Error saving schematic: " + e1.getMessage());
                         }
                     } else {
-                        System.err.println("Not a schematic file! 1");
+                        System.err.println("Not a schematic file!");
                     }
                 } else {
                     System.err.println("Schematic was null!");
@@ -263,44 +262,48 @@ public class UserInterface extends JPanel {
                 renderer.setPath(path);
                 schematic = renderer.getSchematic();
                 currentLayer = 0;
-                if (schematic.getFormat().equals("nbt")) {
-                    if (((NbtSchematic) schematic).hasPaletteList()) {
-                        int palettesSize = ((NbtSchematic) schematic).getPaletteList().size();
-                        Integer[] palettes = new Integer[palettesSize];
-                        for (int i = 0; i < palettesSize; i++) {
-                            palettes[i] = i;
+                if (schematic != null) {
+                    if (schematic.getFormat().equals("nbt")) {
+                        if (((NbtSchematic) schematic).hasPaletteList()) {
+                            int palettesSize = ((NbtSchematic) schematic).getPaletteList().size();
+                            Integer[] palettes = new Integer[palettesSize];
+                            for (int i = 0; i < palettesSize; i++) {
+                                palettes[i] = i;
+                            }
+                            paletteComboBox.setModel(new DefaultComboBoxModel<>(palettes));
+                            paletteComboBox.setSelectedItem("0");
+                            palette = ((NbtSchematic) schematic).getPaletteListEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
+                            renderer.setPalette(palette);
+                            paletteLabel.setVisible(true);
+                            paletteComboBox.setVisible(true);
+                        } else {
+                            palette = ((NbtSchematic) schematic).getPalette();
+                            renderer.setPalette(palette);
+                            paletteLabel.setVisible(false);
+                            paletteComboBox.setVisible(false);
                         }
-                        paletteComboBox.setModel(new DefaultComboBoxModel<>(palettes));
-                        paletteComboBox.setSelectedItem("0");
-                        palette = ((NbtSchematic) schematic).getPaletteListEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
-                        renderer.setPalette(palette);
-                        paletteLabel.setVisible(true);
-                        paletteComboBox.setVisible(true);
+                        int paletteSize = palette.size();
+                        Integer[] paletteIds = new Integer[paletteSize];
+                        for (int i = 0; i < paletteSize; i++) {
+                            paletteIds[i] = i;
+                        }
+                        nbtLabel.setVisible(true);
+                        nbtTextField.setVisible(true);
+                        blockPaletteLabel.setVisible(true);
+                        blockPaletteComboBox.setModel(new DefaultComboBoxModel<>(paletteIds));
+                        blockPaletteComboBox.setVisible(true);
                     } else {
-                        palette = ((NbtSchematic) schematic).getPalette();
-                        renderer.setPalette(palette);
-                        paletteLabel.setVisible(false);
-                        paletteComboBox.setVisible(false);
+                        nbtLabel.setVisible(false);
+                        nbtTextField.setVisible(false);
+                        blockPaletteLabel.setVisible(false);
+                        blockPaletteComboBox.setVisible(false);
                     }
-                    int paletteSize = palette.size();
-                    Integer[] paletteIds = new Integer[paletteSize];
-                    for (int i = 0; i < paletteSize; i++) {
-                        paletteIds[i] = i;
-                    }
-                    nbtLabel.setVisible(true);
-                    nbtTextField.setVisible(true);
-                    blockPaletteLabel.setVisible(true);
-                    blockPaletteComboBox.setModel(new DefaultComboBoxModel<>(paletteIds));
-                    blockPaletteComboBox.setVisible(true);
+                    loadLayer();
                 } else {
-                    nbtLabel.setVisible(false);
-                    nbtTextField.setVisible(false);
-                    blockPaletteLabel.setVisible(false);
-                    blockPaletteComboBox.setVisible(false);
+                    System.err.println("Schematic was null!");
                 }
-                loadLayer();
-            } catch (IOException | JSONException e1) {
-                System.err.println("Error reading schematic: " + e1.getMessage());
+            } catch (IOException | JSONException e) {
+                System.err.println("Error reading schematic: " + e.getMessage());
             }
         } else {
             System.err.println("No file selected!");

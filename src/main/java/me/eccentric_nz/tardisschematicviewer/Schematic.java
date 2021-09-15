@@ -1,10 +1,28 @@
 package me.eccentric_nz.tardisschematicviewer;
 
+import me.eccentric_nz.tardisschematicviewer.util.GzipUtils;
+import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.tag.CompoundTag;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.IOException;
 
 public interface Schematic {
+
+    static Schematic openFrom(String path) throws IOException, JSONException {
+        switch (path.substring(path.lastIndexOf('.') + 1)) {
+            case "tschm" -> {
+                return new TardisSchematic(new JSONObject(GzipUtils.unzip(path)));
+            }
+            case "nbt" -> {
+                return new NbtSchematic(NBTUtil.read(path));
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
 
     Object getData();
 

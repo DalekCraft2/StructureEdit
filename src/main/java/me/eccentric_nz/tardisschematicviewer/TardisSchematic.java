@@ -96,8 +96,8 @@ public class TardisSchematic implements Schematic {
         String propertiesString = "";
         try {
             propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties));
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         try {
             setBlockPropertiesAsString(block, propertiesString);

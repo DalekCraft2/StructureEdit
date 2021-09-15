@@ -101,8 +101,8 @@ public class NbtSchematic implements Schematic {
         CompoundTag properties = getBlockProperties(block) == null ? new CompoundTag() : getBlockProperties(block);
         try {
             propertiesString = SNBTUtil.toSNBT(properties);
-        } catch (IOException e1) {
-            e1.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return propertiesString;
     }
