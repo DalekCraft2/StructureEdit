@@ -97,7 +97,7 @@ public class Main {
                     try {
                         String path = argList.get(argList.indexOf("-path") + 1);
                         File file = new File(path);
-                        userInterface.choose(file);
+                        userInterface.open(file);
                     } catch (JSONException e) {
                         System.err.println("Error reading schematic: " + e.getMessage());
                     }

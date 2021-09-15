@@ -103,7 +103,7 @@ public class UserInterface extends JPanel {
                 if (chooser.getSelectedFile() != null) {
                     lastDirectory = chooser.getCurrentDirectory();
                     lastFileFilter = chooser.getFileFilter();
-                    choose(chooser.getSelectedFile());
+                    open(chooser.getSelectedFile());
                 }
             }
         });
@@ -244,7 +244,7 @@ public class UserInterface extends JPanel {
         });
     }
 
-    public void choose(File file) {
+    public void open(File file) {
         String path = file.getAbsolutePath();
         if (!path.isEmpty()) {
             try {
@@ -392,10 +392,12 @@ public class UserInterface extends JPanel {
             if (schematic instanceof NbtSchematic nbtSchematic && nbtSchematic.hasPaletteList()) {
                 blockId = nbtSchematic.getBlockId(block, palette);
                 properties = nbtSchematic.getBlockPropertiesAsString(block, palette);
-                nbtTextField.setText(nbtSchematic.getBlockSnbt((CompoundTag) block));
             } else {
                 blockId = schematic.getBlockId(block);
                 properties = schematic.getBlockPropertiesAsString(block);
+            }
+            if (schematic instanceof NbtSchematic nbtSchematic) {
+                nbtTextField.setText(nbtSchematic.getBlockSnbt((CompoundTag) block));
             }
             String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
             blockComboBox.setSelectedItem(blockName);
