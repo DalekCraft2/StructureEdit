@@ -8,10 +8,10 @@ import java.util.Set;
 
 public class ModelReader {
 
-    private static Path assets;
+    private static final Path ASSETS;
 
     static {
-        assets = Main.assets;
+        ASSETS = Main.assets;
     }
 
     // TODO Read from Minecraft assets folder to draw block models.

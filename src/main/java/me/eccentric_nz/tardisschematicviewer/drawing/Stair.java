@@ -39,7 +39,6 @@ public class Stair {
                 } // north
                 case "west" -> yaw = -90.0f;
             }
-            ;
         }
         if (properties.containsKey("half") && properties.getString("half").equals("top")) {
             roll = 180.0f;

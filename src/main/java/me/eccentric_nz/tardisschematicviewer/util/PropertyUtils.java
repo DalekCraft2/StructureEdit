@@ -1,12 +1,10 @@
 package me.eccentric_nz.tardisschematicviewer.util;
 
-import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.ByteTag;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.StringTag;
 import net.querz.nbt.tag.Tag;
 
-import java.io.IOException;
 import java.util.Map;
 
 public class PropertyUtils {
