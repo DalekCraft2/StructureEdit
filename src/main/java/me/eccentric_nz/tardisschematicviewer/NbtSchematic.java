@@ -87,6 +87,16 @@ public class NbtSchematic implements Schematic {
         setState((CompoundTag) block, state);
     }
 
+    public String getBlockId(Object block, ListTag<CompoundTag> palette) {
+        return getState((CompoundTag) block, palette).getString("Name");
+    }
+
+    public void setBlockId(Object block, String id, ListTag<CompoundTag> palette) {
+        CompoundTag state = getState((CompoundTag) block, palette);
+        state.putString("Name", id);
+        setState((CompoundTag) block, state, palette);
+    }
+
     @Override
     public CompoundTag getBlockProperties(Object block) {
         if (getState((CompoundTag) block).getCompoundTag("Properties") == null) {
@@ -98,6 +108,18 @@ public class NbtSchematic implements Schematic {
     @Override
     public void setBlockProperties(Object block, CompoundTag properties) {
         CompoundTag state = getState((CompoundTag) block);
+        state.put("Properties", properties);
+    }
+
+    public CompoundTag getBlockProperties(Object block, ListTag<CompoundTag> palette) {
+        if (getState((CompoundTag) block, palette).getCompoundTag("Properties") == null) {
+            return new CompoundTag();
+        }
+        return PropertyUtils.byteToString(getState((CompoundTag) block, palette).getCompoundTag("Properties"));
+    }
+
+    public void setBlockProperties(Object block, CompoundTag properties, ListTag<CompoundTag> palette) {
+        CompoundTag state = getState((CompoundTag) block, palette);
         state.put("Properties", properties);
     }
 
@@ -121,6 +143,26 @@ public class NbtSchematic implements Schematic {
         } catch (StringIndexOutOfBoundsException ignored) {
         }
         setBlockProperties(block, properties);
+    }
+
+    public String getBlockPropertiesAsString(Object block, ListTag<CompoundTag> palette) {
+        String propertiesString = "{}";
+        CompoundTag properties = getBlockProperties(block, palette) == null ? new CompoundTag() : getBlockProperties(block, palette);
+        try {
+            propertiesString = SNBTUtil.toSNBT(properties);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return propertiesString;
+    }
+
+    public void setBlockPropertiesAsString(Object block, String propertiesString, ListTag<CompoundTag> palette) throws IOException {
+        CompoundTag properties = new CompoundTag();
+        try {
+            properties = (CompoundTag) SNBTUtil.fromSNBT(propertiesString);
+        } catch (StringIndexOutOfBoundsException ignored) {
+        }
+        setBlockProperties(block, properties, palette);
     }
 
     public CompoundTag getBlockNbt(CompoundTag block) {
@@ -169,6 +211,14 @@ public class NbtSchematic implements Schematic {
 
     public void setState(CompoundTag block, CompoundTag state) {
         getPalette().set(block.getInt("state"), state);
+    }
+
+    public CompoundTag getState(CompoundTag block, ListTag<CompoundTag> palette) {
+        return palette.get(block.getInt("state"));
+    }
+
+    public void setState(CompoundTag block, CompoundTag state, ListTag<CompoundTag> palette) {
+        palette.set(block.getInt("state"), state);
     }
 
     public ListTag<CompoundTag> getBlockList() {

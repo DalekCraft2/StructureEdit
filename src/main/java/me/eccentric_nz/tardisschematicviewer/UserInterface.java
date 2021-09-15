@@ -152,8 +152,13 @@ public class UserInterface extends JPanel {
         blockComboBox.addItemListener(e -> {
             if (selected != null) {
                 int[] position = selected.getPosition();
+                Object block = schematic.getBlock(position[0], position[1], position[2]);
                 String blockId = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
-                schematic.setBlockId(schematic.getBlock(position[0], position[1], position[2]), blockId);
+                if (schematic instanceof NbtSchematic nbtSchematic && nbtSchematic.hasPaletteList()) {
+                    nbtSchematic.setBlockId(block, blockId, palette);
+                } else {
+                    schematic.setBlockId(block, blockId);
+                }
                 loadLayer();
             }
         });
@@ -162,9 +167,14 @@ public class UserInterface extends JPanel {
             public void insertUpdate(DocumentEvent e) {
                 if (selected != null) {
                     int[] position = selected.getPosition();
+                    Object block = schematic.getBlock(position[0], position[1], position[2]);
                     String propertiesString = propertiesTextField.getText().isEmpty() || propertiesTextField.getText().equals("[]") ? "" : propertiesTextField.getText();
                     try {
-                        schematic.setBlockPropertiesAsString(schematic.getBlock(position[0], position[1], position[2]), propertiesString);
+                        if (schematic instanceof NbtSchematic nbtSchematic && nbtSchematic.hasPaletteList()) {
+                            nbtSchematic.setBlockPropertiesAsString(block, propertiesString, palette);
+                        } else {
+                            schematic.setBlockPropertiesAsString(block, propertiesString);
+                        }
                         propertiesTextField.setForeground(Color.BLACK);
                     } catch (IOException e1) {
                         propertiesTextField.setForeground(Color.RED);
@@ -185,15 +195,17 @@ public class UserInterface extends JPanel {
         nbtTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                if (selected != null) {
-                    int[] position = selected.getPosition();
-                    try {
-                        ((NbtSchematic) schematic).setBlockSnbt((CompoundTag) schematic.getBlock(position[0], position[1], position[2]), nbtTextField.getText());
-                        nbtTextField.setForeground(Color.BLACK);
-                    } catch (IOException e1) {
-                        nbtTextField.setForeground(Color.RED);
+                if (schematic instanceof NbtSchematic nbtSchematic) {
+                    if (selected != null) {
+                        int[] position = selected.getPosition();
+                        try {
+                            nbtSchematic.setBlockSnbt(nbtSchematic.getBlock(position[0], position[1], position[2]), nbtTextField.getText());
+                            nbtTextField.setForeground(Color.BLACK);
+                        } catch (IOException e1) {
+                            nbtTextField.setForeground(Color.RED);
+                        }
+                        loadLayer();
                     }
-                    loadLayer();
                 }
             }
 
@@ -207,25 +219,29 @@ public class UserInterface extends JPanel {
             }
         });
         paletteComboBox.addItemListener(e -> {
-            palette = ((NbtSchematic) schematic).getPaletteListEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
+            if (schematic instanceof NbtSchematic nbtSchematic) {
+                if (nbtSchematic.hasPaletteList()) {
+                    palette = nbtSchematic.getPaletteListEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
+                } else {
+                    palette = nbtSchematic.getPalette();
+                }
+            }
             this.renderer.setPalette(palette);
+            updateSelected();
             loadLayer();
         });
         // TODO Blockbench-style palette editor, with a list of palettes and palette IDs?
         blockPaletteComboBox.addItemListener(e -> {
-            if (selected != null) {
-                int[] position = selected.getPosition();
-                ((NbtSchematic) schematic).setBlockState((CompoundTag) schematic.getBlock(position[0], position[1], position[2]), blockPaletteComboBox.getSelectedIndex());
-                loadLayer();
+            if (schematic instanceof NbtSchematic nbtSchematic) {
+                if (selected != null) {
+                    int[] position = selected.getPosition();
+                    CompoundTag block = nbtSchematic.getBlock(position[0], position[1], position[2]);
+                    nbtSchematic.setBlockState(block, blockPaletteComboBox.getSelectedIndex());
+                    updateSelected();
+                    loadLayer();
+                }
             }
         });
-    }
-
-    private void createUIComponents() {
-        panel = this;
-        blockComboBox = new JComboBox<>();
-        blockComboBox.setModel(new DefaultComboBoxModel<>(Block.strings()));
-        blockComboBox.setSelectedItem(null);
     }
 
     public void choose(File file) {
@@ -256,7 +272,7 @@ public class UserInterface extends JPanel {
                                 palettes[i] = i;
                             }
                             paletteComboBox.setModel(new DefaultComboBoxModel<>(palettes));
-                            paletteComboBox.setSelectedItem("0");
+                            paletteComboBox.setSelectedIndex(0);
                             palette = nbtSchematic.getPaletteListEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
                             renderer.setPalette(palette);
                             paletteLabel.setVisible(true);
@@ -307,7 +323,12 @@ public class UserInterface extends JPanel {
                 for (int z = 0; z < size[2]; z++) {
                     Object block = schematic.getBlock(x, currentLayer, z);
                     if (block != null) {
-                        String blockId = schematic.getBlockId(block);
+                        String blockId;
+                        if (schematic instanceof NbtSchematic nbtSchematic && nbtSchematic.hasPaletteList()) {
+                            blockId = nbtSchematic.getBlockId(block, palette);
+                        } else {
+                            blockId = schematic.getBlockId(block);
+                        }
                         String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
                         Block blockEnum = Block.valueOf(blockName);
                         SquareButton squareButton = new SquareButton(buttonSideLength, blockEnum, x, currentLayer, z);
@@ -331,21 +352,62 @@ public class UserInterface extends JPanel {
         selected = (SquareButton) e.getSource();
         int[] position = selected.getPosition();
         Object block = schematic.getBlock(position[0], position[1], position[2]);
+        String blockId;
+        String properties;
+        if (schematic instanceof NbtSchematic nbtSchematic && nbtSchematic.hasPaletteList()) {
+            blockId = nbtSchematic.getBlockId(block, palette);
+            properties = nbtSchematic.getBlockPropertiesAsString(block, palette);
+        } else {
+            blockId = schematic.getBlockId(block);
+            properties = schematic.getBlockPropertiesAsString(block);
+        }
+        String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
 
         blockPositionTextField.setEnabled(true);
         blockComboBox.setEnabled(true);
         propertiesTextField.setEnabled(true);
         if (schematic instanceof NbtSchematic nbtSchematic) {
+            String snbt = nbtSchematic.getBlockSnbt((CompoundTag) block);
+            int blockState = nbtSchematic.getBlockState((CompoundTag) block);
+
             nbtTextField.setEnabled(true);
             nbtTextField.setForeground(Color.BLACK);
-            nbtTextField.setText(nbtSchematic.getBlockSnbt((CompoundTag) block));
+            nbtTextField.setText(snbt);
             blockPaletteComboBox.setEnabled(true);
+            blockPaletteComboBox.setSelectedIndex(blockState);
         }
         selected.setBorder(new LineBorder(Color.RED));
-        blockComboBox.setSelectedItem(selected.getBlock().name());
-        propertiesTextField.setText(schematic.getBlockPropertiesAsString(block));
+        blockComboBox.setSelectedItem(blockName);
+        propertiesTextField.setText(properties);
         propertiesTextField.setForeground(Color.BLACK);
         blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
+    }
+
+    public void updateSelected() {
+        if (selected != null) {
+            int[] position = selected.getPosition();
+            Object block = schematic.getBlock(position[0], position[1], position[2]);
+            String blockId;
+            String properties;
+            if (schematic instanceof NbtSchematic nbtSchematic && nbtSchematic.hasPaletteList()) {
+                blockId = nbtSchematic.getBlockId(block, palette);
+                properties = nbtSchematic.getBlockPropertiesAsString(block, palette);
+                nbtTextField.setText(nbtSchematic.getBlockSnbt((CompoundTag) block));
+            } else {
+                blockId = schematic.getBlockId(block);
+                properties = schematic.getBlockPropertiesAsString(block);
+            }
+            String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+            blockComboBox.setSelectedItem(blockName);
+            propertiesTextField.setText(properties);
+        }
+    }
+
+    private void createUIComponents() {
+        panel = this;
+        blockComboBox = new JComboBox<>();
+        blockComboBox.setModel(new DefaultComboBoxModel<>(Block.strings()));
+        blockComboBox.setSelectedItem(null);
     }
 
     /**
