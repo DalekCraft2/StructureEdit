@@ -24,7 +24,6 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import me.eccentric_nz.tardisschematicviewer.Main;
-import me.eccentric_nz.tardisschematicviewer.drawing.*;
 import me.eccentric_nz.tardisschematicviewer.schematic.NbtSchematic;
 import me.eccentric_nz.tardisschematicviewer.schematic.Schematic;
 import net.querz.nbt.tag.CompoundTag;
@@ -119,7 +118,6 @@ public class SchematicRenderer extends GLJPanel {
             public void dispose(GLAutoDrawable drawable) {
             }
 
-            // TODO Make multiple palettes work again.
             @Override
             public void display(GLAutoDrawable drawable) {
                 if (schematic != null) {
