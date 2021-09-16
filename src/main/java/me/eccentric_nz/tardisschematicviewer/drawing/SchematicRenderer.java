@@ -127,6 +127,8 @@ public class SchematicRenderer extends GLJPanel {
                     gl.glTranslatef(x, y, z); // translate into the screen
                     gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
                     gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
+                    // draw schematic border
+                    SchematicBorder.draw(gl, sizeX, sizeY, sizeZ);
                     // draw a cube
                     float translateX = (float) (sizeX - 1) / 2.0f;
                     float translateY = (float) (sizeY - 1) / 2.0f;
