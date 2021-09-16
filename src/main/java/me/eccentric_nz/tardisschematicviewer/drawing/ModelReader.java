@@ -28,11 +28,16 @@ public class ModelReader {
 
     static {
         ASSETS = Main.assets;
+        for (Block block : Block.values()) {
+            String namespacedId = "minecraft:" + block.name().toLowerCase(Locale.ROOT);
+            JSONObject asset = getAssetFile(namespacedId, "blockstates");
+            BLOCK_STATES.put(namespacedId, asset);
+        }
     }
 
     // TODO Read from Minecraft assets folder to draw block models.
 
-    public JSONObject getAssetFile(String namespacedId, String folder) {
+    public static JSONObject getAssetFile(String namespacedId, String folder) {
         if (folder.equals("blockstates") && BLOCK_STATES.containsKey(namespacedId)) {
             return BLOCK_STATES.get(namespacedId);
         }
@@ -44,6 +49,7 @@ public class ModelReader {
         String namespace = split.length > 1 ? split[0] : "minecraft";
         String id = split.length > 1 ? split[1] : split[0];
         File file = new File(ASSETS.toString() + File.separator + namespace + File.separator + folder + File.separator + id + ".json");
+        System.out.println("Getting asset from " + file.getAbsolutePath());
         JSONObject assetJson = null;
         try (FileInputStream fileInputStream = new FileInputStream(file); InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
@@ -58,12 +64,12 @@ public class ModelReader {
                 MODELS.put(namespacedId, assetJson);
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.err.println(e.getMessage());
         }
         return assetJson;
     }
 
-    public void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties) {
+    public static void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties) {
         String blockName = namespacedId.split(":")[1].toUpperCase(Locale.ROOT);
         Block block = Block.valueOf(blockName);
         Color color = block.getColor();
@@ -87,44 +93,44 @@ public class ModelReader {
                     }
                 }
                 if (!contains) {
-                    break;
-                }
-                if (variants.get(variantName) instanceof JSONObject variant) {
-                    String modelPath = variant.getString("model");
-                    JSONObject model = getAssetFile(modelPath, "models");
-                    int x = 0;
-                    int y = 0;
-                    boolean uvlock = false;
-                    if (variant.has("x")) {
-                        x = variant.getInt("x");
+                } else {
+                    if (variants.get(variantName) instanceof JSONObject variant) {
+                        String modelPath = variant.getString("model");
+                        JSONObject model = getAssetFile(modelPath, "models");
+                        int x = 0;
+                        int y = 0;
+                        boolean uvlock = false;
+                        if (variant.has("x")) {
+                            x = variant.getInt("x");
+                        }
+                        if (variant.has("y")) {
+                            y = variant.getInt("y");
+                        }
+                        if (variant.has("uvlock")) {
+                            uvlock = variant.getBoolean("uvlock");
+                        }
+                        drawModel(gl, model, x, y, uvlock, color);
+                        return;
+                    } else if (variants.get(variantName) instanceof JSONArray variantArray) {
+                        // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
+                        JSONObject variant = variantArray.getJSONObject(0);
+                        String modelPath = variant.getString("model");
+                        JSONObject model = getAssetFile(modelPath, "models");
+                        int x = 0;
+                        int y = 0;
+                        boolean uvlock = false;
+                        if (variant.has("x")) {
+                            x = variant.getInt("x");
+                        }
+                        if (variant.has("y")) {
+                            y = variant.getInt("y");
+                        }
+                        if (variant.has("uvlock")) {
+                            uvlock = variant.getBoolean("uvlock");
+                        }
+                        drawModel(gl, model, x, y, uvlock, color);
+                        return;
                     }
-                    if (variant.has("y")) {
-                        y = variant.getInt("y");
-                    }
-                    if (variant.has("uvlock")) {
-                        uvlock = variant.getBoolean("uvlock");
-                    }
-                    drawModel(gl, model, x, y, uvlock, color);
-                    return;
-                } else if (variants.get(variantName) instanceof JSONArray variantArray) {
-                    // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
-                    JSONObject variant = variantArray.getJSONObject(0);
-                    String modelPath = variant.getString("model");
-                    JSONObject model = getAssetFile(modelPath, "models");
-                    int x = 0;
-                    int y = 0;
-                    boolean uvlock = false;
-                    if (variant.has("x")) {
-                        x = variant.getInt("x");
-                    }
-                    if (variant.has("y")) {
-                        y = variant.getInt("y");
-                    }
-                    if (variant.has("uvlock")) {
-                        uvlock = variant.getBoolean("uvlock");
-                    }
-                    drawModel(gl, model, x, y, uvlock, color);
-                    return;
                 }
             }
         } else if (blockState.has("multipart")) {
@@ -132,22 +138,15 @@ public class ModelReader {
         }
     }
 
-    public void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color color) {
+    // TODO Correct placements of blocks.
+    public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color color) {
         float[] components = color.getComponents(null);
 
-        if (components[3] == 0) {
-            components[3] = 255;
-            gl.glLineWidth(1.0f);
-            gl.glBegin(GL_LINES);
-        } else {
-            gl.glBegin(GL_QUADS);
-        }
+        gl.glRotatef(x, 1.0f, 0.0f, 0.0f);
+        gl.glRotatef(y, 0.0f, 1.0f, 0.0f);
 
         // Set color
         gl.glColor4f(components[0], components[1], components[2], components[3]);
-
-        gl.glRotatef(y, 0.0f, 1.0f, 0.0f);
-        gl.glRotatef(x, 1.0f, 0.0f, 0.0f);
 
         JSONArray elements = getElements(model);
         if (elements != null) {
@@ -179,14 +178,20 @@ public class ModelReader {
                     }
                 }
 
-                double fromX = from.getDouble(0) / 16.0;
-                double fromY = from.getDouble(1) / 16.0;
-                double fromZ = from.getDouble(2) / 16.0;
-                double toX = to.getDouble(0) / 16.0;
-                double toY = to.getDouble(1) / 16.0;
-                double toZ = to.getDouble(2) / 16.0;
+                double fromX = from.getDouble(0) / 8.0;
+                double fromY = from.getDouble(1) / 8.0;
+                double fromZ = from.getDouble(2) / 8.0;
+                double toX = to.getDouble(0) / 8.0;
+                double toY = to.getDouble(1) / 8.0;
+                double toZ = to.getDouble(2) / 8.0;
 
-                gl.glTranslated(fromX, fromY, fromZ);
+                if (components[3] == 0) {
+                    components[3] = 255;
+                    gl.glLineWidth(1.0f);
+                    gl.glBegin(GL_LINES);
+                } else {
+                    gl.glBegin(GL_QUADS);
+                }
 
                 JSONObject faces = jsonElement.getJSONObject("faces");
                 Set<String> faceSet = faces.keySet();
@@ -244,31 +249,18 @@ public class ModelReader {
                         }
                     }
                 }
-
-                gl.glTranslated(-fromX, -fromY, -fromZ);
-
-                if (axis != null) {
-                    switch (axis) {
-                        case "x":
-                            gl.glRotatef(-angle, 1.0f, 0.0f, 0.0f);
-                        case "y":
-                            gl.glRotatef(-angle, 0.0f, 1.0f, 0.0f);
-                        case "z":
-                            gl.glRotatef(-angle, 0.0f, 0.0f, 1.0f);
-                    }
-                }
+                gl.glEnd();
             }
         }
-        gl.glEnd();
     }
 
-    private JSONArray getElements(JSONObject model) {
+    private static JSONArray getElements(JSONObject model) {
         if (model.has("elements")) {
             return model.getJSONArray("elements");
         } else if (model.has("parent")) {
             return getElements(getAssetFile(model.getString("parent"), "models"));
         } else {
-            return null;
+            return new JSONArray();
         }
     }
 }
