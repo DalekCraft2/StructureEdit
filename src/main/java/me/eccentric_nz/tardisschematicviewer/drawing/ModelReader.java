@@ -142,9 +142,6 @@ public class ModelReader {
     public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color color) {
         float[] components = color.getComponents(null);
 
-        gl.glRotatef(x, 1.0f, 0.0f, 0.0f);
-        gl.glRotatef(y, 0.0f, 1.0f, 0.0f);
-
         // Set color
         gl.glColor4f(components[0], components[1], components[2], components[3]);
 
@@ -167,23 +164,52 @@ public class ModelReader {
                 }
                 boolean shade = !jsonElement.has("shade") || jsonElement.getBoolean("shade");
 
+                double fromX = from.getDouble(0) / 16.0;
+                double fromY = from.getDouble(1) / 16.0;
+                double fromZ = from.getDouble(2) / 16.0;
+                double toX = to.getDouble(0) / 16.0;
+                double toY = to.getDouble(1) / 16.0;
+                double toZ = to.getDouble(2) / 16.0;
+
+                double sizeX = toX - fromX;
+                double sizeY = toY - fromY;
+                double sizeZ = toZ - fromZ;
+
+                double translateX = 0.0;
+                double translateY = 0.0;
+                double translateZ = 0.0;
+
+                if (fromX + sizeX / 2.0 < 8.0) {
+                    translateX = fromX + sizeX / 2.0;
+                } else if (fromX + sizeX / 2.0 > 8.0) {
+                    translateX = fromX + sizeX / 2.0;
+                }
+                if (fromY + sizeY / 2.0  < 8.0) {
+                    translateY = fromY + sizeY / 2.0;
+                } else if (fromY + sizeY / 2.0 > 8.0) {
+                    translateY = fromY + sizeY / 2.0;
+                }
+                if (fromZ + sizeZ / 2.0 < 8.0) {
+                    translateZ = fromZ + sizeZ / 2.0;
+                } else if (fromZ + sizeZ / 2.0 > 8.0) {
+                    translateZ = fromZ + sizeZ / 2.0;
+                }
+
+                // gl.glTranslated(translateX, translateY, translateZ);
+
                 if (axis != null) {
                     switch (axis) {
                         case "x":
-                            gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
+                            // gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
                         case "y":
-                            gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
+                            // gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
                         case "z":
-                            gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+                            // gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
                     }
                 }
 
-                double fromX = from.getDouble(0) / 8.0;
-                double fromY = from.getDouble(1) / 8.0;
-                double fromZ = from.getDouble(2) / 8.0;
-                double toX = to.getDouble(0) / 8.0;
-                double toY = to.getDouble(1) / 8.0;
-                double toZ = to.getDouble(2) / 8.0;
+                //gl.glRotatef(x, 1.0f, 0.0f, 0.0f);
+                //gl.glRotatef(-y, 0.0f, 1.0f, 0.0f);
 
                 if (components[3] == 0) {
                     components[3] = 255;
@@ -207,45 +233,45 @@ public class ModelReader {
                     switch (faceName) {
                         case "up" -> {
                             gl.glNormal3d(0.0f, 1.0f, 0.0f);
-                            gl.glVertex3d(fromX, toY, fromZ);
-                            gl.glVertex3d(fromX, toY, toZ);
-                            gl.glVertex3d(toX, toY, toZ);
-                            gl.glVertex3d(toX, toY, fromZ);
+                            gl.glVertex3d(-sizeX, sizeY, -sizeZ);
+                            gl.glVertex3d(-sizeX, sizeY, sizeZ);
+                            gl.glVertex3d(sizeX, sizeY, sizeZ);
+                            gl.glVertex3d(sizeX, sizeY, -sizeZ);
                         }
                         case "down" -> {
                             gl.glNormal3d(0.0f, -1.0f, 0.0f);
-                            gl.glVertex3d(fromX, fromY, fromZ);
-                            gl.glVertex3d(toX, fromY, fromZ);
-                            gl.glVertex3d(toX, fromY, toZ);
-                            gl.glVertex3d(fromX, fromY, toZ);
+                            gl.glVertex3d(-sizeX, -sizeY, -sizeZ);
+                            gl.glVertex3d(sizeX, -sizeY, -sizeZ);
+                            gl.glVertex3d(sizeX, -sizeY, sizeZ);
+                            gl.glVertex3d(-sizeX, -sizeY, sizeZ);
                         }
                         case "north" -> {
                             gl.glNormal3d(0.0f, 0.0f, -1.0f);
-                            gl.glVertex3d(fromX, fromY, fromZ);
-                            gl.glVertex3d(fromX, toY, fromZ);
-                            gl.glVertex3d(toX, toY, fromZ);
-                            gl.glVertex3d(toX, fromY, fromZ);
+                            gl.glVertex3d(-sizeX, -sizeY, -sizeZ);
+                            gl.glVertex3d(-sizeX, sizeY, -sizeZ);
+                            gl.glVertex3d(sizeX, sizeY, -sizeZ);
+                            gl.glVertex3d(sizeX, -sizeY, -sizeZ);
                         }
                         case "south" -> {
                             gl.glNormal3d(0.0f, 0.0f, 1.0f);
-                            gl.glVertex3d(fromX, fromY, toZ); // bottom-left of the quad
-                            gl.glVertex3d(toX, fromY, toZ); // bottom-right of the quad
-                            gl.glVertex3d(toX, toY, toZ); // top-right of the quad
-                            gl.glVertex3d(fromX, toY, toZ); // top-left of the quad
+                            gl.glVertex3d(-sizeX, -sizeY, sizeZ); // botsizem-left of the quad
+                            gl.glVertex3d(sizeX, -sizeY, sizeZ); // botsizem-right of the quad
+                            gl.glVertex3d(sizeX, sizeY, sizeZ); // sizep-right of the quad
+                            gl.glVertex3d(-sizeX, sizeY, sizeZ); // sizep-left of the quad
                         }
                         case "west" -> {
                             gl.glNormal3d(-1.0f, 0.0f, 0.0f);
-                            gl.glVertex3d(fromX, fromY, fromZ);
-                            gl.glVertex3d(fromX, fromY, toZ);
-                            gl.glVertex3d(fromX, toY, toZ);
-                            gl.glVertex3d(fromX, toY, fromZ);
+                            gl.glVertex3d(-sizeX, -sizeY, -sizeZ);
+                            gl.glVertex3d(-sizeX, -sizeY, sizeZ);
+                            gl.glVertex3d(-sizeX, sizeY, sizeZ);
+                            gl.glVertex3d(-sizeX, sizeY, -sizeZ);
                         }
                         case "east" -> {
                             gl.glNormal3d(1.0f, 0.0f, 0.0f);
-                            gl.glVertex3d(toX, fromY, fromZ);
-                            gl.glVertex3d(toX, toY, fromZ);
-                            gl.glVertex3d(toX, toY, toZ);
-                            gl.glVertex3d(toX, fromY, toZ);
+                            gl.glVertex3d(sizeX, -sizeY, -sizeZ);
+                            gl.glVertex3d(sizeX, sizeY, -sizeZ);
+                            gl.glVertex3d(sizeX, sizeY, sizeZ);
+                            gl.glVertex3d(sizeX, -sizeY, sizeZ);
                         }
                     }
                 }
