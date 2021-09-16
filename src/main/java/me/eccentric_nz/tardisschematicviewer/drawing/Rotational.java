@@ -16,17 +16,19 @@
  */
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
-import com.jogamp.opengl.GL4bc;
 import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
+
+import static org.lwjgl.opengl.GL46.glRotatef;
+import static org.lwjgl.opengl.GL46.glTranslatef;
 
 /**
  * @author eccentric_nz
  */
 public class Rotational {
 
-    public static void draw(GL4bc gl, Color color, float sizeX, float sizeY, float sizeZ, CompoundTag properties) {
+    public static void draw(Color color, float sizeX, float sizeY, float sizeZ, CompoundTag properties) {
 
         // rotate if necessary
         float yaw = 180.0f;
@@ -43,10 +45,10 @@ public class Rotational {
             int rotationInt = properties.getInt("rotation");
             yaw = rotationInt * 22.5f;
         }
-        gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f);
+        glRotatef(yaw, 0.0f, 1.0f, 0.0f);
 
-        gl.glTranslatef(0.0f, sizeY - 1.0f, 0.0f);
+        glTranslatef(0.0f, sizeY - 1.0f, 0.0f);
 
-        Cube.draw(gl, color, sizeX, sizeY, sizeZ);
+        Cube.draw(color, sizeX, sizeY, sizeZ);
     }
 }

@@ -16,11 +16,9 @@
  */
 package me.eccentric_nz.tardisschematicviewer;
 
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.util.FPSAnimator;
 import me.eccentric_nz.tardisschematicviewer.drawing.SchematicRenderer;
 import org.json.JSONException;
+import org.lwjgl.opengl.awt.GLData;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -38,53 +36,51 @@ public class Main {
     public static final int FRAME_WIDTH = 1024;
     public static final int FRAME_HEIGHT = 600;
     public static Path assets = null;
+    public static JFrame frame;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            GLProfile profile = GLProfile.getDefault();
-            GLCapabilities capabilities = new GLCapabilities(profile);
-            SchematicRenderer renderer = new SchematicRenderer(capabilities);
-            renderer.setBackground(Color.GRAY);
-            JFrame frame = new JFrame();
+            SchematicRenderer renderer = new SchematicRenderer();
             UserInterface userInterface = new UserInterface(renderer);
             userInterface.setSize(1024, 85);
-            frame.getContentPane().add(userInterface, BorderLayout.PAGE_START);
-            frame.setTitle("TARDIS Schematic Viewer");
+            frame = new JFrame("TARDIS Schematic Viewer");
+            frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+            frame.setLayout(new BorderLayout());
+            GLData data = new GLData();
+            data.majorVersion = 4;
+            data.minorVersion = 6;
+            data.profile = GLData.Profile.CORE;
+            data.samples = 4;
             try {
                 frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")));
             } catch (IOException e) {
                 e.printStackTrace();
             }
             frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+            frame.getContentPane().add(userInterface, BorderLayout.PAGE_START);
             frame.getContentPane().add(renderer, BorderLayout.CENTER);
             frame.setVisible(true);
-            FPSAnimator animator = new FPSAnimator(renderer, 30, true);
 
-            // by default, an AWT Frame doesn't do anything when you click
-            // the close button; this bit of code will terminate the program when
-            // the window is asked to close
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-
                     // Use a dedicated thread to run the stop() to ensure that the
                     // animator stops before program exits.
+                    // TODO ^^^ Make that happen.
                     new Thread(() -> {
-                        if (animator.isStarted()) {
-                            animator.stop();
-                        }
+                        renderer.disposeCanvas();
                         frame.dispose();
                         System.exit(0);
                     }).start();
                 }
             });
+
             renderer.setFocusable(true);
             renderer.requestFocus();
-            renderer.setVisible(true);
-            animator.start();
+            renderer.setVisible(true); // TODO Get anything to render. At all.
 
             ArrayList<String> argList = new ArrayList<>(List.of(args));
             if (argList.contains("-assets")) {

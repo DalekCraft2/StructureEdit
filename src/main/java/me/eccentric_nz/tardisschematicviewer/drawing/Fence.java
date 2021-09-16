@@ -16,42 +16,43 @@
  */
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
-import com.jogamp.opengl.GL4bc;
 import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;
+
+import static org.lwjgl.opengl.GL46.glTranslatef;
 
 /**
  * @author eccentric_nz
  */
 public class Fence {
 
-    public static void draw(GL4bc gl, Color color, float thickness, float sizeX, float sizeY, float sizeZ, CompoundTag properties) {
+    public static void draw(Color color, float thickness, float sizeX, float sizeY, float sizeZ, CompoundTag properties) {
 
-        gl.glTranslatef(0.0f, sizeY - 1.0f, 0.0f);
+        glTranslatef(0.0f, sizeY - 1.0f, 0.0f);
 
-        Cube.draw(gl, color, thickness, sizeY, thickness);
+        Cube.draw(color, thickness, sizeY, thickness);
 
         if (properties.containsKey("south") && properties.getString("south").equals("true")) {
             // TODO Figure out the actual equation for this instead of using 2.5f.
-            gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
-            Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
-            gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
+            glTranslatef(0.0f, 0.0f, thickness * 2.5f);
+            Cube.draw(color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
+            glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
         }
         if (properties.containsKey("east") && properties.getString("east").equals("true")) {
-            gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
-            Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
-            gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
+            glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
+            Cube.draw(color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
+            glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
         }
         if (properties.containsKey("north") && properties.getString("north").equals("true")) {
-            gl.glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
-            Cube.draw(gl, color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
-            gl.glTranslatef(0.0f, 0.0f, thickness * 2.5f);
+            glTranslatef(0.0f, 0.0f, -thickness * 2.5f);
+            Cube.draw(color, thickness, sizeY * 0.8f, (sizeZ - thickness) / 2.0f);
+            glTranslatef(0.0f, 0.0f, thickness * 2.5f);
         }
         if (properties.containsKey("west") && properties.getString("west").equals("true")) {
-            gl.glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
-            Cube.draw(gl, color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
-            gl.glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
+            glTranslatef(-thickness * 2.5f, 0.0f, 0.0f);
+            Cube.draw(color, (sizeX - thickness) / 2.0f, sizeY * 0.8f, thickness);
+            glTranslatef(thickness * 2.5f, 0.0f, 0.0f);
         }
     }
 }

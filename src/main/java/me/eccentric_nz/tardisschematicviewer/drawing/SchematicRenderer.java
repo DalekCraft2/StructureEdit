@@ -16,19 +16,13 @@
  */
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
-import com.jogamp.opengl.GL4bc;
-import com.jogamp.opengl.GLAutoDrawable;
-import com.jogamp.opengl.GLCapabilitiesImmutable;
-import com.jogamp.opengl.GLEventListener;
-import com.jogamp.opengl.awt.GLJPanel;
-import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
-import com.jogamp.opengl.glu.GLU;
 import me.eccentric_nz.tardisschematicviewer.Main;
 import me.eccentric_nz.tardisschematicviewer.schematic.NbtSchematic;
 import me.eccentric_nz.tardisschematicviewer.schematic.Schematic;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
 import org.json.JSONException;
+import org.lwjgl.opengl.awt.AWTGLCanvas;
 
 import java.awt.*;
 import java.awt.event.KeyAdapter;
@@ -38,14 +32,13 @@ import java.awt.event.MouseEvent;
 import java.io.IOException;
 import java.util.Locale;
 
-import static com.jogamp.opengl.GL.*;
-import static com.jogamp.opengl.GL2ES1.GL_PERSPECTIVE_CORRECTION_HINT;
-import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
+import static org.lwjgl.opengl.GL.createCapabilities;
+import static org.lwjgl.opengl.GL46.*;
 
 /**
  * @author eccentric_nz
  */
-public class SchematicRenderer extends GLJPanel {
+public class SchematicRenderer extends AWTGLCanvas { // TODO Possibly switch to GLFW, or find a way to render this inside the JFrame.
 
     private static final float CUBE_TRANSLATION_FACTOR = 2.0f;
     /**
@@ -56,10 +49,6 @@ public class SchematicRenderer extends GLJPanel {
      * Rotational angle for y-axis in degrees.
      **/
     private static float yaw = 45.0f;
-    /**
-     * The GL Utility.
-     */
-    private GLU glu;
     /**
      * X location.
      */
@@ -79,173 +68,7 @@ public class SchematicRenderer extends GLJPanel {
     private ListTag<CompoundTag> palette;
     private String path;
 
-    public SchematicRenderer(GLCapabilitiesImmutable userCapsRequest) {
-        super(userCapsRequest);
-
-        addGLEventListener(new GLEventListener() {
-            @Override
-            public void init(GLAutoDrawable drawable) {
-                GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
-                glu = new GLU(); // get GL Utilities
-                gl.glClearColor(0.8f, 0.8f, 0.8f, 0.0f); // set background (grey) color
-                gl.glClearDepth(1.0f); // set clear depth value to farthest
-                gl.glEnable(GL_DEPTH_TEST); // enables depth testing
-                gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
-                gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
-                gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
-                drawable.getGL().setSwapInterval(1);
-                // Set up the lighting for Light-1
-                // Ambient light does not come from a particular direction. Need some ambient
-                // light to light up the scene. Ambient's value in RGBA
-                float[] lightAmbientValue = {0.1f, 0.1f, 0.1f, 1.0f};
-                // Diffuse light comes from a particular location. Diffuse's value in RGBA
-                float[] lightDiffuseValue = {0.75f, 0.75f, 0.75f, 1.0f};
-                // Diffuse light location xyz (in front of the screen).
-                float[] lightDiffusePosition = {8.0f, 0.0f, 8.0f, 1.0f};
-
-                gl.glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbientValue, 0);
-                gl.glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuseValue, 0);
-                gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
-                gl.glEnable(GL_LIGHTING); // enable lighting
-                gl.glEnable(GL_LIGHT1); // Enable Light-1
-                gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
-
-                gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                gl.glEnable(GL_BLEND);
-            }
-
-            @Override
-            public void dispose(GLAutoDrawable drawable) {
-            }
-
-            @Override
-            public void display(GLAutoDrawable drawable) {
-                if (schematic != null) {
-                    GL4bc gl = drawable.getGL().getGL4bc();
-                    gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                    gl.glLoadIdentity(); // reset the model-view matrix
-                    gl.glTranslatef(x, y, z); // translate into the screen
-                    gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
-                    gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
-                    // draw schematic border
-                    SchematicBorder.draw(gl, sizeX, sizeY, sizeZ);
-                    // draw a cube
-                    float translateX = (float) (sizeX - 1) / 2.0f;
-                    float translateY = (float) (sizeY - 1) / 2.0f;
-                    float translateZ = (float) (sizeZ - 1) / 2.0f;
-                    for (int x = 0; x < sizeX; x++) {
-                        for (int y = 0; y < renderedHeight; y++) {
-                            for (int z = 0; z < sizeZ; z++) {
-                                Object block = schematic.getBlock(x, y, z);
-                                if (block != null) {
-                                    String blockId;
-                                    CompoundTag properties;
-                                    if (schematic instanceof NbtSchematic nbtSchematic && nbtSchematic.hasPaletteList()) {
-                                        blockId = nbtSchematic.getBlockId(block, palette);
-                                        properties = nbtSchematic.getBlockProperties(block, palette);
-                                    } else {
-                                        blockId = schematic.getBlockId(block);
-                                        properties = schematic.getBlockProperties(block);
-                                    }
-                                    String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-                                    Block blockEnum = Block.valueOf(blockName);
-                                    gl.glPushMatrix();
-
-                                    // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
-                                    gl.glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
-                                    Color color = blockEnum.getColor();
-                                    switch (blockEnum.getBlockShape()) {
-                                        case CUBE:
-                                            Cube.draw(gl, color, 1.0f, 1.0f, 1.0f);
-                                            break;
-                                        case FENCE:
-                                            Fence.draw(gl, color, 0.25f, 1.0f, 1.0f, 1.0f, properties);
-                                            break;
-                                        case FENCE_GATE:
-                                            Rotational.draw(gl, color, 1.0f, 0.7f, 0.125f, properties);
-                                            break;
-                                        case FLAT:
-                                            if (blockEnum.equals(Block.REDSTONE_WIRE)) {
-                                                Redstone.draw(gl, color, 0.25f, 1.0f, 0.125f, 1.0f, properties);
-                                            } else if (blockEnum.equals(Block.TRIPWIRE)) {
-                                                Pane.draw(gl, color, 0.125f, 1.0f, 0.125f, 1.0f, properties);
-                                            } else {
-                                                Slab.draw(gl, color, 1.0f, 0.2f, 1.0f, properties);
-                                            }
-                                            break;
-                                        case PANE:
-                                            Pane.draw(gl, color, 0.125f, 1.0f, 1.0f, 1.0f, properties);
-                                            break;
-                                        case PLANT: {
-                                            float thickness;
-                                            float sizeY;
-                                            switch (blockEnum) {
-                                                case BROWN_MUSHROOM, RED_MUSHROOM, CARROTS, DEAD_BUSH, GRASS, NETHER_WART, POTATOES -> {
-                                                    thickness = 0.125f;
-                                                    sizeY = 0.5f;
-                                                }
-                                                case WHEAT, POPPY, DANDELION -> {
-                                                    thickness = 0.125f;
-                                                    sizeY = 0.8f;
-                                                }
-                                                default -> {
-                                                    thickness = 0.25f;
-                                                    sizeY = 1.0f;
-                                                }
-                                            }
-                                            Plant.draw(gl, color, thickness, 1.0f, sizeY, 1.0f);
-                                            break;
-                                        }
-                                        case SLAB:
-                                            Slab.draw(gl, color, 1.0f, 0.5f, 1.0f, properties);
-                                            break;
-                                        case SMALL:
-                                            Cube.draw(gl, color, 0.5f, 0.5f, 0.5f);
-                                            break;
-                                        case STAIR:
-                                            Stair.draw(gl, color, 1.0f, 1.0f, 1.0f, properties);
-                                            break;
-                                        case STICK:
-                                            Cube.draw(gl, color, 0.25f, 0.9f, 0.25f);
-                                            break;
-                                        case THIN:
-                                            Rotational.draw(gl, color, 1.0f, 1.0f, 0.125f, properties);
-                                            break;
-                                        case WALL:
-                                            Wall.draw(gl, color, 0.5f, 1.0f, 1.0f, 1.0f, properties);
-                                            break;
-                                        case WALL_STICK:
-                                            WallStick.draw(gl, color, 0.25f, 0.9f, 0.25f, properties);
-                                            break;
-                                        case VOID:
-                                            break;
-                                    }
-                                    gl.glPopMatrix();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
-                GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
-                if (height == 0) {
-                    height = 1; // prevent divide by zero
-                }
-                float aspect = (float) width / height;
-                // Set the view port (display area) to cover the entire window
-                gl.glViewport(0, 0, width, height);
-                // Setup perspective projection, with aspect ratio matches viewport
-                gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION); // choose projection matrix
-                gl.glLoadIdentity(); // reset projection matrix
-                glu.gluPerspective(45.0, aspect, 2.0, 1000.0); // fovy, aspect, zNear, zFar
-                // Enable the model-view transform
-                gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
-                gl.glLoadIdentity(); // reset
-            }
-        });
+    public SchematicRenderer() {
 
         addKeyListener(new KeyAdapter() {
             @Override
@@ -313,6 +136,174 @@ public class SchematicRenderer extends GLJPanel {
                 requestFocus();
             }
         });
+    }
+
+    public void initGL() {
+        // This line is critical for LWJGL's interoperation with GLFW's
+        // OpenGL context, or any context that is managed externally.
+        // LWJGL detects the context that is current in the current thread,
+        // creates the GLCapabilities instance and makes the OpenGL
+        // bindings available for use.
+        createCapabilities();
+
+        glClearColor(0.8f, 0.8f, 0.8f, 0.0f); // set background color to gray
+        glClearDepth(1.0f); // set clear depth value to farthest
+        glEnable(GL_DEPTH_TEST); // enables depth testing
+        glDepthFunc(GL_LEQUAL); // the type of depth test to do
+        glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
+        glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
+        // Set up the lighting for Light-1
+        // Ambient light does not come from a particular direction. Need some ambient
+        // light to light up the scene. Ambient's value in RGBA
+        float[] lightAmbientValue = {0.1f, 0.1f, 0.1f, 1.0f};
+        // Diffuse light comes from a particular location. Diffuse's value in RGBA
+        float[] lightDiffuseValue = {0.75f, 0.75f, 0.75f, 1.0f};
+        // Diffuse light location xyz (in front of the screen).
+        float[] lightDiffusePosition = {8.0f, 0.0f, 8.0f, 1.0f};
+
+        glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbientValue);
+        glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuseValue);
+        glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition);
+        glEnable(GL_LIGHTING); // enable lighting
+        glEnable(GL_LIGHT1); // Enable Light-1
+        glEnable(GL_COLOR_MATERIAL); // allow color on faces
+
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        glEnable(GL_BLEND);
+
+        int width = getWidth();
+        int height = getHeight();
+
+        if (height == 0) {
+            height = 1; // prevent divide by zero
+        }
+        float aspect = (float) width / height;
+        // Set the view port (display area) to cover the entire window
+        glViewport(0, 0, width, height);
+        // Setup perspective projection, with aspect ratio matches viewport
+        glMatrixMode(GL_PROJECTION); // choose projection matrix
+        glLoadIdentity(); // reset projection matrix
+        gluPerspective(45.0, aspect, 2.0, 1000.0); // fovy, aspect, zNear, zFar
+        // Enable the model-view transform
+        glMatrixMode(GL_MODELVIEW);
+        glLoadIdentity(); // reset
+    }
+
+    public static void gluPerspective(double fovy, double aspect, double near, double far) {
+        double bottom = -near * Math.tan(fovy / 2);
+        double top = -bottom;
+        double left = aspect * bottom;
+        double right = -left;
+        glFrustum(left, right, bottom, top, near, far);
+    }
+
+    public void paintGL() {
+
+        if (schematic != null) {
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // clear the framebuffer
+            glLoadIdentity(); // reset the model-view matrix
+            glTranslatef(x, y, z); // translate into the screen
+            glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
+            glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
+            // draw schematic border
+            SchematicBorder.draw(sizeX, sizeY, sizeZ);
+            // draw a cube
+            float translateX = (float) (sizeX - 1) / 2.0f;
+            float translateY = (float) (sizeY - 1) / 2.0f;
+            float translateZ = (float) (sizeZ - 1) / 2.0f;
+            for (int x = 0; x < sizeX; x++) {
+                for (int y = 0; y < renderedHeight; y++) {
+                    for (int z = 0; z < sizeZ; z++) {
+                        Object block = schematic.getBlock(x, y, z);
+                        if (block != null) {
+                            String blockId;
+                            CompoundTag properties;
+                            if (schematic instanceof NbtSchematic nbtSchematic && nbtSchematic.hasPaletteList()) {
+                                blockId = nbtSchematic.getBlockId(block, palette);
+                                properties = nbtSchematic.getBlockProperties(block, palette);
+                            } else {
+                                blockId = schematic.getBlockId(block);
+                                properties = schematic.getBlockProperties(block);
+                            }
+                            String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+                            Block blockEnum = Block.valueOf(blockName);
+                            glPushMatrix();
+
+                            // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
+                            glTranslatef((x - translateX) * CUBE_TRANSLATION_FACTOR, (y - translateY) * CUBE_TRANSLATION_FACTOR, (z - translateZ) * CUBE_TRANSLATION_FACTOR);
+                            Color color = blockEnum.getColor();
+                            switch (blockEnum.getBlockShape()) {
+                                case CUBE:
+                                    Cube.draw(color, 1.0f, 1.0f, 1.0f);
+                                    break;
+                                case FENCE:
+                                    Fence.draw(color, 0.25f, 1.0f, 1.0f, 1.0f, properties);
+                                    break;
+                                case FENCE_GATE:
+                                    Rotational.draw(color, 1.0f, 0.7f, 0.125f, properties);
+                                    break;
+                                case FLAT:
+                                    if (blockEnum.equals(Block.REDSTONE_WIRE)) {
+                                        Redstone.draw(color, 0.25f, 1.0f, 0.125f, 1.0f, properties);
+                                    } else if (blockEnum.equals(Block.TRIPWIRE)) {
+                                        Pane.draw(color, 0.125f, 1.0f, 0.125f, 1.0f, properties);
+                                    } else {
+                                        Slab.draw(color, 1.0f, 0.2f, 1.0f, properties);
+                                    }
+                                    break;
+                                case PANE:
+                                    Pane.draw(color, 0.125f, 1.0f, 1.0f, 1.0f, properties);
+                                    break;
+                                case PLANT: {
+                                    float thickness;
+                                    float sizeY;
+                                    switch (blockEnum) {
+                                        case BROWN_MUSHROOM, RED_MUSHROOM, CARROTS, DEAD_BUSH, GRASS, NETHER_WART, POTATOES -> {
+                                            thickness = 0.125f;
+                                            sizeY = 0.5f;
+                                        }
+                                        case WHEAT, POPPY, DANDELION -> {
+                                            thickness = 0.125f;
+                                            sizeY = 0.8f;
+                                        }
+                                        default -> {
+                                            thickness = 0.25f;
+                                            sizeY = 1.0f;
+                                        }
+                                    }
+                                    Plant.draw(color, thickness, 1.0f, sizeY, 1.0f);
+                                    break;
+                                }
+                                case SLAB:
+                                    Slab.draw(color, 1.0f, 0.5f, 1.0f, properties);
+                                    break;
+                                case SMALL:
+                                    Cube.draw(color, 0.5f, 0.5f, 0.5f);
+                                    break;
+                                case STAIR:
+                                    Stair.draw(color, 1.0f, 1.0f, 1.0f, properties);
+                                    break;
+                                case STICK:
+                                    Cube.draw(color, 0.25f, 0.9f, 0.25f);
+                                    break;
+                                case THIN:
+                                    Rotational.draw(color, 1.0f, 1.0f, 0.125f, properties);
+                                    break;
+                                case WALL:
+                                    Wall.draw(color, 0.5f, 1.0f, 1.0f, 1.0f, properties);
+                                    break;
+                                case WALL_STICK:
+                                    WallStick.draw(color, 0.25f, 0.9f, 0.25f, properties);
+                                    break;
+                                case VOID:
+                                    break;
+                            }
+                            glPopMatrix();
+                        }
+                    }
+                }
+            }
+        }
     }
 
     public int getRenderedHeight() {

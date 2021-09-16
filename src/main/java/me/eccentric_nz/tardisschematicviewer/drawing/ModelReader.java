@@ -1,6 +1,6 @@
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
-import com.jogamp.opengl.GL4bc;
+
 import me.eccentric_nz.tardisschematicviewer.Main;
 import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
@@ -17,8 +17,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
-import static com.jogamp.opengl.GL.GL_LINES;
-import static com.jogamp.opengl.GL2ES3.GL_QUADS;
+import static org.lwjgl.opengl.GL46.*;
 
 public class ModelReader {
 
@@ -69,7 +68,7 @@ public class ModelReader {
         return assetJson;
     }
 
-    public static void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties) {
+    public static void readBlockState(String namespacedId, CompoundTag properties) {
         String blockName = namespacedId.split(":")[1].toUpperCase(Locale.ROOT);
         Block block = Block.valueOf(blockName);
         Color color = block.getColor();
@@ -109,7 +108,7 @@ public class ModelReader {
                         if (variant.has("uvlock")) {
                             uvlock = variant.getBoolean("uvlock");
                         }
-                        drawModel(gl, model, x, y, uvlock, color);
+                        drawModel(model, x, y, uvlock, color);
                         return;
                     } else if (variants.get(variantName) instanceof JSONArray variantArray) {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
@@ -128,7 +127,7 @@ public class ModelReader {
                         if (variant.has("uvlock")) {
                             uvlock = variant.getBoolean("uvlock");
                         }
-                        drawModel(gl, model, x, y, uvlock, color);
+                        drawModel(model, x, y, uvlock, color);
                         return;
                     }
                 }
@@ -139,14 +138,14 @@ public class ModelReader {
     }
 
     // TODO Correct placements of blocks.
-    public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color color) {
+    public static void drawModel(JSONObject model, int x, int y, boolean uvlock, Color color) {
         float[] components = color.getComponents(null);
 
-        gl.glRotatef(x, 1.0f, 0.0f, 0.0f);
-        gl.glRotatef(y, 0.0f, 1.0f, 0.0f);
+        glRotatef(x, 1.0f, 0.0f, 0.0f);
+        glRotatef(y, 0.0f, 1.0f, 0.0f);
 
         // Set color
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
+        glColor4f(components[0], components[1], components[2], components[3]);
 
         JSONArray elements = getElements(model);
         if (elements != null) {
@@ -170,11 +169,11 @@ public class ModelReader {
                 if (axis != null) {
                     switch (axis) {
                         case "x":
-                            gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
+                            glRotatef(angle, 1.0f, 0.0f, 0.0f);
                         case "y":
-                            gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
+                            glRotatef(angle, 0.0f, 1.0f, 0.0f);
                         case "z":
-                            gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+                            glRotatef(angle, 0.0f, 0.0f, 1.0f);
                     }
                 }
 
@@ -187,10 +186,10 @@ public class ModelReader {
 
                 if (components[3] == 0) {
                     components[3] = 255;
-                    gl.glLineWidth(1.0f);
-                    gl.glBegin(GL_LINES);
+                    glLineWidth(1.0f);
+                    glBegin(GL_LINES);
                 } else {
-                    gl.glBegin(GL_QUADS);
+                    glBegin(GL_QUADS);
                 }
 
                 JSONObject faces = jsonElement.getJSONObject("faces");
@@ -206,50 +205,50 @@ public class ModelReader {
 
                     switch (faceName) {
                         case "up" -> {
-                            gl.glNormal3d(0.0f, 1.0f, 0.0f);
-                            gl.glVertex3d(fromX, toY, fromZ);
-                            gl.glVertex3d(fromX, toY, toZ);
-                            gl.glVertex3d(toX, toY, toZ);
-                            gl.glVertex3d(toX, toY, fromZ);
+                            glNormal3d(0.0f, 1.0f, 0.0f);
+                            glVertex3d(fromX, toY, fromZ);
+                            glVertex3d(fromX, toY, toZ);
+                            glVertex3d(toX, toY, toZ);
+                            glVertex3d(toX, toY, fromZ);
                         }
                         case "down" -> {
-                            gl.glNormal3d(0.0f, -1.0f, 0.0f);
-                            gl.glVertex3d(fromX, fromY, fromZ);
-                            gl.glVertex3d(toX, fromY, fromZ);
-                            gl.glVertex3d(toX, fromY, toZ);
-                            gl.glVertex3d(fromX, fromY, toZ);
+                            glNormal3d(0.0f, -1.0f, 0.0f);
+                            glVertex3d(fromX, fromY, fromZ);
+                            glVertex3d(toX, fromY, fromZ);
+                            glVertex3d(toX, fromY, toZ);
+                            glVertex3d(fromX, fromY, toZ);
                         }
                         case "north" -> {
-                            gl.glNormal3d(0.0f, 0.0f, -1.0f);
-                            gl.glVertex3d(fromX, fromY, fromZ);
-                            gl.glVertex3d(fromX, toY, fromZ);
-                            gl.glVertex3d(toX, toY, fromZ);
-                            gl.glVertex3d(toX, fromY, fromZ);
+                            glNormal3d(0.0f, 0.0f, -1.0f);
+                            glVertex3d(fromX, fromY, fromZ);
+                            glVertex3d(fromX, toY, fromZ);
+                            glVertex3d(toX, toY, fromZ);
+                            glVertex3d(toX, fromY, fromZ);
                         }
                         case "south" -> {
-                            gl.glNormal3d(0.0f, 0.0f, 1.0f);
-                            gl.glVertex3d(fromX, fromY, toZ); // bottom-left of the quad
-                            gl.glVertex3d(toX, fromY, toZ); // bottom-right of the quad
-                            gl.glVertex3d(toX, toY, toZ); // top-right of the quad
-                            gl.glVertex3d(fromX, toY, toZ); // top-left of the quad
+                            glNormal3d(0.0f, 0.0f, 1.0f);
+                            glVertex3d(fromX, fromY, toZ); // bottom-left of the quad
+                            glVertex3d(toX, fromY, toZ); // bottom-right of the quad
+                            glVertex3d(toX, toY, toZ); // top-right of the quad
+                            glVertex3d(fromX, toY, toZ); // top-left of the quad
                         }
                         case "west" -> {
-                            gl.glNormal3d(-1.0f, 0.0f, 0.0f);
-                            gl.glVertex3d(fromX, fromY, fromZ);
-                            gl.glVertex3d(fromX, fromY, toZ);
-                            gl.glVertex3d(fromX, toY, toZ);
-                            gl.glVertex3d(fromX, toY, fromZ);
+                            glNormal3d(-1.0f, 0.0f, 0.0f);
+                            glVertex3d(fromX, fromY, fromZ);
+                            glVertex3d(fromX, fromY, toZ);
+                            glVertex3d(fromX, toY, toZ);
+                            glVertex3d(fromX, toY, fromZ);
                         }
                         case "east" -> {
-                            gl.glNormal3d(1.0f, 0.0f, 0.0f);
-                            gl.glVertex3d(toX, fromY, fromZ);
-                            gl.glVertex3d(toX, toY, fromZ);
-                            gl.glVertex3d(toX, toY, toZ);
-                            gl.glVertex3d(toX, fromY, toZ);
+                            glNormal3d(1.0f, 0.0f, 0.0f);
+                            glVertex3d(toX, fromY, fromZ);
+                            glVertex3d(toX, toY, fromZ);
+                            glVertex3d(toX, toY, toZ);
+                            glVertex3d(toX, fromY, toZ);
                         }
                     }
                 }
-                gl.glEnd();
+                glEnd();
             }
         }
     }

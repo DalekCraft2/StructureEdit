@@ -16,23 +16,24 @@
  */
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
-import com.jogamp.opengl.GL4bc;
-
 import java.awt.*;
+
+import static org.lwjgl.opengl.GL46.glRotatef;
+import static org.lwjgl.opengl.GL46.glTranslatef;
 
 /**
  * @author eccentric_nz
  */
 public class Plant {
 
-    public static void draw(GL4bc gl, Color color, float thickness, float sizeX, float sizeY, float sizeZ) {
+    public static void draw(Color color, float thickness, float sizeX, float sizeY, float sizeZ) {
 
         // rotate 45 degrees
-        gl.glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
+        glRotatef(45.0f, 0.0f, 1.0f, 0.0f);
 
-        gl.glTranslatef(0.0f, sizeY - 1.0f, 0.0f);
+        glTranslatef(0.0f, sizeY - 1.0f, 0.0f);
 
-        Cube.draw(gl, color, thickness, sizeY, sizeZ);
-        Cube.draw(gl, color, sizeX, sizeY, thickness);
+        Cube.draw(color, thickness, sizeY, sizeZ);
+        Cube.draw(color, sizeX, sizeY, thickness);
     }
 }
