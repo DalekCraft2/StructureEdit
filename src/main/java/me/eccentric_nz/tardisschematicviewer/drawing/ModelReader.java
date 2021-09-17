@@ -27,6 +27,7 @@ public class ModelReader {
     private static final Map<String, JSONObject> BLOCK_STATES = new HashMap<>();
     private static final Map<String, JSONObject> MODELS = new HashMap<>();
 
+    // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
     static {
         ASSETS = Main.assets;
         for (Block block : Block.values()) {
@@ -193,6 +194,8 @@ public class ModelReader {
                 double toY = to.getDouble(1) / 16.0;
                 double toZ = to.getDouble(2) / 16.0;
 
+                // TODO Make these rotate about the specified origin. God help me.
+                // TODO If it is not related, find out why the tops of Lecterns are incorrectly angled.
                 if (axis != null) {
                     switch (axis) {
                         case "x":
