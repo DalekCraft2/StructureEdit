@@ -195,15 +195,11 @@ public class ModelReader {
                 double toZ = to.getDouble(2) / 16.0;
 
                 // TODO Make these rotate about the specified origin. God help me.
-                // TODO If it is not related, find out why the tops of Lecterns are incorrectly angled.
                 if (axis != null) {
                     switch (axis) {
-                        case "x":
-                            gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
-                        case "y":
-                            gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
-                        case "z":
-                            gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+                        case "x" -> gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
+                        case "y" -> gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
+                        case "z" -> gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
                     }
                 }
 
