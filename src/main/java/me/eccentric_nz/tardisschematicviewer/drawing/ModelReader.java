@@ -1,6 +1,8 @@
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
+import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureIO;
 import me.eccentric_nz.tardisschematicviewer.Main;
 import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
@@ -12,13 +14,11 @@ import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Set;
+import java.util.List;
+import java.util.*;
 
-import static com.jogamp.opengl.GL.GL_LINES;
-import static com.jogamp.opengl.GL2ES3.GL_QUADS;
+import static com.jogamp.opengl.GL4bc.GL_LINES;
+import static com.jogamp.opengl.GL4bc.GL_QUADS;
 import static me.eccentric_nz.tardisschematicviewer.drawing.SchematicRenderer.SCALE;
 
 public class ModelReader {
@@ -26,56 +26,120 @@ public class ModelReader {
     private static final Path ASSETS;
     private static final Map<String, JSONObject> BLOCK_STATES = new HashMap<>();
     private static final Map<String, JSONObject> MODELS = new HashMap<>();
+    private static final Map<String, Texture> TEXTURES = new HashMap<>();
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
     static {
         ASSETS = Main.assets;
         for (Block block : Block.values()) {
             String namespacedId = "minecraft:" + block.name().toLowerCase(Locale.ROOT);
-            JSONObject asset = getAssetFile(namespacedId, "blockstates");
-            BLOCK_STATES.put(namespacedId, asset);
+            JSONObject blockState = getBlockState(namespacedId);
+            BLOCK_STATES.put(namespacedId, blockState);
+        }
+        try {
+            BLOCK_STATES.put("custom:missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/custom/blockstates/missing.json")));
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+        try {
+            MODELS.put("custom:block/missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/custom/models/block/missing.json")));
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+        }
+        try {
+            TEXTURES.put("custom:missing", TextureIO.newTexture(Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png"), true, "png"));
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
         }
     }
 
     // TODO Read from Minecraft assets folder to draw block models.
 
-    public static JSONObject getAssetFile(String namespacedId, String folder) {
-        if (folder.equals("blockstates") && BLOCK_STATES.containsKey(namespacedId)) {
-            return BLOCK_STATES.get(namespacedId);
-        }
-        if (folder.equals("models") && MODELS.containsKey(namespacedId)) {
-            return MODELS.get(namespacedId);
-        }
-
+    public static File getAsset(String namespacedId, String folder, String extension) {
         String[] split = namespacedId.split(":");
         String namespace = split.length > 1 ? split[0] : "minecraft";
         String id = split.length > 1 ? split[1] : split[0];
-        File file = new File(ASSETS.toString() + File.separator + namespace + File.separator + folder + File.separator + id + ".json");
-        System.out.println("Getting asset from " + file.getAbsolutePath());
-        JSONObject assetJson = null;
-        try (FileInputStream fileInputStream = new FileInputStream(file); InputStreamReader inputStreamReader = new InputStreamReader(fileInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
+        File file = new File(ASSETS.toString() + File.separator + namespace + File.separator + folder + File.separator + id + "." + extension);
+        System.out.println("Getting asset from \"" + file.getAbsolutePath() + "\"");
+        return file;
+    }
+
+    public static JSONObject getBlockState(String namespacedId) {
+        if (BLOCK_STATES.containsKey(namespacedId)) {
+            return BLOCK_STATES.get(namespacedId);
+        }
+        JSONObject blockState;
+        try {
+            blockState = toJson(namespacedId, "blockstates", "json");
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            blockState = BLOCK_STATES.get("custom:missing");
+        }
+        BLOCK_STATES.put(namespacedId, blockState);
+        return blockState;
+    }
+
+    public static JSONObject getModel(String namespacedId) {
+        if (MODELS.containsKey(namespacedId)) {
+            return MODELS.get(namespacedId);
+        }
+        JSONObject model;
+        try {
+            model = toJson(namespacedId, "models", "json");
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            model = MODELS.get("custom:block/missing");
+        }
+        MODELS.put(namespacedId, model);
+        return model;
+    }
+
+    public static Texture getTexture(String namespacedId) {
+        if (TEXTURES.containsKey(namespacedId)) {
+            return TEXTURES.get(namespacedId);
+        }
+        Texture texture = null;
+        try (InputStream inputStream = new FileInputStream(getAsset(namespacedId, "textures", "png"))) {
+            texture = TextureIO.newTexture(inputStream, true, TextureIO.PNG);
+        } catch (IOException e) {
+            System.err.println(e.getMessage());
+            try (InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png")) {
+                texture = TextureIO.newTexture(inputStream, true, TextureIO.PNG);
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
+        }
+        TEXTURES.put(namespacedId, texture);
+        return texture;
+    }
+
+    public static JSONObject toJson(String namespacedId, String folder, String extension) throws IOException {
+        try (InputStream inputStream = new FileInputStream(getAsset(namespacedId, folder, extension)); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
             int length;
             while ((length = inputStreamReader.read(buffer)) > 0) {
                 stringWriter.write(buffer, 0, length);
             }
-            assetJson = new JSONObject(stringWriter.toString());
-            if (folder.equals("blockstates")) {
-                BLOCK_STATES.put(namespacedId, assetJson);
-            } else if (folder.equals("models")) {
-                MODELS.put(namespacedId, assetJson);
-            }
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
+            return new JSONObject(stringWriter.toString());
         }
-        return assetJson;
+    }
+
+    public static JSONObject toJson(InputStream inputStream) throws IOException {
+        try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
+            char[] buffer = new char[1024 * 16];
+            int length;
+            while ((length = inputStreamReader.read(buffer)) > 0) {
+                stringWriter.write(buffer, 0, length);
+            }
+            return new JSONObject(stringWriter.toString());
+        }
     }
 
     public static void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties) {
         String blockName = namespacedId.split(":")[1].toUpperCase(Locale.ROOT);
         Block block = Block.valueOf(blockName);
         Color color = block.getColor();
-        JSONObject blockState = getAssetFile(namespacedId, "blockstates");
+        JSONObject blockState = getBlockState(namespacedId);
         String propertiesString = "";
         try {
             propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace('{', '[').replace('}', ']').replace(':', '=');
@@ -94,11 +158,10 @@ public class ModelReader {
                         break;
                     }
                 }
-                if (!contains) {
-                } else {
+                if (contains) {
                     if (variants.get(variantName) instanceof JSONObject variant) {
                         String modelPath = variant.getString("model");
-                        JSONObject model = getAssetFile(modelPath, "models");
+                        JSONObject model = getModel(modelPath);
                         int x = 0;
                         int y = 0;
                         boolean uvlock = false;
@@ -117,7 +180,7 @@ public class ModelReader {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                         JSONObject variant = variantArray.getJSONObject(0);
                         String modelPath = variant.getString("model");
-                        JSONObject model = getAssetFile(modelPath, "models");
+                        JSONObject model = getModel(modelPath);
                         int x = 0;
                         int y = 0;
                         boolean uvlock = false;
@@ -136,7 +199,148 @@ public class ModelReader {
                 }
             }
         } else if (blockState.has("multipart")) {
-            // TODO Multipart models.
+            JSONArray multipart = blockState.getJSONArray("multipart");
+            for (Object partObject : multipart) {
+                JSONObject part = (JSONObject) partObject;
+                if (part.has("when")) {
+                    JSONObject when = part.getJSONObject("when");
+                    if (when.has("OR")) {
+                        JSONArray or = when.getJSONArray("OR");
+                        for (Object orEntry : or) {
+                            JSONObject jsonEntry = (JSONObject) orEntry;
+                            Set<String> keySet = jsonEntry.keySet();
+                            boolean contains = false;
+                            for (String state : keySet) {
+                                List<String> values = Arrays.asList(jsonEntry.getString(state).split("\\|"));
+                                if (values.contains(properties.getString("state"))) {
+                                    contains = true;
+                                    break;
+                                }
+                            }
+                            if (contains) {
+                                if (part.get("apply") instanceof JSONObject apply) {
+                                    String modelPath = apply.getString("model");
+                                    JSONObject model = getModel(modelPath);
+                                    int x = 0;
+                                    int y = 0;
+                                    boolean uvlock = false;
+                                    if (apply.has("x")) {
+                                        x = apply.getInt("x");
+                                    }
+                                    if (apply.has("y")) {
+                                        y = apply.getInt("y");
+                                    }
+                                    if (apply.has("uvlock")) {
+                                        uvlock = apply.getBoolean("uvlock");
+                                    }
+                                    drawModel(gl, model, x, y, uvlock, color);
+                                } else if (part.get("apply") instanceof JSONArray applyArray) {
+                                    // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
+                                    JSONObject apply = applyArray.getJSONObject(0);
+                                    String modelPath = apply.getString("model");
+                                    JSONObject model = getModel(modelPath);
+                                    int x = 0;
+                                    int y = 0;
+                                    boolean uvlock = false;
+                                    if (apply.has("x")) {
+                                        x = apply.getInt("x");
+                                    }
+                                    if (apply.has("y")) {
+                                        y = apply.getInt("y");
+                                    }
+                                    if (apply.has("uvlock")) {
+                                        uvlock = apply.getBoolean("uvlock");
+                                    }
+                                    drawModel(gl, model, x, y, uvlock, color);
+                                }
+                            }
+                        }
+                    } else {
+                        Set<String> keySet = when.keySet();
+                        boolean contains = false;
+                        for (String state : keySet) {
+                            List<String> values = Arrays.asList(when.getString(state).split("\\|"));
+                            if (values.contains(properties.getString("state"))) {
+                                contains = true;
+                                break;
+                            }
+                        }
+                        if (contains) {
+                            if (part.get("apply") instanceof JSONObject apply) {
+                                String modelPath = apply.getString("model");
+                                JSONObject model = getModel(modelPath);
+                                int x = 0;
+                                int y = 0;
+                                boolean uvlock = false;
+                                if (apply.has("x")) {
+                                    x = apply.getInt("x");
+                                }
+                                if (apply.has("y")) {
+                                    y = apply.getInt("y");
+                                }
+                                if (apply.has("uvlock")) {
+                                    uvlock = apply.getBoolean("uvlock");
+                                }
+                                drawModel(gl, model, x, y, uvlock, color);
+                            } else if (part.get("apply") instanceof JSONArray applyArray) {
+                                // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
+                                JSONObject apply = applyArray.getJSONObject(0);
+                                String modelPath = apply.getString("model");
+                                JSONObject model = getModel(modelPath);
+                                int x = 0;
+                                int y = 0;
+                                boolean uvlock = false;
+                                if (apply.has("x")) {
+                                    x = apply.getInt("x");
+                                }
+                                if (apply.has("y")) {
+                                    y = apply.getInt("y");
+                                }
+                                if (apply.has("uvlock")) {
+                                    uvlock = apply.getBoolean("uvlock");
+                                }
+                                drawModel(gl, model, x, y, uvlock, color);
+                            }
+                        }
+                    }
+                } else {
+                    if (part.get("apply") instanceof JSONObject apply) {
+                        String modelPath = apply.getString("model");
+                        JSONObject model = getModel(modelPath);
+                        int x = 0;
+                        int y = 0;
+                        boolean uvlock = false;
+                        if (apply.has("x")) {
+                            x = apply.getInt("x");
+                        }
+                        if (apply.has("y")) {
+                            y = apply.getInt("y");
+                        }
+                        if (apply.has("uvlock")) {
+                            uvlock = apply.getBoolean("uvlock");
+                        }
+                        drawModel(gl, model, x, y, uvlock, color);
+                    } else if (part.get("apply") instanceof JSONArray applyArray) {
+                        // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
+                        JSONObject apply = applyArray.getJSONObject(0);
+                        String modelPath = apply.getString("model");
+                        JSONObject model = getModel(modelPath);
+                        int x = 0;
+                        int y = 0;
+                        boolean uvlock = false;
+                        if (apply.has("x")) {
+                            x = apply.getInt("x");
+                        }
+                        if (apply.has("y")) {
+                            y = apply.getInt("y");
+                        }
+                        if (apply.has("uvlock")) {
+                            uvlock = apply.getBoolean("uvlock");
+                        }
+                        drawModel(gl, model, x, y, uvlock, color);
+                    }
+                }
+            }
         }
     }
 
@@ -165,6 +369,8 @@ public class ModelReader {
 
         // Set color
         gl.glColor4f(components[0], components[1], components[2], components[3]);
+
+        Map<String, String> textures = getTextures(model, new HashMap<>());
 
         JSONArray elements = getElements(model);
         if (elements != null) {
@@ -217,10 +423,19 @@ public class ModelReader {
                     JSONObject face = faces.getJSONObject(faceName);
 
                     JSONArray uv = face.has("uv") ? face.getJSONArray("uv") : null;
-                    String texture = face.has("texture") ? face.getString("texture") : null;
+                    String texture = face.has("texture") ? face.getString("texture").substring(1) : null;
                     String cullface = face.has("cullface") ? face.getString("cullface") : null;
                     int faceRotation = face.has("rotation") ? face.getInt("rotation") : 0;
                     int tintIndex = face.has("tintindex") ? face.getInt("tintindex") : -1;
+
+                    //Texture texture1 = null;
+                    if (textures.containsKey(texture)) {
+                        //texture1 = getTexture(textures.get(texture));
+                    } else {
+                        //texture1 = getTexture("custom:missing");
+                    }
+                    //texture1.enable(gl);
+                    //texture1.bind(gl);
 
                     switch (faceName) {
                         case "up" -> {
@@ -266,6 +481,7 @@ public class ModelReader {
                             gl.glVertex3d(toX, fromY, toZ);
                         }
                     }
+                    //texture1.disable(gl);
                 }
                 gl.glEnd();
                 gl.glPopMatrix();
@@ -277,9 +493,53 @@ public class ModelReader {
         if (model.has("elements")) {
             return model.getJSONArray("elements");
         } else if (model.has("parent")) {
-            return getElements(getAssetFile(model.getString("parent"), "models"));
+            return getElements(getModel(model.getString("parent")));
         } else {
-            return new JSONArray();
+            return null;
+        }
+    }
+
+    private static Map<String, String> getTextures(JSONObject model, Map<String, String> textures) {
+        if (model.has("textures")) {
+            JSONObject json = model.getJSONObject("textures");
+            Set<String> names = json.keySet();
+            for (String name : names) {
+                getTextureFromId(model, textures, name);
+            }
+        }
+        if (model.has("parent")) {
+            getTextures(getModel(model.getString("parent")), textures);
+        }
+        return textures;
+    }
+
+    private static void getTextureFromId(JSONObject model, Map<String, String> textures, String name) {
+        JSONObject parent = null;
+        if (model.has("parent")) {
+            parent = getModel(model.getString("parent"));
+        }
+        if (model.has("textures")) {
+            JSONObject texturesJson = model.getJSONObject("textures");
+            if (texturesJson.has(name)) {
+                String path = texturesJson.getString(name);
+                if (path.startsWith("#")) {
+                    String substring = path.substring(1);
+                    if (texturesJson.has(substring)) {
+                        getTextureFromId(model, textures, name);
+                    } else if (textures.containsKey(substring)) {
+                        textures.put(name, textures.get(substring));
+                    } else if (parent != null) {
+                        getTextureFromId(parent, textures, substring);
+                    } else {
+                        textures.put(substring, "custom:missing");
+                    }
+                } else if (!textures.containsKey(name) || textures.get(name).equals("custom:missing")) {
+                    textures.put(name, path);
+                }
+            }
+        }
+        if (parent != null) {
+            getTextureFromId(parent, textures, name);
         }
     }
 }

@@ -21,7 +21,6 @@ import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLCapabilitiesImmutable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.awt.GLJPanel;
-import com.jogamp.opengl.fixedfunc.GLMatrixFunc;
 import com.jogamp.opengl.glu.GLU;
 import me.eccentric_nz.tardisschematicviewer.Main;
 import me.eccentric_nz.tardisschematicviewer.schematic.NbtSchematic;
@@ -36,9 +35,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
 
-import static com.jogamp.opengl.GL.*;
-import static com.jogamp.opengl.GL2ES1.GL_PERSPECTIVE_CORRECTION_HINT;
-import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
+import static com.jogamp.opengl.GL4bc.*;
 
 /**
  * @author eccentric_nz
@@ -77,6 +74,7 @@ public class SchematicRenderer extends GLJPanel {
     private ListTag<CompoundTag> palette;
     private String path;
 
+    // TODO Right-click could make the view moveable, and scrolling could zoom.
     public SchematicRenderer(GLCapabilitiesImmutable userCapsRequest) {
         super(userCapsRequest);
 
@@ -107,6 +105,7 @@ public class SchematicRenderer extends GLJPanel {
                 gl.glEnable(GL_LIGHTING); // enable lighting
                 gl.glEnable(GL_LIGHT1); // Enable Light-1
                 gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
+                //gl.glEnable(GL_TEXTURE_2D);
 
                 gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 gl.glEnable(GL_BLEND);
@@ -168,11 +167,11 @@ public class SchematicRenderer extends GLJPanel {
                 // Set the view port (display area) to cover the entire window
                 gl.glViewport(0, 0, width, height);
                 // Setup perspective projection, with aspect ratio matches viewport
-                gl.glMatrixMode(GLMatrixFunc.GL_PROJECTION); // choose projection matrix
+                gl.glMatrixMode(GL_PROJECTION); // choose projection matrix
                 gl.glLoadIdentity(); // reset projection matrix
                 glu.gluPerspective(45.0, aspect, 2.0, 1000.0); // fovy, aspect, zNear, zFar
                 // Enable the model-view transform
-                gl.glMatrixMode(GLMatrixFunc.GL_MODELVIEW);
+                gl.glMatrixMode(GL_MODELVIEW);
                 gl.glLoadIdentity(); // reset
             }
         });
