@@ -104,8 +104,7 @@ public class SchematicRenderer extends GLJPanel {
                 gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
                 gl.glEnable(GL_LIGHTING); // enable lighting
                 gl.glEnable(GL_LIGHT1); // Enable Light-1
-                gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
-                //gl.glEnable(GL_TEXTURE_2D);
+                gl.glEnable(GL_TEXTURE_2D);
 
                 gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 gl.glEnable(GL_BLEND);

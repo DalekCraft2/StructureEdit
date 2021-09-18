@@ -2,6 +2,7 @@ package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureCoords;
 import com.jogamp.opengl.util.texture.TextureIO;
 import me.eccentric_nz.tardisschematicviewer.Main;
 import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
@@ -17,7 +18,6 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 
-import static com.jogamp.opengl.GL4bc.GL_LINES;
 import static com.jogamp.opengl.GL4bc.GL_QUADS;
 import static me.eccentric_nz.tardisschematicviewer.drawing.SchematicRenderer.SCALE;
 
@@ -174,7 +174,7 @@ public class ModelReader {
                         if (variant.has("uvlock")) {
                             uvlock = variant.getBoolean("uvlock");
                         }
-                        drawModel(gl, model, x, y, uvlock, color);
+                        drawModel(gl, model, x, y, uvlock);
                         return;
                     } else if (variants.get(variantName) instanceof JSONArray variantArray) {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
@@ -193,7 +193,7 @@ public class ModelReader {
                         if (variant.has("uvlock")) {
                             uvlock = variant.getBoolean("uvlock");
                         }
-                        drawModel(gl, model, x, y, uvlock, color);
+                        drawModel(gl, model, x, y, uvlock);
                         return;
                     }
                 }
@@ -233,7 +233,7 @@ public class ModelReader {
                                     if (apply.has("uvlock")) {
                                         uvlock = apply.getBoolean("uvlock");
                                     }
-                                    drawModel(gl, model, x, y, uvlock, color);
+                                    drawModel(gl, model, x, y, uvlock);
                                 } else if (part.get("apply") instanceof JSONArray applyArray) {
                                     // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                                     JSONObject apply = applyArray.getJSONObject(0);
@@ -251,7 +251,7 @@ public class ModelReader {
                                     if (apply.has("uvlock")) {
                                         uvlock = apply.getBoolean("uvlock");
                                     }
-                                    drawModel(gl, model, x, y, uvlock, color);
+                                    drawModel(gl, model, x, y, uvlock);
                                 }
                             }
                         }
@@ -281,7 +281,7 @@ public class ModelReader {
                                 if (apply.has("uvlock")) {
                                     uvlock = apply.getBoolean("uvlock");
                                 }
-                                drawModel(gl, model, x, y, uvlock, color);
+                                drawModel(gl, model, x, y, uvlock);
                             } else if (part.get("apply") instanceof JSONArray applyArray) {
                                 // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                                 JSONObject apply = applyArray.getJSONObject(0);
@@ -299,7 +299,7 @@ public class ModelReader {
                                 if (apply.has("uvlock")) {
                                     uvlock = apply.getBoolean("uvlock");
                                 }
-                                drawModel(gl, model, x, y, uvlock, color);
+                                drawModel(gl, model, x, y, uvlock);
                             }
                         }
                     }
@@ -319,7 +319,7 @@ public class ModelReader {
                         if (apply.has("uvlock")) {
                             uvlock = apply.getBoolean("uvlock");
                         }
-                        drawModel(gl, model, x, y, uvlock, color);
+                        drawModel(gl, model, x, y, uvlock);
                     } else if (part.get("apply") instanceof JSONArray applyArray) {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                         JSONObject apply = applyArray.getJSONObject(0);
@@ -337,16 +337,14 @@ public class ModelReader {
                         if (apply.has("uvlock")) {
                             uvlock = apply.getBoolean("uvlock");
                         }
-                        drawModel(gl, model, x, y, uvlock, color);
+                        drawModel(gl, model, x, y, uvlock);
                     }
                 }
             }
         }
     }
 
-    public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color color) {
-        float[] components = color.getComponents(null);
-
+    public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock) {
         switch (y) {
             case 90 -> {
                 gl.glTranslatef(SCALE, 0.0f, 0.0f);
@@ -366,9 +364,6 @@ public class ModelReader {
             case 270 -> gl.glTranslatef(0.0f, SCALE, 0.0f);
         }
         gl.glRotatef(-x, 1.0f, 0.0f, 0.0f);
-
-        // Set color
-        gl.glColor4f(components[0], components[1], components[2], components[3]);
 
         Map<String, String> textures = getTextures(model, new HashMap<>());
 
@@ -409,14 +404,6 @@ public class ModelReader {
                     }
                 }
 
-                if (components[3] == 0) {
-                    components[3] = 255;
-                    gl.glLineWidth(2.0f);
-                    gl.glBegin(GL_LINES);
-                } else {
-                    gl.glBegin(GL_QUADS);
-                }
-
                 JSONObject faces = jsonElement.getJSONObject("faces");
                 Set<String> faceSet = faces.keySet();
                 for (String faceName : faceSet) {
@@ -428,62 +415,91 @@ public class ModelReader {
                     int faceRotation = face.has("rotation") ? face.getInt("rotation") : 0;
                     int tintIndex = face.has("tintindex") ? face.getInt("tintindex") : -1;
 
-                    //Texture texture1 = null;
-                    if (textures.containsKey(texture)) {
-                        //texture1 = getTexture(textures.get(texture));
-                    } else {
-                        //texture1 = getTexture("custom:missing");
-                    }
-                    //texture1.enable(gl);
-                    //texture1.bind(gl);
+                    Texture texture1 = getTexture(textures.getOrDefault(texture, "custom:missing"));
+                    texture1.enable(gl);
+                    texture1.bind(gl);
+
+                    gl.glBegin(GL_QUADS);
+
+                    TextureCoords textureCoords = texture1.getImageTexCoords();
+
+                    double textureBottom = uv != null ? uv.getDouble(0) : textureCoords.bottom();
+                    double textureLeft = uv != null ? uv.getDouble(1) : textureCoords.left();
+                    double textureTop = uv != null ? uv.getDouble(2) : textureCoords.top();
+                    double textureRight = uv != null ? uv.getDouble(3) : textureCoords.right();
 
                     switch (faceName) {
                         case "up" -> {
                             gl.glNormal3d(0.0f, 1.0f, 0.0f);
                             gl.glVertex3d(fromX, toY, fromZ);
+                            gl.glTexCoord2d(textureBottom, textureLeft);
                             gl.glVertex3d(fromX, toY, toZ);
+                            gl.glTexCoord2d(textureBottom, textureRight);
                             gl.glVertex3d(toX, toY, toZ);
+                            gl.glTexCoord2d(textureTop, textureRight);
                             gl.glVertex3d(toX, toY, fromZ);
+                            gl.glTexCoord2d(textureTop, textureLeft);
                         }
                         case "down" -> {
                             gl.glNormal3d(0.0f, -1.0f, 0.0f);
                             gl.glVertex3d(fromX, fromY, fromZ);
+                            gl.glTexCoord2d(textureBottom, textureLeft);
                             gl.glVertex3d(toX, fromY, fromZ);
+                            gl.glTexCoord2d(textureBottom, textureRight);
                             gl.glVertex3d(toX, fromY, toZ);
+                            gl.glTexCoord2d(textureTop, textureRight);
                             gl.glVertex3d(fromX, fromY, toZ);
+                            gl.glTexCoord2d(textureTop, textureLeft);
                         }
                         case "north" -> {
                             gl.glNormal3d(0.0f, 0.0f, -1.0f);
                             gl.glVertex3d(fromX, fromY, fromZ);
+                            gl.glTexCoord2d(textureBottom, textureLeft);
                             gl.glVertex3d(fromX, toY, fromZ);
+                            gl.glTexCoord2d(textureBottom, textureRight);
                             gl.glVertex3d(toX, toY, fromZ);
+                            gl.glTexCoord2d(textureTop, textureRight);
                             gl.glVertex3d(toX, fromY, fromZ);
+                            gl.glTexCoord2d(textureTop, textureLeft);
                         }
                         case "south" -> {
                             gl.glNormal3d(0.0f, 0.0f, 1.0f);
                             gl.glVertex3d(fromX, fromY, toZ); // bottom-left of the quad
+                            gl.glTexCoord2d(textureBottom, textureLeft);
                             gl.glVertex3d(toX, fromY, toZ); // bottom-right of the quad
+                            gl.glTexCoord2d(textureBottom, textureRight);
                             gl.glVertex3d(toX, toY, toZ); // top-right of the quad
+                            gl.glTexCoord2d(textureTop, textureRight);
                             gl.glVertex3d(fromX, toY, toZ); // top-left of the quad
+                            gl.glTexCoord2d(textureTop, textureLeft);
+                            gl.glTexCoord2d(textureTop, textureLeft);
                         }
                         case "west" -> {
                             gl.glNormal3d(-1.0f, 0.0f, 0.0f);
                             gl.glVertex3d(fromX, fromY, fromZ);
+                            gl.glTexCoord2d(textureBottom, textureLeft);
                             gl.glVertex3d(fromX, fromY, toZ);
+                            gl.glTexCoord2d(textureBottom, textureRight);
                             gl.glVertex3d(fromX, toY, toZ);
+                            gl.glTexCoord2d(textureTop, textureRight);
                             gl.glVertex3d(fromX, toY, fromZ);
+                            gl.glTexCoord2d(textureTop, textureLeft);
                         }
                         case "east" -> {
                             gl.glNormal3d(1.0f, 0.0f, 0.0f);
                             gl.glVertex3d(toX, fromY, fromZ);
+                            gl.glTexCoord2d(textureBottom, textureLeft);
                             gl.glVertex3d(toX, toY, fromZ);
+                            gl.glTexCoord2d(textureBottom, textureRight);
                             gl.glVertex3d(toX, toY, toZ);
+                            gl.glTexCoord2d(textureTop, textureRight);
                             gl.glVertex3d(toX, fromY, toZ);
+                            gl.glTexCoord2d(textureTop, textureLeft);
                         }
                     }
+                    gl.glEnd();
                     //texture1.disable(gl);
                 }
-                gl.glEnd();
                 gl.glPopMatrix();
             }
         }
