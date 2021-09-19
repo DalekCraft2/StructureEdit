@@ -10,11 +10,9 @@ import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.awt.*;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.util.List;
 import java.util.*;
 
 import static com.jogamp.opengl.GL4bc.*;
@@ -132,9 +130,6 @@ public class ModelReader {
     }
 
     public static void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties) {
-        String blockName = namespacedId.split(":")[1].toUpperCase(Locale.ROOT);
-        Block block = Block.valueOf(blockName);
-        Color color = block.getColor();
         JSONObject blockState = getBlockState(namespacedId);
         String propertiesString = "";
         try {
@@ -407,35 +402,23 @@ public class ModelReader {
                     double textureRight = uv != null ? uv.getDouble(2) / 16.0 : toX;
                     double textureBottom = uv != null ? uv.getDouble(3) / 16.0 : toY;
 
-                    gl.glMatrixMode(GL_TEXTURE);
-                    gl.glLoadIdentity();
-                    gl.glTranslated(0.5, 0.5, 0.0);
-                    gl.glRotated(faceRotation, 0.0, 0.0, 1.0);
-                    switch (faceName) {
-                        case "up" -> {
-                            if (uvlock) {
-                                gl.glRotated(-y, 0.0, 0.0, 1.0);
-                            }
-                            //                            gl.glTranslated(0.0, 0.0, 0.0);
-                        }
-                        case "down" -> {
-                            if (uvlock) {
-                                gl.glRotated(-y, 0.0, 0.0, 1.0);
-                            }
-                        }
-                        default -> {
-                            if (uvlock) {
-                                gl.glRotated(-x, 0.0, 0.0, 1.0);
-                            }
-                        }
-                    }
-                    gl.glTranslated(-0.5, -0.5, 0.0);
-                    gl.glMatrixMode(GL_MODELVIEW);
-
                     // TODO Fix sizes of textures on blocks what are not 16x16x16.
                     Texture texture = getTexture(textures.getOrDefault(faceTexture, "custom:missing"));
                     texture.enable(gl);
                     texture.bind(gl);
+
+                    gl.glMatrixMode(GL_TEXTURE);
+                    gl.glLoadIdentity();
+                    gl.glTranslated(0.5, 0.5, 0.0);
+                    gl.glRotated(faceRotation, 0.0, 0.0, 1.0);
+                    if (uvlock) {
+                        switch (faceName) {
+                            case "up", "down" -> gl.glRotated(-y, 0.0, 0.0, 1.0);
+                            default -> gl.glRotated(-x, 0.0, 0.0, 1.0);
+                        }
+                    }
+                    gl.glTranslated(-0.5, -0.5, 0.0);
+                    gl.glMatrixMode(GL_MODELVIEW);
 
                     gl.glBegin(GL_QUADS);
 
