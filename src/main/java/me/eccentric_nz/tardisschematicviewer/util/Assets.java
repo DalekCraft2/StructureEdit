@@ -54,7 +54,9 @@ public final class Assets {
         String namespace = split.length > 1 ? split[0] : "minecraft";
         String id = split.length > 1 ? split[1] : split[0];
         File file = new File(ASSETS.toString() + File.separator + namespace + File.separator + folder + File.separator + id + "." + extension);
-        System.out.println("Getting asset from \"" + file.getAbsolutePath() + "\"");
+        if (file.exists()) {
+            System.out.println("Getting asset from \"" + file.getAbsolutePath() + "\"");
+        }
         return file;
     }
 
