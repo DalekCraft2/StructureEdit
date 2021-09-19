@@ -424,12 +424,10 @@ public class ModelReader {
 
                     gl.glBegin(GL_QUADS);
 
-                    TextureCoords textureCoords = texture.getImageTexCoords();
-
-                    double textureLeft = uv != null ? uv.getDouble(0) : textureCoords.left();
-                    double textureBottom = uv != null ? uv.getDouble(1) : textureCoords.bottom();
-                    double textureRight = uv != null ? uv.getDouble(2) : textureCoords.right();
-                    double textureTop = uv != null ? uv.getDouble(3) : textureCoords.top();
+                    double textureLeft = uv != null ? uv.getDouble(0) : fromX;
+                    double textureTop = uv != null ? uv.getDouble(1) : fromY;
+                    double textureRight = uv != null ? uv.getDouble(2) : toX;
+                    double textureBottom = uv != null ? uv.getDouble(3) : toY;
 
                     for (int i = 0; i < faceRotation; i += 90) {
                         double temp = textureRight;
@@ -442,70 +440,70 @@ public class ModelReader {
                     switch (faceName) {
                         case "up" -> {
                             gl.glNormal3d(0.0f, 1.0f, 0.0f);
-                            gl.glVertex3d(fromX, toY, fromZ);
-                            gl.glTexCoord2d(textureLeft, textureBottom);
-                            gl.glVertex3d(toX, toY, fromZ);
-                            gl.glTexCoord2d(textureLeft, textureTop);
-                            gl.glVertex3d(toX, toY, toZ);
                             gl.glTexCoord2d(textureRight, textureTop);
-                            gl.glVertex3d(fromX, toY, toZ);
+                            gl.glVertex3d(fromX, toY, fromZ);
+                            gl.glTexCoord2d(textureLeft, textureTop);
+                            gl.glVertex3d(toX, toY, fromZ);
+                            gl.glTexCoord2d(textureLeft, textureBottom);
+                            gl.glVertex3d(toX, toY, toZ);
                             gl.glTexCoord2d(textureRight, textureBottom);
+                            gl.glVertex3d(fromX, toY, toZ);
                         }
                         case "down" -> {
                             gl.glNormal3d(0.0f, -1.0f, 0.0f);
-                            gl.glVertex3d(fromX, fromY, toZ);
-                            gl.glTexCoord2d(textureRight, textureTop);
-                            gl.glVertex3d(fromX, fromY, fromZ);
-                            gl.glTexCoord2d(textureLeft, textureTop);
-                            gl.glVertex3d(toX, fromY, fromZ);
-                            gl.glTexCoord2d(textureLeft, textureBottom);
-                            gl.glVertex3d(toX, fromY, toZ);
                             gl.glTexCoord2d(textureRight, textureBottom);
+                            gl.glVertex3d(fromX, fromY, fromZ);
+                            gl.glTexCoord2d(textureLeft, textureBottom);
+                            gl.glVertex3d(toX, fromY, fromZ);
+                            gl.glTexCoord2d(textureLeft, textureTop);
+                            gl.glVertex3d(toX, fromY, toZ);
+                            gl.glTexCoord2d(textureRight, textureTop);
+                            gl.glVertex3d(fromX, fromY, toZ);
                         }
                         case "north" -> {
                             gl.glNormal3d(0.0f, 0.0f, -1.0f);
-                            gl.glVertex3d(fromX, fromY, fromZ);
                             gl.glTexCoord2d(textureRight, textureTop);
-                            gl.glVertex3d(fromX, toY, fromZ);
+                            gl.glVertex3d(fromX, fromY, fromZ);
                             gl.glTexCoord2d(textureLeft, textureTop);
-                            gl.glVertex3d(toX, toY, fromZ);
-                            gl.glTexCoord2d(textureLeft, textureBottom);
                             gl.glVertex3d(toX, fromY, fromZ);
+                            gl.glTexCoord2d(textureLeft, textureBottom);
+                            gl.glVertex3d(toX, toY, fromZ);
                             gl.glTexCoord2d(textureRight, textureBottom);
+                            gl.glVertex3d(fromX, toY, fromZ);
                         }
                         case "south" -> {
                             gl.glNormal3d(0.0f, 0.0f, 1.0f);
-                            gl.glTexCoord2d(textureLeft, textureBottom);
-                            gl.glVertex3d(fromX, fromY, toZ); // bottom-left of the quad
                             gl.glTexCoord2d(textureLeft, textureTop);
-                            gl.glVertex3d(fromX, toY, toZ); // bottom-right of the quad
+                            gl.glVertex3d(fromX, fromY, toZ); // bottom-left of the quad
                             gl.glTexCoord2d(textureRight, textureTop);
-                            gl.glVertex3d(toX, toY, toZ); // top-right of the quad
+                            gl.glVertex3d(toX, fromY, toZ); // bottom-right of the quad
                             gl.glTexCoord2d(textureRight, textureBottom);
-                            gl.glVertex3d(toX, fromY, toZ); // top-left of the quad
+                            gl.glVertex3d(toX, toY, toZ); // top-right of the quad
+                            gl.glTexCoord2d(textureLeft, textureBottom);
+                            gl.glVertex3d(fromX, toY, toZ); // top-left of the quad
 
                         }
                         case "west" -> {
                             gl.glNormal3d(-1.0f, 0.0f, 0.0f);
-                            gl.glTexCoord2d(textureLeft, textureBottom);
-                            gl.glVertex3d(fromX, fromY, fromZ);
                             gl.glTexCoord2d(textureLeft, textureTop);
-                            gl.glVertex3d(fromX, toY, fromZ);
+                            gl.glVertex3d(fromX, fromY, fromZ);
                             gl.glTexCoord2d(textureRight, textureTop);
-                            gl.glVertex3d(fromX, toY, toZ);
-                            gl.glTexCoord2d(textureRight, textureBottom);
                             gl.glVertex3d(fromX, fromY, toZ);
+                            gl.glTexCoord2d(textureRight, textureBottom);
+                            gl.glVertex3d(fromX, toY, toZ);
+                            gl.glTexCoord2d(textureLeft, textureBottom);
+                            gl.glVertex3d(fromX, toY, fromZ);
                         }
                         case "east" -> {
                             gl.glNormal3d(1.0f, 0.0f, 0.0f);
-                            gl.glVertex3d(toX, fromY, fromZ);
-                            gl.glTexCoord2d(textureLeft, textureBottom);
-                            gl.glVertex3d(toX, fromY, toZ);
-                            gl.glTexCoord2d(textureLeft, textureTop);
-                            gl.glVertex3d(toX, toY, toZ);
                             gl.glTexCoord2d(textureRight, textureTop);
-                            gl.glVertex3d(toX, toY, fromZ);
+                            gl.glVertex3d(toX, fromY, fromZ);
+                            gl.glTexCoord2d(textureLeft, textureTop);
+                            gl.glVertex3d(toX, fromY, toZ);
+                            gl.glTexCoord2d(textureLeft, textureBottom);
+                            gl.glVertex3d(toX, toY, toZ);
                             gl.glTexCoord2d(textureRight, textureBottom);
+                            gl.glVertex3d(toX, toY, fromZ);
                         }
                     }
                     gl.glEnd();
