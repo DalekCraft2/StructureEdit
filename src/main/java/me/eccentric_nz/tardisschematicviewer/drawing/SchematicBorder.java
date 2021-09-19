@@ -10,8 +10,6 @@ public class SchematicBorder {
         gl.glLineWidth(2.0f);
         gl.glBegin(GL_LINES);
 
-        // TODO Make this fullbright, regardless of camera angle.
-
         gl.glColor3f(1.0f, 0.0f, 0.0f);
         gl.glVertex3f(-sizeX / 2.0f, -sizeY / 2.0f, -sizeZ / 2.0f);
         gl.glVertex3f(sizeX / 2.0f, -sizeY / 2.0f, -sizeZ / 2.0f);

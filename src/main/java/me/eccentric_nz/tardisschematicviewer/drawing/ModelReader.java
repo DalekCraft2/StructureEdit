@@ -43,7 +43,7 @@ public class ModelReader {
             System.err.println(e.getMessage());
         }
         try {
-            TEXTURES.put("custom:missing", TextureIO.newTexture(Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png"), true, "png"));
+            TEXTURES.put("custom:missing", TextureIO.newTexture(Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png"), false, "png"));
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -94,11 +94,11 @@ public class ModelReader {
         }
         Texture texture = null;
         try (InputStream inputStream = new FileInputStream(getAsset(namespacedId, "textures", "png"))) {
-            texture = TextureIO.newTexture(inputStream, true, TextureIO.PNG);
+            texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
         } catch (IOException e) {
             System.err.println(e.getMessage());
             try (InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png")) {
-                texture = TextureIO.newTexture(inputStream, true, TextureIO.PNG);
+                texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
@@ -336,12 +336,13 @@ public class ModelReader {
     }
 
     public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock) {
+        gl.glEnable(GL_LIGHTING); // enable lighting
+        gl.glEnable(GL_LIGHT1);
+
         gl.glTranslated(0.5, 0.5, 0.5);
         gl.glRotatef(-y, 0.0f, 1.0f, 0.0f);
         gl.glRotatef(-x, 1.0f, 0.0f, 0.0f);
         gl.glTranslated(-0.5, -0.5, -0.5);
-
-        gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
         Map<String, String> textures = getTextures(model, new HashMap<>());
 
@@ -393,9 +394,13 @@ public class ModelReader {
 
                     JSONArray uv = face.has("uv") ? face.getJSONArray("uv") : null;
                     String faceTexture = face.has("texture") ? face.getString("texture").substring(1) : null;
-                    String cullface = face.has("cullface") ? face.getString("cullface") : null;
+                    String cullface = face.has("cullface") ? face.getString("cullface") : null; // TODO Implement culling.
                     int faceRotation = face.has("rotation") ? face.getInt("rotation") : 0;
                     int tintIndex = face.has("tintindex") ? face.getInt("tintindex") : -1;
+
+                    if (tintIndex == -1) {
+                        gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+                    }
 
                     double textureLeft = uv != null ? uv.getDouble(0) / 16.0 : fromX;
                     double textureTop = uv != null ? uv.getDouble(1) / 16.0 : fromY;
@@ -419,10 +424,15 @@ public class ModelReader {
                     Texture texture = getTexture(textures.getOrDefault(faceTexture, "custom:missing"));
                     texture.enable(gl);
                     texture.bind(gl);
+
+                    gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                     gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                     gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                     gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                    gl.glEnable(GL_TEXTURE_2D);
 
+                    gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    gl.glEnable(GL_BLEND);
 
                     gl.glBegin(GL_QUADS);
 
@@ -497,10 +507,15 @@ public class ModelReader {
                     }
                     gl.glEnd();
                     texture.disable(gl);
+                    gl.glDisable(GL_TEXTURE_2D);
+                    gl.glDisable(GL_BLEND);
                 }
                 gl.glPopMatrix();
             }
         }
+
+        gl.glDisable(GL_LIGHTING); // enable lighting
+        gl.glDisable(GL_LIGHT1);
     }
 
     private static JSONArray getElements(JSONObject model) {

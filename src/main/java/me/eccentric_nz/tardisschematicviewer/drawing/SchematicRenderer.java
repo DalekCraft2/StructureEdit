@@ -98,17 +98,10 @@ public class SchematicRenderer extends GLJPanel {
                 float[] lightDiffuseValue = {0.75f, 0.75f, 0.75f, 1.0f};
                 // Diffuse light location xyz (in front of the screen).
                 float[] lightDiffusePosition = {8.0f, 0.0f, 8.0f, 1.0f};
-
                 gl.glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbientValue, 0);
                 gl.glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuseValue, 0);
                 gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
-                gl.glEnable(GL_LIGHTING); // enable lighting
-                gl.glEnable(GL_LIGHT1); // Enable Light-1
                 gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
-                gl.glEnable(GL_TEXTURE_2D);
-
-                gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                gl.glEnable(GL_BLEND);
             }
 
             @Override
