@@ -336,9 +336,6 @@ public class ModelReader {
     }
 
     public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock) {
-        gl.glEnable(GL_LIGHTING); // enable lighting
-        gl.glEnable(GL_LIGHT1);
-
         gl.glTranslated(0.5, 0.5, 0.5);
         gl.glRotatef(-y, 0.0f, 1.0f, 0.0f);
         gl.glRotatef(-x, 1.0f, 0.0f, 0.0f);
@@ -385,6 +382,11 @@ public class ModelReader {
                         case "z" -> gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
                     }
                     gl.glTranslated(-originX, -originY, -originZ);
+                }
+
+                if (shade) {
+                    gl.glEnable(GL_LIGHTING); // enable lighting
+                    gl.glEnable(GL_LIGHT1);
                 }
 
                 JSONObject faces = jsonElement.getJSONObject("faces");
@@ -511,11 +513,10 @@ public class ModelReader {
                     gl.glDisable(GL_BLEND);
                 }
                 gl.glPopMatrix();
+                gl.glDisable(GL_LIGHTING); // enable lighting
+                gl.glDisable(GL_LIGHT1);
             }
         }
-
-        gl.glDisable(GL_LIGHTING); // enable lighting
-        gl.glDisable(GL_LIGHT1);
     }
 
     private static JSONArray getElements(JSONObject model) {
