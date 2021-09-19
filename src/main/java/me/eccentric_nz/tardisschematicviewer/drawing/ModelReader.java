@@ -416,10 +416,10 @@ public class ModelReader {
                     int faceRotation = face.has("rotation") ? face.getInt("rotation") : 0;
                     int tintIndex = face.has("tintindex") ? face.getInt("tintindex") : -1;
 
-                    double textureLeft = uv != null ? uv.getDouble(0) / 16.0 : toX;
-                    double textureTop = uv != null ? uv.getDouble(1) / 16.0 : toY;
-                    double textureRight = uv != null ? uv.getDouble(2) / 16.0 : fromX;
-                    double textureBottom = uv != null ? uv.getDouble(3) / 16.0 : fromY;
+                    double textureLeft = uv != null ? uv.getDouble(0) / 16.0 : fromX;
+                    double textureTop = uv != null ? uv.getDouble(1) / 16.0 : fromY;
+                    double textureRight = uv != null ? uv.getDouble(2) / 16.0 : toX;
+                    double textureBottom = uv != null ? uv.getDouble(3) / 16.0 : toY;
 
                     gl.glMatrixMode(GL_TEXTURE);
                     gl.glLoadIdentity();
