@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.*;
 
 import static com.jogamp.opengl.GL4bc.*;
-import static me.eccentric_nz.tardisschematicviewer.drawing.SchematicRenderer.SCALE;
 
 public class ModelReader {
 
@@ -51,8 +50,6 @@ public class ModelReader {
             System.err.println(e.getMessage());
         }
     }
-
-    // TODO Read from Minecraft assets folder to draw block models.
 
     public static File getAsset(String namespacedId, String folder, String extension) {
         String[] split = namespacedId.split(":");
@@ -344,25 +341,10 @@ public class ModelReader {
     }
 
     public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock) {
-        switch (y) {
-            case 90 -> {
-                gl.glTranslatef(SCALE, 0.0f, 0.0f);
-                gl.glRotatef(180, 0.0f, 1.0f, 0.0f);
-            }
-            case 180 -> gl.glTranslatef(SCALE, 0.0f, SCALE);
-            case 270 -> {
-                gl.glTranslatef(0.0f, 0.0f, SCALE);
-                gl.glRotatef(180, 0.0f, 1.0f, 0.0f);
-            }
-
-        }
-        gl.glRotatef(y, 0.0f, 1.0f, 0.0f);
-        switch (x) {
-            case 90 -> gl.glTranslatef(0.0f, 0.0f, SCALE);
-            case 180 -> gl.glTranslatef(0.0f, SCALE, SCALE);
-            case 270 -> gl.glTranslatef(0.0f, SCALE, 0.0f);
-        }
+        gl.glTranslated(0.5, 0.5, 0.5);
+        gl.glRotatef(-y, 0.0f, 1.0f, 0.0f);
         gl.glRotatef(-x, 1.0f, 0.0f, 0.0f);
+        gl.glTranslated(-0.5, -0.5, -0.5);
 
         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
 
@@ -396,13 +378,17 @@ public class ModelReader {
                 double toY = to.getDouble(1) / 16.0;
                 double toZ = to.getDouble(2) / 16.0;
 
-                // TODO Make these rotate about the specified origin. God help me.
-                if (axis != null) {
+                if (axis != null && origin != null) {
+                    double originX = origin.getDouble(0) / 16.0;
+                    double originY = origin.getDouble(1) / 16.0;
+                    double originZ = origin.getDouble(2) / 16.0;
+                    gl.glTranslated(originX, originY, originZ);
                     switch (axis) {
                         case "x" -> gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
                         case "y" -> gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
                         case "z" -> gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
                     }
+                    gl.glTranslated(-originX, -originY, -originZ);
                 }
 
                 JSONObject faces = jsonElement.getJSONObject("faces");
@@ -425,11 +411,22 @@ public class ModelReader {
                     gl.glLoadIdentity();
                     gl.glTranslated(0.5, 0.5, 0.0);
                     gl.glRotated(faceRotation, 0.0, 0.0, 1.0);
-                    if (uvlock) {
-                        if (faceName.equals("up") || faceName.equals("down")) {
-                            gl.glRotated(-y, 0.0, 0.0, 1.0);
-                        } else {
-                            gl.glRotated(-x, 0.0, 0.0, 1.0);
+                    switch (faceName) {
+                        case "up" -> {
+                            if (uvlock) {
+                                gl.glRotated(-y, 0.0, 0.0, 1.0);
+                            }
+                            //                            gl.glTranslated(0.0, 0.0, 0.0);
+                        }
+                        case "down" -> {
+                            if (uvlock) {
+                                gl.glRotated(-y, 0.0, 0.0, 1.0);
+                            }
+                        }
+                        default -> {
+                            if (uvlock) {
+                                gl.glRotated(-x, 0.0, 0.0, 1.0);
+                            }
                         }
                     }
                     gl.glTranslated(-0.5, -0.5, 0.0);
