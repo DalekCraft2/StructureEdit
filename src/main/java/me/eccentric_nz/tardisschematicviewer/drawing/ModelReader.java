@@ -402,11 +402,6 @@ public class ModelReader {
                     double textureRight = uv != null ? uv.getDouble(2) / 16.0 : toX;
                     double textureBottom = uv != null ? uv.getDouble(3) / 16.0 : toY;
 
-                    // TODO Fix sizes of textures on blocks what are not 16x16x16.
-                    Texture texture = getTexture(textures.getOrDefault(faceTexture, "custom:missing"));
-                    texture.enable(gl);
-                    texture.bind(gl);
-
                     gl.glMatrixMode(GL_TEXTURE);
                     gl.glLoadIdentity();
                     gl.glTranslated(0.5, 0.5, 0.0);
@@ -419,6 +414,15 @@ public class ModelReader {
                     }
                     gl.glTranslated(-0.5, -0.5, 0.0);
                     gl.glMatrixMode(GL_MODELVIEW);
+
+                    // TODO Fix sizes of textures on blocks what are not 16x16x16.
+                    Texture texture = getTexture(textures.getOrDefault(faceTexture, "custom:missing"));
+                    texture.enable(gl);
+                    texture.bind(gl);
+                    gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                    gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                    gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
 
                     gl.glBegin(GL_QUADS);
 
