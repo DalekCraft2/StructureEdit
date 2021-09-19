@@ -80,7 +80,7 @@ public final class ModelRenderer {
                     }
                 }
             }
-        } else if (blockState.has("multipart")) {
+        } else if (blockState.has("multipart")) { // TODO Multipart models.
             JSONArray multipart = blockState.getJSONArray("multipart");
             for (Object partObject : multipart) {
                 JSONObject part = (JSONObject) partObject;
