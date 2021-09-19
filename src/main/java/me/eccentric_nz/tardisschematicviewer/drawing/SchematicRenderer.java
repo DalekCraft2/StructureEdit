@@ -93,7 +93,7 @@ public class SchematicRenderer extends GLJPanel {
                 // Set up the lighting for Light-1
                 // Ambient light does not come from a particular direction. Need some ambient
                 // light to light up the scene. Ambient's value in RGBA
-                float[] lightAmbientValue = {0.1f, 0.1f, 0.1f, 1.0f};
+                float[] lightAmbientValue = {0.2f, 0.2f, 0.2f, 1.0f};
                 // Diffuse light comes from a particular location. Diffuse's value in RGBA
                 float[] lightDiffuseValue = {0.75f, 0.75f, 0.75f, 1.0f};
                 // Diffuse light location xyz (in front of the screen).
@@ -104,6 +104,7 @@ public class SchematicRenderer extends GLJPanel {
                 gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
                 gl.glEnable(GL_LIGHTING); // enable lighting
                 gl.glEnable(GL_LIGHT1); // Enable Light-1
+                gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
                 gl.glEnable(GL_TEXTURE_2D);
 
                 gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
