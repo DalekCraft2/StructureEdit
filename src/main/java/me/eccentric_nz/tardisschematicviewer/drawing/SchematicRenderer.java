@@ -141,7 +141,7 @@ public class SchematicRenderer extends GLJPanel {
 
                                     // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
                                     gl.glTranslatef((x - translateX) * SCALE, (y - translateY) * SCALE, (z - translateZ) * SCALE);
-                                    ModelReader.readBlockState(gl, blockId, properties);
+                                    ModelRenderer.readBlockState(gl, blockId, properties);
                                     gl.glPopMatrix();
                                 }
                             }

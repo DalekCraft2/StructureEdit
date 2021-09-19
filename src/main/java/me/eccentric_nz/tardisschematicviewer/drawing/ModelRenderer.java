@@ -2,135 +2,26 @@ package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.util.texture.Texture;
-import com.jogamp.opengl.util.texture.TextureIO;
-import me.eccentric_nz.tardisschematicviewer.Main;
+import me.eccentric_nz.tardisschematicviewer.util.Assets;
 import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
+import java.io.IOException;
 import java.util.*;
 
 import static com.jogamp.opengl.GL4bc.*;
 
-public class ModelReader {
+public final class ModelRenderer {
 
-    private static final Path ASSETS;
-    private static final Map<String, JSONObject> BLOCK_STATES = new HashMap<>();
-    private static final Map<String, JSONObject> MODELS = new HashMap<>();
-    private static final Map<String, Texture> TEXTURES = new HashMap<>();
-
-    // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
-    static {
-        ASSETS = Main.assets;
-        for (Block block : Block.values()) {
-            String namespacedId = "minecraft:" + block.name().toLowerCase(Locale.ROOT);
-            JSONObject blockState = getBlockState(namespacedId);
-            BLOCK_STATES.put(namespacedId, blockState);
-        }
-        try {
-            BLOCK_STATES.put("custom:missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/custom/blockstates/missing.json")));
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
-        try {
-            MODELS.put("custom:block/missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/custom/models/block/missing.json")));
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
-        try {
-            TEXTURES.put("custom:missing", TextureIO.newTexture(Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png"), false, "png"));
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-        }
-    }
-
-    public static File getAsset(String namespacedId, String folder, String extension) {
-        String[] split = namespacedId.split(":");
-        String namespace = split.length > 1 ? split[0] : "minecraft";
-        String id = split.length > 1 ? split[1] : split[0];
-        File file = new File(ASSETS.toString() + File.separator + namespace + File.separator + folder + File.separator + id + "." + extension);
-        System.out.println("Getting asset from \"" + file.getAbsolutePath() + "\"");
-        return file;
-    }
-
-    public static JSONObject getBlockState(String namespacedId) {
-        if (BLOCK_STATES.containsKey(namespacedId)) {
-            return BLOCK_STATES.get(namespacedId);
-        }
-        JSONObject blockState;
-        try {
-            blockState = toJson(namespacedId, "blockstates", "json");
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            blockState = BLOCK_STATES.get("custom:missing");
-        }
-        BLOCK_STATES.put(namespacedId, blockState);
-        return blockState;
-    }
-
-    public static JSONObject getModel(String namespacedId) {
-        if (MODELS.containsKey(namespacedId)) {
-            return MODELS.get(namespacedId);
-        }
-        JSONObject model;
-        try {
-            model = toJson(namespacedId, "models", "json");
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            model = MODELS.get("custom:block/missing");
-        }
-        MODELS.put(namespacedId, model);
-        return model;
-    }
-
-    public static Texture getTexture(String namespacedId) {
-        if (TEXTURES.containsKey(namespacedId)) {
-            return TEXTURES.get(namespacedId);
-        }
-        Texture texture = null;
-        try (InputStream inputStream = new FileInputStream(getAsset(namespacedId, "textures", "png"))) {
-            texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
-        } catch (IOException e) {
-            System.err.println(e.getMessage());
-            try (InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png")) {
-                texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
-            } catch (IOException e1) {
-                e1.printStackTrace();
-            }
-        }
-        TEXTURES.put(namespacedId, texture);
-        return texture;
-    }
-
-    public static JSONObject toJson(String namespacedId, String folder, String extension) throws IOException {
-        try (InputStream inputStream = new FileInputStream(getAsset(namespacedId, folder, extension)); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
-            char[] buffer = new char[1024 * 16];
-            int length;
-            while ((length = inputStreamReader.read(buffer)) > 0) {
-                stringWriter.write(buffer, 0, length);
-            }
-            return new JSONObject(stringWriter.toString());
-        }
-    }
-
-    public static JSONObject toJson(InputStream inputStream) throws IOException {
-        try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
-            char[] buffer = new char[1024 * 16];
-            int length;
-            while ((length = inputStreamReader.read(buffer)) > 0) {
-                stringWriter.write(buffer, 0, length);
-            }
-            return new JSONObject(stringWriter.toString());
-        }
+    private ModelRenderer() {
+        throw new UnsupportedOperationException();
     }
 
     public static void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties) {
-        JSONObject blockState = getBlockState(namespacedId);
+        JSONObject blockState = Assets.getBlockState(namespacedId);
         String propertiesString = "";
         try {
             propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace('{', '[').replace('}', ']').replace(':', '=');
@@ -152,7 +43,7 @@ public class ModelReader {
                 if (contains) {
                     if (variants.get(variantName) instanceof JSONObject variant) {
                         String modelPath = variant.getString("model");
-                        JSONObject model = getModel(modelPath);
+                        JSONObject model = Assets.getModel(modelPath);
                         int x = 0;
                         int y = 0;
                         boolean uvlock = false;
@@ -171,7 +62,7 @@ public class ModelReader {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                         JSONObject variant = variantArray.getJSONObject(0);
                         String modelPath = variant.getString("model");
-                        JSONObject model = getModel(modelPath);
+                        JSONObject model = Assets.getModel(modelPath);
                         int x = 0;
                         int y = 0;
                         boolean uvlock = false;
@@ -211,7 +102,7 @@ public class ModelReader {
                             if (contains) {
                                 if (part.get("apply") instanceof JSONObject apply) {
                                     String modelPath = apply.getString("model");
-                                    JSONObject model = getModel(modelPath);
+                                    JSONObject model = Assets.getModel(modelPath);
                                     int x = 0;
                                     int y = 0;
                                     boolean uvlock = false;
@@ -229,7 +120,7 @@ public class ModelReader {
                                     // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                                     JSONObject apply = applyArray.getJSONObject(0);
                                     String modelPath = apply.getString("model");
-                                    JSONObject model = getModel(modelPath);
+                                    JSONObject model = Assets.getModel(modelPath);
                                     int x = 0;
                                     int y = 0;
                                     boolean uvlock = false;
@@ -259,7 +150,7 @@ public class ModelReader {
                         if (contains) {
                             if (part.get("apply") instanceof JSONObject apply) {
                                 String modelPath = apply.getString("model");
-                                JSONObject model = getModel(modelPath);
+                                JSONObject model = Assets.getModel(modelPath);
                                 int x = 0;
                                 int y = 0;
                                 boolean uvlock = false;
@@ -277,7 +168,7 @@ public class ModelReader {
                                 // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                                 JSONObject apply = applyArray.getJSONObject(0);
                                 String modelPath = apply.getString("model");
-                                JSONObject model = getModel(modelPath);
+                                JSONObject model = Assets.getModel(modelPath);
                                 int x = 0;
                                 int y = 0;
                                 boolean uvlock = false;
@@ -297,7 +188,7 @@ public class ModelReader {
                 } else {
                     if (part.get("apply") instanceof JSONObject apply) {
                         String modelPath = apply.getString("model");
-                        JSONObject model = getModel(modelPath);
+                        JSONObject model = Assets.getModel(modelPath);
                         int x = 0;
                         int y = 0;
                         boolean uvlock = false;
@@ -315,7 +206,7 @@ public class ModelReader {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                         JSONObject apply = applyArray.getJSONObject(0);
                         String modelPath = apply.getString("model");
-                        JSONObject model = getModel(modelPath);
+                        JSONObject model = Assets.getModel(modelPath);
                         int x = 0;
                         int y = 0;
                         boolean uvlock = false;
@@ -404,10 +295,24 @@ public class ModelReader {
                         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
                     }
 
-                    double textureLeft = uv != null ? uv.getDouble(0) / 16.0 : fromX;
-                    double textureTop = uv != null ? uv.getDouble(1) / 16.0 : fromY;
-                    double textureRight = uv != null ? uv.getDouble(2) / 16.0 : toX;
-                    double textureBottom = uv != null ? uv.getDouble(3) / 16.0 : toY;
+                    // TODO Fix sizes of textures on blocks what are not 16x16x16.
+                    Texture texture = Assets.getTexture(textures.getOrDefault(faceTexture, "custom:missing"));
+                    texture.enable(gl);
+                    texture.bind(gl);
+
+                    double textureLeft = uv != null ? uv.getDouble(0) / texture.getWidth() : fromX / texture.getWidth() * 16.0;
+                    double textureTop = uv != null ? uv.getDouble(1) / texture.getHeight() : fromY / texture.getHeight() * 16.0;
+                    double textureRight = uv != null ? uv.getDouble(2) / texture.getWidth() : toX / texture.getWidth() * 16.0;
+                    double textureBottom = uv != null ? uv.getDouble(3) / texture.getHeight() : toY / texture.getHeight() * 16.0;
+
+                    JSONObject animation = Assets.getAnimation(textures.get(faceTexture));
+                    if (animation != null) {
+                        int width = animation.has("width") ? animation.getInt("width") : 16;
+                        int height = animation.has("height") ? animation.getInt("height") : 16;
+                        int frameCount = Math.abs(texture.getHeight() / height);
+                        // textureTop /= frameCount;
+                        // textureBottom /= frameCount;
+                    }
 
                     gl.glMatrixMode(GL_TEXTURE);
                     gl.glLoadIdentity();
@@ -421,11 +326,6 @@ public class ModelReader {
                     }
                     gl.glTranslated(-0.5, -0.5, 0.0);
                     gl.glMatrixMode(GL_MODELVIEW);
-
-                    // TODO Fix sizes of textures on blocks what are not 16x16x16.
-                    Texture texture = getTexture(textures.getOrDefault(faceTexture, "custom:missing"));
-                    texture.enable(gl);
-                    texture.bind(gl);
 
                     gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                     gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -523,7 +423,7 @@ public class ModelReader {
         if (model.has("elements")) {
             return model.getJSONArray("elements");
         } else if (model.has("parent")) {
-            return getElements(getModel(model.getString("parent")));
+            return getElements(Assets.getModel(model.getString("parent")));
         } else {
             return null;
         }
@@ -538,7 +438,7 @@ public class ModelReader {
             }
         }
         if (model.has("parent")) {
-            getTextures(getModel(model.getString("parent")), textures);
+            getTextures(Assets.getModel(model.getString("parent")), textures);
         }
         return textures;
     }
@@ -546,7 +446,7 @@ public class ModelReader {
     private static void getTextureFromId(JSONObject model, Map<String, String> textures, String name) {
         JSONObject parent = null;
         if (model.has("parent")) {
-            parent = getModel(model.getString("parent"));
+            parent = Assets.getModel(model.getString("parent"));
         }
         if (model.has("textures")) {
             JSONObject texturesJson = model.getJSONObject("textures");
