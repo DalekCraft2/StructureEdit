@@ -2,7 +2,6 @@ package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.util.texture.Texture;
-import com.jogamp.opengl.util.texture.TextureCoords;
 import com.jogamp.opengl.util.texture.TextureIO;
 import me.eccentric_nz.tardisschematicviewer.Main;
 import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
@@ -18,7 +17,7 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 
-import static com.jogamp.opengl.GL4bc.GL_QUADS;
+import static com.jogamp.opengl.GL4bc.*;
 import static me.eccentric_nz.tardisschematicviewer.drawing.SchematicRenderer.SCALE;
 
 public class ModelReader {
@@ -417,6 +416,25 @@ public class ModelReader {
                     int faceRotation = face.has("rotation") ? face.getInt("rotation") : 0;
                     int tintIndex = face.has("tintindex") ? face.getInt("tintindex") : -1;
 
+                    double textureLeft = uv != null ? uv.getDouble(0) / 16.0 : toX;
+                    double textureTop = uv != null ? uv.getDouble(1) / 16.0 : toY;
+                    double textureRight = uv != null ? uv.getDouble(2) / 16.0 : fromX;
+                    double textureBottom = uv != null ? uv.getDouble(3) / 16.0 : fromY;
+
+                    gl.glMatrixMode(GL_TEXTURE);
+                    gl.glLoadIdentity();
+                    gl.glTranslated(0.5, 0.5, 0.0);
+                    gl.glRotated(faceRotation, 0.0, 0.0, 1.0);
+                    if (uvlock) {
+                        if (faceName.equals("up") || faceName.equals("down")) {
+                            gl.glRotated(-y, 0.0, 0.0, 1.0);
+                        } else {
+                            gl.glRotated(-x, 0.0, 0.0, 1.0);
+                        }
+                    }
+                    gl.glTranslated(-0.5, -0.5, 0.0);
+                    gl.glMatrixMode(GL_MODELVIEW);
+
                     // TODO Fix sizes of textures on blocks what are not 16x16x16.
                     Texture texture = getTexture(textures.getOrDefault(faceTexture, "custom:missing"));
                     texture.enable(gl);
@@ -424,40 +442,27 @@ public class ModelReader {
 
                     gl.glBegin(GL_QUADS);
 
-                    double textureLeft = uv != null ? uv.getDouble(0) : fromX;
-                    double textureTop = uv != null ? uv.getDouble(1) : fromY;
-                    double textureRight = uv != null ? uv.getDouble(2) : toX;
-                    double textureBottom = uv != null ? uv.getDouble(3) : toY;
-
-                    for (int i = 0; i < faceRotation; i += 90) {
-                        double temp = textureRight;
-                        textureRight = textureTop;
-                        textureTop = textureLeft;
-                        textureLeft = textureBottom;
-                        textureBottom = temp;
-                    }
-
                     switch (faceName) {
                         case "up" -> {
                             gl.glNormal3d(0.0f, 1.0f, 0.0f);
-                            gl.glTexCoord2d(textureRight, textureTop);
-                            gl.glVertex3d(fromX, toY, fromZ);
-                            gl.glTexCoord2d(textureLeft, textureTop);
-                            gl.glVertex3d(toX, toY, fromZ);
                             gl.glTexCoord2d(textureLeft, textureBottom);
-                            gl.glVertex3d(toX, toY, toZ);
+                            gl.glVertex3d(fromX, toY, fromZ);
                             gl.glTexCoord2d(textureRight, textureBottom);
+                            gl.glVertex3d(toX, toY, fromZ);
+                            gl.glTexCoord2d(textureRight, textureTop);
+                            gl.glVertex3d(toX, toY, toZ);
+                            gl.glTexCoord2d(textureLeft, textureTop);
                             gl.glVertex3d(fromX, toY, toZ);
                         }
                         case "down" -> {
                             gl.glNormal3d(0.0f, -1.0f, 0.0f);
-                            gl.glTexCoord2d(textureRight, textureBottom);
-                            gl.glVertex3d(fromX, fromY, fromZ);
-                            gl.glTexCoord2d(textureLeft, textureBottom);
-                            gl.glVertex3d(toX, fromY, fromZ);
                             gl.glTexCoord2d(textureLeft, textureTop);
-                            gl.glVertex3d(toX, fromY, toZ);
+                            gl.glVertex3d(fromX, fromY, fromZ);
                             gl.glTexCoord2d(textureRight, textureTop);
+                            gl.glVertex3d(toX, fromY, fromZ);
+                            gl.glTexCoord2d(textureRight, textureBottom);
+                            gl.glVertex3d(toX, fromY, toZ);
+                            gl.glTexCoord2d(textureLeft, textureBottom);
                             gl.glVertex3d(fromX, fromY, toZ);
                         }
                         case "north" -> {
