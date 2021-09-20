@@ -39,6 +39,7 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -123,9 +124,11 @@ public class UserInterface extends JPanel {
             public void mouseClicked(MouseEvent e) {
                 if (schematic != null) {
                     try {
-                        String output = UserInterface.this.renderer.getPath();
-                        schematic.saveTo(output);
-                        System.out.println("Schematic saved to \"" + output + "\" successfully.");
+                        String filePath = UserInterface.this.renderer.getPath();
+                        String fileName = Path.of(filePath).getFileName().toString();
+                        System.out.println("Saving \"" + fileName + "\"...");
+                        schematic.saveTo(filePath);
+                        System.out.println("Schematic saved to \"" + filePath + "\" successfully.");
                     } catch (IOException e1) {
                         System.err.println("Error saving schematic: " + e1.getMessage());
                     }
@@ -250,6 +253,7 @@ public class UserInterface extends JPanel {
     public void open(File file) {
         String path = file.getAbsolutePath();
         if (!path.isEmpty()) {
+            System.out.println("Loading \"" + path + "\"...");
             try {
                 selected = null;
                 fileTextField.setText(path);
@@ -303,6 +307,7 @@ public class UserInterface extends JPanel {
                         blockPaletteComboBox.setVisible(false);
                     }
                     loadLayer();
+                    System.out.println("Loaded \"" + path + "\" successfully.");
                 } else {
                     System.err.println("Schematic was null!");
                 }
