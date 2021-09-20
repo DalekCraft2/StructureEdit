@@ -114,7 +114,7 @@ public class SchematicRenderer { // TODO Possibly switch to GLFW, or find a way 
 
         // Setup a key callback. It will be called every time a key is pressed, repeated or released.
         glfwSetKeyCallback(window, (window, key, scancode, action, mods) -> {
-            if (action == GLFW_PRESS) {
+            if (action == GLFW_PRESS || action == GLFW_REPEAT) {
                 switch (key) {
                     case GLFW_KEY_ESCAPE -> glfwSetWindowShouldClose(window, true); // We will detect this in the rendering loop
                     case GLFW_KEY_W, GLFW_KEY_UP -> z++;
