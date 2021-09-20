@@ -1,7 +1,5 @@
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
-import com.jogamp.opengl.GL4bc;
-import com.jogamp.opengl.util.texture.Texture;
 import me.eccentric_nz.tardisschematicviewer.util.Assets;
 import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
@@ -9,11 +7,12 @@ import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.util.*;
 
-import static com.jogamp.opengl.GL4bc.*;
 import static me.eccentric_nz.tardisschematicviewer.drawing.SchematicRenderer.SCALE;
+import static org.lwjgl.opengl.GL46.*;
 
 public final class ModelRenderer {
 
@@ -21,7 +20,7 @@ public final class ModelRenderer {
         throw new UnsupportedOperationException();
     }
 
-    public static void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties) {
+    public static void readBlockState(String namespacedId, CompoundTag properties) {
         JSONObject blockState = Assets.getBlockState(namespacedId);
         String propertiesString = "";
         try {
@@ -57,7 +56,7 @@ public final class ModelRenderer {
                         if (variant.has("uvlock")) {
                             uvlock = variant.getBoolean("uvlock");
                         }
-                        drawModel(gl, model, x, y, uvlock);
+                        drawModel(model, x, y, uvlock);
                         return;
                     } else if (variants.get(variantName) instanceof JSONArray variantArray) {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
@@ -76,7 +75,7 @@ public final class ModelRenderer {
                         if (variant.has("uvlock")) {
                             uvlock = variant.getBoolean("uvlock");
                         }
-                        drawModel(gl, model, x, y, uvlock);
+                        drawModel(model, x, y, uvlock);
                         return;
                     }
                 }
@@ -116,7 +115,7 @@ public final class ModelRenderer {
                                     if (apply.has("uvlock")) {
                                         uvlock = apply.getBoolean("uvlock");
                                     }
-                                    drawModel(gl, model, x, y, uvlock);
+                                    drawModel(model, x, y, uvlock);
                                 } else if (part.get("apply") instanceof JSONArray applyArray) {
                                     // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                                     JSONObject apply = applyArray.getJSONObject(0);
@@ -134,7 +133,7 @@ public final class ModelRenderer {
                                     if (apply.has("uvlock")) {
                                         uvlock = apply.getBoolean("uvlock");
                                     }
-                                    drawModel(gl, model, x, y, uvlock);
+                                    drawModel(model, x, y, uvlock);
                                 }
                             }
                         }
@@ -164,7 +163,7 @@ public final class ModelRenderer {
                                 if (apply.has("uvlock")) {
                                     uvlock = apply.getBoolean("uvlock");
                                 }
-                                drawModel(gl, model, x, y, uvlock);
+                                drawModel(model, x, y, uvlock);
                             } else if (part.get("apply") instanceof JSONArray applyArray) {
                                 // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                                 JSONObject apply = applyArray.getJSONObject(0);
@@ -182,7 +181,7 @@ public final class ModelRenderer {
                                 if (apply.has("uvlock")) {
                                     uvlock = apply.getBoolean("uvlock");
                                 }
-                                drawModel(gl, model, x, y, uvlock);
+                                drawModel(model, x, y, uvlock);
                             }
                         }
                     }
@@ -202,7 +201,7 @@ public final class ModelRenderer {
                         if (apply.has("uvlock")) {
                             uvlock = apply.getBoolean("uvlock");
                         }
-                        drawModel(gl, model, x, y, uvlock);
+                        drawModel(model, x, y, uvlock);
                     } else if (part.get("apply") instanceof JSONArray applyArray) {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                         JSONObject apply = applyArray.getJSONObject(0);
@@ -220,25 +219,25 @@ public final class ModelRenderer {
                         if (apply.has("uvlock")) {
                             uvlock = apply.getBoolean("uvlock");
                         }
-                        drawModel(gl, model, x, y, uvlock);
+                        drawModel(model, x, y, uvlock);
                     }
                 }
             }
         }
     }
 
-    public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock) {
-        gl.glTranslated(0.5, 0.5, 0.5);
-        gl.glRotatef(-y, 0.0f, 1.0f, 0.0f);
-        gl.glRotatef(-x, 1.0f, 0.0f, 0.0f);
-        gl.glTranslated(-0.5, -0.5, -0.5);
+    public static void drawModel(JSONObject model, int x, int y, boolean uvlock) {
+        glTranslated(0.5, 0.5, 0.5);
+        glRotatef(-y, 0.0f, 1.0f, 0.0f);
+        glRotatef(-x, 1.0f, 0.0f, 0.0f);
+        glTranslated(-0.5, -0.5, -0.5);
 
         Map<String, String> textures = getTextures(model, new HashMap<>());
 
         JSONArray elements = getElements(model);
         if (elements != null) {
             for (Object element : elements) {
-                gl.glPushMatrix();
+                glPushMatrix();
 
                 JSONObject jsonElement = (JSONObject) element;
                 JSONArray from = jsonElement.getJSONArray("from");
@@ -267,18 +266,18 @@ public final class ModelRenderer {
                     double originX = origin.getDouble(0) / 16.0;
                     double originY = origin.getDouble(1) / 16.0;
                     double originZ = origin.getDouble(2) / 16.0;
-                    gl.glTranslated(originX, originY, originZ);
+                    glTranslated(originX, originY, originZ);
                     switch (axis) {
-                        case "x" -> gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
-                        case "y" -> gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
-                        case "z" -> gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+                        case "x" -> glRotatef(angle, 1.0f, 0.0f, 0.0f);
+                        case "y" -> glRotatef(angle, 0.0f, 1.0f, 0.0f);
+                        case "z" -> glRotatef(angle, 0.0f, 0.0f, 1.0f);
                     }
-                    gl.glTranslated(-originX, -originY, -originZ);
+                    glTranslated(-originX, -originY, -originZ);
                 }
 
                 if (shade) {
-                    gl.glEnable(GL_LIGHTING); // enable lighting
-                    gl.glEnable(GL_LIGHT1);
+                    glEnable(GL_LIGHTING); // enable lighting
+                    glEnable(GL_LIGHT1);
                 }
 
                 JSONObject faces = jsonElement.getJSONObject("faces");
@@ -293,13 +292,11 @@ public final class ModelRenderer {
                     int tintIndex = face.has("tintindex") ? face.getInt("tintindex") : -1;
 
                     if (tintIndex == -1) {
-                        gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+                        glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
                     }
 
                     // TODO Fix sizes of textures on blocks what are not 16x16x16.
-                    Texture texture = Assets.getTexture(textures.getOrDefault(faceTexture, "custom:missing"));
-                    texture.enable(gl);
-                    texture.bind(gl);
+                    BufferedImage texture = Assets.getTexture(textures.getOrDefault(faceTexture, "custom:missing"));
 
                     double textureLeft = uv != null ? uv.getDouble(0) / texture.getWidth() : fromX;
                     double textureTop = uv != null ? uv.getDouble(1) / texture.getHeight() : (SCALE - toY) / texture.getHeight() * 16.0;
@@ -323,107 +320,106 @@ public final class ModelRenderer {
                         // textureBottom /= frameCount;
                     }
 
-                    gl.glMatrixMode(GL_TEXTURE);
-                    gl.glLoadIdentity();
-                    gl.glTranslated(0.5, 0.5, 0.0);
-                    gl.glRotated(faceRotation, 0.0, 0.0, 1.0);
+                    glMatrixMode(GL_TEXTURE);
+                    glLoadIdentity();
+                    glTranslated(0.5, 0.5, 0.0);
+                    glRotated(faceRotation, 0.0, 0.0, 1.0);
                     if (uvlock) {
                         switch (faceName) {
-                            case "up", "down" -> gl.glRotated(-y, 0.0, 0.0, 1.0);
-                            default -> gl.glRotated(-x, 0.0, 0.0, 1.0);
+                            case "up", "down" -> glRotated(-y, 0.0, 0.0, 1.0);
+                            default -> glRotated(-x, 0.0, 0.0, 1.0);
                         }
                     }
-                    gl.glTranslated(-0.5, -0.5, 0.0);
-                    gl.glMatrixMode(GL_MODELVIEW);
+                    glTranslated(-0.5, -0.5, 0.0);
+                    glMatrixMode(GL_MODELVIEW);
 
-                    gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                    gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                    gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                    gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                    gl.glEnable(GL_TEXTURE_2D);
+                    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                    glEnable(GL_TEXTURE_2D);
 
-                    gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                    gl.glEnable(GL_BLEND);
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    glEnable(GL_BLEND);
 
-                    gl.glBegin(GL_QUADS);
+                    glBegin(GL_QUADS);
 
                     switch (faceName) {
                         case "up" -> {
-                            gl.glNormal3d(0.0f, 1.0f, 0.0f);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
-                            gl.glVertex3d(fromX, toY, fromZ);
-                            gl.glTexCoord2d(textureRight, SCALE - textureTop);
-                            gl.glVertex3d(toX, toY, fromZ);
-                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
-                            gl.glVertex3d(toX, toY, toZ);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureBottom);
-                            gl.glVertex3d(fromX, toY, toZ);
+                            glNormal3d(0.0f, 1.0f, 0.0f);
+                            glTexCoord2d(textureLeft, SCALE - textureTop);
+                            glVertex3d(fromX, toY, fromZ);
+                            glTexCoord2d(textureRight, SCALE - textureTop);
+                            glVertex3d(toX, toY, fromZ);
+                            glTexCoord2d(textureRight, SCALE - textureBottom);
+                            glVertex3d(toX, toY, toZ);
+                            glTexCoord2d(textureLeft, SCALE - textureBottom);
+                            glVertex3d(fromX, toY, toZ);
                         }
                         case "down" -> {
-                            gl.glNormal3d(0.0f, -1.0f, 0.0f);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureBottom);
-                            gl.glVertex3d(fromX, fromY, fromZ);
-                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
-                            gl.glVertex3d(toX, fromY, fromZ);
-                            gl.glTexCoord2d(textureRight, SCALE - textureTop);
-                            gl.glVertex3d(toX, fromY, toZ);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
-                            gl.glVertex3d(fromX, fromY, toZ);
+                            glNormal3d(0.0f, -1.0f, 0.0f);
+                            glTexCoord2d(textureLeft, SCALE - textureBottom);
+                            glVertex3d(fromX, fromY, fromZ);
+                            glTexCoord2d(textureRight, SCALE - textureBottom);
+                            glVertex3d(toX, fromY, fromZ);
+                            glTexCoord2d(textureRight, SCALE - textureTop);
+                            glVertex3d(toX, fromY, toZ);
+                            glTexCoord2d(textureLeft, SCALE - textureTop);
+                            glVertex3d(fromX, fromY, toZ);
                         }
                         case "north" -> {
-                            gl.glNormal3d(0.0f, 0.0f, -1.0f);
-                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
-                            gl.glVertex3d(fromX, fromY, fromZ);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureBottom);
-                            gl.glVertex3d(toX, fromY, fromZ);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
-                            gl.glVertex3d(toX, toY, fromZ);
-                            gl.glTexCoord2d(textureRight, SCALE - textureTop);
-                            gl.glVertex3d(fromX, toY, fromZ);
+                            glNormal3d(0.0f, 0.0f, -1.0f);
+                            glTexCoord2d(textureRight, SCALE - textureBottom);
+                            glVertex3d(fromX, fromY, fromZ);
+                            glTexCoord2d(textureLeft, SCALE - textureBottom);
+                            glVertex3d(toX, fromY, fromZ);
+                            glTexCoord2d(textureLeft, SCALE - textureTop);
+                            glVertex3d(toX, toY, fromZ);
+                            glTexCoord2d(textureRight, SCALE - textureTop);
+                            glVertex3d(fromX, toY, fromZ);
                         }
                         case "south" -> {
-                            gl.glNormal3d(0.0f, 0.0f, 1.0f);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureBottom);
-                            gl.glVertex3d(fromX, fromY, toZ); // bottom-left of the quad
-                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
-                            gl.glVertex3d(toX, fromY, toZ); // bottom-right of the quad
-                            gl.glTexCoord2d(textureRight, SCALE - textureTop);
-                            gl.glVertex3d(toX, toY, toZ); // top-right of the quad
-                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
-                            gl.glVertex3d(fromX, toY, toZ); // top-left of the quad
+                            glNormal3d(0.0f, 0.0f, 1.0f);
+                            glTexCoord2d(textureLeft, SCALE - textureBottom);
+                            glVertex3d(fromX, fromY, toZ); // bottom-left of the quad
+                            glTexCoord2d(textureRight, SCALE - textureBottom);
+                            glVertex3d(toX, fromY, toZ); // bottom-right of the quad
+                            glTexCoord2d(textureRight, SCALE - textureTop);
+                            glVertex3d(toX, toY, toZ); // top-right of the quad
+                            glTexCoord2d(textureLeft, SCALE - textureTop);
+                            glVertex3d(fromX, toY, toZ); // top-left of the quad
 
                         }
                         case "west" -> {
-                            gl.glNormal3d(-1.0f, 0.0f, 0.0f);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureBottom);
-                            gl.glVertex3d(fromX, fromY, fromZ);
-                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
-                            gl.glVertex3d(fromX, fromY, toZ);
-                            gl.glTexCoord2d(textureRight, SCALE - textureTop);
-                            gl.glVertex3d(fromX, toY, toZ);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
-                            gl.glVertex3d(fromX, toY, fromZ);
+                            glNormal3d(-1.0f, 0.0f, 0.0f);
+                            glTexCoord2d(textureLeft, SCALE - textureBottom);
+                            glVertex3d(fromX, fromY, fromZ);
+                            glTexCoord2d(textureRight, SCALE - textureBottom);
+                            glVertex3d(fromX, fromY, toZ);
+                            glTexCoord2d(textureRight, SCALE - textureTop);
+                            glVertex3d(fromX, toY, toZ);
+                            glTexCoord2d(textureLeft, SCALE - textureTop);
+                            glVertex3d(fromX, toY, fromZ);
                         }
                         case "east" -> {
-                            gl.glNormal3d(1.0f, 0.0f, 0.0f);
-                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
-                            gl.glVertex3d(toX, fromY, fromZ);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureBottom);
-                            gl.glVertex3d(toX, fromY, toZ);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
-                            gl.glVertex3d(toX, toY, toZ);
-                            gl.glTexCoord2d(textureRight, SCALE - textureTop);
-                            gl.glVertex3d(toX, toY, fromZ);
+                            glNormal3d(1.0f, 0.0f, 0.0f);
+                            glTexCoord2d(textureRight, SCALE - textureBottom);
+                            glVertex3d(toX, fromY, fromZ);
+                            glTexCoord2d(textureLeft, SCALE - textureBottom);
+                            glVertex3d(toX, fromY, toZ);
+                            glTexCoord2d(textureLeft, SCALE - textureTop);
+                            glVertex3d(toX, toY, toZ);
+                            glTexCoord2d(textureRight, SCALE - textureTop);
+                            glVertex3d(toX, toY, fromZ);
                         }
                     }
-                    gl.glEnd();
-                    texture.disable(gl);
-                    gl.glDisable(GL_TEXTURE_2D);
-                    gl.glDisable(GL_BLEND);
+                    glEnd();
+                    glDisable(GL_TEXTURE_2D);
+                    glDisable(GL_BLEND);
                 }
-                gl.glPopMatrix();
-                gl.glDisable(GL_LIGHTING); // enable lighting
-                gl.glDisable(GL_LIGHT1);
+                glPopMatrix();
+                glDisable(GL_LIGHTING); // enable lighting
+                glDisable(GL_LIGHT1);
             }
         }
     }

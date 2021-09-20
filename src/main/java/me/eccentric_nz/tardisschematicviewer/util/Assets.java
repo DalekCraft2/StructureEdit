@@ -1,11 +1,11 @@
 package me.eccentric_nz.tardisschematicviewer.util;
 
-import com.jogamp.opengl.util.texture.Texture;
-import com.jogamp.opengl.util.texture.TextureIO;
 import me.eccentric_nz.tardisschematicviewer.Main;
 import me.eccentric_nz.tardisschematicviewer.drawing.Block;
 import org.json.JSONObject;
 
+import javax.imageio.ImageIO;
+import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
@@ -17,7 +17,7 @@ public final class Assets {
     private static final Path ASSETS;
     private static final Map<String, JSONObject> BLOCK_STATES = new HashMap<>();
     private static final Map<String, JSONObject> MODELS = new HashMap<>();
-    private static final Map<String, Texture> TEXTURES = new HashMap<>();
+    private static final Map<String, BufferedImage> TEXTURES = new HashMap<>();
     private static final Map<String, JSONObject> ANIMATIONS = new HashMap<>();
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
@@ -39,7 +39,7 @@ public final class Assets {
             System.err.println(e.getMessage());
         }
         try {
-            TEXTURES.put("custom:missing", TextureIO.newTexture(Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png"), false, "png"));
+            TEXTURES.put("custom:missing", ImageIO.read(Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png")));
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -90,17 +90,17 @@ public final class Assets {
         return model;
     }
 
-    public static Texture getTexture(String namespacedId) {
+    public static BufferedImage getTexture(String namespacedId) {
         if (TEXTURES.containsKey(namespacedId)) {
             return TEXTURES.get(namespacedId);
         }
-        Texture texture = null;
+        BufferedImage texture = null;
         try (InputStream inputStream = new FileInputStream(getAsset(namespacedId, "textures", "png"))) {
-            texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
+            texture = ImageIO.read(inputStream);
         } catch (IOException e) {
             System.err.println(e.getMessage());
             try (InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png")) {
-                texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
+                texture = ImageIO.read(inputStream);
             } catch (IOException e1) {
                 e1.printStackTrace();
             }
