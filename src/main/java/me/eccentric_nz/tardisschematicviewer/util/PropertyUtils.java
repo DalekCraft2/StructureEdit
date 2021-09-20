@@ -7,7 +7,7 @@ import net.querz.nbt.tag.Tag;
 
 import java.util.Map;
 
-public class PropertyUtils {
+public final class PropertyUtils {
 
     private PropertyUtils() {
         throw new UnsupportedOperationException();
