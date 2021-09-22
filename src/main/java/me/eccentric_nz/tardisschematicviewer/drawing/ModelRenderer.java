@@ -306,19 +306,21 @@ public final class ModelRenderer {
                     texture.bind(gl);
 
                     double textureLeft = uv != null ? uv.getDouble(0) / texture.getWidth() : switch (faceName) {
-                        case "north", "south" -> fromZ;
-                        default -> fromX;
+                        case "up", "down", "north", "south" -> fromX;
+                        default -> fromZ;
                     };
                     double textureTop = uv != null ? uv.getDouble(1) / texture.getHeight() : switch (faceName) {
-                        case "up", "down" -> fromZ;
+                        case "up" -> fromZ;
+                        case "down" -> SCALE - toZ;
                         default -> SCALE - toY;
                     };
                     double textureRight = uv != null ? uv.getDouble(2) / texture.getWidth() : switch (faceName) {
-                        case "north", "south" -> toZ;
-                        default -> toX;
+                        case "up", "down", "north", "south" -> toX;
+                        default -> toZ;
                     };
                     double textureBottom = uv != null ? uv.getDouble(3) / texture.getHeight() : switch (faceName) {
-                        case "up", "down" -> toZ;
+                        case "up" -> toZ;
+                        case "down" -> SCALE - fromZ;
                         default -> SCALE - fromY;
                     };
 
