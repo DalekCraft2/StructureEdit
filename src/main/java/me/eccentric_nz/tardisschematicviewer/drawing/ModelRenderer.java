@@ -4,12 +4,15 @@ import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.util.texture.Texture;
 import me.eccentric_nz.tardisschematicviewer.util.Assets;
 import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
+import me.eccentric_nz.tardisschematicviewer.util.Tint;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.awt.*;
 import java.io.IOException;
+import java.util.List;
 import java.util.*;
 
 import static com.jogamp.opengl.GL4bc.*;
@@ -24,6 +27,7 @@ public final class ModelRenderer {
     }
 
     public static void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties) {
+        Color tint = Tint.getTint(namespacedId, properties);
         JSONObject blockState = Assets.getBlockState(namespacedId);
         String propertiesString = "";
         try {
@@ -45,40 +49,12 @@ public final class ModelRenderer {
                 }
                 if (contains) {
                     if (variants.has(variantName) && variants.get(variantName) instanceof JSONObject variant) {
-                        String modelPath = variant.getString("model");
-                        JSONObject model = Assets.getModel(modelPath);
-                        int x = 0;
-                        int y = 0;
-                        boolean uvlock = false;
-                        if (variant.has("x")) {
-                            x = variant.getInt("x");
-                        }
-                        if (variant.has("y")) {
-                            y = variant.getInt("y");
-                        }
-                        if (variant.has("uvlock")) {
-                            uvlock = variant.getBoolean("uvlock");
-                        }
-                        drawModel(gl, model, x, y, uvlock);
+                        sendBlockState(gl, variant, tint);
                         return;
                     } else if (variants.has(variantName) && variants.get(variantName) instanceof JSONArray variantArray) {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                         JSONObject variant = variantArray.getJSONObject(0);
-                        String modelPath = variant.getString("model");
-                        JSONObject model = Assets.getModel(modelPath);
-                        int x = 0;
-                        int y = 0;
-                        boolean uvlock = false;
-                        if (variant.has("x")) {
-                            x = variant.getInt("x");
-                        }
-                        if (variant.has("y")) {
-                            y = variant.getInt("y");
-                        }
-                        if (variant.has("uvlock")) {
-                            uvlock = variant.getBoolean("uvlock");
-                        }
-                        drawModel(gl, model, x, y, uvlock);
+                        sendBlockState(gl, variant, tint);
                         return;
                     }
                 }
@@ -109,39 +85,11 @@ public final class ModelRenderer {
                         }
                         if (contains) {
                             if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
-                                String modelPath = apply.getString("model");
-                                JSONObject model = Assets.getModel(modelPath);
-                                int x = 0;
-                                int y = 0;
-                                boolean uvlock = false;
-                                if (apply.has("x")) {
-                                    x = apply.getInt("x");
-                                }
-                                if (apply.has("y")) {
-                                    y = apply.getInt("y");
-                                }
-                                if (apply.has("uvlock")) {
-                                    uvlock = apply.getBoolean("uvlock");
-                                }
-                                drawModel(gl, model, x, y, uvlock);
+                                sendBlockState(gl, apply, tint);
                             } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
                                 // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                                 JSONObject apply = applyArray.getJSONObject(0);
-                                String modelPath = apply.getString("model");
-                                JSONObject model = Assets.getModel(modelPath);
-                                int x = 0;
-                                int y = 0;
-                                boolean uvlock = false;
-                                if (apply.has("x")) {
-                                    x = apply.getInt("x");
-                                }
-                                if (apply.has("y")) {
-                                    y = apply.getInt("y");
-                                }
-                                if (apply.has("uvlock")) {
-                                    uvlock = apply.getBoolean("uvlock");
-                                }
-                                drawModel(gl, model, x, y, uvlock);
+                                sendBlockState(gl, apply, tint);
                             }
                         }
                     } else {
@@ -156,84 +104,46 @@ public final class ModelRenderer {
                         }
                         if (contains) {
                             if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
-                                String modelPath = apply.getString("model");
-                                JSONObject model = Assets.getModel(modelPath);
-                                int x = 0;
-                                int y = 0;
-                                boolean uvlock = false;
-                                if (apply.has("x")) {
-                                    x = apply.getInt("x");
-                                }
-                                if (apply.has("y")) {
-                                    y = apply.getInt("y");
-                                }
-                                if (apply.has("uvlock")) {
-                                    uvlock = apply.getBoolean("uvlock");
-                                }
-                                drawModel(gl, model, x, y, uvlock);
+                                sendBlockState(gl, apply, tint);
                             } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
                                 // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                                 JSONObject apply = applyArray.getJSONObject(0);
-                                String modelPath = apply.getString("model");
-                                JSONObject model = Assets.getModel(modelPath);
-                                int x = 0;
-                                int y = 0;
-                                boolean uvlock = false;
-                                if (apply.has("x")) {
-                                    x = apply.getInt("x");
-                                }
-                                if (apply.has("y")) {
-                                    y = apply.getInt("y");
-                                }
-                                if (apply.has("uvlock")) {
-                                    uvlock = apply.getBoolean("uvlock");
-                                }
-                                drawModel(gl, model, x, y, uvlock);
+                                sendBlockState(gl, apply, tint);
                             }
                         }
                     }
                 } else {
                     if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
-                        String modelPath = apply.getString("model");
-                        JSONObject model = Assets.getModel(modelPath);
-                        int x = 0;
-                        int y = 0;
-                        boolean uvlock = false;
-                        if (apply.has("x")) {
-                            x = apply.getInt("x");
-                        }
-                        if (apply.has("y")) {
-                            y = apply.getInt("y");
-                        }
-                        if (apply.has("uvlock")) {
-                            uvlock = apply.getBoolean("uvlock");
-                        }
-                        drawModel(gl, model, x, y, uvlock);
+                        sendBlockState(gl, apply, tint);
                     } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                         JSONObject apply = applyArray.getJSONObject(0);
-                        String modelPath = apply.getString("model");
-                        JSONObject model = Assets.getModel(modelPath);
-                        int x = 0;
-                        int y = 0;
-                        boolean uvlock = false;
-                        if (apply.has("x")) {
-                            x = apply.getInt("x");
-                        }
-                        if (apply.has("y")) {
-                            y = apply.getInt("y");
-                        }
-                        if (apply.has("uvlock")) {
-                            uvlock = apply.getBoolean("uvlock");
-                        }
-                        drawModel(gl, model, x, y, uvlock);
+                        sendBlockState(gl, apply, tint);
                     }
                 }
             }
         }
     }
 
-    public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock) {
+    public static void sendBlockState(GL4bc gl, JSONObject jsonObject, Color tint) {
+        String modelPath = jsonObject.getString("model");
+        JSONObject model = Assets.getModel(modelPath);
+        int x = 0;
+        int y = 0;
+        boolean uvlock = false;
+        if (jsonObject.has("x")) {
+            x = jsonObject.getInt("x");
+        }
+        if (jsonObject.has("y")) {
+            y = jsonObject.getInt("y");
+        }
+        if (jsonObject.has("uvlock")) {
+            uvlock = jsonObject.getBoolean("uvlock");
+        }
+        drawModel(gl, model, x, y, uvlock, tint);
+    }
+
+    public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color tint) {
         gl.glPushMatrix();
 
         gl.glTranslated(0.5, 0.5, 0.5);
@@ -302,6 +212,9 @@ public final class ModelRenderer {
 
                     if (tintIndex == -1) {
                         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
+                    } else {
+                        float[] components = tint.getComponents(null);
+                        gl.glColor4f(components[0], components[1], components[2], components[3]);
                     }
 
                     Texture texture = Assets.getTexture(textures.getOrDefault(faceTexture, "custom:missing"));

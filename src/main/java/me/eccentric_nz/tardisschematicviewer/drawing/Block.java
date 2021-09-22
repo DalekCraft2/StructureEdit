@@ -17,6 +17,7 @@
 package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import java.awt.*;
+import java.util.Locale;
 
 /**
  * An enum of all materials accepted by the official server and client
@@ -947,6 +948,10 @@ public enum Block {
      */
     public Color getColor() {
         return color;
+    }
+
+    public static Block getFromId(String namespacedId) {
+        return valueOf(namespacedId.substring(namespacedId.indexOf(':') + 1).toUpperCase(Locale.ROOT));
     }
 
 }
