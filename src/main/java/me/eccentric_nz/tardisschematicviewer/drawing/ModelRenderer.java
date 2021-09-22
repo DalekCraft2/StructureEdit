@@ -91,10 +91,11 @@ public final class ModelRenderer {
                     JSONObject when = part.getJSONObject("when");
                     if (when.has("OR")) {
                         JSONArray or = when.getJSONArray("OR");
+                        boolean contains = true;
                         for (Object orEntryObject : or) {
+                            contains = true;
                             JSONObject orEntry = (JSONObject) orEntryObject;
                             Set<String> keySet = orEntry.keySet();
-                            boolean contains = true;
                             for (String state : keySet) {
                                 List<String> values = Arrays.asList(orEntry.getString(state).split("\\|"));
                                 if (!values.contains(properties.getString(state))) {
@@ -103,41 +104,44 @@ public final class ModelRenderer {
                                 }
                             }
                             if (contains) {
-                                if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
-                                    String modelPath = apply.getString("model");
-                                    JSONObject model = Assets.getModel(modelPath);
-                                    int x = 0;
-                                    int y = 0;
-                                    boolean uvlock = false;
-                                    if (apply.has("x")) {
-                                        x = apply.getInt("x");
-                                    }
-                                    if (apply.has("y")) {
-                                        y = apply.getInt("y");
-                                    }
-                                    if (apply.has("uvlock")) {
-                                        uvlock = apply.getBoolean("uvlock");
-                                    }
-                                    drawModel(gl, model, x, y, uvlock);
-                                } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                                    // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
-                                    JSONObject apply = applyArray.getJSONObject(0);
-                                    String modelPath = apply.getString("model");
-                                    JSONObject model = Assets.getModel(modelPath);
-                                    int x = 0;
-                                    int y = 0;
-                                    boolean uvlock = false;
-                                    if (apply.has("x")) {
-                                        x = apply.getInt("x");
-                                    }
-                                    if (apply.has("y")) {
-                                        y = apply.getInt("y");
-                                    }
-                                    if (apply.has("uvlock")) {
-                                        uvlock = apply.getBoolean("uvlock");
-                                    }
-                                    drawModel(gl, model, x, y, uvlock);
+                                break;
+                            }
+                        }
+                        if (contains) {
+                            if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
+                                String modelPath = apply.getString("model");
+                                JSONObject model = Assets.getModel(modelPath);
+                                int x = 0;
+                                int y = 0;
+                                boolean uvlock = false;
+                                if (apply.has("x")) {
+                                    x = apply.getInt("x");
                                 }
+                                if (apply.has("y")) {
+                                    y = apply.getInt("y");
+                                }
+                                if (apply.has("uvlock")) {
+                                    uvlock = apply.getBoolean("uvlock");
+                                }
+                                drawModel(gl, model, x, y, uvlock);
+                            } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
+                                // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
+                                JSONObject apply = applyArray.getJSONObject(0);
+                                String modelPath = apply.getString("model");
+                                JSONObject model = Assets.getModel(modelPath);
+                                int x = 0;
+                                int y = 0;
+                                boolean uvlock = false;
+                                if (apply.has("x")) {
+                                    x = apply.getInt("x");
+                                }
+                                if (apply.has("y")) {
+                                    y = apply.getInt("y");
+                                }
+                                if (apply.has("uvlock")) {
+                                    uvlock = apply.getBoolean("uvlock");
+                                }
+                                drawModel(gl, model, x, y, uvlock);
                             }
                         }
                     } else {
@@ -300,25 +304,24 @@ public final class ModelRenderer {
                         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
                     }
 
-                    // TODO Fix sizes of textures on blocks what are not 16x16x16.
                     Texture texture = Assets.getTexture(textures.getOrDefault(faceTexture, "custom:missing"));
                     texture.enable(gl);
                     texture.bind(gl);
 
-                    double textureLeft = uv != null ? uv.getDouble(0) / texture.getWidth() : switch (faceName) {
+                    double textureLeft = uv != null ? uv.getDouble(0) / TEXTURE_SIZE : switch (faceName) {
                         case "up", "down", "north", "south" -> fromX;
                         default -> fromZ;
                     };
-                    double textureTop = uv != null ? uv.getDouble(1) / texture.getHeight() : switch (faceName) {
+                    double textureTop = uv != null ? uv.getDouble(1) / TEXTURE_SIZE : switch (faceName) {
                         case "up" -> fromZ;
                         case "down" -> SCALE - toZ;
                         default -> SCALE - toY;
                     };
-                    double textureRight = uv != null ? uv.getDouble(2) / texture.getWidth() : switch (faceName) {
+                    double textureRight = uv != null ? uv.getDouble(2) / TEXTURE_SIZE : switch (faceName) {
                         case "up", "down", "north", "south" -> toX;
                         default -> toZ;
                     };
-                    double textureBottom = uv != null ? uv.getDouble(3) / texture.getHeight() : switch (faceName) {
+                    double textureBottom = uv != null ? uv.getDouble(3) / TEXTURE_SIZE : switch (faceName) {
                         case "up" -> toZ;
                         case "down" -> SCALE - fromZ;
                         default -> SCALE - fromY;
@@ -350,7 +353,20 @@ public final class ModelRenderer {
                     gl.glRotated(faceRotation, 0.0, 0.0, 1.0);
                     if (uvlock) {
                         switch (faceName) {
-                            case "up", "down" -> gl.glRotated(-y, 0.0, 0.0, 1.0);
+                            case "up" -> {
+                                if (x == 180) {
+                                    gl.glRotated(y, 0.0, 0.0, 1.0);
+                                } else {
+                                    gl.glRotated(-y, 0.0, 0.0, 1.0);
+                                }
+                            }
+                            case "down" -> {
+                                if (x == 180) {
+                                    gl.glRotated(-y, 0.0, 0.0, 1.0);
+                                } else {
+                                    gl.glRotated(y, 0.0, 0.0, 1.0);
+                                }
+                            }
                             default -> gl.glRotated(-x, 0.0, 0.0, 1.0);
                         }
                     }
@@ -383,14 +399,14 @@ public final class ModelRenderer {
                         }
                         case "down" -> {
                             gl.glNormal3d(0.0f, -1.0f, 0.0f);
-                            gl.glTexCoord2d(textureLeft, textureTop);
-                            gl.glVertex3d(fromX, fromY, toZ);
-                            gl.glTexCoord2d(textureRight, textureTop);
-                            gl.glVertex3d(toX, fromY, toZ);
-                            gl.glTexCoord2d(textureRight, textureBottom);
-                            gl.glVertex3d(toX, fromY, fromZ);
                             gl.glTexCoord2d(textureLeft, textureBottom);
                             gl.glVertex3d(fromX, fromY, fromZ);
+                            gl.glTexCoord2d(textureRight, textureBottom);
+                            gl.glVertex3d(toX, fromY, fromZ);
+                            gl.glTexCoord2d(textureRight, textureTop);
+                            gl.glVertex3d(toX, fromY, toZ);
+                            gl.glTexCoord2d(textureLeft, textureTop);
+                            gl.glVertex3d(fromX, fromY, toZ);
                         }
                         case "north" -> {
                             gl.glNormal3d(0.0f, 0.0f, -1.0f);

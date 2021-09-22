@@ -101,6 +101,7 @@ public class SchematicRenderer extends GLJPanel {
                 gl.glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuseValue, 0);
                 gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
                 gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
+                gl.glEnable(GL_CULL_FACE);
             }
 
             @Override
