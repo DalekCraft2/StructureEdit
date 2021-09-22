@@ -29,10 +29,7 @@ import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
 import org.json.JSONException;
 
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.IOException;
 
 import static com.jogamp.opengl.GL4bc.*;
@@ -43,6 +40,8 @@ import static com.jogamp.opengl.GL4bc.*;
 public class SchematicRenderer extends GLJPanel {
 
     public static final float SCALE = 1.0f;
+    public static final float ROTATION_SENSITIVITY = 1.0f;
+    public static final float MOTION_SENSITIVITY = 1.0f;
     /**
      * Rotational angle for x-axis in degrees.
      **/
@@ -54,7 +53,7 @@ public class SchematicRenderer extends GLJPanel {
     /**
      * The GL Utility.
      */
-    private GLU glu;
+    private final GLU glu = new GLU();
     /**
      * X location.
      */
@@ -67,6 +66,7 @@ public class SchematicRenderer extends GLJPanel {
      * Z location.
      */
     private float z = -30.0f;
+    private boolean sprint = false;
     private int mouseX = Main.FRAME_WIDTH / 2;
     private int mouseY = Main.FRAME_HEIGHT / 2;
     private int sizeX, sizeY, sizeZ, renderedHeight;
@@ -82,8 +82,7 @@ public class SchematicRenderer extends GLJPanel {
             @Override
             public void init(GLAutoDrawable drawable) {
                 GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
-                glu = new GLU(); // get GL Utilities
-                gl.glClearColor(0.8f, 0.8f, 0.8f, 0.0f); // set background (grey) color
+                gl.glClearColor(0.8f, 0.8f, 0.8f, 0.0f); // set background color to gray
                 gl.glClearDepth(1.0f); // set clear depth value to farthest
                 gl.glEnable(GL_DEPTH_TEST); // enables depth testing
                 gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
@@ -117,12 +116,14 @@ public class SchematicRenderer extends GLJPanel {
                     gl.glTranslatef(x, y, z); // translate into the screen
                     gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
                     gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
-                    // draw schematic border
-                    SchematicBorder.draw(gl, sizeX, sizeY, sizeZ);
-                    // draw a cube
                     float translateX = (float) sizeX / 2.0f;
                     float translateY = (float) sizeY / 2.0f;
                     float translateZ = (float) sizeZ / 2.0f;
+                    // bottom-left-front corner of schematic is (0,0,0) so we need to center it at the origin
+                    gl.glTranslatef(-translateX, -translateY, -translateZ);
+                    // draw schematic border
+                    SchematicBorder.draw(gl, sizeX, sizeY, sizeZ);
+                    // draw a cube
                     for (int x = 0; x < sizeX; x++) {
                         for (int y = 0; y < renderedHeight; y++) {
                             for (int z = 0; z < sizeZ; z++) {
@@ -137,10 +138,9 @@ public class SchematicRenderer extends GLJPanel {
                                         blockId = schematic.getBlockId(block);
                                         properties = schematic.getBlockProperties(block);
                                     }
-                                    gl.glPushMatrix();
 
-                                    // bottom-left-front corner of cube is (0,0,0) so we need to center it at the origin
-                                    gl.glTranslatef((x - translateX) * SCALE, (y - translateY) * SCALE, (z - translateZ) * SCALE);
+                                    gl.glPushMatrix();
+                                    gl.glTranslatef(x * SCALE, y * SCALE, z * SCALE);
                                     ModelRenderer.readBlockState(gl, blockId, properties);
                                     gl.glPopMatrix();
                                 }
@@ -162,7 +162,7 @@ public class SchematicRenderer extends GLJPanel {
                 // Setup perspective projection, with aspect ratio matches viewport
                 gl.glMatrixMode(GL_PROJECTION); // choose projection matrix
                 gl.glLoadIdentity(); // reset projection matrix
-                glu.gluPerspective(45.0, aspect, 2.0, 1000.0); // fovy, aspect, zNear, zFar
+                glu.gluPerspective(45.0, aspect, 1.0, 1000.0); // fovy, aspect, zNear, zFar
                 // Enable the model-view transform
                 gl.glMatrixMode(GL_MODELVIEW);
                 gl.glLoadIdentity(); // reset
@@ -173,13 +173,15 @@ public class SchematicRenderer extends GLJPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
+                float interval = sprint ? 2.0f : 1.0f;
                 switch (keyCode) {
-                    case KeyEvent.VK_W, KeyEvent.VK_UP -> z++;
-                    case KeyEvent.VK_S, KeyEvent.VK_DOWN -> z--;
-                    case KeyEvent.VK_A -> x++;
-                    case KeyEvent.VK_D -> x--;
-                    case KeyEvent.VK_SHIFT -> y++;
-                    case KeyEvent.VK_SPACE -> y--;
+                    case KeyEvent.VK_W, KeyEvent.VK_UP -> z += interval;
+                    case KeyEvent.VK_S, KeyEvent.VK_DOWN -> z -= interval;
+                    case KeyEvent.VK_A -> x += interval;
+                    case KeyEvent.VK_D -> x -= interval;
+                    case KeyEvent.VK_SHIFT -> y += interval;
+                    case KeyEvent.VK_SPACE -> y -= interval;
+                    case KeyEvent.VK_CONTROL -> sprint = true;
                     case KeyEvent.VK_LEFT -> {
                         if (renderedHeight > 0) {
                             renderedHeight--;
@@ -198,16 +200,35 @@ public class SchematicRenderer extends GLJPanel {
                     }
                 }
             }
+
+            @Override
+            public void keyReleased(KeyEvent e) {
+                if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
+                    sprint = false;
+                }
+            }
         });
 
-        addMouseMotionListener(new MouseAdapter() {
+        MouseAdapter mouseAdapter = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                requestFocus();
+            }
+
+            @Override
+            public void mouseWheelMoved(MouseWheelEvent e) {
+                float interval = sprint ? 2.0f : 1.0f;
+                z -= interval * e.getPreciseWheelRotation();
+            }
+
             @Override
             public void mouseDragged(MouseEvent e) {
                 requestFocus();
                 // change the camera angle
+                //                if (SwingUtilities.isLeftMouseButton(e)) {
                 final int buffer = 0;
                 if (e.getX() < mouseX - buffer || e.getX() > mouseX + buffer) {
-                    yaw += e.getX() - mouseX;
+                    yaw += (e.getX() - mouseX) * ROTATION_SENSITIVITY;
                 }
                 if (pitch + e.getY() - mouseY > 90) {
                     pitch = 90;
@@ -215,9 +236,18 @@ public class SchematicRenderer extends GLJPanel {
                     pitch = -90;
                 } else {
                     if (e.getY() < mouseY - buffer || e.getY() > mouseY + buffer) {
-                        pitch += e.getY() - mouseY;
+                        pitch += (e.getY() - mouseY) * ROTATION_SENSITIVITY;
                     }
                 }
+                //                } else if (SwingUtilities.isRightMouseButton(e)) {
+                //                    final int buffer = 0;
+                //                    if (e.getX() < mouseX - buffer || e.getX() > mouseX + buffer) {
+                //                        x += (e.getX() - mouseX) * MOTION_SENSITIVITY;
+                //                    }
+                //                    if (e.getY() < mouseY - buffer || e.getY() > mouseY + buffer) {
+                //                        y -= (e.getY() - mouseY) * MOTION_SENSITIVITY;
+                //                    }
+                //                }
                 mouseX = e.getX();
                 mouseY = e.getY();
             }
@@ -227,14 +257,11 @@ public class SchematicRenderer extends GLJPanel {
                 mouseX = e.getX();
                 mouseY = e.getY();
             }
-        });
+        };
 
-        addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                requestFocus();
-            }
-        });
+        addMouseListener(mouseAdapter);
+        addMouseWheelListener(mouseAdapter);
+        addMouseMotionListener(mouseAdapter);
     }
 
     public int getRenderedHeight() {

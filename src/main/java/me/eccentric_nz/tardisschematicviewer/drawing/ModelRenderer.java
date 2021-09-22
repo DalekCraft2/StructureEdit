@@ -17,6 +17,8 @@ import static me.eccentric_nz.tardisschematicviewer.drawing.SchematicRenderer.SC
 
 public final class ModelRenderer {
 
+    public static final int TEXTURE_SIZE = 16;
+
     private ModelRenderer() {
         throw new UnsupportedOperationException();
     }
@@ -42,7 +44,7 @@ public final class ModelRenderer {
                     }
                 }
                 if (contains) {
-                    if (variants.get(variantName) instanceof JSONObject variant) {
+                    if (variants.has(variantName) && variants.get(variantName) instanceof JSONObject variant) {
                         String modelPath = variant.getString("model");
                         JSONObject model = Assets.getModel(modelPath);
                         int x = 0;
@@ -59,7 +61,7 @@ public final class ModelRenderer {
                         }
                         drawModel(gl, model, x, y, uvlock);
                         return;
-                    } else if (variants.get(variantName) instanceof JSONArray variantArray) {
+                    } else if (variants.has(variantName) && variants.get(variantName) instanceof JSONArray variantArray) {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                         JSONObject variant = variantArray.getJSONObject(0);
                         String modelPath = variant.getString("model");
@@ -81,7 +83,7 @@ public final class ModelRenderer {
                     }
                 }
             }
-        } else if (blockState.has("multipart")) { // TODO Multipart models.
+        } else if (blockState.has("multipart")) {
             JSONArray multipart = blockState.getJSONArray("multipart");
             for (Object partObject : multipart) {
                 JSONObject part = (JSONObject) partObject;
@@ -89,19 +91,19 @@ public final class ModelRenderer {
                     JSONObject when = part.getJSONObject("when");
                     if (when.has("OR")) {
                         JSONArray or = when.getJSONArray("OR");
-                        for (Object orEntry : or) {
-                            JSONObject jsonEntry = (JSONObject) orEntry;
-                            Set<String> keySet = jsonEntry.keySet();
-                            boolean contains = false;
+                        for (Object orEntryObject : or) {
+                            JSONObject orEntry = (JSONObject) orEntryObject;
+                            Set<String> keySet = orEntry.keySet();
+                            boolean contains = true;
                             for (String state : keySet) {
-                                List<String> values = Arrays.asList(jsonEntry.getString(state).split("\\|"));
-                                if (values.contains(properties.getString("state"))) {
-                                    contains = true;
+                                List<String> values = Arrays.asList(orEntry.getString(state).split("\\|"));
+                                if (!values.contains(properties.getString(state))) {
+                                    contains = false;
                                     break;
                                 }
                             }
                             if (contains) {
-                                if (part.get("apply") instanceof JSONObject apply) {
+                                if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
                                     String modelPath = apply.getString("model");
                                     JSONObject model = Assets.getModel(modelPath);
                                     int x = 0;
@@ -117,7 +119,7 @@ public final class ModelRenderer {
                                         uvlock = apply.getBoolean("uvlock");
                                     }
                                     drawModel(gl, model, x, y, uvlock);
-                                } else if (part.get("apply") instanceof JSONArray applyArray) {
+                                } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
                                     // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                                     JSONObject apply = applyArray.getJSONObject(0);
                                     String modelPath = apply.getString("model");
@@ -140,16 +142,16 @@ public final class ModelRenderer {
                         }
                     } else {
                         Set<String> keySet = when.keySet();
-                        boolean contains = false;
+                        boolean contains = true;
                         for (String state : keySet) {
                             List<String> values = Arrays.asList(when.getString(state).split("\\|"));
-                            if (values.contains(properties.getString("state"))) {
-                                contains = true;
+                            if (!values.contains(properties.getString(state))) {
+                                contains = false;
                                 break;
                             }
                         }
                         if (contains) {
-                            if (part.get("apply") instanceof JSONObject apply) {
+                            if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
                                 String modelPath = apply.getString("model");
                                 JSONObject model = Assets.getModel(modelPath);
                                 int x = 0;
@@ -165,7 +167,7 @@ public final class ModelRenderer {
                                     uvlock = apply.getBoolean("uvlock");
                                 }
                                 drawModel(gl, model, x, y, uvlock);
-                            } else if (part.get("apply") instanceof JSONArray applyArray) {
+                            } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
                                 // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                                 JSONObject apply = applyArray.getJSONObject(0);
                                 String modelPath = apply.getString("model");
@@ -187,7 +189,7 @@ public final class ModelRenderer {
                         }
                     }
                 } else {
-                    if (part.get("apply") instanceof JSONObject apply) {
+                    if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
                         String modelPath = apply.getString("model");
                         JSONObject model = Assets.getModel(modelPath);
                         int x = 0;
@@ -203,7 +205,7 @@ public final class ModelRenderer {
                             uvlock = apply.getBoolean("uvlock");
                         }
                         drawModel(gl, model, x, y, uvlock);
-                    } else if (part.get("apply") instanceof JSONArray applyArray) {
+                    } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
                         // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
                         JSONObject apply = applyArray.getJSONObject(0);
                         String modelPath = apply.getString("model");
@@ -228,6 +230,8 @@ public final class ModelRenderer {
     }
 
     public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock) {
+        gl.glPushMatrix();
+
         gl.glTranslated(0.5, 0.5, 0.5);
         gl.glRotatef(-y, 0.0f, 1.0f, 0.0f);
         gl.glRotatef(-x, 1.0f, 0.0f, 0.0f);
@@ -237,13 +241,13 @@ public final class ModelRenderer {
 
         JSONArray elements = getElements(model);
         if (elements != null) {
-            for (Object element : elements) {
+            for (Object elementObject : elements) {
                 gl.glPushMatrix();
 
-                JSONObject jsonElement = (JSONObject) element;
-                JSONArray from = jsonElement.getJSONArray("from");
-                JSONArray to = jsonElement.getJSONArray("to");
-                JSONObject rotation = jsonElement.has("rotation") ? jsonElement.getJSONObject("rotation") : null;
+                JSONObject element = (JSONObject) elementObject;
+                JSONArray from = element.getJSONArray("from");
+                JSONArray to = element.getJSONArray("to");
+                JSONObject rotation = element.has("rotation") ? element.getJSONObject("rotation") : null;
                 JSONArray origin = null;
                 String axis = null;
                 float angle = 0.0f;
@@ -252,21 +256,21 @@ public final class ModelRenderer {
                     origin = rotation.getJSONArray("origin");
                     axis = rotation.getString("axis");
                     angle = rotation.has("angle") ? rotation.getFloat("angle") : 0.0f;
-                    rescale = rotation.has("rescale") && rotation.getBoolean("rescale");
+                    rescale = rotation.has("rescale") && rotation.getBoolean("rescale"); // TODO Rescaling.
                 }
-                boolean shade = !jsonElement.has("shade") || jsonElement.getBoolean("shade");
+                boolean shade = !element.has("shade") || element.getBoolean("shade");
 
-                double fromX = from.getDouble(0) / 16.0;
-                double fromY = from.getDouble(1) / 16.0;
-                double fromZ = from.getDouble(2) / 16.0;
-                double toX = to.getDouble(0) / 16.0;
-                double toY = to.getDouble(1) / 16.0;
-                double toZ = to.getDouble(2) / 16.0;
+                double fromX = from.getDouble(0) / (double) TEXTURE_SIZE;
+                double fromY = from.getDouble(1) / (double) TEXTURE_SIZE;
+                double fromZ = from.getDouble(2) / (double) TEXTURE_SIZE;
+                double toX = to.getDouble(0) / (double) TEXTURE_SIZE;
+                double toY = to.getDouble(1) / (double) TEXTURE_SIZE;
+                double toZ = to.getDouble(2) / (double) TEXTURE_SIZE;
 
                 if (axis != null && origin != null) {
-                    double originX = origin.getDouble(0) / 16.0;
-                    double originY = origin.getDouble(1) / 16.0;
-                    double originZ = origin.getDouble(2) / 16.0;
+                    double originX = origin.getDouble(0) / (double) TEXTURE_SIZE;
+                    double originY = origin.getDouble(1) / (double) TEXTURE_SIZE;
+                    double originZ = origin.getDouble(2) / (double) TEXTURE_SIZE;
                     gl.glTranslated(originX, originY, originZ);
                     switch (axis) {
                         case "x" -> gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
@@ -281,7 +285,7 @@ public final class ModelRenderer {
                     gl.glEnable(GL_LIGHT1);
                 }
 
-                JSONObject faces = jsonElement.getJSONObject("faces");
+                JSONObject faces = element.getJSONObject("faces");
                 Set<String> faceSet = faces.keySet();
                 for (String faceName : faceSet) {
                     JSONObject face = faces.getJSONObject(faceName);
@@ -316,8 +320,8 @@ public final class ModelRenderer {
 
                     JSONObject animation = Assets.getAnimation(textures.get(faceTexture));
                     if (animation != null) {
-                        int width = animation.has("width") ? animation.getInt("width") : 16;
-                        int height = animation.has("height") ? animation.getInt("height") : 16;
+                        int width = animation.has("width") ? animation.getInt("width") : TEXTURE_SIZE;
+                        int height = animation.has("height") ? animation.getInt("height") : TEXTURE_SIZE;
                         int frameCount = Math.abs(texture.getHeight() / height);
                         // textureTop /= frameCount;
                         // textureBottom /= frameCount;
@@ -333,6 +337,7 @@ public final class ModelRenderer {
                             default -> gl.glRotated(-x, 0.0, 0.0, 1.0);
                         }
                     }
+                    //gl.glScaled(1.0, -1.0, 1.0);
                     gl.glTranslated(-0.5, -0.5, 0.0);
                     gl.glMatrixMode(GL_MODELVIEW);
 
@@ -350,14 +355,14 @@ public final class ModelRenderer {
                     switch (faceName) {
                         case "up" -> {
                             gl.glNormal3d(0.0f, 1.0f, 0.0f);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
-                            gl.glVertex3d(fromX, toY, fromZ);
-                            gl.glTexCoord2d(textureRight, SCALE - textureTop);
-                            gl.glVertex3d(toX, toY, fromZ);
-                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
-                            gl.glVertex3d(toX, toY, toZ);
                             gl.glTexCoord2d(textureLeft, SCALE - textureBottom);
                             gl.glVertex3d(fromX, toY, toZ);
+                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
+                            gl.glVertex3d(toX, toY, toZ);
+                            gl.glTexCoord2d(textureRight, SCALE - textureTop);
+                            gl.glVertex3d(toX, toY, fromZ);
+                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
+                            gl.glVertex3d(fromX, toY, fromZ);
                         }
                         case "down" -> {
                             gl.glNormal3d(0.0f, -1.0f, 0.0f);
@@ -372,14 +377,14 @@ public final class ModelRenderer {
                         }
                         case "north" -> {
                             gl.glNormal3d(0.0f, 0.0f, -1.0f);
-                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
-                            gl.glVertex3d(fromX, fromY, fromZ);
                             gl.glTexCoord2d(textureLeft, SCALE - textureBottom);
                             gl.glVertex3d(toX, fromY, fromZ);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
-                            gl.glVertex3d(toX, toY, fromZ);
+                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
+                            gl.glVertex3d(fromX, fromY, fromZ);
                             gl.glTexCoord2d(textureRight, SCALE - textureTop);
                             gl.glVertex3d(fromX, toY, fromZ);
+                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
+                            gl.glVertex3d(toX, toY, fromZ);
                         }
                         case "south" -> {
                             gl.glNormal3d(0.0f, 0.0f, 1.0f);
@@ -406,14 +411,14 @@ public final class ModelRenderer {
                         }
                         case "east" -> {
                             gl.glNormal3d(1.0f, 0.0f, 0.0f);
-                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
-                            gl.glVertex3d(toX, fromY, fromZ);
                             gl.glTexCoord2d(textureLeft, SCALE - textureBottom);
                             gl.glVertex3d(toX, fromY, toZ);
-                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
-                            gl.glVertex3d(toX, toY, toZ);
+                            gl.glTexCoord2d(textureRight, SCALE - textureBottom);
+                            gl.glVertex3d(toX, fromY, fromZ);
                             gl.glTexCoord2d(textureRight, SCALE - textureTop);
                             gl.glVertex3d(toX, toY, fromZ);
+                            gl.glTexCoord2d(textureLeft, SCALE - textureTop);
+                            gl.glVertex3d(toX, toY, toZ);
                         }
                     }
                     gl.glEnd();
@@ -426,6 +431,7 @@ public final class ModelRenderer {
                 gl.glDisable(GL_LIGHT1);
             }
         }
+        gl.glPopMatrix();
     }
 
     private static JSONArray getElements(JSONObject model) {
