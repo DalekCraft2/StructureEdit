@@ -72,7 +72,7 @@ public final class Tint {
             case OAK_LEAVES, DARK_OAK_LEAVES, JUNGLE_LEAVES, ACACIA_LEAVES, VINE -> {
                 return Color.decode("#77AB2F");
             }
-            case WATER, FLOWING_WATER, WATER_CAULDRON -> {
+            case WATER, WATER_CAULDRON -> {
                 return Color.decode("#3F76E4");
             }
             case BIRCH_LEAVES -> {

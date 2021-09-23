@@ -343,8 +343,6 @@ public enum Block {
     FLOWER_POT(MapColor.COLOR_RED),
     FLOWERING_AZALEA(MapColor.PLANT),
     FLOWERING_AZALEA_LEAVES(MapColor.PLANT),
-    FLOWING_LAVA(changeAlpha(MapColor.FIRE, 127)),
-    FLOWING_WATER(MapColor.WATER),
     FROSTED_ICE(MapColor.ICE),
     FURNACE(MapColor.STONE),
     GILDED_BLACKSTONE(MapColor.COLOR_BLACK),
