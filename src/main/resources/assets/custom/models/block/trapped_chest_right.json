@@ -1,0 +1,8 @@
+{
+    "credit": "Made by DalekCraft",
+    "parent": "custom:block/template_chest_right",
+    "textures": {
+        "0": "minecraft:entity/chest/trapped_right",
+        "particle": "minecraft:entity/chest/trapped_right"
+    }
+}
