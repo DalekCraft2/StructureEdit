@@ -63,6 +63,10 @@ public final class Main {
                 e.printStackTrace();
             }
             frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+            Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+            int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+            int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+            frame.setLocation(x, y);
             frame.getContentPane().add(renderer, BorderLayout.CENTER);
             frame.setVisible(true);
             FPSAnimator animator = new FPSAnimator(renderer, 30, true);
