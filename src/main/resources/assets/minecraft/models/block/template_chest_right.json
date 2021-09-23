@@ -1,9 +1,5 @@
 {
 	"credit": "Made by DalekCraft",
-	"textures": {
-		"0": "minecraft:entity/chest/normal_right",
-		"particle": "minecraft:entity/chest/normal_right"
-	},
 	"elements": [
 		{
 			"from": [0, 0, 1],

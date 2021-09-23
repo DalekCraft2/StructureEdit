@@ -43,6 +43,7 @@ public final class Assets {
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
+        ANIMATIONS.put("minecraft:missing", null);
     }
 
     private Assets() {

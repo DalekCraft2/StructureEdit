@@ -280,7 +280,7 @@ public final class ModelRenderer {
                         textureTop = temp;
                     }
 
-                    JSONObject animation = Assets.getAnimation(textures.get(faceTexture));
+                    JSONObject animation = Assets.getAnimation(textures.getOrDefault(faceTexture, "minecraft:missing"));
                     if (animation != null) {
                         int width = animation.has("width") ? animation.getInt("width") : TEXTURE_SIZE;
                         int height = animation.has("height") ? animation.getInt("height") : TEXTURE_SIZE;
