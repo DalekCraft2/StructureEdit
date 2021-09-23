@@ -3,6 +3,6 @@
     "parent": "minecraft:block/template_chest",
     "textures": {
         "0": "minecraft:entity/chest/trapped",
-        "particle": "minecraft:entity/chest/trapped"
+        "particle": "minecraft:block/oak_planks"
     }
 }
