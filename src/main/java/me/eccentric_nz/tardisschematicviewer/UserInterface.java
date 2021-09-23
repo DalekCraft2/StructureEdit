@@ -161,7 +161,7 @@ public class UserInterface extends JPanel {
         plusButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (currentLayer < UserInterface.this.renderer.getRenderedHeight() - 1) {
+                if (currentLayer < schematic.getSize()[1] - 1) {
                     currentLayer++;
                     loadLayer();
                 }
@@ -286,9 +286,14 @@ public class UserInterface extends JPanel {
             nbtTextField.setEnabled(false);
             blockPaletteComboBox.setSelectedItem(null);
             blockPaletteComboBox.setEnabled(false);
-            renderer.setPath(file);
-            schematic = renderer.getSchematic();
             currentLayer = 0;
+            Schematic schematic = Schematic.openFrom(file);
+            if (schematic != null) {
+                this.schematic = schematic;
+                renderer.setSchematic(schematic);
+            } else {
+                System.err.println("Not a schematic file!");
+            }
             if (schematic != null) {
                 if (schematic instanceof NbtSchematic nbtSchematic) {
                     if (nbtSchematic.hasPaletteList()) {

@@ -28,11 +28,8 @@ import me.eccentric_nz.tardisschematicviewer.schematic.NbtSchematic;
 import me.eccentric_nz.tardisschematicviewer.schematic.Schematic;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
-import org.json.JSONException;
 
 import java.awt.event.*;
-import java.io.File;
-import java.io.IOException;
 
 import static com.jogamp.opengl.GL4bc.*;
 
@@ -74,7 +71,6 @@ public class SchematicRenderer extends GLJPanel {
     private int sizeX, sizeY, sizeZ, renderedHeight;
     private Schematic schematic;
     private ListTag<CompoundTag> palette;
-    private File path;
     private Animator animator;
 
     public SchematicRenderer(GLCapabilitiesImmutable userCapsRequest) {
@@ -274,27 +270,8 @@ public class SchematicRenderer extends GLJPanel {
         addMouseMotionListener(mouseAdapter);
     }
 
-    public int getRenderedHeight() {
-        return renderedHeight;
-    }
-
     public void setPalette(ListTag<CompoundTag> palette) {
         this.palette = palette;
-    }
-
-    public void setPath(File path) throws IOException, JSONException {
-        this.path = path;
-        Schematic schematic = Schematic.openFrom(path);
-        if (schematic != null) {
-            setSchematic(schematic);
-            renderedHeight = sizeY;
-        } else {
-            System.err.println("Not a schematic file!");
-        }
-    }
-
-    public Schematic getSchematic() {
-        return schematic;
     }
 
     public void setSchematic(Schematic schematic) {
@@ -304,5 +281,6 @@ public class SchematicRenderer extends GLJPanel {
         sizeX = size[0];
         sizeY = size[1];
         sizeZ = size[2];
+        renderedHeight = sizeY;
     }
 }
