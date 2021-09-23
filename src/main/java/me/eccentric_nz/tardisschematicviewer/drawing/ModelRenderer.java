@@ -7,6 +7,8 @@ import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
 import me.eccentric_nz.tardisschematicviewer.util.Tint;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
+import net.querz.nbt.tag.IntTag;
+import net.querz.nbt.tag.StringTag;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -74,9 +76,16 @@ public final class ModelRenderer {
                             Set<String> keySet = orEntry.keySet();
                             for (String state : keySet) {
                                 List<String> values = Arrays.asList(orEntry.getString(state).split("\\|"));
-                                if (!values.contains(properties.getString(state))) {
-                                    contains = false;
-                                    break;
+                                if (properties.get(state) instanceof StringTag) {
+                                    if (!values.contains(properties.getString(state))) {
+                                        contains = false;
+                                        break;
+                                    }
+                                } else if (properties.get(state) instanceof IntTag) {
+                                    if (!values.contains(String.valueOf(properties.getInt(state)))) {
+                                        contains = false;
+                                        break;
+                                    }
                                 }
                             }
                             if (contains) {
@@ -97,9 +106,16 @@ public final class ModelRenderer {
                         boolean contains = true;
                         for (String state : keySet) {
                             List<String> values = Arrays.asList(when.getString(state).split("\\|"));
-                            if (!values.contains(properties.getString(state))) {
-                                contains = false;
-                                break;
+                            if (properties.get(state) instanceof StringTag) {
+                                if (!values.contains(properties.getString(state))) {
+                                    contains = false;
+                                    break;
+                                }
+                            } else if (properties.get(state) instanceof IntTag) {
+                                if (!values.contains(String.valueOf(properties.getInt(state)))) {
+                                    contains = false;
+                                    break;
+                                }
                             }
                         }
                         if (contains) {
