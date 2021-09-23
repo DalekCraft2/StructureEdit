@@ -186,7 +186,7 @@ public final class ModelRenderer {
                     origin = rotation.getJSONArray("origin");
                     axis = rotation.getString("axis");
                     angle = rotation.has("angle") ? rotation.getFloat("angle") : 0.0f;
-                    rescale = rotation.has("rescale") && rotation.getBoolean("rescale"); // TODO Rescaling.
+                    rescale = rotation.has("rescale") && rotation.getBoolean("rescale");
                 }
                 boolean shade = !element.has("shade") || element.getBoolean("shade");
 
@@ -202,10 +202,26 @@ public final class ModelRenderer {
                     double originY = origin.getDouble(1) / (double) TEXTURE_SIZE;
                     double originZ = origin.getDouble(2) / (double) TEXTURE_SIZE;
                     gl.glTranslated(originX, originY, originZ);
+                    double rescaleFactor = Math.sqrt(Math.pow(16.0, 2.0) + Math.pow(16.0, 2.0)) / (double) TEXTURE_SIZE; // TODO Do not assume that the angle is 45.0.
                     switch (axis) {
-                        case "x" -> gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
-                        case "y" -> gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
-                        case "z" -> gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+                        case "x" -> {
+                            gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
+                            if (rescale) {
+                                gl.glScaled(1.0, rescaleFactor, rescaleFactor);
+                            }
+                        }
+                        case "y" -> {
+                            gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
+                            if (rescale) {
+                                gl.glScaled(rescaleFactor, 1.0, rescaleFactor);
+                            }
+                        }
+                        case "z" -> {
+                            gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+                            if (rescale) {
+                                gl.glScaled(rescaleFactor, rescaleFactor, 1.0);
+                            }
+                        }
                     }
                     gl.glTranslated(-originX, -originY, -originZ);
                 }
