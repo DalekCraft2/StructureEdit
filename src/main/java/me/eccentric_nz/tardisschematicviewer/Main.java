@@ -48,10 +48,9 @@ public final class Main {
             GLProfile profile = GLProfile.getDefault();
             GLCapabilities capabilities = new GLCapabilities(profile);
             SchematicRenderer renderer = new SchematicRenderer(capabilities);
-            renderer.setBackground(Color.GRAY);
-            JFrame frame = new JFrame();
             UserInterface userInterface = new UserInterface(renderer);
-            frame.getContentPane().add(userInterface, BorderLayout.PAGE_START);
+            JFrame frame = new JFrame();
+            frame.add(userInterface);
             frame.setTitle("TARDIS Schematic Viewer");
             try {
                 frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")));
@@ -63,7 +62,6 @@ public final class Main {
             int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
             int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
             frame.setLocation(x, y);
-            frame.getContentPane().add(renderer, BorderLayout.CENTER);
             frame.setVisible(true);
 
             // by default, an AWT Frame doesn't do anything when you click

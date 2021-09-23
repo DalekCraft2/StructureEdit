@@ -31,16 +31,12 @@ public final class SquareButton extends JButton {
     @Serial
     private static final long serialVersionUID = 7623333770238989633L;
 
-    private final int size;
     private final int[] position = new int[3];
 
-    public SquareButton(int size, Block block, int x, int y, int z) {
-        this.size = size;
+    public SquareButton(Block block, int x, int y, int z) {
         position[0] = x;
         position[1] = y;
         position[2] = z;
-        setPreferredSize(new Dimension(size, size));
-        setSize(getPreferredSize());
         Color color = block.getColor();
         Color noAlpha = new Color(color.getRed(), color.getGreen(), color.getBlue());
         setBackground(noAlpha);
@@ -52,10 +48,5 @@ public final class SquareButton extends JButton {
 
     public int[] getPosition() {
         return position;
-    }
-
-    @Override
-    public Dimension getPreferredSize() {
-        return new Dimension(size, size);
     }
 }
