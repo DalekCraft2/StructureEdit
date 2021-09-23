@@ -7,6 +7,7 @@ import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 
 public class TardisSchematic implements Schematic {
@@ -18,8 +19,8 @@ public class TardisSchematic implements Schematic {
     }
 
     @Override
-    public void saveTo(String path) throws IOException {
-        GzipUtils.zip(getData(), path);
+    public void saveTo(File file) throws IOException {
+        GzipUtils.zip(getData(), file);
     }
 
     @Override
@@ -122,7 +123,7 @@ public class TardisSchematic implements Schematic {
     public void setBlockPropertiesAsString(Object block, String propertiesString) throws IOException {
         String replaced = propertiesString.replace('[', '{').replace(']', '}').replace('=', ':');
         try {
-            CompoundTag parse = (CompoundTag) SNBTUtil.fromSNBT(replaced);
+            SNBTUtil.fromSNBT(replaced); // Check whether the SNBT is parsable
             ((JSONObject) block).put("data", getBlockId(block) + propertiesString);
         } catch (StringIndexOutOfBoundsException ignored) {
         }

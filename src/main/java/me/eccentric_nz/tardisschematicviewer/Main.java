@@ -26,7 +26,6 @@ import javax.swing.*;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public final class Main {
 
     public static final int FRAME_WIDTH = 1024;
     public static final int FRAME_HEIGHT = 600;
-    public static Path assets = null;
+    public static File assets = null;
 
     private Main() {
         throw new UnsupportedOperationException();
@@ -77,16 +76,20 @@ public final class Main {
             if (argList.contains("-assets")) {
                 if (argList.size() > argList.indexOf("-assets") + 1) {
                     String assetsArg = argList.get(argList.indexOf("-assets") + 1);
-                    assets = Path.of(assetsArg);
+                    try {
+                        assets = new File(assetsArg).getCanonicalFile();
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
             if (argList.contains("-path")) {
                 if (argList.size() > argList.indexOf("-path") + 1) {
                     try {
                         String path = argList.get(argList.indexOf("-path") + 1);
-                        File file = new File(path);
+                        File file = new File(path).getCanonicalFile();
                         userInterface.open(file);
-                    } catch (JSONException e) {
+                    } catch (JSONException | IOException e) {
                         System.err.println("Error reading schematic: " + e.getMessage());
                     }
                 }

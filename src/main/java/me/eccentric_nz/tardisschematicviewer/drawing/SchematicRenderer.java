@@ -31,6 +31,7 @@ import net.querz.nbt.tag.ListTag;
 import org.json.JSONException;
 
 import java.awt.event.*;
+import java.io.File;
 import java.io.IOException;
 
 import static com.jogamp.opengl.GL4bc.*;
@@ -73,7 +74,7 @@ public class SchematicRenderer extends GLJPanel {
     private int sizeX, sizeY, sizeZ, renderedHeight;
     private Schematic schematic;
     private ListTag<CompoundTag> palette;
-    private String path;
+    private File path;
     private Animator animator;
 
     public SchematicRenderer(GLCapabilitiesImmutable userCapsRequest) {
@@ -281,11 +282,7 @@ public class SchematicRenderer extends GLJPanel {
         this.palette = palette;
     }
 
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) throws IOException, JSONException {
+    public void setPath(File path) throws IOException, JSONException {
         this.path = path;
         Schematic schematic = Schematic.openFrom(path);
         if (schematic != null) {

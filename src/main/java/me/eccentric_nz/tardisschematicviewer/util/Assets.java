@@ -8,13 +8,12 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 
 public final class Assets {
-    private static final Path ASSETS;
+    private static final File ASSETS;
     private static final Map<String, JSONObject> BLOCK_STATES = new HashMap<>();
     private static final Map<String, JSONObject> MODELS = new HashMap<>();
     private static final Map<String, Texture> TEXTURES = new HashMap<>();
@@ -50,19 +49,19 @@ public final class Assets {
         throw new UnsupportedOperationException();
     }
 
-    public static InputStream getAsset(String namespacedId, String folder, String extension) throws FileNotFoundException {
+    public static InputStream getAsset(String namespacedId, String folder, String extension) throws IOException {
         String[] split = namespacedId.split(":");
         String namespace = split.length > 1 ? split[0] : "minecraft";
         String id = split.length > 1 ? split[1] : split[0];
         String internalPath = "assets/" + namespace + "/" + folder + "/" + id + "." + extension;
         InputStream internalStream = Main.class.getClassLoader().getResourceAsStream(internalPath);
         if (internalStream != null) {
-            System.out.println("Getting internal asset from \"" + internalPath + "\"");
+            System.out.println("Getting internal asset from " + internalPath);
             return internalStream;
         }
-        File file = new File(ASSETS.toString() + File.separator + namespace + File.separator + folder + File.separator + id + "." + extension);
+        File file = new File(ASSETS, namespace + File.separator + folder + File.separator + id + "." + extension).getCanonicalFile();
         if (file.exists()) {
-            System.out.println("Getting asset from \"" + file.getAbsolutePath() + "\"");
+            System.out.println("Getting asset from " + file);
         }
         return new FileInputStream(file);
     }

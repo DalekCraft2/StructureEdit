@@ -6,17 +6,19 @@ import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.File;
 import java.io.IOException;
 
 public interface Schematic {
 
-    static Schematic openFrom(String path) throws IOException, JSONException {
+    static Schematic openFrom(File file) throws IOException, JSONException {
+        String path = file.getCanonicalPath();
         switch (path.substring(path.lastIndexOf('.') + 1)) {
             case "tschm" -> {
-                return new TardisSchematic(new JSONObject(GzipUtils.unzip(path)));
+                return new TardisSchematic(new JSONObject(GzipUtils.unzip(file)));
             }
             case "nbt" -> {
-                return new NbtSchematic(NBTUtil.read(path));
+                return new NbtSchematic(NBTUtil.read(file));
             }
             default -> {
                 return null;
@@ -24,7 +26,7 @@ public interface Schematic {
         }
     }
 
-    void saveTo(String path) throws IOException;
+    void saveTo(File file) throws IOException;
 
     Object getData();
 

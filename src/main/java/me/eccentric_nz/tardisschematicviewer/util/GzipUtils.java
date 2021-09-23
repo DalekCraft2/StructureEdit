@@ -30,14 +30,14 @@ public final class GzipUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static void zip(Object o, String path) throws IOException {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(path); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream)) {
+    public static void zip(Object o, File file) throws IOException {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream)) {
             gzipOutputStream.write(o.toString().getBytes());
         }
     }
 
-    public static String unzip(String path) throws IOException {
-        try (GZIPInputStream gzipInputStream = new GZIPInputStream(new FileInputStream(path)); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
+    public static String unzip(File file) throws IOException {
+        try (GZIPInputStream gzipInputStream = new GZIPInputStream(new FileInputStream(file)); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
             int length;
             while ((length = inputStreamReader.read(buffer)) > 0) {

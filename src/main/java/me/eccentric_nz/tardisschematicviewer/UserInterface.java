@@ -52,7 +52,7 @@ public class UserInterface extends JPanel {
     private static final FileNameExtensionFilter TSCHM_FILTER = new FileNameExtensionFilter("TARDIS schematic file", "tschm");
     private static final FileNameExtensionFilter NBT_FILTER = new FileNameExtensionFilter("NBT file", "nbt");
     private final SchematicRenderer renderer;
-    private File lastDirectory = new File(".");
+    private File lastDirectory;
     private FileFilter lastFileFilter = TSCHM_FILTER;
     private SquareButton selected;
     private int currentLayer;
@@ -83,6 +83,14 @@ public class UserInterface extends JPanel {
     private final ActionListener actionListener = this::squareActionPerformed;
     private JLabel blockPaletteLabel;
 
+    {
+        try {
+            lastDirectory = new File(".").getCanonicalFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
     public UserInterface(SchematicRenderer renderer) {
         this.renderer = renderer;
         $$$setupUI$$$();
@@ -104,9 +112,15 @@ public class UserInterface extends JPanel {
                 chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int result = chooser.showOpenDialog(panel);
                 if (result == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
+                    File file;
+                    try {
+                        file = chooser.getSelectedFile().getCanonicalFile();
+                        open(file);
+                    } catch (IOException ex) {
+                        ex.printStackTrace();
+                    }
                     lastDirectory = chooser.getCurrentDirectory();
                     lastFileFilter = chooser.getFileFilter();
-                    open(chooser.getSelectedFile());
                 }
             }
         });
@@ -128,20 +142,15 @@ public class UserInterface extends JPanel {
                     chooser.setFileFilter(lastFileFilter);
                     chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                     int result = chooser.showSaveDialog(panel);
-                    if (result == JFileChooser.APPROVE_OPTION) {
-                        if (chooser.getSelectedFile() != null) {
-                            lastDirectory = chooser.getCurrentDirectory();
-                            try {
-                                String filePath = chooser.getSelectedFile().getAbsolutePath();
-                                String fileName = chooser.getSelectedFile().getName();
-                                System.out.println("Saving \"" + fileName + "\"...");
-                                schematic.saveTo(filePath);
-                                System.out.println("Schematic saved to \"" + filePath + "\" successfully.");
-                            } catch (IOException e1) {
-                                System.err.println("Error saving schematic: " + e1.getMessage());
-                            }
-                        } else {
-                            System.err.println("No file selected!");
+                    if (result == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
+                        lastDirectory = chooser.getCurrentDirectory();
+                        try {
+                            File file = chooser.getSelectedFile().getCanonicalFile();
+                            System.out.println("Saving " + file + "...");
+                            schematic.saveTo(file);
+                            System.out.println("Schematic saved to " + file + " successfully.");
+                        } catch (IOException e1) {
+                            System.err.println("Error saving schematic: " + e1.getMessage());
                         }
                     }
                 } else {
@@ -263,71 +272,66 @@ public class UserInterface extends JPanel {
     }
 
     public void open(File file) {
-        String path = file.getAbsolutePath();
-        if (!path.isEmpty()) {
-            System.out.println("Loading \"" + path + "\"...");
-            try {
-                selected = null;
-                fileTextField.setText(path);
-                blockPositionTextField.setText(null);
-                blockPositionTextField.setEnabled(false);
-                blockComboBox.setSelectedItem(null);
-                blockComboBox.setEnabled(false);
-                propertiesTextField.setText(null);
-                propertiesTextField.setEnabled(false);
-                nbtTextField.setText(null);
-                nbtTextField.setEnabled(false);
-                blockPaletteComboBox.setSelectedItem(null);
-                blockPaletteComboBox.setEnabled(false);
-                renderer.setPath(path);
-                schematic = renderer.getSchematic();
-                currentLayer = 0;
-                if (schematic != null) {
-                    if (schematic instanceof NbtSchematic nbtSchematic) {
-                        if (nbtSchematic.hasPaletteList()) {
-                            int palettesSize = nbtSchematic.getPaletteList().size();
-                            Integer[] palettes = new Integer[palettesSize];
-                            for (int i = 0; i < palettesSize; i++) {
-                                palettes[i] = i;
-                            }
-                            paletteComboBox.setModel(new DefaultComboBoxModel<>(palettes));
-                            paletteComboBox.setSelectedIndex(0);
-                            palette = nbtSchematic.getPaletteListEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
-                            renderer.setPalette(palette);
-                            paletteLabel.setVisible(true);
-                            paletteComboBox.setVisible(true);
-                        } else {
-                            palette = nbtSchematic.getPalette();
-                            renderer.setPalette(palette);
-                            paletteLabel.setVisible(false);
-                            paletteComboBox.setVisible(false);
+        System.out.println("Loading " + file + " ...");
+        try {
+            selected = null;
+            fileTextField.setText(file.toString());
+            blockPositionTextField.setText(null);
+            blockPositionTextField.setEnabled(false);
+            blockComboBox.setSelectedItem(null);
+            blockComboBox.setEnabled(false);
+            propertiesTextField.setText(null);
+            propertiesTextField.setEnabled(false);
+            nbtTextField.setText(null);
+            nbtTextField.setEnabled(false);
+            blockPaletteComboBox.setSelectedItem(null);
+            blockPaletteComboBox.setEnabled(false);
+            renderer.setPath(file);
+            schematic = renderer.getSchematic();
+            currentLayer = 0;
+            if (schematic != null) {
+                if (schematic instanceof NbtSchematic nbtSchematic) {
+                    if (nbtSchematic.hasPaletteList()) {
+                        int palettesSize = nbtSchematic.getPaletteList().size();
+                        Integer[] palettes = new Integer[palettesSize];
+                        for (int i = 0; i < palettesSize; i++) {
+                            palettes[i] = i;
                         }
-                        int paletteSize = palette.size();
-                        Integer[] paletteIds = new Integer[paletteSize];
-                        for (int i = 0; i < paletteSize; i++) {
-                            paletteIds[i] = i;
-                        }
-                        nbtLabel.setVisible(true);
-                        nbtTextField.setVisible(true);
-                        blockPaletteLabel.setVisible(true);
-                        blockPaletteComboBox.setModel(new DefaultComboBoxModel<>(paletteIds));
-                        blockPaletteComboBox.setVisible(true);
+                        paletteComboBox.setModel(new DefaultComboBoxModel<>(palettes));
+                        paletteComboBox.setSelectedIndex(0);
+                        palette = nbtSchematic.getPaletteListEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
+                        renderer.setPalette(palette);
+                        paletteLabel.setVisible(true);
+                        paletteComboBox.setVisible(true);
                     } else {
-                        nbtLabel.setVisible(false);
-                        nbtTextField.setVisible(false);
-                        blockPaletteLabel.setVisible(false);
-                        blockPaletteComboBox.setVisible(false);
+                        palette = nbtSchematic.getPalette();
+                        renderer.setPalette(palette);
+                        paletteLabel.setVisible(false);
+                        paletteComboBox.setVisible(false);
                     }
-                    loadLayer();
-                    System.out.println("Loaded \"" + path + "\" successfully.");
+                    int paletteSize = palette.size();
+                    Integer[] paletteIds = new Integer[paletteSize];
+                    for (int i = 0; i < paletteSize; i++) {
+                        paletteIds[i] = i;
+                    }
+                    nbtLabel.setVisible(true);
+                    nbtTextField.setVisible(true);
+                    blockPaletteLabel.setVisible(true);
+                    blockPaletteComboBox.setModel(new DefaultComboBoxModel<>(paletteIds));
+                    blockPaletteComboBox.setVisible(true);
                 } else {
-                    System.err.println("Schematic was null!");
+                    nbtLabel.setVisible(false);
+                    nbtTextField.setVisible(false);
+                    blockPaletteLabel.setVisible(false);
+                    blockPaletteComboBox.setVisible(false);
                 }
-            } catch (IOException | JSONException e) {
-                System.err.println("Error reading schematic: " + e.getMessage());
+                loadLayer();
+                System.out.println("Loaded " + file + " successfully.");
+            } else {
+                System.err.println("Schematic was null!");
             }
-        } else {
-            System.err.println("No file selected!");
+        } catch (IOException | JSONException e) {
+            System.err.println("Error reading schematic: " + e.getMessage());
         }
     }
 

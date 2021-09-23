@@ -8,6 +8,7 @@ import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
 
+import java.io.File;
 import java.io.IOException;
 
 public class NbtSchematic implements Schematic {
@@ -19,8 +20,8 @@ public class NbtSchematic implements Schematic {
     }
 
     @Override
-    public void saveTo(String path) throws IOException {
-        NBTUtil.write(getData(), path);
+    public void saveTo(File file) throws IOException {
+        NBTUtil.write(getData(), file);
     }
 
     @Override
