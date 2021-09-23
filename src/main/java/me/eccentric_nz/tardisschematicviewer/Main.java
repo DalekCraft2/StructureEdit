@@ -33,8 +33,8 @@ public final class Main {
 
     public static final int FRAME_WIDTH = 1024;
     public static final int FRAME_HEIGHT = 600;
-    public static File assets = null;
-    public static boolean debug = false;
+    public static File assets;
+    public static boolean debug;
 
     private Main() {
         throw new UnsupportedOperationException();
@@ -72,30 +72,33 @@ public final class Main {
             renderer.requestFocus();
 
             ArrayList<String> argList = new ArrayList<>(List.of(args));
-            if (argList.contains("-debug")) {
-                debug = true;
-            }
-            if (argList.contains("-assets")) {
-                if (argList.size() > argList.indexOf("-assets") + 1) {
-                    String assetsArg = argList.get(argList.indexOf("-assets") + 1);
-                    try {
-                        assets = new File(assetsArg).getCanonicalFile();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+            debug = argList.contains("-debug");
+            String assetsArg = getArgument(argList, "-assets");
+            if (assetsArg != null) {
+                try {
+                    assets = new File(assetsArg).getCanonicalFile();
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
             }
-            if (argList.contains("-path")) {
-                if (argList.size() > argList.indexOf("-path") + 1) {
-                    try {
-                        String path = argList.get(argList.indexOf("-path") + 1);
-                        File file = new File(path).getCanonicalFile();
-                        userInterface.open(file);
-                    } catch (JSONException | IOException e) {
-                        System.err.println("Error reading schematic: " + e.getMessage());
-                    }
+            String path = getArgument(argList, "-path");
+            if (path != null) {
+                try {
+                    File file = new File(path).getCanonicalFile();
+                    userInterface.open(file);
+                } catch (JSONException | IOException e) {
+                    System.err.println("Error reading schematic: " + e.getMessage());
                 }
             }
         });
+    }
+
+    public static String getArgument(ArrayList<String> argList, String argumentName) {
+        if (argList.contains(argumentName)) {
+            if (argList.size() > argList.indexOf(argumentName) + 1) {
+                return argList.get(argList.indexOf(argumentName) + 1);
+            }
+        }
+        return null;
     }
 }
