@@ -2,8 +2,7 @@ package me.eccentric_nz.tardisschematicviewer.drawing;
 
 import com.jogamp.opengl.GL4bc;
 
-import static com.jogamp.opengl.GL.GL_COLOR_BUFFER_BIT;
-import static com.jogamp.opengl.GL2.GL_CURRENT_BIT;
+import static com.jogamp.opengl.GL4bc.GL_CURRENT_BIT;
 import static com.jogamp.opengl.GL4bc.GL_LINES;
 
 public class SchematicBorder {
