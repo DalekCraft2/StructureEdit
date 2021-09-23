@@ -39,7 +39,6 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
-import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -123,14 +122,27 @@ public class UserInterface extends JPanel {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (schematic != null) {
-                    try {
-                        String filePath = UserInterface.this.renderer.getPath();
-                        String fileName = Path.of(filePath).getFileName().toString();
-                        System.out.println("Saving \"" + fileName + "\"...");
-                        schematic.saveTo(filePath);
-                        System.out.println("Schematic saved to \"" + filePath + "\" successfully.");
-                    } catch (IOException e1) {
-                        System.err.println("Error saving schematic: " + e1.getMessage());
+                    JFileChooser chooser = new JFileChooser(lastDirectory);
+                    chooser.addChoosableFileFilter(TSCHM_FILTER);
+                    chooser.addChoosableFileFilter(NBT_FILTER);
+                    chooser.setFileFilter(lastFileFilter);
+                    chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+                    int result = chooser.showSaveDialog(panel);
+                    if (result == JFileChooser.APPROVE_OPTION) {
+                        if (chooser.getSelectedFile() != null) {
+                            lastDirectory = chooser.getCurrentDirectory();
+                            try {
+                                String filePath = chooser.getSelectedFile().getAbsolutePath();
+                                String fileName = chooser.getSelectedFile().getName();
+                                System.out.println("Saving \"" + fileName + "\"...");
+                                schematic.saveTo(filePath);
+                                System.out.println("Schematic saved to \"" + filePath + "\" successfully.");
+                            } catch (IOException e1) {
+                                System.err.println("Error saving schematic: " + e1.getMessage());
+                            }
+                        } else {
+                            System.err.println("No file selected!");
+                        }
                     }
                 } else {
                     System.err.println("Schematic was null!");
