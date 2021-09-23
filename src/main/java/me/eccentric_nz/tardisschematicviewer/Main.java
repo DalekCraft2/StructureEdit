@@ -18,15 +18,12 @@ package me.eccentric_nz.tardisschematicviewer;
 
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.util.FPSAnimator;
 import me.eccentric_nz.tardisschematicviewer.drawing.SchematicRenderer;
 import org.json.JSONException;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Path;
@@ -54,7 +51,6 @@ public final class Main {
             renderer.setBackground(Color.GRAY);
             JFrame frame = new JFrame();
             UserInterface userInterface = new UserInterface(renderer);
-            userInterface.setSize(1024, 85);
             frame.getContentPane().add(userInterface, BorderLayout.PAGE_START);
             frame.setTitle("TARDIS Schematic Viewer");
             try {
@@ -69,30 +65,13 @@ public final class Main {
             frame.setLocation(x, y);
             frame.getContentPane().add(renderer, BorderLayout.CENTER);
             frame.setVisible(true);
-            FPSAnimator animator = new FPSAnimator(renderer, 30, true);
 
             // by default, an AWT Frame doesn't do anything when you click
             // the close button; this bit of code will terminate the program when
             // the window is asked to close
-            frame.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosing(WindowEvent e) {
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-                    // Use a dedicated thread to run the stop() to ensure that the
-                    // animator stops before program exits.
-                    new Thread(() -> {
-                        if (animator.isStarted()) {
-                            animator.stop();
-                        }
-                        frame.dispose();
-                        System.exit(0);
-                    }).start();
-                }
-            });
-            renderer.setFocusable(true);
             renderer.requestFocus();
-            renderer.setVisible(true);
-            animator.start();
 
             ArrayList<String> argList = new ArrayList<>(List.of(args));
             if (argList.contains("-assets")) {

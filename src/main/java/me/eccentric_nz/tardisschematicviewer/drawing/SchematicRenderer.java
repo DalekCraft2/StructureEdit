@@ -22,6 +22,7 @@ import com.jogamp.opengl.GLCapabilitiesImmutable;
 import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.util.Animator;
 import me.eccentric_nz.tardisschematicviewer.Main;
 import me.eccentric_nz.tardisschematicviewer.schematic.NbtSchematic;
 import me.eccentric_nz.tardisschematicviewer.schematic.Schematic;
@@ -73,8 +74,8 @@ public class SchematicRenderer extends GLJPanel {
     private Schematic schematic;
     private ListTag<CompoundTag> palette;
     private String path;
+    private Animator animator;
 
-    // TODO Right-click could make the view moveable, and scrolling could zoom.
     public SchematicRenderer(GLCapabilitiesImmutable userCapsRequest) {
         super(userCapsRequest);
 
@@ -102,10 +103,16 @@ public class SchematicRenderer extends GLJPanel {
                 gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
                 gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
                 gl.glEnable(GL_CULL_FACE);
+
+                animator = new Animator(SchematicRenderer.this);
+                animator.setRunAsFastAsPossible(true);
+
+                animator.start();
             }
 
             @Override
             public void dispose(GLAutoDrawable drawable) {
+                animator.stop();
             }
 
             @Override
@@ -210,6 +217,7 @@ public class SchematicRenderer extends GLJPanel {
             }
         });
 
+        // TODO Right-clicking could make the view moveable, and scrolling could zoom.
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
