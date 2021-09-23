@@ -103,8 +103,8 @@ public class UserInterface extends JPanel {
                 chooser.addChoosableFileFilter(NBT_FILTER);
                 chooser.setFileFilter(lastFileFilter);
                 chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                chooser.showOpenDialog(panel);
-                if (chooser.getSelectedFile() != null) {
+                int result = chooser.showOpenDialog(panel);
+                if (result == JFileChooser.APPROVE_OPTION && chooser.getSelectedFile() != null) {
                     lastDirectory = chooser.getCurrentDirectory();
                     lastFileFilter = chooser.getFileFilter();
                     open(chooser.getSelectedFile());
