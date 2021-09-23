@@ -291,10 +291,6 @@ public class UserInterface extends JPanel {
             if (schematic != null) {
                 this.schematic = schematic;
                 renderer.setSchematic(schematic);
-            } else {
-                System.err.println("Not a schematic file!");
-            }
-            if (schematic != null) {
                 if (schematic instanceof NbtSchematic nbtSchematic) {
                     if (nbtSchematic.hasPaletteList()) {
                         int palettesSize = nbtSchematic.getPaletteList().size();
@@ -333,13 +329,14 @@ public class UserInterface extends JPanel {
                 loadLayer();
                 System.out.println("Loaded " + file + " successfully.");
             } else {
-                System.err.println("Schematic was null!");
+                System.err.println("Not a schematic file!");
             }
         } catch (IOException | JSONException e) {
             System.err.println("Error reading schematic: " + e.getMessage());
         }
     }
 
+    // TODO Make the editor built into the 3D view instead of being a layer-by-layer editor.
     public void loadLayer() {
         if (schematic != null) {
             gridPanel.removeAll();
