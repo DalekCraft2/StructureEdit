@@ -56,11 +56,13 @@ public final class Assets {
         String internalPath = "assets/" + namespace + "/" + folder + "/" + id + "." + extension;
         InputStream internalStream = Main.class.getClassLoader().getResourceAsStream(internalPath);
         if (internalStream != null) {
-            System.out.println("Getting internal asset from " + internalPath);
+            if (Main.debug) {
+                System.out.println("Getting internal asset from " + internalPath);
+            }
             return internalStream;
         }
         File file = new File(ASSETS, namespace + File.separator + folder + File.separator + id + "." + extension).getCanonicalFile();
-        if (file.exists()) {
+        if (file.exists() && Main.debug) {
             System.out.println("Getting asset from " + file);
         }
         return new FileInputStream(file);

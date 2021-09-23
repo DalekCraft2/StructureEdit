@@ -34,6 +34,7 @@ public final class Main {
     public static final int FRAME_WIDTH = 1024;
     public static final int FRAME_HEIGHT = 600;
     public static File assets = null;
+    public static boolean debug = false;
 
     private Main() {
         throw new UnsupportedOperationException();
@@ -73,6 +74,9 @@ public final class Main {
             renderer.requestFocus();
 
             ArrayList<String> argList = new ArrayList<>(List.of(args));
+            if (argList.contains("-debug")) {
+                debug = true;
+            }
             if (argList.contains("-assets")) {
                 if (argList.size() > argList.indexOf("-assets") + 1) {
                     String assetsArg = argList.get(argList.indexOf("-assets") + 1);
