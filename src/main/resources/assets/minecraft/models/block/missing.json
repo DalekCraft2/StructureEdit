@@ -1,6 +1,6 @@
 {
     "textures": {
-        "missing": "custom:block/missing"
+        "missing": "minecraft:block/missing"
     },
     "elements": [
         {   "from": [0, 0, 0],

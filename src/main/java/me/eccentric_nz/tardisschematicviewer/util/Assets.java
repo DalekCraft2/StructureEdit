@@ -29,17 +29,17 @@ public final class Assets {
             BLOCK_STATES.put(namespacedId, blockState);
         }
         try {
-            BLOCK_STATES.put("custom:missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/custom/blockstates/missing.json")));
+            BLOCK_STATES.put("minecraft:missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/minecraft/blockstates/missing.json")));
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
         try {
-            MODELS.put("custom:block/missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/custom/models/block/missing.json")));
+            MODELS.put("minecraft:block/missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/minecraft/models/block/missing.json")));
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
         try {
-            TEXTURES.put("custom:missing", TextureIO.newTexture(Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png"), false, "png"));
+            TEXTURES.put("minecraft:missing", TextureIO.newTexture(Main.class.getClassLoader().getResourceAsStream("assets/minecraft/textures/missing.png"), false, "png"));
         } catch (IOException e) {
             System.err.println(e.getMessage());
         }
@@ -49,15 +49,21 @@ public final class Assets {
         throw new UnsupportedOperationException();
     }
 
-    public static File getAsset(String namespacedId, String folder, String extension) {
+    public static InputStream getAsset(String namespacedId, String folder, String extension) throws FileNotFoundException {
         String[] split = namespacedId.split(":");
         String namespace = split.length > 1 ? split[0] : "minecraft";
         String id = split.length > 1 ? split[1] : split[0];
+        String internalPath = "assets/" + namespace + "/" + folder + "/" + id + "." + extension;
+        InputStream internalStream = Main.class.getClassLoader().getResourceAsStream(internalPath);
+        if (internalStream != null) {
+            System.out.println("Getting internal asset from \"" + internalPath + "\"");
+            return internalStream;
+        }
         File file = new File(ASSETS.toString() + File.separator + namespace + File.separator + folder + File.separator + id + "." + extension);
         if (file.exists()) {
             System.out.println("Getting asset from \"" + file.getAbsolutePath() + "\"");
         }
-        return file;
+        return new FileInputStream(file);
     }
 
     public static JSONObject getBlockState(String namespacedId) {
@@ -69,7 +75,7 @@ public final class Assets {
             blockState = toJson(namespacedId, "blockstates", "json");
         } catch (IOException e) {
             System.err.println(e.getMessage());
-            blockState = BLOCK_STATES.get("custom:missing");
+            blockState = BLOCK_STATES.get("minecraft:missing");
         }
         BLOCK_STATES.put(namespacedId, blockState);
         return blockState;
@@ -84,7 +90,7 @@ public final class Assets {
             model = toJson(namespacedId, "models", "json");
         } catch (IOException e) {
             System.err.println(e.getMessage());
-            model = MODELS.get("custom:block/missing");
+            model = MODELS.get("minecraft:block/missing");
         }
         MODELS.put(namespacedId, model);
         return model;
@@ -95,11 +101,11 @@ public final class Assets {
             return TEXTURES.get(namespacedId);
         }
         Texture texture = null;
-        try (InputStream inputStream = new FileInputStream(getAsset(namespacedId, "textures", "png"))) {
+        try (InputStream inputStream = getAsset(namespacedId, "textures", "png")) {
             texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
         } catch (IOException e) {
             System.err.println(e.getMessage());
-            try (InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("assets/custom/textures/missing.png")) {
+            try (InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("assets/minecraft/textures/missing.png")) {
                 texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
             } catch (IOException e1) {
                 e1.printStackTrace();
@@ -123,7 +129,7 @@ public final class Assets {
     }
 
     public static JSONObject toJson(String namespacedId, String folder, String extension) throws IOException {
-        try (InputStream inputStream = new FileInputStream(getAsset(namespacedId, folder, extension)); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
+        try (InputStream inputStream = getAsset(namespacedId, folder, extension); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
             int length;
             while ((length = inputStreamReader.read(buffer)) > 0) {

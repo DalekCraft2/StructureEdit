@@ -1,6 +1,6 @@
 {
     "credit": "Made by DalekCraft",
-    "parent": "custom:block/template_chest",
+    "parent": "minecraft:block/template_chest",
     "textures": {
         "0": "minecraft:entity/chest/normal",
         "particle": "minecraft:entity/chest/normal"

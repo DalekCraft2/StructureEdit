@@ -1,7 +1,7 @@
 {
     "variants": {
         "": {
-            "model": "custom:block/lava"
+            "model": "minecraft:block/lava"
         }
     }
 }

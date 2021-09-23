@@ -1,48 +1,48 @@
 {
     "variants": {
         "facing=north,type=single": {
-            "model": "custom:block/trapped_chest"
+            "model": "minecraft:block/trapped_chest"
         },
         "facing=north,type=left": {
-            "model": "custom:block/trapped_chest_left"
+            "model": "minecraft:block/trapped_chest_left"
         },
         "facing=north,type=right": {
-            "model": "custom:block/trapped_chest_right"
+            "model": "minecraft:block/trapped_chest_right"
         },
         "facing=east,type=single": {
-            "model": "custom:block/trapped_chest",
+            "model": "minecraft:block/trapped_chest",
             "y": 90
         },
         "facing=east,type=left": {
-            "model": "custom:block/trapped_chest_left",
+            "model": "minecraft:block/trapped_chest_left",
             "y": 90
         },
         "facing=east,type=right": {
-            "model": "custom:block/trapped_chest_right",
+            "model": "minecraft:block/trapped_chest_right",
             "y": 90
         },
         "facing=south,type=single": {
-            "model": "custom:block/trapped_chest",
+            "model": "minecraft:block/trapped_chest",
             "y": 180
         },
         "facing=south,type=left": {
-            "model": "custom:block/trapped_chest_left",
+            "model": "minecraft:block/trapped_chest_left",
             "y": 180
         },
         "facing=south,type=right": {
-            "model": "custom:block/trapped_chest_right",
+            "model": "minecraft:block/trapped_chest_right",
             "y": 180
         },
         "facing=west,type=single": {
-            "model": "custom:block/trapped_chest",
+            "model": "minecraft:block/trapped_chest",
             "y": 270
         },
         "facing=west,type=left": {
-            "model": "custom:block/trapped_chest_left",
+            "model": "minecraft:block/trapped_chest_left",
             "y": 270
         },
         "facing=west,type=right": {
-            "model": "custom:block/trapped_chest_right",
+            "model": "minecraft:block/trapped_chest_right",
             "y": 270
         }
     }

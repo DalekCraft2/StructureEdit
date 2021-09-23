@@ -249,7 +249,7 @@ public final class ModelRenderer {
                         gl.glColor4f(components[0], components[1], components[2], components[3]);
                     }
 
-                    Texture texture = Assets.getTexture(textures.getOrDefault(faceTexture, "custom:missing"));
+                    Texture texture = Assets.getTexture(textures.getOrDefault(faceTexture, "minecraft:missing"));
                     texture.enable(gl);
                     texture.bind(gl);
 
@@ -454,9 +454,9 @@ public final class ModelRenderer {
                     } else if (parent != null) {
                         getTextureFromId(parent, textures, substring);
                     } else {
-                        textures.put(substring, "custom:missing");
+                        textures.put(substring, "minecraft:missing");
                     }
-                } else if (!textures.containsKey(name) || textures.get(name).equals("custom:missing")) {
+                } else if (!textures.containsKey(name) || textures.get(name).equals("minecraft:missing")) {
                     textures.put(name, path);
                 }
             }
