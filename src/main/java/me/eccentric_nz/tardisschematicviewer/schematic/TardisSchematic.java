@@ -10,13 +10,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 
-public class TardisSchematic implements Schematic {
-
-    private final JSONObject schematic;
-
-    public TardisSchematic(JSONObject schematic) {
-        this.schematic = schematic;
-    }
+public record TardisSchematic(JSONObject schematic) implements Schematic {
 
     @Override
     public void saveTo(File file) throws IOException {

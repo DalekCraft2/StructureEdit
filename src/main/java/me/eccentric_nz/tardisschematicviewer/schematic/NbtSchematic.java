@@ -11,13 +11,7 @@ import net.querz.nbt.tag.ListTag;
 import java.io.File;
 import java.io.IOException;
 
-public class NbtSchematic implements Schematic {
-
-    private final NamedTag schematic;
-
-    public NbtSchematic(NamedTag schematic) {
-        this.schematic = schematic;
-    }
+public record NbtSchematic(NamedTag schematic) implements Schematic {
 
     @Override
     public void saveTo(File file) throws IOException {
