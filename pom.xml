@@ -11,28 +11,28 @@
 
     <name>TARDISSchematicViewer</name>
     <description>Java OpenGL Viewer for .tschm files</description>
-    <url>https://github.com/eccentricdevotion/TARDISSchematicViewer</url>
+    <url>https://github.com/DalekCraft2/TARDISSchematicViewer</url>
     <inceptionYear>2015</inceptionYear>
     <licenses>
         <license>
             <name>GNU General Public License v3.0</name>
-            <url>https://github.com/eccentricdevotion/TARDISSchematicViewer/blob/master/LICENSE.txt</url>
+            <url>https://github.com/DalekCraft2/TARDISSchematicViewer/blob/main/LICENSE.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
 
     <scm>
-        <connection>scm:git:ssh://github.com/eccentricdevotion/TARDISSchematicViewer</connection>
-        <developerConnection>scm:git:ssh://github.com/eccentricdevotion/TARDISSchematicViewer</developerConnection>
+        <connection>scm:git:ssh://github.com/DalekCraft2/TARDISSchematicViewer</connection>
+        <developerConnection>scm:git:ssh://github.com/DalekCraft2/TARDISSchematicViewer</developerConnection>
     </scm>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/eccentricdevotion/TARDISSchematicViewer/issues</url>
+        <url>https://github.com/DalekCraft2/TARDISSchematicViewer/issues</url>
     </issueManagement>
-    <ciManagement>
-        <system>Jenkins</system>
-        <url>http://tardisjenkins.duckdns.org:8080</url>
-    </ciManagement>
+<!--    <ciManagement>-->
+<!--        <system>Jenkins</system>-->
+<!--        <url>http://tardisjenkins.duckdns.org:8080</url>-->
+<!--    </ciManagement>-->
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
