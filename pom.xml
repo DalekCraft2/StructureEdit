@@ -4,13 +4,13 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>me.eccentric_nz</groupId>
-    <artifactId>tardis-schematic-viewer</artifactId>
+    <groupId>me.dalekcraft</groupId>
+    <artifactId>schematic-viewer</artifactId>
     <version>2.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>TARDISSchematicViewer</name>
-    <description>Java OpenGL Viewer for .tschm files</description>
+    <name>SchematicViewer</name>
+    <description>A Java OpenGL application for viewing Minecraft schematic files</description>
     <url>https://github.com/DalekCraft2/TARDISSchematicViewer</url>
     <inceptionYear>2015</inceptionYear>
     <licenses>
@@ -33,6 +33,13 @@
 <!--        <system>Jenkins</system>-->
 <!--        <url>http://tardisjenkins.duckdns.org:8080</url>-->
 <!--    </ciManagement>-->
+    <distributionManagement>
+        <repository>
+            <id>dalekcraft-repo</id>
+            <name>GitHub DalekCraft Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/DalekCraft2/TARDISSchematicViewer</url>
+        </repository>
+    </distributionManagement>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
