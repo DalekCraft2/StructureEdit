@@ -16,6 +16,9 @@
  */
 package me.dalekcraft.structureedit.drawing;
 
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
 import java.awt.*;
 import java.util.Locale;
 
@@ -925,7 +928,7 @@ public enum Block {
         this.color = color;
     }
 
-    public static String[] strings() {
+    public static String @NotNull [] strings() {
         String[] blockNames = new String[values().length];
         int i = 0;
         for (Block block : values()) {
@@ -935,7 +938,9 @@ public enum Block {
         return blockNames;
     }
 
-    private static Color changeAlpha(Color color, int alpha) {
+    @Contract("_, _ -> new")
+    @NotNull
+    private static Color changeAlpha(@NotNull Color color, int alpha) {
         return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
     }
 
@@ -948,7 +953,7 @@ public enum Block {
         return color;
     }
 
-    public static Block getFromId(String namespacedId) {
+    public static Block getFromId(@NotNull String namespacedId) {
         return valueOf(namespacedId.substring(namespacedId.indexOf(':') + 1).toUpperCase(Locale.ROOT));
     }
 

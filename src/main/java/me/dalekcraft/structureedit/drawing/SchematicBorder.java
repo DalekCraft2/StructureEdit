@@ -1,13 +1,14 @@
 package me.dalekcraft.structureedit.drawing;
 
 import com.jogamp.opengl.GL4bc;
+import org.jetbrains.annotations.NotNull;
 
 import static com.jogamp.opengl.GL4bc.GL_CURRENT_BIT;
 import static com.jogamp.opengl.GL4bc.GL_LINES;
 
 public class SchematicBorder {
 
-    public static void draw(GL4bc gl, float sizeX, float sizeY, float sizeZ) {
+    public static void draw(@NotNull GL4bc gl, float sizeX, float sizeY, float sizeZ) {
         // save the current color
         gl.glPushAttrib(GL_CURRENT_BIT);
 

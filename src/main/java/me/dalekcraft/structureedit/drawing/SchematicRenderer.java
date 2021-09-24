@@ -28,6 +28,7 @@ import me.dalekcraft.structureedit.schematic.NbtSchematic;
 import me.dalekcraft.structureedit.schematic.Schematic;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.event.*;
 
@@ -222,13 +223,13 @@ public class SchematicRenderer extends GLJPanel {
             }
 
             @Override
-            public void mouseWheelMoved(MouseWheelEvent e) {
+            public void mouseWheelMoved(@NotNull MouseWheelEvent e) {
                 float interval = sprint ? 2.0f : 1.0f;
                 z -= interval * e.getPreciseWheelRotation();
             }
 
             @Override
-            public void mouseDragged(MouseEvent e) {
+            public void mouseDragged(@NotNull MouseEvent e) {
                 requestFocus();
                 // change the camera angle
                 //                if (SwingUtilities.isLeftMouseButton(e)) {
@@ -259,7 +260,7 @@ public class SchematicRenderer extends GLJPanel {
             }
 
             @Override
-            public void mouseMoved(MouseEvent e) {
+            public void mouseMoved(@NotNull MouseEvent e) {
                 mouseX = e.getX();
                 mouseY = e.getY();
             }

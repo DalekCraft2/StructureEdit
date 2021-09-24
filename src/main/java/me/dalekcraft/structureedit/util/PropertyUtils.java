@@ -4,6 +4,8 @@ import net.querz.nbt.tag.ByteTag;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.StringTag;
 import net.querz.nbt.tag.Tag;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Map;
 
@@ -13,7 +15,8 @@ public final class PropertyUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static CompoundTag byteToString(CompoundTag nbt) {
+    @Contract("_ -> param1")
+    public static CompoundTag byteToString(@NotNull CompoundTag nbt) {
         for (Map.Entry<String, Tag<?>> entry : nbt) {
             if (entry.getValue() instanceof ByteTag) {
                 String key = entry.getKey();

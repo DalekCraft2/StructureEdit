@@ -4,6 +4,8 @@ import me.dalekcraft.structureedit.util.GzipUtils;
 import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -22,13 +24,15 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
         return schematic;
     }
 
+    @Contract(pure = true)
     @Override
+    @NotNull
     public String getFormat() {
         return "tschm";
     }
 
     @Override
-    public int[] getSize() {
+    public int @NotNull [] getSize() {
         JSONObject size = schematic.getJSONObject("dimensions");
         return new int[]{size.getInt("width"), size.getInt("height"), size.getInt("length")};
     }
@@ -62,6 +66,7 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
     }
 
     @Override
+    @NotNull
     public String getBlockId(Object block) {
         String state = ((JSONObject) block).getString("data");
         int nameEndIndex = state.length();
@@ -108,13 +113,14 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
     }
 
     @Override
+    @NotNull
     public String getBlockPropertiesAsString(Object block) {
         String state = ((JSONObject) block).getString("data");
         return !state.substring(getBlockId(block).length()).equals("") ? state.substring(getBlockId(block).length()) : "[]";
     }
 
     @Override
-    public void setBlockPropertiesAsString(Object block, String propertiesString) throws IOException {
+    public void setBlockPropertiesAsString(Object block, @NotNull String propertiesString) throws IOException {
         String replaced = propertiesString.replace('[', '{').replace(']', '}').replace('=', ':');
         try {
             SNBTUtil.fromSNBT(replaced); // Check whether the SNBT is parsable

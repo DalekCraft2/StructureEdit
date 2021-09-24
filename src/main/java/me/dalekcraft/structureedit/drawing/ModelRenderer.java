@@ -9,6 +9,9 @@ import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.StringTag;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -141,7 +144,7 @@ public final class ModelRenderer {
         }
     }
 
-    public static void sendBlockState(GL4bc gl, JSONObject jsonObject, Color tint) {
+    public static void sendBlockState(GL4bc gl, @NotNull JSONObject jsonObject, Color tint) {
         String modelPath = jsonObject.getString("model");
         JSONObject model = Assets.getModel(modelPath);
         int x = 0;
@@ -159,7 +162,7 @@ public final class ModelRenderer {
         drawModel(gl, model, x, y, uvlock, tint);
     }
 
-    public static void drawModel(GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color tint) {
+    public static void drawModel(@NotNull GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color tint) {
         gl.glPushMatrix();
 
         gl.glTranslated(0.5, 0.5, 0.5);
@@ -412,7 +415,8 @@ public final class ModelRenderer {
         gl.glPopMatrix();
     }
 
-    private static JSONArray getElements(JSONObject model) {
+    @Nullable
+    private static JSONArray getElements(@NotNull JSONObject model) {
         if (model.has("elements")) {
             return model.getJSONArray("elements");
         } else if (model.has("parent")) {
@@ -422,7 +426,8 @@ public final class ModelRenderer {
         }
     }
 
-    private static Map<String, String> getTextures(JSONObject model, Map<String, String> textures) {
+    @Contract("_, _ -> param2")
+    private static Map<String, String> getTextures(@NotNull JSONObject model, Map<String, String> textures) {
         if (model.has("textures")) {
             JSONObject json = model.getJSONObject("textures");
             Set<String> names = json.keySet();
@@ -436,7 +441,7 @@ public final class ModelRenderer {
         return textures;
     }
 
-    private static void getTextureFromId(JSONObject model, Map<String, String> textures, String name) {
+    private static void getTextureFromId(@NotNull JSONObject model, Map<String, String> textures, String name) {
         JSONObject parent = null;
         if (model.has("parent")) {
             parent = Assets.getModel(model.getString("parent"));

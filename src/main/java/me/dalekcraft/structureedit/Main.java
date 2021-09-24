@@ -19,6 +19,8 @@ package me.dalekcraft.structureedit;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import me.dalekcraft.structureedit.drawing.SchematicRenderer;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 
 import javax.imageio.ImageIO;
@@ -93,7 +95,8 @@ public final class Main {
         });
     }
 
-    public static String getArgument(ArrayList<String> argList, String argumentName) {
+    @Nullable
+    public static String getArgument(@NotNull ArrayList<String> argList, String argumentName) {
         if (argList.contains(argumentName)) {
             if (argList.size() > argList.indexOf(argumentName) + 1) {
                 return argList.get(argList.indexOf(argumentName) + 1);

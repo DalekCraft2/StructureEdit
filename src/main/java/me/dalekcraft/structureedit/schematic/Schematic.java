@@ -3,6 +3,8 @@ package me.dalekcraft.structureedit.schematic;
 import me.dalekcraft.structureedit.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.tag.CompoundTag;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -11,7 +13,8 @@ import java.io.IOException;
 
 public interface Schematic {
 
-    static Schematic openFrom(File file) throws IOException, JSONException {
+    @Nullable
+    static Schematic openFrom(@NotNull File file) throws IOException, JSONException {
         String path = file.getCanonicalPath();
         switch (path.substring(path.lastIndexOf('.') + 1)) {
             case "tschm" -> {

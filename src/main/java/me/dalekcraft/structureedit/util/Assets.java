@@ -4,6 +4,8 @@ import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 import me.dalekcraft.structureedit.Main;
 import me.dalekcraft.structureedit.drawing.Block;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.io.*;
@@ -49,7 +51,8 @@ public final class Assets {
         throw new UnsupportedOperationException();
     }
 
-    public static InputStream getAsset(String namespacedId, String folder, String extension) throws IOException {
+    @NotNull
+    public static InputStream getAsset(@NotNull String namespacedId, String folder, String extension) throws IOException {
         String[] split = namespacedId.split(":");
         String namespace = split.length > 1 ? split[0] : "minecraft";
         String id = split.length > 1 ? split[1] : split[0];
@@ -130,6 +133,8 @@ public final class Assets {
         return animation;
     }
 
+    @Contract("_, _, _ -> new")
+    @NotNull
     public static JSONObject toJson(String namespacedId, String folder, String extension) throws IOException {
         try (InputStream inputStream = getAsset(namespacedId, folder, extension); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
@@ -141,6 +146,8 @@ public final class Assets {
         }
     }
 
+    @Contract("_ -> new")
+    @NotNull
     public static JSONObject toJson(InputStream inputStream) throws IOException {
         try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];

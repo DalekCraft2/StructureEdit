@@ -2,6 +2,7 @@ package me.dalekcraft.structureedit.util;
 
 import me.dalekcraft.structureedit.drawing.Block;
 import net.querz.nbt.tag.CompoundTag;
+import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 
@@ -11,6 +12,7 @@ public final class Tint {
         throw new UnsupportedOperationException();
     }
 
+    @NotNull
     public static Color getTint(String namespacedId, CompoundTag properties) {
         Block block = Block.getFromId(namespacedId);
         switch (block) {

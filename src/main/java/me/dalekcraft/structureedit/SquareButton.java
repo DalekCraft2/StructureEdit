@@ -17,6 +17,8 @@
 package me.dalekcraft.structureedit;
 
 import me.dalekcraft.structureedit.drawing.Block;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -33,7 +35,7 @@ public final class SquareButton extends JButton {
 
     private final int[] position = new int[3];
 
-    public SquareButton(Block block, int x, int y, int z) {
+    public SquareButton(@NotNull Block block, int x, int y, int z) {
         position[0] = x;
         position[1] = y;
         position[2] = z;
@@ -46,6 +48,7 @@ public final class SquareButton extends JButton {
         setBorder(new LineBorder(Color.BLACK));
     }
 
+    @Contract(pure = true)
     public int[] getPosition() {
         return position;
     }

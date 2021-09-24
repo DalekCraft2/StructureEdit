@@ -7,6 +7,9 @@ import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,13 +26,15 @@ public record NbtSchematic(NamedTag schematic) implements Schematic {
         return schematic;
     }
 
+    @Contract(pure = true)
     @Override
+    @NotNull
     public String getFormat() {
         return "nbt";
     }
 
     @Override
-    public int[] getSize() {
+    public int @NotNull [] getSize() {
         ListTag<IntTag> size = ((CompoundTag) schematic.getTag()).getListTag("size").asIntTagList();
         return new int[]{size.get(0).asInt(), size.get(1).asInt(), size.get(2).asInt()};
     }
@@ -44,6 +49,7 @@ public record NbtSchematic(NamedTag schematic) implements Schematic {
     }
 
     @Override
+    @Nullable
     public CompoundTag getBlock(int x, int y, int z) {
         for (CompoundTag block : getBlockList()) {
             ListTag<IntTag> positionTag = block.getListTag("pos").asIntTagList();
@@ -160,7 +166,7 @@ public record NbtSchematic(NamedTag schematic) implements Schematic {
         setBlockProperties(block, properties, palette);
     }
 
-    public CompoundTag getBlockNbt(CompoundTag block) {
+    public CompoundTag getBlockNbt(@NotNull CompoundTag block) {
         return block.getCompoundTag("nbt");
     }
 
@@ -192,27 +198,27 @@ public record NbtSchematic(NamedTag schematic) implements Schematic {
         setBlockNbt(block, nbt);
     }
 
-    public int getBlockState(CompoundTag block) {
+    public int getBlockState(@NotNull CompoundTag block) {
         return block.getInt("state");
     }
 
-    public void setBlockState(CompoundTag block, int state) {
+    public void setBlockState(@NotNull CompoundTag block, int state) {
         block.putInt("state", state);
     }
 
-    public CompoundTag getState(CompoundTag block) {
+    public CompoundTag getState(@NotNull CompoundTag block) {
         return getPalette().get(block.getInt("state"));
     }
 
-    public void setState(CompoundTag block, CompoundTag state) {
+    public void setState(@NotNull CompoundTag block, CompoundTag state) {
         getPalette().set(block.getInt("state"), state);
     }
 
-    public CompoundTag getState(CompoundTag block, ListTag<CompoundTag> palette) {
+    public CompoundTag getState(@NotNull CompoundTag block, @NotNull ListTag<CompoundTag> palette) {
         return palette.get(block.getInt("state"));
     }
 
-    public void setState(CompoundTag block, CompoundTag state, ListTag<CompoundTag> palette) {
+    public void setState(@NotNull CompoundTag block, CompoundTag state, @NotNull ListTag<CompoundTag> palette) {
         palette.set(block.getInt("state"), state);
     }
 

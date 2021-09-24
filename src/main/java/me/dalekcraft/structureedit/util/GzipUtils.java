@@ -16,6 +16,8 @@
  */
 package me.dalekcraft.structureedit.util;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.zip.GZIPInputStream;
@@ -30,7 +32,7 @@ public final class GzipUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static void zip(Object o, File file) throws IOException {
+    public static void zip(@NotNull Object o, File file) throws IOException {
         try (FileOutputStream fileOutputStream = new FileOutputStream(file); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream)) {
             gzipOutputStream.write(o.toString().getBytes());
         }

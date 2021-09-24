@@ -25,6 +25,7 @@ import me.dalekcraft.structureedit.schematic.NbtSchematic;
 import me.dalekcraft.structureedit.schematic.Schematic;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
 import javax.swing.*;
@@ -267,7 +268,7 @@ public class UserInterface extends JPanel {
         });
     }
 
-    public void open(File file) {
+    public void open(@NotNull File file) {
         System.out.println("Loading " + file + " ...");
         try {
             selected = null;
