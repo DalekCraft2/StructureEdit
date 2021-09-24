@@ -356,6 +356,8 @@ public class UserInterface extends JPanel {
                         Block blockEnum = Block.valueOf(blockName);
                         SquareButton squareButton = new SquareButton(blockEnum, x, currentLayer, z);
                         squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
+                        Font font = squareButton.getFont();
+                        squareButton.setFont(new Font(font.getFontName(), font.getStyle(), buttonSideLength));
                         squareButton.addActionListener(actionListener);
                         gridPanel.add(squareButton);
                     }
