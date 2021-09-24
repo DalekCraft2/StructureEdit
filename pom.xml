@@ -29,15 +29,15 @@
         <system>GitHub Issues</system>
         <url>https://github.com/DalekCraft2/TARDISSchematicViewer/issues</url>
     </issueManagement>
-<!--    <ciManagement>-->
-<!--        <system>Jenkins</system>-->
-<!--        <url>http://tardisjenkins.duckdns.org:8080</url>-->
-<!--    </ciManagement>-->
+    <ciManagement>
+        <system>Github Packages</system>
+        <url>https://maven.pkg.github.com/dalekcraft2/TARDISSchematicViewer</url>
+    </ciManagement>
     <distributionManagement>
         <repository>
             <id>dalekcraft-repo</id>
             <name>GitHub DalekCraft Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/DalekCraft2/TARDISSchematicViewer</url>
+            <url>https://maven.pkg.github.com/dalekcraft2/TARDISSchematicViewer</url>
         </repository>
     </distributionManagement>
 
