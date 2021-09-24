@@ -22,11 +22,6 @@ public final class Assets {
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
     static {
         ASSETS = Main.assets;
-        for (Block block : Block.values()) {
-            String namespacedId = "minecraft:" + block.name().toLowerCase(Locale.ROOT);
-            JSONObject blockState = getBlockState(namespacedId);
-            BLOCK_STATES.put(namespacedId, blockState);
-        }
         try {
             BLOCK_STATES.put("minecraft:missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/minecraft/blockstates/missing.json")));
         } catch (IOException e) {
@@ -43,6 +38,11 @@ public final class Assets {
             System.err.println(e.getMessage());
         }
         ANIMATIONS.put("minecraft:missing", null);
+        for (Block block : Block.values()) {
+            String namespacedId = "minecraft:" + block.name().toLowerCase(Locale.ROOT);
+            JSONObject blockState = getBlockState(namespacedId);
+            BLOCK_STATES.put(namespacedId, blockState);
+        }
     }
 
     private Assets() {

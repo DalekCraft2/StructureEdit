@@ -2,9 +2,9 @@ package me.dalekcraft.structureedit.drawing;
 
 import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.util.texture.Texture;
-import me.dalekcraft.structureedit.util.Tint;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.PropertyUtils;
+import me.dalekcraft.structureedit.util.Tint;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
