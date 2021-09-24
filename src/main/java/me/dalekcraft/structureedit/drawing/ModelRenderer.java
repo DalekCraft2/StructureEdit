@@ -1,10 +1,10 @@
-package me.eccentric_nz.tardisschematicviewer.drawing;
+package me.dalekcraft.structureedit.drawing;
 
 import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.util.texture.Texture;
-import me.eccentric_nz.tardisschematicviewer.util.Assets;
-import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
-import me.eccentric_nz.tardisschematicviewer.util.Tint;
+import me.dalekcraft.structureedit.util.Tint;
+import me.dalekcraft.structureedit.util.Assets;
+import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.*;
 
 import static com.jogamp.opengl.GL4bc.*;
-import static me.eccentric_nz.tardisschematicviewer.drawing.SchematicRenderer.SCALE;
+import static me.dalekcraft.structureedit.drawing.SchematicRenderer.SCALE;
 
 public final class ModelRenderer {
 

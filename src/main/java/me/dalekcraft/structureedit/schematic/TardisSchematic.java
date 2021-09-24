@@ -1,7 +1,7 @@
-package me.eccentric_nz.tardisschematicviewer.schematic;
+package me.dalekcraft.structureedit.schematic;
 
-import me.eccentric_nz.tardisschematicviewer.util.GzipUtils;
-import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
+import me.dalekcraft.structureedit.util.GzipUtils;
+import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import org.json.JSONArray;

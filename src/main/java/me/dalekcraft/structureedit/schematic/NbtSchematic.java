@@ -1,6 +1,6 @@
-package me.eccentric_nz.tardisschematicviewer.schematic;
+package me.dalekcraft.structureedit.schematic;
 
-import me.eccentric_nz.tardisschematicviewer.util.PropertyUtils;
+import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.io.SNBTUtil;

@@ -1,9 +1,9 @@
-package me.eccentric_nz.tardisschematicviewer.util;
+package me.dalekcraft.structureedit.util;
 
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
-import me.eccentric_nz.tardisschematicviewer.Main;
-import me.eccentric_nz.tardisschematicviewer.drawing.Block;
+import me.dalekcraft.structureedit.Main;
+import me.dalekcraft.structureedit.drawing.Block;
 import org.json.JSONObject;
 
 import java.io.*;

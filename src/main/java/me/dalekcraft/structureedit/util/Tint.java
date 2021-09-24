@@ -1,6 +1,6 @@
-package me.eccentric_nz.tardisschematicviewer.util;
+package me.dalekcraft.structureedit.util;
 
-import me.eccentric_nz.tardisschematicviewer.drawing.Block;
+import me.dalekcraft.structureedit.drawing.Block;
 import net.querz.nbt.tag.CompoundTag;
 
 import java.awt.*;

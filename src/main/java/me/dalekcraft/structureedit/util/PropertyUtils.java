@@ -1,4 +1,4 @@
-package me.eccentric_nz.tardisschematicviewer.util;
+package me.dalekcraft.structureedit.util;
 
 import net.querz.nbt.tag.ByteTag;
 import net.querz.nbt.tag.CompoundTag;

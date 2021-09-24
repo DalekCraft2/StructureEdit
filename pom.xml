@@ -5,39 +5,40 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>me.dalekcraft</groupId>
-    <artifactId>schematic-viewer</artifactId>
+    <artifactId>structureedit</artifactId>
     <version>2.0.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <name>SchematicViewer</name>
+    <name>StructureEdit</name>
     <description>A Java OpenGL application for viewing Minecraft schematic files</description>
-    <url>https://github.com/DalekCraft2/TARDISSchematicViewer</url>
+    <url>https://github.com/DalekCraft2/StructureEdit</url>
     <inceptionYear>2015</inceptionYear>
     <licenses>
         <license>
             <name>GNU General Public License v3.0</name>
-            <url>https://github.com/DalekCraft2/TARDISSchematicViewer/blob/main/LICENSE.txt</url>
+            <url>https://github.com/DalekCraft2/StructureEdit/blob/main/LICENSE.txt</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
 
     <scm>
-        <connection>scm:git:ssh://github.com/DalekCraft2/TARDISSchematicViewer</connection>
-        <developerConnection>scm:git:ssh://github.com/DalekCraft2/TARDISSchematicViewer</developerConnection>
+        <connection>scm:git:ssh://github.com/DalekCraft2/StructureEdit</connection>
+        <developerConnection>scm:git:ssh://github.com/DalekCraft2/StructureEdit</developerConnection>
     </scm>
     <issueManagement>
         <system>GitHub Issues</system>
-        <url>https://github.com/DalekCraft2/TARDISSchematicViewer/issues</url>
+        <url>https://github.com/DalekCraft2/StructureEdit/issues</url>
     </issueManagement>
+    <!-- TODO Set up GitHub Packages. -->
     <ciManagement>
-        <system>Github Packages</system>
-        <url>https://maven.pkg.github.com/dalekcraft2/TARDISSchematicViewer</url>
+        <system>GitHub Packages</system>
+        <url>https://maven.pkg.github.com/dalekcraft2/StructureEdit</url>
     </ciManagement>
     <distributionManagement>
         <repository>
             <id>dalekcraft-repo</id>
             <name>GitHub DalekCraft Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/dalekcraft2/TARDISSchematicViewer</url>
+            <url>https://maven.pkg.github.com/dalekcraft2/StructureEdit</url>
         </repository>
     </distributionManagement>
 
@@ -198,7 +199,7 @@
                                 <!-- Set the main class -->
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-                                    <mainClass>me.eccentric_nz.tardisschematicviewer.Main</mainClass>
+                                    <mainClass>me.dalekcraft.structureedit.Main</mainClass>
                                 </transformer>
                             </transformers>
                         </configuration>

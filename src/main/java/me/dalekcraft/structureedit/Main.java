@@ -14,11 +14,11 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package me.eccentric_nz.tardisschematicviewer;
+package me.dalekcraft.structureedit;
 
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
-import me.eccentric_nz.tardisschematicviewer.drawing.SchematicRenderer;
+import me.dalekcraft.structureedit.drawing.SchematicRenderer;
 import org.json.JSONException;
 
 import javax.imageio.ImageIO;
@@ -51,9 +51,9 @@ public final class Main {
             UserInterface userInterface = new UserInterface(renderer);
             JFrame frame = new JFrame();
             frame.add(userInterface);
-            frame.setTitle("TARDIS Schematic Viewer");
+            frame.setTitle("StructureEdit");
             try {
-                frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")));
+                frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")).getScaledInstance(128, 128, Image.SCALE_SMOOTH));
             } catch (IOException e) {
                 e.printStackTrace();
             }

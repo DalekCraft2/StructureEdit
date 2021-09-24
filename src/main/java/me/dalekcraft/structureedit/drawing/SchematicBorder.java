@@ -1,4 +1,4 @@
-package me.eccentric_nz.tardisschematicviewer.drawing;
+package me.dalekcraft.structureedit.drawing;
 
 import com.jogamp.opengl.GL4bc;
 

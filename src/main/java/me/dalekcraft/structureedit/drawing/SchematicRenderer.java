@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package me.eccentric_nz.tardisschematicviewer.drawing;
+package me.dalekcraft.structureedit.drawing;
 
 import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.GLAutoDrawable;
@@ -23,9 +23,9 @@ import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.Animator;
-import me.eccentric_nz.tardisschematicviewer.Main;
-import me.eccentric_nz.tardisschematicviewer.schematic.NbtSchematic;
-import me.eccentric_nz.tardisschematicviewer.schematic.Schematic;
+import me.dalekcraft.structureedit.Main;
+import me.dalekcraft.structureedit.schematic.NbtSchematic;
+import me.dalekcraft.structureedit.schematic.Schematic;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
 

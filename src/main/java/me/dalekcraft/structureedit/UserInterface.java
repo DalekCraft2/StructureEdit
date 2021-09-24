@@ -14,15 +14,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package me.eccentric_nz.tardisschematicviewer;
+package me.dalekcraft.structureedit;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.intellij.uiDesigner.core.Spacer;
-import me.eccentric_nz.tardisschematicviewer.drawing.Block;
-import me.eccentric_nz.tardisschematicviewer.drawing.SchematicRenderer;
-import me.eccentric_nz.tardisschematicviewer.schematic.NbtSchematic;
-import me.eccentric_nz.tardisschematicviewer.schematic.Schematic;
+import me.dalekcraft.structureedit.drawing.Block;
+import me.dalekcraft.structureedit.drawing.SchematicRenderer;
+import me.dalekcraft.structureedit.schematic.NbtSchematic;
+import me.dalekcraft.structureedit.schematic.Schematic;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
 import org.json.JSONException;

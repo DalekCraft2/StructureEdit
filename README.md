@@ -1,3 +1,3 @@
-# TARDISSchematicViewer
+# StructureEdit
 
-Java OpenGL Viewer for .tschm files
+A Java OpenGL application for viewing Minecraft schematic files
