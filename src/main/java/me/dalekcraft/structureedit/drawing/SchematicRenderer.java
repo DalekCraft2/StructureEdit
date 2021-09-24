@@ -270,6 +270,14 @@ public class SchematicRenderer extends GLJPanel {
         addMouseMotionListener(mouseAdapter);
     }
 
+    public void pause() {
+        animator.pause();
+    }
+
+    public void resume() {
+        animator.resume();
+    }
+
     public void setPalette(ListTag<CompoundTag> palette) {
         this.palette = palette;
     }

@@ -53,7 +53,7 @@ public class UserInterface extends JPanel {
     private JPanel rawRenderer;
     private final SchematicRenderer renderer;
     private File lastDirectory;
-    private FileFilter lastFileFilter = TSCHM_FILTER;
+    private FileFilter lastFileFilter = NBT_FILTER;
     private SquareButton selected;
     private int currentLayer;
     private Schematic schematic;
@@ -105,6 +105,7 @@ public class UserInterface extends JPanel {
         openButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
+                renderer.pause();
                 JFileChooser chooser = new JFileChooser(lastDirectory);
                 chooser.addChoosableFileFilter(TSCHM_FILTER);
                 chooser.addChoosableFileFilter(NBT_FILTER);
@@ -122,12 +123,14 @@ public class UserInterface extends JPanel {
                     lastDirectory = chooser.getCurrentDirectory();
                     lastFileFilter = chooser.getFileFilter();
                 }
+                renderer.resume();
             }
         });
         saveButton.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (schematic != null) {
+                    renderer.pause();
                     JFileChooser chooser = new JFileChooser(lastDirectory);
                     chooser.addChoosableFileFilter(TSCHM_FILTER);
                     chooser.addChoosableFileFilter(NBT_FILTER);
@@ -145,6 +148,7 @@ public class UserInterface extends JPanel {
                             System.err.println("Error saving schematic: " + e1.getMessage());
                         }
                     }
+                    renderer.resume();
                 } else {
                     System.err.println("Schematic was null!");
                 }
