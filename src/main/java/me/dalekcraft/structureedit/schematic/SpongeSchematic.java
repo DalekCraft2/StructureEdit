@@ -50,9 +50,10 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         byte[] blocks = getBlockList().getValue();
         for (int i = 0; i < blocks.length; i++) {
             Byte block = blocks[i];
-            int x1 = (i % (size[2] * size[2])) % size[2];
+            // index = (y * length * width) + (z * width) + x
+            int x1 = (i % (size[0] * size[2])) % size[0];
             int y1 = i / (size[0] * size[2]);
-            int z1 = (i % (size[0] * size[2])) / size[2];
+            int z1 = (i % (size[0] * size[2])) / size[0];
             if (x == x1 && y == y1 && z == z1) {
                 return block;
             }
@@ -102,16 +103,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
             if (((IntTag) tagEntry.getValue()).asInt() == (Byte) block) {
                 String tagName = tagEntry.getKey();
-                int nameEndIndex = tagName.length();
-                if (tagEntry.getKey().contains("[")) {
-                    nameEndIndex = tagName.indexOf('[');
-                } else if (tagName.contains("{")) {
-                    nameEndIndex = tagName.indexOf('{');
-                }
-                String blockId = tagName.substring(0, nameEndIndex);
-                System.out.println("Before: " + tagName + tagEntry.getValue());
                 palette.put(id + getBlockPropertiesAsString(block), palette.remove(tagName));
-                System.out.println("After: " + tagName + tagEntry.getValue());
                 return;
             }
         }
