@@ -2,6 +2,8 @@ package me.dalekcraft.structureedit.util;
 
 import me.dalekcraft.structureedit.drawing.Block;
 import net.querz.nbt.tag.CompoundTag;
+import net.querz.nbt.tag.IntTag;
+import net.querz.nbt.tag.StringTag;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -17,7 +19,13 @@ public final class Tint {
         Block block = Block.getFromId(namespacedId);
         switch (block) {
             case REDSTONE_WIRE -> {
-                switch (properties.getInt("power")) {
+                int power = 0;
+                if (properties.containsKey("power") && properties.get("power") instanceof IntTag intTag) {
+                    power = intTag.asInt();
+                } else if (properties.containsKey("power") && properties.get("power") instanceof StringTag stringTag) {
+                    power = Integer.parseInt(stringTag.getValue());
+                }
+                switch (power) {
                     case 0 -> {
                         return Color.decode("#4B0000");
                     }

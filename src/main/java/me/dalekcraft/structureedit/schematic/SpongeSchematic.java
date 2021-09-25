@@ -50,7 +50,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         byte[] blocks = getBlockList().getValue();
         for (int i = 0; i < blocks.length; i++) {
             Byte block = blocks[i];
-            // index = (y * length * width) + (z * width) + x
+            // index = x + (y * length * width) + (z * width)
             int x1 = (i % (size[0] * size[2])) % size[0];
             int y1 = i / (size[0] * size[2]);
             int z1 = (i % (size[0] * size[2])) / size[0];
