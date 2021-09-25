@@ -6,7 +6,11 @@ import org.jetbrains.annotations.NotNull;
 import static com.jogamp.opengl.GL4bc.GL_CURRENT_BIT;
 import static com.jogamp.opengl.GL4bc.GL_LINES;
 
-public class SchematicBorder {
+public final class SchematicBorder {
+
+    private SchematicBorder() {
+        throw new UnsupportedOperationException();
+    }
 
     public static void draw(@NotNull GL4bc gl, float sizeX, float sizeY, float sizeZ) {
         // save the current color

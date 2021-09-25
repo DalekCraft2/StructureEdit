@@ -14,11 +14,11 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 
-public record NbtSchematic(NamedTag schematic) implements Schematic {
+public record NbtStructure(NamedTag schematic) implements Schematic {
 
     @Override
     public void saveTo(File file) throws IOException {
-        NBTUtil.write(getData(), file);
+        NBTUtil.write(schematic, file);
     }
 
     @Override
@@ -30,7 +30,7 @@ public record NbtSchematic(NamedTag schematic) implements Schematic {
     @Override
     @NotNull
     public String getFormat() {
-        return "nbt";
+        return EXTENSION_NBT;
     }
 
     @Override

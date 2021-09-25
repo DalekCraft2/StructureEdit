@@ -16,7 +16,7 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
 
     @Override
     public void saveTo(File file) throws IOException {
-        GzipUtils.zip(getData(), file);
+        GzipUtils.zip(schematic, file);
     }
 
     @Override
@@ -28,7 +28,7 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
     @Override
     @NotNull
     public String getFormat() {
-        return "tschm";
+        return EXTENSION_TARDIS;
     }
 
     @Override

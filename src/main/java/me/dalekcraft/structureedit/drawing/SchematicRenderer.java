@@ -24,7 +24,7 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.Animator;
 import me.dalekcraft.structureedit.Main;
-import me.dalekcraft.structureedit.schematic.NbtSchematic;
+import me.dalekcraft.structureedit.schematic.NbtStructure;
 import me.dalekcraft.structureedit.schematic.Schematic;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
@@ -137,9 +137,9 @@ public class SchematicRenderer extends GLJPanel {
                                 if (block != null) {
                                     String blockId;
                                     CompoundTag properties;
-                                    if (schematic instanceof NbtSchematic nbtSchematic && nbtSchematic.hasPaletteList()) {
-                                        blockId = nbtSchematic.getBlockId(block, palette);
-                                        properties = nbtSchematic.getBlockProperties(block, palette);
+                                    if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
+                                        blockId = nbtStructure.getBlockId(block, palette);
+                                        properties = nbtStructure.getBlockProperties(block, palette);
                                     } else {
                                         blockId = schematic.getBlockId(block);
                                         properties = schematic.getBlockProperties(block);

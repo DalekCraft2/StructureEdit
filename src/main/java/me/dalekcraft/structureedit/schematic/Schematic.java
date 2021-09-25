@@ -13,15 +13,27 @@ import java.io.IOException;
 
 public interface Schematic {
 
+    String EXTENSION_NBT = "nbt";
+    String EXTENSION_MCEDIT = "schematic";
+    String EXTENSION_SPONGE = "schem";
+    String EXTENSION_TARDIS = "tschm";
+
     @Nullable
     static Schematic openFrom(@NotNull File file) throws IOException, JSONException {
         String path = file.getCanonicalPath();
         switch (path.substring(path.lastIndexOf('.') + 1)) {
-            case "tschm" -> {
+            case EXTENSION_TARDIS -> {
                 return new TardisSchematic(new JSONObject(GzipUtils.unzip(file)));
             }
-            case "nbt" -> {
-                return new NbtSchematic(NBTUtil.read(file));
+            case EXTENSION_NBT -> {
+                return new NbtStructure(NBTUtil.read(file));
+            }
+            case EXTENSION_MCEDIT -> {
+                //return new McEditSchematic(NBTUtil.read(file));
+                return null;
+            }
+            case EXTENSION_SPONGE -> {
+                return new SpongeSchematic(NBTUtil.read(file));
             }
             default -> {
                 return null;
