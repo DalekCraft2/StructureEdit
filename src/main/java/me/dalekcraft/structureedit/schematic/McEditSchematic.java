@@ -3,6 +3,7 @@ package me.dalekcraft.structureedit.schematic;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.io.IOException;
@@ -25,17 +26,17 @@ public record McEditSchematic(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public int[] getSize() {
+    public int @NotNull [] getSize() {
         CompoundTag tag = (CompoundTag) schematic.getTag();
-        return new int[]{tag.getInt("Width"), tag.getInt("Height"), tag.getInt("Length")};
+        return new int[]{tag.getShort("Width"), tag.getShort("Height"), tag.getShort("Length")};
     }
 
     @Override
     public void setSize(int x, int y, int z) {
         CompoundTag tag = (CompoundTag) schematic.getTag();
-        tag.putInt("Width", x);
-        tag.putInt("Height", y);
-        tag.putInt("Length", z);
+        tag.putShort("Width", (short) x);
+        tag.putShort("Height", (short) y);
+        tag.putShort("Length", (short) z);
     }
 
     @Override
@@ -75,6 +76,26 @@ public record McEditSchematic(NamedTag schematic) implements Schematic {
 
     @Override
     public void setBlockPropertiesAsString(Object block, String propertiesString) throws IOException {
+
+    }
+
+    @Override
+    public CompoundTag getBlockNbt(Object block) {
+        return null;
+    }
+
+    @Override
+    public void setBlockNbt(Object block, CompoundTag nbt) {
+
+    }
+
+    @Override
+    public String getBlockSnbt(Object block) {
+        return null;
+    }
+
+    @Override
+    public void setBlockSnbt(Object block, String snbt) throws IOException {
 
     }
 }

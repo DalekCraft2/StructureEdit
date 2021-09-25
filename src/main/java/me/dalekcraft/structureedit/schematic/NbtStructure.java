@@ -166,19 +166,22 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
         setBlockProperties(block, properties, palette);
     }
 
-    public CompoundTag getBlockNbt(@NotNull CompoundTag block) {
-        return block.getCompoundTag("nbt");
+    @Override
+    public CompoundTag getBlockNbt(@NotNull Object block) {
+        return ((CompoundTag) block).getCompoundTag("nbt");
     }
 
-    public void setBlockNbt(CompoundTag block, CompoundTag nbt) {
+    @Override
+    public void setBlockNbt(Object block, CompoundTag nbt) {
         if (nbt != null && !nbt.entrySet().isEmpty()) {
-            block.put("nbt", nbt);
+            ((CompoundTag) block).put("nbt", nbt);
         } else {
-            block.remove("nbt");
+            ((CompoundTag) block).remove("nbt");
         }
     }
 
-    public String getBlockSnbt(CompoundTag block) {
+    @Override
+    public String getBlockSnbt(Object block) {
         String snbt = "{}";
         CompoundTag nbt = getBlockNbt(block) == null ? new CompoundTag() : getBlockNbt(block);
         try {
@@ -189,7 +192,8 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
         return snbt;
     }
 
-    public void setBlockSnbt(CompoundTag block, String snbt) throws IOException {
+    @Override
+    public void setBlockSnbt(Object block, String snbt) throws IOException {
         CompoundTag nbt = getBlockNbt(block) == null ? new CompoundTag() : getBlockNbt(block);
         try {
             nbt = (CompoundTag) SNBTUtil.fromSNBT(snbt);

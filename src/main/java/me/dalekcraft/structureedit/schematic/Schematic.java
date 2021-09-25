@@ -29,8 +29,8 @@ public interface Schematic {
                 return new NbtStructure(NBTUtil.read(file));
             }
             case EXTENSION_MCEDIT -> {
-                //return new McEditSchematic(NBTUtil.read(file));
-                return null;
+                System.err.println("MCEdit schematics are not yet supported!");
+                return new McEditSchematic(NBTUtil.read(file));
             }
             case EXTENSION_SPONGE -> {
                 return new SpongeSchematic(NBTUtil.read(file));
@@ -66,4 +66,12 @@ public interface Schematic {
     String getBlockPropertiesAsString(Object block);
 
     void setBlockPropertiesAsString(Object block, String propertiesString) throws IOException;
+
+    CompoundTag getBlockNbt(Object block);
+
+    void setBlockNbt(Object block, CompoundTag nbt);
+
+    String getBlockSnbt(Object block);
+
+    void setBlockSnbt(Object block, String snbt) throws IOException;
 }

@@ -5,6 +5,7 @@ import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.*;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
@@ -30,7 +31,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public int[] getSize() {
+    public int @NotNull [] getSize() {
         CompoundTag tag = (CompoundTag) schematic.getTag();
         return new int[]{tag.getShort("Width"), tag.getShort("Height"), tag.getShort("Length")};
     }
@@ -63,13 +64,16 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
 
     @Override
     public void setBlock(int x, int y, int z, Object block) {
+        int[] size = getSize();
         ByteArrayTag blocks = getBlockList();
         byte[] blocksArray = blocks.getValue();
-        for (Byte block1 : blocksArray) {
-            int[] size = getSize();
-            Byte blockIndex = (byte) (x + z * size[0] + y * size[0] * size[2]);
-            if (block1.equals(blockIndex)) {
-                blocksArray[blockIndex] = (Byte) block;
+        for (int i = 0; i < blocksArray.length; i++) {
+            // index = x + (y * length * width) + (z * width)
+            int x1 = (i % (size[0] * size[2])) % size[0];
+            int y1 = i / (size[0] * size[2]);
+            int z1 = (i % (size[0] * size[2])) / size[0];
+            if (x == x1 && y == y1 && z == z1) {
+                blocksArray[i] = (Byte) block;
                 blocks.setValue(blocksArray);
             }
         }
@@ -169,37 +173,25 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         }
     }
 
-    //    public CompoundTag getBlockNbt(Byte block) {
-    //        return block.getCompoundTag("nbt");
-    //    }
-    //
-    //    public void setBlockNbt(Byte block, CompoundTag nbt) {
-    //        if (nbt != null && !nbt.entrySet().isEmpty()) {
-    //            block.put("nbt", nbt);
-    //        } else {
-    //            block.remove("nbt");
-    //        }
-    //    }
-    //
-    //    public String getBlockSnbt(Byte block) {
-    //        String snbt = "{}";
-    //        CompoundTag nbt = getBlockNbt(block) == null ? new CompoundTag() : getBlockNbt(block);
-    //        try {
-    //            snbt = SNBTUtil.toSNBT(nbt);
-    //        } catch (IOException e) {
-    //            e.printStackTrace();
-    //        }
-    //        return snbt;
-    //    }
-    //
-    //    public void setBlockSnbt(Byte block, String snbt) throws IOException {
-    //        CompoundTag nbt = getBlockNbt(block) == null ? new CompoundTag() : getBlockNbt(block);
-    //        try {
-    //            nbt = (CompoundTag) SNBTUtil.fromSNBT(snbt);
-    //        } catch (StringIndexOutOfBoundsException ignored) {
-    //        }
-    //        setBlockNbt(block, nbt);
-    //    }
+    @Override
+    public CompoundTag getBlockNbt(Object block) {
+        return null;
+    }
+
+    @Override
+    public void setBlockNbt(Object block, CompoundTag nbt) {
+
+    }
+
+    @Override
+    public String getBlockSnbt(Object block) {
+        return null;
+    }
+
+    @Override
+    public void setBlockSnbt(Object block, String snbt) throws IOException {
+
+    }
 
     public ByteArrayTag getBlockList() {
         return ((CompoundTag) schematic.getTag()).getByteArrayTag("BlockData");

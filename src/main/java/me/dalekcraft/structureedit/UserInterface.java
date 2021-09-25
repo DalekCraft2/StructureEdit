@@ -268,7 +268,9 @@ public class UserInterface extends JPanel {
                 if (selected != null) {
                     int[] position = selected.getPosition();
                     CompoundTag block = nbtStructure.getBlock(position[0], position[1], position[2]);
-                    nbtStructure.setBlockState(block, blockPaletteComboBox.getSelectedIndex());
+                    if (block != null) {
+                        nbtStructure.setBlockState(block, blockPaletteComboBox.getSelectedIndex());
+                    }
                     updateSelected();
                     loadLayer();
                 }
@@ -282,8 +284,9 @@ public class UserInterface extends JPanel {
             selected = null;
             fileTextField.setText(file.toString());
             sizeTextField.setText(null);
+            paletteComboBox.setSelectedItem(null);
+            paletteComboBox.setEnabled(false);
             blockPositionTextField.setText(null);
-            blockPositionTextField.setEnabled(false);
             blockComboBox.setSelectedItem(null);
             blockComboBox.setEnabled(false);
             propertiesTextField.setText(null);
@@ -307,30 +310,18 @@ public class UserInterface extends JPanel {
                         paletteComboBox.setModel(new DefaultComboBoxModel<>(palettes));
                         paletteComboBox.setSelectedIndex(0);
                         palette = nbtStructure.getPaletteListEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
-                        this.renderer.setPalette(palette);
-                        paletteLabel.setVisible(true);
-                        paletteComboBox.setVisible(true);
                     } else {
                         palette = nbtStructure.getPalette();
-                        this.renderer.setPalette(palette);
-                        paletteLabel.setVisible(false);
-                        paletteComboBox.setVisible(false);
                     }
+                    this.renderer.setPalette(palette);
                     int paletteSize = palette.size();
                     Integer[] paletteIds = new Integer[paletteSize];
                     for (int i = 0; i < paletteSize; i++) {
                         paletteIds[i] = i;
                     }
-                    nbtLabel.setVisible(true);
-                    nbtTextField.setVisible(true);
-                    blockPaletteLabel.setVisible(true);
                     blockPaletteComboBox.setModel(new DefaultComboBoxModel<>(paletteIds));
-                    blockPaletteComboBox.setVisible(true);
                 } else {
-                    nbtLabel.setVisible(false);
-                    nbtTextField.setVisible(false);
-                    blockPaletteLabel.setVisible(false);
-                    blockPaletteComboBox.setVisible(false);
+                    paletteComboBox.setEnabled(false);
                 }
                 loadLayer();
                 System.out.println("Loaded " + file + " successfully.");
@@ -386,7 +377,10 @@ public class UserInterface extends JPanel {
 
         selected = (SquareButton) e.getSource();
         int[] position = selected.getPosition();
+        selected.setBorder(new LineBorder(Color.RED));
+
         Object block = schematic.getBlock(position[0], position[1], position[2]);
+
         String blockId;
         String properties;
         if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
@@ -396,32 +390,43 @@ public class UserInterface extends JPanel {
             blockId = schematic.getBlockId(block);
             properties = schematic.getBlockPropertiesAsString(block);
         }
+
         String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-
-        blockPositionTextField.setEnabled(true);
         blockComboBox.setEnabled(true);
-        propertiesTextField.setEnabled(true);
-        if (schematic instanceof NbtStructure nbtStructure) {
-            String snbt = nbtStructure.getBlockSnbt((CompoundTag) block);
-            int blockState = nbtStructure.getBlockState((CompoundTag) block);
-
-            nbtTextField.setEnabled(true);
-            nbtTextField.setForeground(Color.BLACK);
-            nbtTextField.setText(snbt);
-            blockPaletteComboBox.setEnabled(true);
-            blockPaletteComboBox.setSelectedIndex(blockState);
-        }
-        selected.setBorder(new LineBorder(Color.RED));
         blockComboBox.setSelectedItem(blockName);
+
+        propertiesTextField.setEnabled(true);
         propertiesTextField.setText(properties);
         propertiesTextField.setForeground(Color.BLACK);
+
+        try {
+            String snbt = schematic.getBlockSnbt(block);
+            nbtTextField.setText(snbt);
+            nbtTextField.setEnabled(true);
+        } catch (UnsupportedOperationException e1) {
+            nbtTextField.setEnabled(false);
+            nbtTextField.setText(null);
+        }
+        nbtTextField.setForeground(Color.BLACK);
+
+        blockPositionTextField.setEnabled(true);
         blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
+
+        if (schematic instanceof NbtStructure nbtStructure) {
+            int blockState = nbtStructure.getBlockState((CompoundTag) block);
+            blockPaletteComboBox.setEnabled(true);
+            blockPaletteComboBox.setSelectedIndex(blockState);
+        } else {
+            blockPaletteComboBox.setEnabled(false);
+        }
     }
 
     public void updateSelected() {
         if (selected != null) {
             int[] position = selected.getPosition();
+
             Object block = schematic.getBlock(position[0], position[1], position[2]);
+
             String blockId;
             String properties;
             if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
@@ -431,12 +436,18 @@ public class UserInterface extends JPanel {
                 blockId = schematic.getBlockId(block);
                 properties = schematic.getBlockPropertiesAsString(block);
             }
-            if (schematic instanceof NbtStructure nbtStructure) {
-                nbtTextField.setText(nbtStructure.getBlockSnbt((CompoundTag) block));
-            }
+
             String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
             blockComboBox.setSelectedItem(blockName);
+
             propertiesTextField.setText(properties);
+
+            try {
+                String snbt = schematic.getBlockSnbt(block);
+                nbtTextField.setText(snbt);
+            } catch (UnsupportedOperationException e) {
+                nbtTextField.setText(null);
+            }
         }
     }
 
@@ -489,25 +500,19 @@ public class UserInterface extends JPanel {
         layerTextField.setEditable(false);
         editorPanel.add(layerTextField, new GridConstraints(1, 2, 2, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         nbtTextField = new JTextField();
-        nbtTextField.setVisible(false);
         editorPanel.add(nbtTextField, new GridConstraints(7, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         paletteLabel = new JLabel();
         paletteLabel.setText("Palette:");
-        paletteLabel.setVisible(false);
         editorPanel.add(paletteLabel, new GridConstraints(3, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         paletteComboBox = new JComboBox();
-        paletteComboBox.setVisible(false);
         editorPanel.add(paletteComboBox, new GridConstraints(3, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         nbtLabel = new JLabel();
         nbtLabel.setText("NBT:");
-        nbtLabel.setVisible(false);
         editorPanel.add(nbtLabel, new GridConstraints(7, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPaletteLabel = new JLabel();
         blockPaletteLabel.setText("Block Palette:");
-        blockPaletteLabel.setVisible(false);
         editorPanel.add(blockPaletteLabel, new GridConstraints(8, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPaletteComboBox = new JComboBox();
-        blockPaletteComboBox.setVisible(false);
         editorPanel.add(blockPaletteComboBox, new GridConstraints(8, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         gridPanel = new JPanel();
         gridPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));

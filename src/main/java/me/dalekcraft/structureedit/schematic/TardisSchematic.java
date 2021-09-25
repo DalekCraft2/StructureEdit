@@ -128,4 +128,24 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
         } catch (StringIndexOutOfBoundsException ignored) {
         }
     }
+
+    @Override
+    public CompoundTag getBlockNbt(Object block) {
+        throw new UnsupportedOperationException("NBT storage is not supported by the TSCHM format.");
+    }
+
+    @Override
+    public void setBlockNbt(Object block, CompoundTag nbt) {
+        throw new UnsupportedOperationException("NBT storage is not supported by the TSCHM format.");
+    }
+
+    @Override
+    public String getBlockSnbt(Object block) {
+        throw new UnsupportedOperationException("NBT storage is not supported by the TSCHM format.");
+    }
+
+    @Override
+    public void setBlockSnbt(Object block, String snbt) {
+        throw new UnsupportedOperationException("NBT storage is not supported by the TSCHM format.");
+    }
 }
