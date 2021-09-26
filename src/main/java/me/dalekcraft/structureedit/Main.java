@@ -19,6 +19,7 @@ package me.dalekcraft.structureedit;
 import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import me.dalekcraft.structureedit.drawing.SchematicRenderer;
+import me.dalekcraft.structureedit.ui.UserInterface;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;

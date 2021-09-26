@@ -15,15 +15,32 @@ import java.util.Locale;
 import java.util.Map;
 
 public final class Assets {
-    private static final File ASSETS;
     private static final Map<String, JSONObject> BLOCK_STATES = new HashMap<>();
     private static final Map<String, JSONObject> MODELS = new HashMap<>();
     private static final Map<String, Texture> TEXTURES = new HashMap<>();
     private static final Map<String, JSONObject> ANIMATIONS = new HashMap<>();
+    private static File assets;
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
     static {
-        ASSETS = Main.assets;
+        assets = Main.assets;
+        load();
+    }
+
+    private Assets() {
+        throw new UnsupportedOperationException();
+    }
+
+    public static File getAssets() {
+        return assets;
+    }
+
+    public static void setAssets(File assets) {
+        Assets.assets = assets;
+        reload();
+    }
+
+    public static void load() {
         try {
             BLOCK_STATES.put("minecraft:missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/minecraft/blockstates/missing.json")));
         } catch (IOException e) {
@@ -47,8 +64,12 @@ public final class Assets {
         }
     }
 
-    private Assets() {
-        throw new UnsupportedOperationException();
+    public static void reload() {
+        BLOCK_STATES.clear();
+        MODELS.clear();
+        TEXTURES.clear();
+        ANIMATIONS.clear();
+        load();
     }
 
     @NotNull
@@ -64,7 +85,7 @@ public final class Assets {
             }
             return internalStream;
         }
-        File file = new File(ASSETS, namespace + File.separator + folder + File.separator + id + "." + extension).getCanonicalFile();
+        File file = new File(assets, namespace + File.separator + folder + File.separator + id + "." + extension).getCanonicalFile();
         if (file.exists() && Main.debug) {
             System.out.println("Getting asset from " + file);
         }

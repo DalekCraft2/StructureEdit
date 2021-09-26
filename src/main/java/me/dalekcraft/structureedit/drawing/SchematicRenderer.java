@@ -87,7 +87,7 @@ public class SchematicRenderer extends GLJPanel {
                 gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
                 gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
                 gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
-                drawable.getGL().setSwapInterval(1);
+                gl.setSwapInterval(1);
                 // Set up the lighting for Light-1
                 // Ambient light does not come from a particular direction. Need some ambient
                 // light to light up the scene. Ambient's value in RGBA
@@ -284,12 +284,14 @@ public class SchematicRenderer extends GLJPanel {
     }
 
     public void setSchematic(Schematic schematic) {
-        this.schematic = schematic;
-        // get dimensions
-        int[] size = this.schematic.getSize();
-        sizeX = size[0];
-        sizeY = size[1];
-        sizeZ = size[2];
-        renderedHeight = sizeY;
+        if (schematic != null) {
+            this.schematic = schematic;
+            // get dimensions
+            int[] size = this.schematic.getSize();
+            sizeX = size[0];
+            sizeY = size[1];
+            sizeZ = size[2];
+            renderedHeight = sizeY;
+        }
     }
 }

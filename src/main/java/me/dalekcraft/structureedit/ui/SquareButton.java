@@ -14,7 +14,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-package me.dalekcraft.structureedit;
+package me.dalekcraft.structureedit.ui;
 
 import me.dalekcraft.structureedit.drawing.Block;
 import org.jetbrains.annotations.Contract;
