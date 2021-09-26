@@ -40,11 +40,11 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public void setSize(int x, int y, int z) {
+    public void setSize(int sizeX, int sizeY, int sizeZ) {
         ListTag<IntTag> size = ((CompoundTag) schematic.getTag()).getListTag("size").asIntTagList();
-        size.set(0, new IntTag(x));
-        size.set(1, new IntTag(y));
-        size.set(2, new IntTag(z));
+        size.set(0, new IntTag(sizeX));
+        size.set(1, new IntTag(sizeY));
+        size.set(2, new IntTag(sizeZ));
         ((CompoundTag) schematic.getTag()).put("size", size);
     }
 
@@ -129,7 +129,7 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
         String propertiesString = "{}";
         CompoundTag properties = getBlockProperties(block) == null ? new CompoundTag() : getBlockProperties(block);
         try {
-            propertiesString = SNBTUtil.toSNBT(properties);
+            propertiesString = SNBTUtil.toSNBT(properties).replace("\"", "");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -150,7 +150,7 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
         String propertiesString = "{}";
         CompoundTag properties = getBlockProperties(block, palette) == null ? new CompoundTag() : getBlockProperties(block, palette);
         try {
-            propertiesString = SNBTUtil.toSNBT(properties);
+            propertiesString = SNBTUtil.toSNBT(properties).replace("\"", "");
         } catch (IOException e) {
             e.printStackTrace();
         }

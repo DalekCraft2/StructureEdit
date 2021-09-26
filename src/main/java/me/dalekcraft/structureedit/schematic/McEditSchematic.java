@@ -32,11 +32,11 @@ public record McEditSchematic(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public void setSize(int x, int y, int z) {
+    public void setSize(int sizeX, int sizeY, int sizeZ) {
         CompoundTag tag = (CompoundTag) schematic.getTag();
-        tag.putShort("Width", (short) x);
-        tag.putShort("Height", (short) y);
-        tag.putShort("Length", (short) z);
+        tag.putShort("Width", (short) sizeX);
+        tag.putShort("Height", (short) sizeY);
+        tag.putShort("Length", (short) sizeZ);
     }
 
     @Override

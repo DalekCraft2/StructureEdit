@@ -37,11 +37,11 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public void setSize(int x, int y, int z) {
+    public void setSize(int sizeX, int sizeY, int sizeZ) {
         CompoundTag tag = (CompoundTag) schematic.getTag();
-        tag.putShort("Width", (short) x);
-        tag.putShort("Height", (short) y);
-        tag.putShort("Length", (short) z);
+        tag.putShort("Width", (short) sizeX);
+        tag.putShort("Height", (short) sizeY);
+        tag.putShort("Length", (short) sizeZ);
     }
 
     @Override
@@ -131,7 +131,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
     public void setBlockProperties(Object block, CompoundTag properties) {
         String propertiesString = "";
         try {
-            propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties));
+            propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace("\"", "");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -162,7 +162,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
             if (((IntTag) tagEntry.getValue()).asInt() == (Byte) block) {
                 String tagName = tagEntry.getKey();
-                String replaced = propertiesString.replace('[', '{').replace(']', '}').replace('=', ':');
+                String replaced = propertiesString.replace('[', '{').replace(']', '}').replace('=', ':').replace("\"", "");
                 try {
                     SNBTUtil.fromSNBT(replaced); // Check whether the SNBT is parsable
                     palette.put(getBlockId(block) + propertiesString, palette.remove(tagName));

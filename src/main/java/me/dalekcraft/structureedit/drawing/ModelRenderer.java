@@ -36,7 +36,7 @@ public final class ModelRenderer {
         JSONObject blockState = Assets.getBlockState(namespacedId);
         String propertiesString = "";
         try {
-            propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace('{', '[').replace('}', ']').replace(':', '=');
+            propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace('{', '[').replace('}', ']').replace(':', '=').replace("\"", "");
         } catch (IOException e) {
             e.printStackTrace();
         }

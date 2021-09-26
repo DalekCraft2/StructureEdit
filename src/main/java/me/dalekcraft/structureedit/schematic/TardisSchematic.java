@@ -38,11 +38,11 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
     }
 
     @Override
-    public void setSize(int x, int y, int z) {
+    public void setSize(int sizeX, int sizeY, int sizeZ) {
         JSONObject size = schematic.getJSONObject("dimensions");
-        size.put("width", x);
-        size.put("height", y);
-        size.put("length", z);
+        size.put("width", sizeX);
+        size.put("height", sizeY);
+        size.put("length", sizeZ);
         schematic.put("dimensions", size);
     }
 
@@ -101,7 +101,7 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
     public void setBlockProperties(Object block, CompoundTag properties) {
         String propertiesString = "";
         try {
-            propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties));
+            propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace("\"", "");
         } catch (IOException e) {
             e.printStackTrace();
         }
