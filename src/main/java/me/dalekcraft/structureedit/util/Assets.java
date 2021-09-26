@@ -52,6 +52,7 @@ public final class Assets {
             System.err.println(e.getMessage());
         }
         try {
+            // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
             TEXTURES.put("minecraft:missing", TextureIO.newTexture(Main.class.getClassLoader().getResourceAsStream("assets/minecraft/textures/missing.png"), false, "png"));
         } catch (IOException e) {
             System.err.println(e.getMessage());

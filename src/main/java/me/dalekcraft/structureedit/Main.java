@@ -38,6 +38,7 @@ public final class Main {
     public static final int FRAME_HEIGHT = 600;
     public static File assets;
     public static boolean debug;
+    public static JFrame frame;
 
     private Main() {
         throw new UnsupportedOperationException();
@@ -52,7 +53,7 @@ public final class Main {
             GLCapabilities capabilities = new GLCapabilities(profile);
             SchematicRenderer renderer = new SchematicRenderer(capabilities);
             UserInterface userInterface = new UserInterface(renderer);
-            JFrame frame = new JFrame();
+            frame = new JFrame();
             frame.add(userInterface);
             frame.setTitle("StructureEdit");
             try {

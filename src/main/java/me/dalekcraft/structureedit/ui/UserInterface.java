@@ -18,7 +18,7 @@ package me.dalekcraft.structureedit.ui;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
+import me.dalekcraft.structureedit.Main;
 import me.dalekcraft.structureedit.drawing.Block;
 import me.dalekcraft.structureedit.drawing.SchematicRenderer;
 import me.dalekcraft.structureedit.schematic.NbtStructure;
@@ -66,14 +66,12 @@ public class UserInterface extends JPanel {
     private JMenuBar menuBar;
     private JMenu fileMenu;
     private JMenu settingsMenu;
-    private JLabel fileLabel;
-    private JTextField fileTextField;
     private JPanel editorPanel;
     private JPanel gridPanel;
     private JLabel blockLabel;
     private JComboBox<String> blockComboBox;
     private JLabel propertiesLabel;
-    private JTextField propertiesTextField;
+    private JFormattedTextField propertiesTextField;
     private JLabel layerLabel;
     private JTextField layerTextField;
     private JButton plusButton;
@@ -81,7 +79,7 @@ public class UserInterface extends JPanel {
     private JLabel blockPositionLabel;
     private JTextField blockPositionTextField;
     private JLabel nbtLabel;
-    private JTextField nbtTextField;
+    private JFormattedTextField nbtTextField;
     private JLabel paletteLabel;
     private JComboBox<Integer> paletteComboBox;
     private JLabel blockPaletteLabel;
@@ -151,6 +149,7 @@ public class UserInterface extends JPanel {
                         System.out.println("Saving " + file + " ...");
                         schematic.saveTo(file);
                         System.out.println("Schematic saved to " + file + " successfully.");
+                        Main.frame.setTitle(file.getName() + " - StructureEdit");
                     } catch (IOException e1) {
                         System.err.println("Error saving schematic: " + e1.getMessage());
                     }
@@ -289,7 +288,6 @@ public class UserInterface extends JPanel {
                 schematic = Schematic.openFrom(file);
                 renderer.setSchematic(schematic);
                 selected = null;
-                fileTextField.setText(file.toString());
                 sizeTextField.setText(null);
                 paletteComboBox.setSelectedItem(null);
                 paletteComboBox.setEnabled(false);
@@ -331,11 +329,13 @@ public class UserInterface extends JPanel {
                     }
                     loadLayer();
                     System.out.println("Loaded " + file + " successfully.");
+                    Main.frame.setTitle(file.getName() + " - StructureEdit");
                 } else {
                     System.err.println("Not a schematic file!");
                 }
             } catch (IOException | JSONException e) {
                 System.err.println("Error reading schematic: " + e.getMessage());
+                Main.frame.setTitle("StructureEdit");
             }
         });
     }
@@ -476,10 +476,10 @@ public class UserInterface extends JPanel {
      */
     private void $$$setupUI$$$() {
         createUIComponents();
-        panel.setLayout(new GridLayoutManager(3, 3, new Insets(0, 0, 0, 0), -1, -1));
+        panel.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
         editorPanel = new JPanel();
         editorPanel.setLayout(new GridLayoutManager(10, 3, new Insets(0, 0, 0, 0), -1, -1));
-        panel.add(editorPanel, new GridConstraints(2, 2, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel.add(editorPanel, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         blockLabel = new JLabel();
         blockLabel.setText("Block:");
         editorPanel.add(blockLabel, new GridConstraints(6, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -488,7 +488,7 @@ public class UserInterface extends JPanel {
         propertiesLabel = new JLabel();
         propertiesLabel.setText("Properties:");
         editorPanel.add(propertiesLabel, new GridConstraints(7, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        propertiesTextField = new JTextField();
+        propertiesTextField = new JFormattedTextField();
         propertiesTextField.setToolTipText("The properties of the selected block");
         editorPanel.add(propertiesTextField, new GridConstraints(7, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         blockPositionLabel = new JLabel();
@@ -511,7 +511,7 @@ public class UserInterface extends JPanel {
         layerTextField.setEditable(false);
         layerTextField.setToolTipText("The currently viewed layer");
         editorPanel.add(layerTextField, new GridConstraints(1, 2, 2, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        nbtTextField = new JTextField();
+        nbtTextField = new JFormattedTextField();
         nbtTextField.setToolTipText("The NBT of the selected block");
         editorPanel.add(nbtTextField, new GridConstraints(8, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         paletteLabel = new JLabel();
@@ -539,25 +539,16 @@ public class UserInterface extends JPanel {
         blockPaletteComboBox = new JComboBox();
         blockPaletteComboBox.setToolTipText("The index of the selected block's state in the active palette");
         editorPanel.add(blockPaletteComboBox, new GridConstraints(4, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        fileTextField = new JTextField();
-        fileTextField.setEditable(false);
-        fileTextField.setToolTipText("The path to the schematic file");
-        panel.add(fileTextField, new GridConstraints(0, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
-        panel.add(rawRenderer, new GridConstraints(2, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
-        final Spacer spacer1 = new Spacer();
-        panel.add(spacer1, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, 1, null, null, null, 0, false));
+        panel.add(rawRenderer, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         menuBar = new JMenuBar();
         menuBar.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
-        panel.add(menuBar, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        panel.add(menuBar, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         fileMenu = new JMenu();
         fileMenu.setText("File");
         menuBar.add(fileMenu, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         settingsMenu = new JMenu();
         settingsMenu.setText("Settings");
         menuBar.add(settingsMenu, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        fileLabel = new JLabel();
-        fileLabel.setText("File:");
-        panel.add(fileLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockLabel.setLabelFor(blockComboBox);
         propertiesLabel.setLabelFor(propertiesTextField);
         blockPositionLabel.setLabelFor(blockPositionTextField);
@@ -566,7 +557,6 @@ public class UserInterface extends JPanel {
         nbtLabel.setLabelFor(nbtTextField);
         sizeLabel.setLabelFor(sizeTextField);
         blockPaletteLabel.setLabelFor(blockPaletteComboBox);
-        fileLabel.setLabelFor(fileTextField);
     }
 
     /**
