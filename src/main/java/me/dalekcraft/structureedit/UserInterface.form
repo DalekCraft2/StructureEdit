@@ -29,7 +29,9 @@
             <constraints>
               <grid row="6" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <toolTipText value="The ID of the selected block"/>
+            </properties>
           </component>
           <component id="67b1a" class="javax.swing.JLabel" binding="propertiesLabel">
             <constraints>
@@ -46,7 +48,9 @@
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <toolTipText value="The properties of the selected block"/>
+            </properties>
           </component>
           <component id="58cc5" class="javax.swing.JLabel" binding="blockPositionLabel">
             <constraints>
@@ -67,6 +71,7 @@
             </constraints>
             <properties>
               <editable value="false"/>
+              <toolTipText value="The position of the selected block, ordered as [x, y, z]"/>
             </properties>
           </component>
           <component id="63a31" class="javax.swing.JLabel" binding="layerLabel">
@@ -102,6 +107,7 @@
             </constraints>
             <properties>
               <editable value="false"/>
+              <toolTipText value="The currently viewed layer"/>
             </properties>
           </component>
           <component id="9131" class="javax.swing.JTextField" binding="nbtTextField">
@@ -110,7 +116,9 @@
                 <preferred-size width="150" height="-1"/>
               </grid>
             </constraints>
-            <properties/>
+            <properties>
+              <toolTipText value="The NBT of the selected block"/>
+            </properties>
           </component>
           <component id="3da84" class="javax.swing.JLabel" binding="paletteLabel">
             <constraints>
@@ -125,7 +133,9 @@
             <constraints>
               <grid row="3" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <toolTipText value="The index of the active palette"/>
+            </properties>
           </component>
           <component id="ba341" class="javax.swing.JLabel" binding="nbtLabel">
             <constraints>
@@ -162,6 +172,7 @@
             </constraints>
             <properties>
               <editable value="false"/>
+              <toolTipText value="The dimensions of the schematic, ordered as [sizeX, sizeY, sizeZ]"/>
             </properties>
           </component>
           <component id="8937e" class="javax.swing.JLabel" binding="blockPaletteLabel">
@@ -177,7 +188,9 @@
             <constraints>
               <grid row="4" column="2" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
-            <properties/>
+            <properties>
+              <toolTipText value="The index of the selected block's state in the active palette"/>
+            </properties>
           </component>
         </children>
       </grid>
@@ -189,6 +202,7 @@
         </constraints>
         <properties>
           <editable value="false"/>
+          <toolTipText value="The path to the schematic file"/>
         </properties>
       </component>
       <component id="be2c5" class="javax.swing.JButton" binding="openButton">
