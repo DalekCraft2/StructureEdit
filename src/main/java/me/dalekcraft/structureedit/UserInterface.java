@@ -55,8 +55,8 @@ public class UserInterface extends JPanel {
     private static final FileNameExtensionFilter FILTER_MCEDIT = new FileNameExtensionFilter("MCEdit schematic file", EXTENSION_MCEDIT);
     private static final FileNameExtensionFilter FILTER_SPONGE = new FileNameExtensionFilter("Sponge schematic file", EXTENSION_SPONGE);
     private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter("TARDIS schematic file", EXTENSION_TARDIS);
-    private JPanel rawRenderer;
     private final SchematicRenderer renderer;
+    private JPanel rawRenderer;
     private File lastDirectory;
     private FileFilter lastFileFilter = FILTER_NBT;
     private SquareButton selected;
@@ -362,6 +362,13 @@ public class UserInterface extends JPanel {
                         squareButton.setFont(new Font(font.getFontName(), font.getStyle(), buttonSideLength));
                         squareButton.addActionListener(actionListener);
                         gridPanel.add(squareButton);
+                        if (selected != null) {
+                            int[] position = selected.getPosition();
+                            if (Arrays.equals(position, new int[]{x, currentLayer, z})) {
+                                // Set selected tile's border color to red
+                                squareButton.setBorder(new LineBorder(Color.RED));
+                            }
+                        }
                     }
                 }
             }
@@ -371,14 +378,8 @@ public class UserInterface extends JPanel {
     }
 
     private void squareActionPerformed(ActionEvent e) {
-        if (selected != null) {
-            // remove selected border
-            selected.setBorder(new LineBorder(Color.BLACK));
-        }
-
         selected = (SquareButton) e.getSource();
         int[] position = selected.getPosition();
-        selected.setBorder(new LineBorder(Color.RED));
 
         Object block = schematic.getBlock(position[0], position[1], position[2]);
 
@@ -545,6 +546,7 @@ public class UserInterface extends JPanel {
         layerLabel.setLabelFor(layerTextField);
         paletteLabel.setLabelFor(paletteComboBox);
         nbtLabel.setLabelFor(nbtTextField);
+        sizeLabel.setLabelFor(sizeTextField);
         blockPaletteLabel.setLabelFor(blockPaletteComboBox);
         fileLabel.setLabelFor(fileTextField);
     }
