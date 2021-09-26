@@ -56,7 +56,7 @@ public class UserInterface extends JPanel {
     private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter("TARDIS schematic file", EXTENSION_TARDIS);
     private final SchematicRenderer renderer;
     private final JFileChooser schematicChooser;
-    //    private final JFileChooser assetsChooser;
+    private final JFileChooser assetsChooser;
     private SquareButton selected;
     private int currentLayer;
     private Schematic schematic;
@@ -102,10 +102,10 @@ public class UserInterface extends JPanel {
         }
     }
 
-    //    {
-    //        assetsChooser = new JFileChooser();
-    //        assetsChooser.setCurrentDirectory(Assets.getAssets());
-    //    }
+    {
+        assetsChooser = new JFileChooser();
+        //        assetsChooser.setCurrentDirectory(Assets.getAssets());
+    }
 
     public UserInterface(SchematicRenderer renderer) {
         this.renderer = renderer;
@@ -130,8 +130,8 @@ public class UserInterface extends JPanel {
                 try {
                     file = schematicChooser.getSelectedFile().getCanonicalFile();
                     open(file);
-                } catch (IOException ex) {
-                    ex.printStackTrace();
+                } catch (IOException e1) {
+                    e1.printStackTrace();
                 }
             }
             renderer.resume();
@@ -165,7 +165,17 @@ public class UserInterface extends JPanel {
         JMenuItem assetsButton = new JMenuItem("Assets Path");
         assetsButton.addActionListener(e -> {
             renderer.pause();
-
+            //            assetsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            //            int result = assetsChooser.showOpenDialog(panel);
+            //            if (result == JFileChooser.APPROVE_OPTION && assetsChooser.getSelectedFile() != null) {
+            //                File directory;
+            //                try {
+            //                    directory = assetsChooser.getSelectedFile().getCanonicalFile();
+            //                    Assets.setAssets(directory);
+            //                } catch (IOException e1) {
+            //                    e1.printStackTrace();
+            //                }
+            //            }
             renderer.resume();
         });
         settingsPopup.add(assetsButton);
@@ -383,7 +393,7 @@ public class UserInterface extends JPanel {
         }
     }
 
-    private void squareActionPerformed(ActionEvent e) {
+    private void squareActionPerformed(@NotNull ActionEvent e) {
         selected = (SquareButton) e.getSource();
         int[] position = selected.getPosition();
 
