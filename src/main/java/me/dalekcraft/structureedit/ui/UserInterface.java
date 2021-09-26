@@ -88,6 +88,7 @@ public class UserInterface extends JPanel {
     private final ActionListener actionListener = this::squareActionPerformed;
     private JLabel sizeLabel;
     private JTextField sizeTextField;
+    private JMenu helpMenu;
 
     {
         schematicChooser = new JFileChooser();
@@ -162,6 +163,7 @@ public class UserInterface extends JPanel {
         });
         filePopup.add(saveButton);
 
+        settingsMenu.setVisible(false); // Just so an unfinished feature is not visible
         JPopupMenu settingsPopup = settingsMenu.getPopupMenu();
         JMenuItem assetsButton = new JMenuItem("Assets Path");
         assetsButton.addActionListener(e -> {
@@ -180,6 +182,26 @@ public class UserInterface extends JPanel {
             renderer.resume();
         });
         settingsPopup.add(assetsButton);
+
+
+        JPopupMenu helpPopup = helpMenu.getPopupMenu();
+        JMenuItem controlsButton = new JMenuItem("Controls");
+        controlsButton.addActionListener(e -> {
+            renderer.pause();
+            JOptionPane.showMessageDialog(Main.frame, """
+                    Drag mouse: Rotate view
+                    SCROLL: Zoom
+                    W or UP ARROW: Zoom in
+                    S or DOWN ARROW: Zoom out
+                    A: Move left
+                    D: Move right
+                    SPACE: Move up
+                    SHIFT: Move down
+                    LEFT ARROW: Decrease the rendered height
+                    RIGHT ARROW: Increase the rendered height""", "Controls", JOptionPane.INFORMATION_MESSAGE);
+            renderer.resume();
+        });
+        helpPopup.add(controlsButton);
 
         layerSpinner.addChangeListener(e -> {
             if (schematic != null) {
@@ -539,14 +561,18 @@ public class UserInterface extends JPanel {
         editorPanel.add(layerSpinner, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         panel.add(rawRenderer, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         menuBar = new JMenuBar();
-        menuBar.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
+        menuBar.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
         panel.add(menuBar, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         fileMenu = new JMenu();
         fileMenu.setText("File");
-        menuBar.add(fileMenu, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        menuBar.add(fileMenu, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         settingsMenu = new JMenu();
         settingsMenu.setText("Settings");
-        menuBar.add(settingsMenu, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        menuBar.add(settingsMenu, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
+        helpMenu = new JMenu();
+        helpMenu.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
+        helpMenu.setText("Help");
+        menuBar.add(helpMenu, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         blockLabel.setLabelFor(blockComboBox);
         propertiesLabel.setLabelFor(propertiesTextField);
         blockPositionLabel.setLabelFor(blockPositionTextField);
