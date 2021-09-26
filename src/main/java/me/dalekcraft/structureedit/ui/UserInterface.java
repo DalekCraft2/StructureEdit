@@ -34,7 +34,10 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.io.IOException;
 import java.io.Serial;
@@ -69,21 +72,19 @@ public class UserInterface extends JPanel {
     private JPanel editorPanel;
     private JPanel gridPanel;
     private JLabel blockLabel;
-    private JComboBox<String> blockComboBox;
+    private JComboBox<Block> blockComboBox;
     private JLabel propertiesLabel;
     private JFormattedTextField propertiesTextField;
     private JLabel layerLabel;
-    private JTextField layerTextField;
-    private JButton plusButton;
-    private JButton minusButton;
+    private JSpinner layerSpinner;
     private JLabel blockPositionLabel;
     private JTextField blockPositionTextField;
     private JLabel nbtLabel;
     private JFormattedTextField nbtTextField;
     private JLabel paletteLabel;
-    private JComboBox<Integer> paletteComboBox;
+    private JSpinner paletteSpinner;
     private JLabel blockPaletteLabel;
-    private JComboBox<Integer> blockPaletteComboBox;
+    private JSpinner blockPaletteSpinner;
     private final ActionListener actionListener = this::squareActionPerformed;
     private JLabel sizeLabel;
     private JTextField sizeTextField;
@@ -180,22 +181,19 @@ public class UserInterface extends JPanel {
         });
         settingsPopup.add(assetsButton);
 
-        plusButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (schematic != null && currentLayer < schematic.getSize()[1] - 1) {
-                    currentLayer++;
-                    loadLayer();
+        layerSpinner.addChangeListener(e -> {
+            if (schematic != null) {
+                int value = (int) layerSpinner.getValue();
+                if (value >= 0 && value < schematic.getSize()[1] - 1) {
+                    currentLayer = value;
+                } else if (value < 0) {
+                    currentLayer = 0;
+                    layerSpinner.setValue(currentLayer);
+                } else if (value >= schematic.getSize()[1] - 1) {
+                    currentLayer = schematic.getSize()[1] - 1;
+                    layerSpinner.setValue(currentLayer);
                 }
-            }
-        });
-        minusButton.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (schematic != null && currentLayer > 0) {
-                    currentLayer--;
-                    loadLayer();
-                }
+                loadLayer();
             }
         });
         blockComboBox.addItemListener(e -> {
@@ -265,10 +263,10 @@ public class UserInterface extends JPanel {
             public void changedUpdate(DocumentEvent e) {
             }
         });
-        paletteComboBox.addItemListener(e -> {
+        paletteSpinner.addChangeListener(e -> {
             if (schematic != null && schematic instanceof NbtStructure nbtStructure) {
                 if (nbtStructure.hasPaletteList()) {
-                    palette = nbtStructure.getPaletteListEntry(Integer.parseInt(paletteComboBox.getSelectedItem().toString()));
+                    palette = nbtStructure.getPaletteListEntry((Integer) paletteSpinner.getValue());
                 } else {
                     palette = nbtStructure.getPalette();
                 }
@@ -278,12 +276,12 @@ public class UserInterface extends JPanel {
             loadLayer();
         });
         // TODO Blockbench-style palette editor, with a list of palettes and palette IDs?
-        blockPaletteComboBox.addItemListener(e -> {
+        blockPaletteSpinner.addChangeListener(e -> {
             if (schematic != null && schematic instanceof NbtStructure nbtStructure && selected != null) {
                 int[] position = selected.getPosition();
                 CompoundTag block = nbtStructure.getBlock(position[0], position[1], position[2]);
                 if (block != null) {
-                    nbtStructure.setBlockState(block, blockPaletteComboBox.getSelectedIndex());
+                    nbtStructure.setBlockState(block, (Integer) blockPaletteSpinner.getValue());
                 }
                 updateSelected();
                 loadLayer();
@@ -299,8 +297,8 @@ public class UserInterface extends JPanel {
                 renderer.setSchematic(schematic);
                 selected = null;
                 sizeTextField.setText(null);
-                paletteComboBox.setSelectedItem(null);
-                paletteComboBox.setEnabled(false);
+                paletteSpinner.setValue(0);
+                paletteSpinner.setEnabled(false);
                 blockPositionTextField.setText(null);
                 blockPositionTextField.setEnabled(false);
                 blockComboBox.setSelectedItem(null);
@@ -309,33 +307,29 @@ public class UserInterface extends JPanel {
                 propertiesTextField.setEnabled(false);
                 nbtTextField.setText(null);
                 nbtTextField.setEnabled(false);
-                blockPaletteComboBox.setSelectedItem(null);
-                blockPaletteComboBox.setEnabled(false);
+                blockPaletteSpinner.setValue(0);
+                blockPaletteSpinner.setEnabled(false);
                 currentLayer = 0;
                 if (schematic != null) {
+                    int[] size = schematic.getSize();
+                    SpinnerModel layerModel = new SpinnerNumberModel(0, 0, size[1], 1);
+                    layerSpinner.setModel(layerModel);
                     if (schematic instanceof NbtStructure nbtStructure) {
                         if (nbtStructure.hasPaletteList()) {
                             int palettesSize = nbtStructure.getPaletteList().size();
-                            Integer[] palettes = new Integer[palettesSize];
-                            for (int i = 0; i < palettesSize; i++) {
-                                palettes[i] = i;
-                            }
-                            paletteComboBox.setEnabled(true);
-                            paletteComboBox.setModel(new DefaultComboBoxModel<>(palettes));
-                            paletteComboBox.setSelectedIndex(0);
+                            SpinnerModel paletteModel = new SpinnerNumberModel(0, 0, palettesSize - 1, 1);
+                            paletteSpinner.setEnabled(true);
+                            paletteSpinner.setModel(paletteModel);
                             palette = nbtStructure.getPaletteListEntry(0);
                         } else {
                             palette = nbtStructure.getPalette();
                         }
                         renderer.setPalette(palette);
                         int paletteSize = palette.size();
-                        Integer[] paletteIds = new Integer[paletteSize];
-                        for (int i = 0; i < paletteSize; i++) {
-                            paletteIds[i] = i;
-                        }
-                        blockPaletteComboBox.setModel(new DefaultComboBoxModel<>(paletteIds));
+                        SpinnerModel blockPaletteModel = new SpinnerNumberModel(0, 0, paletteSize - 1, 1);
+                        blockPaletteSpinner.setModel(blockPaletteModel);
                     } else {
-                        paletteComboBox.setEnabled(false);
+                        paletteSpinner.setEnabled(false);
                     }
                     loadLayer();
                     System.out.println("Loaded " + file + " successfully.");
@@ -356,7 +350,7 @@ public class UserInterface extends JPanel {
             gridPanel.removeAll();
             gridPanel.setLayout(null);
             gridPanel.updateUI();
-            layerTextField.setText(String.valueOf(currentLayer));
+            layerSpinner.setValue(currentLayer);
             int[] size = schematic.getSize();
             sizeTextField.setText(Arrays.toString(size));
             int buttonSideLength = Math.min(gridPanel.getWidth() / size[0], gridPanel.getHeight() / size[2]);
@@ -409,9 +403,9 @@ public class UserInterface extends JPanel {
             properties = schematic.getBlockPropertiesAsString(block);
         }
 
-        String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+        Block blockEnum = Block.getFromId(blockId);
         blockComboBox.setEnabled(true);
-        blockComboBox.setSelectedItem(blockName);
+        blockComboBox.setSelectedItem(blockEnum);
 
         propertiesTextField.setEnabled(true);
         propertiesTextField.setText(properties);
@@ -432,10 +426,10 @@ public class UserInterface extends JPanel {
 
         if (schematic instanceof NbtStructure nbtStructure) {
             int blockState = nbtStructure.getBlockState((CompoundTag) block);
-            blockPaletteComboBox.setEnabled(true);
-            blockPaletteComboBox.setSelectedIndex(blockState);
+            blockPaletteSpinner.setEnabled(true);
+            blockPaletteSpinner.setValue(blockState);
         } else {
-            blockPaletteComboBox.setEnabled(false);
+            blockPaletteSpinner.setEnabled(false);
         }
     }
 
@@ -455,8 +449,8 @@ public class UserInterface extends JPanel {
                 properties = schematic.getBlockPropertiesAsString(block);
             }
 
-            String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-            blockComboBox.setSelectedItem(blockName);
+            Block blockEnum = Block.getFromId(blockId);
+            blockComboBox.setSelectedItem(blockEnum);
 
             propertiesTextField.setText(properties);
 
@@ -473,7 +467,7 @@ public class UserInterface extends JPanel {
         panel = this;
         rawRenderer = renderer;
         blockComboBox = new JComboBox<>();
-        blockComboBox.setModel(new DefaultComboBoxModel<>(Block.strings()));
+        blockComboBox.setModel(new DefaultComboBoxModel<>(Block.values()));
         blockComboBox.setSelectedItem(null);
     }
 
@@ -488,67 +482,61 @@ public class UserInterface extends JPanel {
         createUIComponents();
         panel.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
         editorPanel = new JPanel();
-        editorPanel.setLayout(new GridLayoutManager(10, 3, new Insets(0, 0, 0, 0), -1, -1));
+        editorPanel.setLayout(new GridLayoutManager(9, 2, new Insets(0, 0, 0, 0), -1, -1));
         panel.add(editorPanel, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         blockLabel = new JLabel();
         blockLabel.setText("Block:");
-        editorPanel.add(blockLabel, new GridConstraints(6, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(blockLabel, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockComboBox.setToolTipText("The ID of the selected block");
-        editorPanel.add(blockComboBox, new GridConstraints(6, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(blockComboBox, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         propertiesLabel = new JLabel();
         propertiesLabel.setText("Properties:");
-        editorPanel.add(propertiesLabel, new GridConstraints(7, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(propertiesLabel, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         propertiesTextField = new JFormattedTextField();
         propertiesTextField.setToolTipText("The properties of the selected block");
-        editorPanel.add(propertiesTextField, new GridConstraints(7, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        editorPanel.add(propertiesTextField, new GridConstraints(6, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         blockPositionLabel = new JLabel();
         blockPositionLabel.setText("Block Position:");
-        editorPanel.add(blockPositionLabel, new GridConstraints(5, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(77, 33), null, 0, false));
+        editorPanel.add(blockPositionLabel, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(77, 33), null, 0, false));
         blockPositionTextField = new JTextField();
         blockPositionTextField.setEditable(false);
+        blockPositionTextField.setText("");
         blockPositionTextField.setToolTipText("The position of the selected block, ordered as [x, y, z]");
-        editorPanel.add(blockPositionTextField, new GridConstraints(5, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 33), null, 0, false));
+        editorPanel.add(blockPositionTextField, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 33), null, 0, false));
         layerLabel = new JLabel();
         layerLabel.setText("Layer:");
-        editorPanel.add(layerLabel, new GridConstraints(1, 0, 2, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        plusButton = new JButton();
-        plusButton.setText("+");
-        editorPanel.add(plusButton, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        minusButton = new JButton();
-        minusButton.setText("-");
-        editorPanel.add(minusButton, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        layerTextField = new JTextField();
-        layerTextField.setEditable(false);
-        layerTextField.setToolTipText("The currently viewed layer");
-        editorPanel.add(layerTextField, new GridConstraints(1, 2, 2, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        editorPanel.add(layerLabel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         nbtTextField = new JFormattedTextField();
         nbtTextField.setToolTipText("The NBT of the selected block");
-        editorPanel.add(nbtTextField, new GridConstraints(8, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        editorPanel.add(nbtTextField, new GridConstraints(7, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         paletteLabel = new JLabel();
         paletteLabel.setText("Palette:");
-        editorPanel.add(paletteLabel, new GridConstraints(3, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        paletteComboBox = new JComboBox();
-        paletteComboBox.setToolTipText("The index of the active palette");
-        editorPanel.add(paletteComboBox, new GridConstraints(3, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(paletteLabel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        paletteSpinner = new JSpinner();
+        paletteSpinner.setToolTipText("The index of the active palette");
+        editorPanel.add(paletteSpinner, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         nbtLabel = new JLabel();
         nbtLabel.setText("NBT:");
-        editorPanel.add(nbtLabel, new GridConstraints(8, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(nbtLabel, new GridConstraints(7, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         gridPanel = new JPanel();
         gridPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        editorPanel.add(gridPanel, new GridConstraints(9, 0, 1, 3, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        editorPanel.add(gridPanel, new GridConstraints(8, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         sizeLabel = new JLabel();
         sizeLabel.setText("Schematic Size:");
-        editorPanel.add(sizeLabel, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(sizeLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         sizeTextField = new JTextField();
         sizeTextField.setEditable(false);
         sizeTextField.setToolTipText("The dimensions of the schematic, ordered as [sizeX, sizeY, sizeZ]");
-        editorPanel.add(sizeTextField, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 33), null, 0, false));
+        editorPanel.add(sizeTextField, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 33), null, 0, false));
         blockPaletteLabel = new JLabel();
         blockPaletteLabel.setText("Block Palette:");
-        editorPanel.add(blockPaletteLabel, new GridConstraints(4, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        blockPaletteComboBox = new JComboBox();
-        blockPaletteComboBox.setToolTipText("The index of the selected block's state in the active palette");
-        editorPanel.add(blockPaletteComboBox, new GridConstraints(4, 2, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(blockPaletteLabel, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        blockPaletteSpinner = new JSpinner();
+        blockPaletteSpinner.setToolTipText("The index of the selected block's state in the active palette");
+        editorPanel.add(blockPaletteSpinner, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        layerSpinner = new JSpinner();
+        layerSpinner.setToolTipText("The currently viewed layer");
+        editorPanel.add(layerSpinner, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         panel.add(rawRenderer, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         menuBar = new JMenuBar();
         menuBar.setLayout(new GridLayoutManager(1, 2, new Insets(0, 0, 0, 0), -1, -1));
@@ -562,11 +550,11 @@ public class UserInterface extends JPanel {
         blockLabel.setLabelFor(blockComboBox);
         propertiesLabel.setLabelFor(propertiesTextField);
         blockPositionLabel.setLabelFor(blockPositionTextField);
-        layerLabel.setLabelFor(layerTextField);
-        paletteLabel.setLabelFor(paletteComboBox);
+        layerLabel.setLabelFor(layerSpinner);
+        paletteLabel.setLabelFor(paletteSpinner);
         nbtLabel.setLabelFor(nbtTextField);
         sizeLabel.setLabelFor(sizeTextField);
-        blockPaletteLabel.setLabelFor(blockPaletteComboBox);
+        blockPaletteLabel.setLabelFor(blockPaletteSpinner);
     }
 
     /**
