@@ -16,7 +16,6 @@
  */
 package me.dalekcraft.structureedit.drawing;
 
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -95,8 +94,8 @@ public enum Block {
     BLACK_CONCRETE_POWDER(MapColor.COLOR_BLACK),
     BLACK_GLAZED_TERRACOTTA(MapColor.COLOR_BLACK),
     BLACK_SHULKER_BOX(MapColor.COLOR_BLACK),
-    BLACK_STAINED_GLASS(changeAlpha(MapColor.COLOR_BLACK, 127)),
-    BLACK_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_BLACK, 127)),
+    BLACK_STAINED_GLASS(MapColor.COLOR_BLACK),
+    BLACK_STAINED_GLASS_PANE(MapColor.COLOR_BLACK),
     BLACK_TERRACOTTA(MapColor.TERRACOTTA_BLACK),
     BLACK_WALL_BANNER(MapColor.WOOD),
     BLACK_WOOL(MapColor.COLOR_BLACK),
@@ -116,8 +115,8 @@ public enum Block {
     BLUE_ICE(MapColor.ICE),
     BLUE_ORCHID(MapColor.PLANT),
     BLUE_SHULKER_BOX(MapColor.COLOR_BLUE),
-    BLUE_STAINED_GLASS(changeAlpha(MapColor.COLOR_BLUE, 127)),
-    BLUE_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_BLUE, 127)),
+    BLUE_STAINED_GLASS(MapColor.COLOR_BLUE),
+    BLUE_STAINED_GLASS_PANE(MapColor.COLOR_BLUE),
     BLUE_TERRACOTTA(MapColor.TERRACOTTA_BLUE),
     BLUE_WALL_BANNER(MapColor.WOOD),
     BLUE_WOOL(MapColor.COLOR_BLUE),
@@ -143,8 +142,8 @@ public enum Block {
     BROWN_MUSHROOM(MapColor.COLOR_BROWN),
     BROWN_MUSHROOM_BLOCK(MapColor.DIRT),
     BROWN_SHULKER_BOX(MapColor.COLOR_BROWN),
-    BROWN_STAINED_GLASS(changeAlpha(MapColor.COLOR_BROWN, 127)),
-    BROWN_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_BROWN, 127)),
+    BROWN_STAINED_GLASS(MapColor.COLOR_BROWN),
+    BROWN_STAINED_GLASS_PANE(MapColor.COLOR_BROWN),
     BROWN_TERRACOTTA(MapColor.TERRACOTTA_BROWN),
     BROWN_WALL_BANNER(MapColor.WOOD),
     BROWN_WOOL(MapColor.COLOR_BROWN),
@@ -242,8 +241,8 @@ public enum Block {
     CYAN_CONCRETE_POWDER(MapColor.COLOR_CYAN),
     CYAN_GLAZED_TERRACOTTA(MapColor.COLOR_CYAN),
     CYAN_SHULKER_BOX(MapColor.COLOR_CYAN),
-    CYAN_STAINED_GLASS(changeAlpha(MapColor.COLOR_CYAN, 127)),
-    CYAN_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_CYAN, 127)),
+    CYAN_STAINED_GLASS(MapColor.COLOR_CYAN),
+    CYAN_STAINED_GLASS_PANE(MapColor.COLOR_CYAN),
     CYAN_TERRACOTTA(MapColor.TERRACOTTA_CYAN),
     CYAN_WALL_BANNER(MapColor.WOOD),
     CYAN_WOOL(MapColor.COLOR_CYAN),
@@ -371,8 +370,8 @@ public enum Block {
     GRAY_CONCRETE_POWDER(MapColor.COLOR_GRAY),
     GRAY_GLAZED_TERRACOTTA(MapColor.COLOR_GRAY),
     GRAY_SHULKER_BOX(MapColor.COLOR_GRAY),
-    GRAY_STAINED_GLASS(changeAlpha(MapColor.COLOR_GRAY, 127)),
-    GRAY_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_GRAY, 127)),
+    GRAY_STAINED_GLASS(MapColor.COLOR_GRAY),
+    GRAY_STAINED_GLASS_PANE(MapColor.COLOR_GRAY),
     GRAY_TERRACOTTA(MapColor.TERRACOTTA_GRAY),
     GRAY_WALL_BANNER(MapColor.WOOD),
     GRAY_WOOL(MapColor.COLOR_GRAY),
@@ -385,8 +384,8 @@ public enum Block {
     GREEN_CONCRETE_POWDER(MapColor.COLOR_GREEN),
     GREEN_GLAZED_TERRACOTTA(MapColor.COLOR_GREEN),
     GREEN_SHULKER_BOX(MapColor.COLOR_GREEN),
-    GREEN_STAINED_GLASS(changeAlpha(MapColor.COLOR_GREEN, 127)),
-    GREEN_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_GREEN, 127)),
+    GREEN_STAINED_GLASS(MapColor.COLOR_GREEN),
+    GREEN_STAINED_GLASS_PANE(MapColor.COLOR_GREEN),
     GREEN_TERRACOTTA(MapColor.TERRACOTTA_GREEN),
     GREEN_WALL_BANNER(MapColor.WOOD),
     GREEN_WOOL(MapColor.COLOR_GREEN),
@@ -440,7 +439,7 @@ public enum Block {
     LAPIS_ORE(MapColor.STONE),
     LARGE_AMETHYST_BUD(MapColor.COLOR_PURPLE),
     LARGE_FERN(MapColor.PLANT),
-    LAVA(changeAlpha(MapColor.FIRE, 127)),
+    LAVA(MapColor.FIRE),
     LAVA_CAULDRON(MapColor.STONE),
     LECTERN(MapColor.WOOD),
     LEVER(MapColor.STONE),
@@ -454,8 +453,8 @@ public enum Block {
     LIGHT_BLUE_CONCRETE_POWDER(MapColor.COLOR_LIGHT_BLUE),
     LIGHT_BLUE_GLAZED_TERRACOTTA(MapColor.COLOR_LIGHT_BLUE),
     LIGHT_BLUE_SHULKER_BOX(MapColor.COLOR_LIGHT_BLUE),
-    LIGHT_BLUE_STAINED_GLASS(changeAlpha(MapColor.COLOR_LIGHT_BLUE, 127)),
-    LIGHT_BLUE_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_LIGHT_BLUE, 127)),
+    LIGHT_BLUE_STAINED_GLASS(MapColor.COLOR_LIGHT_BLUE),
+    LIGHT_BLUE_STAINED_GLASS_PANE(MapColor.COLOR_LIGHT_BLUE),
     LIGHT_BLUE_TERRACOTTA(MapColor.TERRACOTTA_LIGHT_BLUE),
     LIGHT_BLUE_WALL_BANNER(MapColor.WOOD),
     LIGHT_BLUE_WOOL(MapColor.COLOR_LIGHT_BLUE),
@@ -468,8 +467,8 @@ public enum Block {
     LIGHT_GRAY_CONCRETE_POWDER(MapColor.COLOR_LIGHT_GRAY),
     LIGHT_GRAY_GLAZED_TERRACOTTA(MapColor.COLOR_LIGHT_GRAY),
     LIGHT_GRAY_SHULKER_BOX(MapColor.COLOR_LIGHT_GRAY),
-    LIGHT_GRAY_STAINED_GLASS(changeAlpha(MapColor.COLOR_LIGHT_GRAY, 127)),
-    LIGHT_GRAY_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_LIGHT_GRAY, 127)),
+    LIGHT_GRAY_STAINED_GLASS(MapColor.COLOR_LIGHT_GRAY),
+    LIGHT_GRAY_STAINED_GLASS_PANE(MapColor.COLOR_LIGHT_GRAY),
     LIGHT_GRAY_TERRACOTTA(MapColor.TERRACOTTA_LIGHT_GRAY),
     LIGHT_GRAY_WALL_BANNER(MapColor.WOOD),
     LIGHT_GRAY_WOOL(MapColor.COLOR_LIGHT_GRAY),
@@ -487,8 +486,8 @@ public enum Block {
     LIME_CONCRETE_POWDER(MapColor.COLOR_LIGHT_GREEN),
     LIME_GLAZED_TERRACOTTA(MapColor.COLOR_LIGHT_GREEN),
     LIME_SHULKER_BOX(MapColor.COLOR_LIGHT_GREEN),
-    LIME_STAINED_GLASS(changeAlpha(MapColor.COLOR_LIGHT_GREEN, 127)),
-    LIME_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_LIGHT_GREEN, 127)),
+    LIME_STAINED_GLASS(MapColor.COLOR_LIGHT_GREEN),
+    LIME_STAINED_GLASS_PANE(MapColor.COLOR_LIGHT_GREEN),
     LIME_TERRACOTTA(MapColor.TERRACOTTA_LIGHT_GREEN),
     LIME_WALL_BANNER(MapColor.WOOD),
     LIME_WOOL(MapColor.COLOR_LIGHT_GREEN),
@@ -503,8 +502,8 @@ public enum Block {
     MAGENTA_CONCRETE_POWDER(MapColor.COLOR_MAGENTA),
     MAGENTA_GLAZED_TERRACOTTA(MapColor.COLOR_MAGENTA),
     MAGENTA_SHULKER_BOX(MapColor.COLOR_MAGENTA),
-    MAGENTA_STAINED_GLASS(changeAlpha(MapColor.COLOR_MAGENTA, 127)),
-    MAGENTA_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_MAGENTA, 127)),
+    MAGENTA_STAINED_GLASS(MapColor.COLOR_MAGENTA),
+    MAGENTA_STAINED_GLASS_PANE(MapColor.COLOR_MAGENTA),
     MAGENTA_TERRACOTTA(MapColor.TERRACOTTA_MAGENTA),
     MAGENTA_WALL_BANNER(MapColor.WOOD),
     MAGENTA_WOOL(MapColor.COLOR_MAGENTA),
@@ -565,8 +564,8 @@ public enum Block {
     ORANGE_CONCRETE_POWDER(MapColor.COLOR_ORANGE),
     ORANGE_GLAZED_TERRACOTTA(MapColor.COLOR_ORANGE),
     ORANGE_SHULKER_BOX(MapColor.COLOR_ORANGE),
-    ORANGE_STAINED_GLASS(changeAlpha(MapColor.COLOR_ORANGE, 127)),
-    ORANGE_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_ORANGE, 127)),
+    ORANGE_STAINED_GLASS(MapColor.COLOR_ORANGE),
+    ORANGE_STAINED_GLASS_PANE(MapColor.COLOR_ORANGE),
     ORANGE_TERRACOTTA(MapColor.TERRACOTTA_ORANGE),
     ORANGE_TULIP(MapColor.PLANT),
     ORANGE_WALL_BANNER(MapColor.WOOD),
@@ -588,8 +587,8 @@ public enum Block {
     PINK_CONCRETE_POWDER(MapColor.COLOR_PINK),
     PINK_GLAZED_TERRACOTTA(MapColor.COLOR_PINK),
     PINK_SHULKER_BOX(MapColor.COLOR_PINK),
-    PINK_STAINED_GLASS(changeAlpha(MapColor.COLOR_PINK, 127)),
-    PINK_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_PINK, 127)),
+    PINK_STAINED_GLASS(MapColor.COLOR_PINK),
+    PINK_STAINED_GLASS_PANE(MapColor.COLOR_PINK),
     PINK_TERRACOTTA(MapColor.TERRACOTTA_PINK),
     PINK_TULIP(MapColor.PLANT),
     PINK_WALL_BANNER(MapColor.WOOD),
@@ -678,8 +677,8 @@ public enum Block {
     PURPLE_CONCRETE_POWDER(MapColor.COLOR_PURPLE),
     PURPLE_GLAZED_TERRACOTTA(MapColor.COLOR_PURPLE),
     PURPLE_SHULKER_BOX(MapColor.TERRACOTTA_PURPLE),
-    PURPLE_STAINED_GLASS(changeAlpha(MapColor.COLOR_PURPLE, 127)),
-    PURPLE_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_PURPLE, 127)),
+    PURPLE_STAINED_GLASS(MapColor.COLOR_PURPLE),
+    PURPLE_STAINED_GLASS_PANE(MapColor.COLOR_PURPLE),
     PURPLE_TERRACOTTA(MapColor.TERRACOTTA_PURPLE),
     PURPLE_WALL_BANNER(MapColor.WOOD),
     PURPLE_WOOL(MapColor.COLOR_PURPLE),
@@ -716,8 +715,8 @@ public enum Block {
     RED_SANDSTONE_STAIRS(MapColor.COLOR_ORANGE),
     RED_SANDSTONE_WALL(MapColor.COLOR_ORANGE),
     RED_SHULKER_BOX(MapColor.COLOR_RED),
-    RED_STAINED_GLASS(changeAlpha(MapColor.COLOR_RED, 127)),
-    RED_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_RED, 127)),
+    RED_STAINED_GLASS(MapColor.COLOR_RED),
+    RED_STAINED_GLASS_PANE(MapColor.COLOR_RED),
     RED_TERRACOTTA(MapColor.TERRACOTTA_RED),
     RED_TULIP(MapColor.PLANT),
     RED_WALL_BANNER(MapColor.WOOD),
@@ -827,7 +826,7 @@ public enum Block {
     TALL_SEAGRASS(MapColor.WATER),
     TARGET(MapColor.QUARTZ),
     TERRACOTTA(MapColor.COLOR_ORANGE),
-    TINTED_GLASS(changeAlpha(MapColor.COLOR_GRAY, 127)),
+    TINTED_GLASS(MapColor.COLOR_GRAY),
     TNT(MapColor.FIRE),
     TORCH(MapColor.COLOR_YELLOW),
     TRAPPED_CHEST(MapColor.WOOD),
@@ -896,8 +895,8 @@ public enum Block {
     WHITE_CONCRETE_POWDER(MapColor.SNOW),
     WHITE_GLAZED_TERRACOTTA(MapColor.SNOW),
     WHITE_SHULKER_BOX(MapColor.SNOW),
-    WHITE_STAINED_GLASS(changeAlpha(MapColor.SNOW, 127)),
-    WHITE_STAINED_GLASS_PANE(changeAlpha(MapColor.SNOW, 127)),
+    WHITE_STAINED_GLASS(MapColor.SNOW),
+    WHITE_STAINED_GLASS_PANE(MapColor.SNOW),
     WHITE_TERRACOTTA(MapColor.TERRACOTTA_WHITE),
     WHITE_TULIP(MapColor.PLANT),
     WHITE_WALL_BANNER(MapColor.WOOD),
@@ -914,8 +913,8 @@ public enum Block {
     YELLOW_CONCRETE_POWDER(MapColor.COLOR_YELLOW),
     YELLOW_GLAZED_TERRACOTTA(MapColor.COLOR_YELLOW),
     YELLOW_SHULKER_BOX(MapColor.COLOR_YELLOW),
-    YELLOW_STAINED_GLASS(changeAlpha(MapColor.COLOR_YELLOW, 127)),
-    YELLOW_STAINED_GLASS_PANE(changeAlpha(MapColor.COLOR_YELLOW, 127)),
+    YELLOW_STAINED_GLASS(MapColor.COLOR_YELLOW),
+    YELLOW_STAINED_GLASS_PANE(MapColor.COLOR_YELLOW),
     YELLOW_TERRACOTTA(MapColor.TERRACOTTA_YELLOW),
     YELLOW_WALL_BANNER(MapColor.WOOD),
     YELLOW_WOOL(MapColor.COLOR_YELLOW),
@@ -928,20 +927,13 @@ public enum Block {
         this.color = color;
     }
 
-    public static String @NotNull [] strings() {
-        String[] blockNames = new String[values().length];
-        int i = 0;
-        for (Block block : values()) {
-            blockNames[i] = block.toString();
-            i++;
-        }
-        return blockNames;
+    public static Block fromId(@NotNull String namespacedId) {
+        return valueOf(namespacedId.substring(namespacedId.indexOf(':') + 1).toUpperCase(Locale.ROOT));
     }
 
-    @Contract("_, _ -> new")
     @NotNull
-    private static Color changeAlpha(@NotNull Color color, int alpha) {
-        return new Color(color.getRed(), color.getGreen(), color.getBlue(), alpha);
+    public String toId() {
+        return "minecraft:" + name().toLowerCase(Locale.ROOT);
     }
 
     /**
@@ -951,10 +943,6 @@ public enum Block {
      */
     public Color getColor() {
         return color;
-    }
-
-    public static Block getFromId(@NotNull String namespacedId) {
-        return valueOf(namespacedId.substring(namespacedId.indexOf(':') + 1).toUpperCase(Locale.ROOT));
     }
 
 }

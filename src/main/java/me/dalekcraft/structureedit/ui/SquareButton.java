@@ -44,7 +44,7 @@ public final class SquareButton extends JButton {
         setBackground(noAlpha);
         setOpaque(true);
         setText(block.name().substring(0, 1));
-        setToolTipText("minecraft:" + block.name().toLowerCase());
+        setToolTipText(block.toId());
         setBorder(new LineBorder(Color.BLACK));
     }
 

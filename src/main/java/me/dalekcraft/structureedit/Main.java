@@ -20,6 +20,10 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import me.dalekcraft.structureedit.drawing.SchematicRenderer;
 import me.dalekcraft.structureedit.ui.UserInterface;
+import me.dalekcraft.structureedit.util.Language;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
@@ -27,6 +31,8 @@ import org.json.JSONException;
 import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,8 +42,8 @@ public final class Main {
 
     public static final int FRAME_WIDTH = 1024;
     public static final int FRAME_HEIGHT = 600;
+    private static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static File assets;
-    public static boolean debug;
     public static JFrame frame;
 
     private Main() {
@@ -49,17 +55,18 @@ public final class Main {
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+            LOGGER.log(Level.INFO, "Starting...");
             GLProfile profile = GLProfile.getDefault();
             GLCapabilities capabilities = new GLCapabilities(profile);
             SchematicRenderer renderer = new SchematicRenderer(capabilities);
             UserInterface userInterface = new UserInterface(renderer);
             frame = new JFrame();
             frame.add(userInterface);
-            frame.setTitle("StructureEdit");
+            frame.setTitle(Language.TITLE);
             try {
                 frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")).getScaledInstance(128, 128, Image.SCALE_SMOOTH));
             } catch (IOException e) {
-                e.printStackTrace();
+                LOGGER.log(Level.ERROR, e.getMessage());
             }
             frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
             Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
@@ -72,18 +79,32 @@ public final class Main {
             // the close button; this bit of code will terminate the program when
             // the window is asked to close
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    LOGGER.log(Level.INFO, "Stopping...");
+                }
+            });
 
             renderer.requestFocus();
 
+            // TODO Make logging level configurable via arguments.
             ArrayList<String> argList = new ArrayList<>(List.of(args));
-            debug = argList.contains("-debug");
             String assetsArg = getArgument(argList, "-assets");
             if (assetsArg != null) {
                 try {
-                    assets = new File(assetsArg).getCanonicalFile();
+                    File assets = new File(assetsArg).getCanonicalFile();
+                    if (assets.exists()) {
+                        Main.assets = assets;
+                        LOGGER.log(Level.INFO, "Setting assets path: " + assets);
+                    } else {
+                        LOGGER.log(Level.WARN, "Path does not exist: " + assets);
+                    }
                 } catch (IOException e) {
-                    e.printStackTrace();
+                    LOGGER.log(org.apache.logging.log4j.Level.ERROR, e.getMessage());
                 }
+            } else {
+                LOGGER.log(Level.WARN, "Path to assets directory is not set! Use the \"-assets\" argument in the command line to set it.");
             }
             String path = getArgument(argList, "-path");
             if (path != null) {
@@ -91,7 +112,7 @@ public final class Main {
                     File file = new File(path).getCanonicalFile();
                     userInterface.open(file);
                 } catch (JSONException | IOException e) {
-                    System.err.println("Error reading schematic: " + e.getMessage());
+                    LOGGER.printf(Level.ERROR, Language.ERROR_READING_SCHEMATIC, e.getMessage());
                 }
             }
         });

@@ -5,6 +5,9 @@ import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.*;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -14,6 +17,8 @@ import java.util.Map;
 import java.util.Set;
 
 public record SpongeSchematic(NamedTag schematic) implements Schematic {
+
+    private static final Logger LOGGER = LogManager.getLogger(SpongeSchematic.class);
 
     @Override
     public void saveTo(File file) throws IOException {
@@ -122,7 +127,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
             tag = (CompoundTag) SNBTUtil.fromSNBT(replaced);
         } catch (StringIndexOutOfBoundsException ignored) {
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         return PropertyUtils.byteToString(tag);
     }
@@ -133,12 +138,12 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         try {
             propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace("\"", "");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         try {
             setBlockPropertiesAsString(block, propertiesString);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
     }
 

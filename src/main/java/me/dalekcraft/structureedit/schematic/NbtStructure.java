@@ -7,6 +7,9 @@ import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -15,6 +18,8 @@ import java.io.File;
 import java.io.IOException;
 
 public record NbtStructure(NamedTag schematic) implements Schematic {
+
+    private static final Logger LOGGER = LogManager.getLogger(NbtStructure.class);
 
     @Override
     public void saveTo(File file) throws IOException {
@@ -131,7 +136,7 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
         try {
             propertiesString = SNBTUtil.toSNBT(properties).replace("\"", "");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         return propertiesString;
     }
@@ -152,7 +157,7 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
         try {
             propertiesString = SNBTUtil.toSNBT(properties).replace("\"", "");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         return propertiesString;
     }
@@ -187,7 +192,7 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
         try {
             snbt = SNBTUtil.toSNBT(nbt);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         return snbt;
     }

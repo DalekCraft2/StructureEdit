@@ -23,8 +23,12 @@ import me.dalekcraft.structureedit.drawing.Block;
 import me.dalekcraft.structureedit.drawing.SchematicRenderer;
 import me.dalekcraft.structureedit.schematic.NbtStructure;
 import me.dalekcraft.structureedit.schematic.Schematic;
+import me.dalekcraft.structureedit.util.Language;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 
@@ -40,7 +44,6 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.io.IOException;
-import java.io.Serial;
 import java.util.Arrays;
 import java.util.Locale;
 
@@ -51,8 +54,7 @@ import static me.dalekcraft.structureedit.schematic.Schematic.*;
  */
 public class UserInterface extends JPanel {
 
-    @Serial
-    private static final long serialVersionUID = -1098962567729971976L;
+    private static final Logger LOGGER = LogManager.getLogger(UserInterface.class);
     private static final FileNameExtensionFilter FILTER_NBT = new FileNameExtensionFilter("NBT structure file", EXTENSION_NBT);
     private static final FileNameExtensionFilter FILTER_MCEDIT = new FileNameExtensionFilter("MCEdit schematic file", EXTENSION_MCEDIT);
     private static final FileNameExtensionFilter FILTER_SPONGE = new FileNameExtensionFilter("Sponge schematic file", EXTENSION_SPONGE);
@@ -99,8 +101,8 @@ public class UserInterface extends JPanel {
         schematicChooser.setFileFilter(FILTER_NBT);
         try {
             schematicChooser.setCurrentDirectory(new File(".").getCanonicalFile());
-        } catch (IOException ex) {
-            ex.printStackTrace();
+        } catch (IOException e) {
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
     }
 
@@ -133,7 +135,7 @@ public class UserInterface extends JPanel {
                     file = schematicChooser.getSelectedFile().getCanonicalFile();
                     open(file);
                 } catch (IOException e1) {
-                    e1.printStackTrace();
+                    LOGGER.log(Level.ERROR, e1.getMessage());
                 }
             }
             renderer.resume();
@@ -148,17 +150,17 @@ public class UserInterface extends JPanel {
                 if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
                     try {
                         File file = schematicChooser.getSelectedFile().getCanonicalFile();
-                        System.out.println("Saving " + file + " ...");
+                        LOGGER.printf(Level.INFO, Language.SAVING, file);
                         schematic.saveTo(file);
-                        System.out.println("Schematic saved to " + file + " successfully.");
-                        Main.frame.setTitle(file.getName() + " - StructureEdit");
+                        LOGGER.printf(Level.INFO, Language.SAVED, file);
+                        Main.frame.setTitle(String.format(Language.TITLE_WITH_FILE, file.getName()));
                     } catch (IOException e1) {
-                        System.err.println("Error saving schematic: " + e1.getMessage());
+                        LOGGER.printf(Level.ERROR, Language.ERROR_SAVING_SCHEMATIC, e1.getMessage());
                     }
                 }
                 renderer.resume();
             } else {
-                System.err.println("Schematic was null!");
+                LOGGER.log(Level.ERROR, Language.NULL_SCHEMATIC);
             }
         });
         filePopup.add(saveButton);
@@ -222,7 +224,7 @@ public class UserInterface extends JPanel {
             if (schematic != null && selected != null) {
                 int[] position = selected.getPosition();
                 Object block = schematic.getBlock(position[0], position[1], position[2]);
-                String blockId = "minecraft:" + blockComboBox.getSelectedItem().toString().toLowerCase();
+                String blockId = ((Block) blockComboBox.getSelectedItem()).toId();
                 if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
                     nbtStructure.setBlockId(block, blockId, palette);
                 } else {
@@ -313,9 +315,9 @@ public class UserInterface extends JPanel {
 
     public void open(@NotNull File file) {
         SwingUtilities.invokeLater(() -> {
-            System.out.println("Loading " + file + " ...");
+            LOGGER.printf(Level.INFO, Language.LOADING, file);
             try {
-                schematic = Schematic.openFrom(file);
+                schematic = openFrom(file);
                 renderer.setSchematic(schematic);
                 selected = null;
                 sizeTextField.setText(null);
@@ -354,14 +356,14 @@ public class UserInterface extends JPanel {
                         paletteSpinner.setEnabled(false);
                     }
                     loadLayer();
-                    System.out.println("Loaded " + file + " successfully.");
-                    Main.frame.setTitle(file.getName() + " - StructureEdit");
+                    LOGGER.printf(Level.INFO, Language.LOADED, file);
+                    Main.frame.setTitle(String.format(Language.TITLE_WITH_FILE, file.getName()));
                 } else {
-                    System.err.println("Not a schematic file!");
+                    LOGGER.log(Level.ERROR, Language.NOT_SCHEMATIC);
                 }
             } catch (IOException | JSONException e) {
-                System.err.println("Error reading schematic: " + e.getMessage());
-                Main.frame.setTitle("StructureEdit");
+                LOGGER.printf(Level.ERROR, Language.ERROR_READING_SCHEMATIC, e.getMessage());
+                Main.frame.setTitle(Language.TITLE);
             }
         });
     }
@@ -405,7 +407,7 @@ public class UserInterface extends JPanel {
                 }
             }
         } else {
-            System.err.println("Schematic was null!");
+            LOGGER.log(Level.ERROR, Language.NULL_SCHEMATIC);
         }
     }
 
@@ -425,7 +427,7 @@ public class UserInterface extends JPanel {
             properties = schematic.getBlockPropertiesAsString(block);
         }
 
-        Block blockEnum = Block.getFromId(blockId);
+        Block blockEnum = Block.fromId(blockId);
         blockComboBox.setEnabled(true);
         blockComboBox.setSelectedItem(blockEnum);
 
@@ -471,7 +473,7 @@ public class UserInterface extends JPanel {
                 properties = schematic.getBlockPropertiesAsString(block);
             }
 
-            Block blockEnum = Block.getFromId(blockId);
+            Block blockEnum = Block.fromId(blockId);
             blockComboBox.setSelectedItem(blockEnum);
 
             propertiesTextField.setText(properties);

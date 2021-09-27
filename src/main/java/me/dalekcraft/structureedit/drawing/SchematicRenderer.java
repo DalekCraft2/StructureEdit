@@ -51,22 +51,18 @@ public class SchematicRenderer extends GLJPanel {
      **/
     private static float yaw = 45.0f;
     /**
-     * The GL Utility.
-     */
-    private final GLU glu = new GLU();
-    /**
      * X location.
      */
-    private float x = 0.0f;
+    private float x;
     /**
      * Y location.
      */
-    private float y = 0.0f;
+    private float y;
     /**
      * Z location.
      */
     private float z = -30.0f;
-    private boolean sprint = false;
+    private boolean sprint;
     private int mouseX = Main.FRAME_WIDTH / 2;
     private int mouseY = Main.FRAME_HEIGHT / 2;
     private int sizeX, sizeY, sizeZ, renderedHeight;
@@ -122,9 +118,9 @@ public class SchematicRenderer extends GLJPanel {
                     gl.glTranslatef(x, y, z); // translate into the screen
                     gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
                     gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
-                    float translateX = (float) sizeX / 2.0f;
-                    float translateY = (float) sizeY / 2.0f;
-                    float translateZ = (float) sizeZ / 2.0f;
+                    float translateX = sizeX / 2.0f;
+                    float translateY = sizeY / 2.0f;
+                    float translateZ = sizeZ / 2.0f;
                     // bottom-left-front corner of schematic is (0,0,0) so we need to center it at the origin
                     gl.glTranslatef(-translateX, -translateY, -translateZ);
                     // draw schematic border
@@ -159,6 +155,7 @@ public class SchematicRenderer extends GLJPanel {
             @Override
             public void reshape(GLAutoDrawable drawable, int x, int y, int width, int height) {
                 GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
+                GLU glu = GLU.createGLU(gl);
                 if (height == 0) {
                     height = 1; // prevent divide by zero
                 }

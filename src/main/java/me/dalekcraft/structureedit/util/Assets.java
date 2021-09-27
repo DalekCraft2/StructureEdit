@@ -4,6 +4,9 @@ import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 import me.dalekcraft.structureedit.Main;
 import me.dalekcraft.structureedit.drawing.Block;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
@@ -11,14 +14,16 @@ import org.json.JSONObject;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 public final class Assets {
+
+    private static final Logger LOGGER = LogManager.getLogger(Assets.class);
     private static final Map<String, JSONObject> BLOCK_STATES = new HashMap<>();
     private static final Map<String, JSONObject> MODELS = new HashMap<>();
     private static final Map<String, Texture> TEXTURES = new HashMap<>();
     private static final Map<String, JSONObject> ANIMATIONS = new HashMap<>();
+    private static final ClassLoader LOADER = Assets.class.getClassLoader();
     private static File assets;
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
@@ -42,24 +47,24 @@ public final class Assets {
 
     public static void load() {
         try {
-            BLOCK_STATES.put("minecraft:missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/minecraft/blockstates/missing.json")));
+            BLOCK_STATES.put("minecraft:missing", toJson(LOADER.getResourceAsStream("assets/minecraft/blockstates/missing.json")));
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         try {
-            MODELS.put("minecraft:block/missing", toJson(Main.class.getClassLoader().getResourceAsStream("assets/minecraft/models/block/missing.json")));
+            MODELS.put("minecraft:block/missing", toJson(LOADER.getResourceAsStream("assets/minecraft/models/block/missing.json")));
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         try {
             // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
-            TEXTURES.put("minecraft:missing", TextureIO.newTexture(Main.class.getClassLoader().getResourceAsStream("assets/minecraft/textures/missing.png"), false, "png"));
+            TEXTURES.put("minecraft:missing", TextureIO.newTexture(LOADER.getResourceAsStream("assets/minecraft/textures/missing.png"), false, "png"));
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         ANIMATIONS.put("minecraft:missing", null);
         for (Block block : Block.values()) {
-            String namespacedId = "minecraft:" + block.name().toLowerCase(Locale.ROOT);
+            String namespacedId = block.toId();
             JSONObject blockState = getBlockState(namespacedId);
             BLOCK_STATES.put(namespacedId, blockState);
         }
@@ -79,16 +84,14 @@ public final class Assets {
         String namespace = split.length > 1 ? split[0] : "minecraft";
         String id = split.length > 1 ? split[1] : split[0];
         String internalPath = "assets/" + namespace + "/" + folder + "/" + id + "." + extension;
-        InputStream internalStream = Main.class.getClassLoader().getResourceAsStream(internalPath);
+        InputStream internalStream = LOADER.getResourceAsStream(internalPath);
         if (internalStream != null) {
-            if (Main.debug) {
-                System.out.println("Getting internal asset from " + internalPath);
-            }
+            LOGGER.log(Level.TRACE, "Getting internal asset from " + internalPath);
             return internalStream;
         }
         File file = new File(assets, namespace + File.separator + folder + File.separator + id + "." + extension).getCanonicalFile();
-        if (file.exists() && Main.debug) {
-            System.out.println("Getting asset from " + file);
+        if (file.exists()) {
+            LOGGER.log(Level.TRACE, "Getting asset from " + file);
         }
         return new FileInputStream(file);
     }
@@ -101,7 +104,7 @@ public final class Assets {
         try {
             blockState = toJson(namespacedId, "blockstates", "json");
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            LOGGER.log(Level.TRACE, e.getMessage());
             blockState = BLOCK_STATES.get("minecraft:missing");
         }
         BLOCK_STATES.put(namespacedId, blockState);
@@ -116,7 +119,7 @@ public final class Assets {
         try {
             model = toJson(namespacedId, "models", "json");
         } catch (IOException e) {
-            System.err.println(e.getMessage());
+            LOGGER.log(Level.TRACE, e.getMessage());
             model = MODELS.get("minecraft:block/missing");
         }
         MODELS.put(namespacedId, model);
@@ -131,11 +134,11 @@ public final class Assets {
         try (InputStream inputStream = getAsset(namespacedId, "textures", "png")) {
             texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
         } catch (IOException e) {
-            System.err.println(e.getMessage());
-            try (InputStream inputStream = Main.class.getClassLoader().getResourceAsStream("assets/minecraft/textures/missing.png")) {
+            LOGGER.log(Level.ERROR, e.getMessage());
+            try (InputStream inputStream = LOADER.getResourceAsStream("assets/minecraft/textures/missing.png")) {
                 texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
             } catch (IOException e1) {
-                e1.printStackTrace();
+                LOGGER.log(Level.ERROR, e.getMessage());
             }
         }
         TEXTURES.put(namespacedId, texture);

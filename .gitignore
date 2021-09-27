@@ -64,3 +64,6 @@ DerivedData/
 *.perspective
 *.perspectivev3
 *.xcworkspace
+
+# Custom
+logs/

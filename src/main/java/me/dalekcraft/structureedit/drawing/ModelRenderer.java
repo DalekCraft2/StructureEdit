@@ -9,6 +9,9 @@ import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.StringTag;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -25,7 +28,8 @@ import static me.dalekcraft.structureedit.drawing.SchematicRenderer.SCALE;
 
 public final class ModelRenderer {
 
-    public static final int TEXTURE_SIZE = 16;
+    private static final int TEXTURE_SIZE = 16;
+    private static final Logger LOGGER = LogManager.getLogger(ModelRenderer.class);
 
     private ModelRenderer() {
         throw new UnsupportedOperationException();
@@ -38,7 +42,7 @@ public final class ModelRenderer {
         try {
             propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace('{', '[').replace('}', ']').replace(':', '=').replace("\"", "");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         if (blockState.has("variants")) {
             JSONObject variants = blockState.getJSONObject("variants");
@@ -144,7 +148,7 @@ public final class ModelRenderer {
         }
     }
 
-    public static void sendBlockState(GL4bc gl, @NotNull JSONObject jsonObject, Color tint) {
+    private static void sendBlockState(GL4bc gl, @NotNull JSONObject jsonObject, Color tint) {
         String modelPath = jsonObject.getString("model");
         JSONObject model = Assets.getModel(modelPath);
         int x = 0;
@@ -162,7 +166,7 @@ public final class ModelRenderer {
         drawModel(gl, model, x, y, uvlock, tint);
     }
 
-    public static void drawModel(@NotNull GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color tint) {
+    private static void drawModel(@NotNull GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color tint) {
         gl.glPushMatrix();
 
         gl.glTranslated(0.5, 0.5, 0.5);
@@ -193,19 +197,19 @@ public final class ModelRenderer {
                 }
                 boolean shade = !element.has("shade") || element.getBoolean("shade");
 
-                double fromX = from.getDouble(0) / (double) TEXTURE_SIZE;
-                double fromY = from.getDouble(1) / (double) TEXTURE_SIZE;
-                double fromZ = from.getDouble(2) / (double) TEXTURE_SIZE;
-                double toX = to.getDouble(0) / (double) TEXTURE_SIZE;
-                double toY = to.getDouble(1) / (double) TEXTURE_SIZE;
-                double toZ = to.getDouble(2) / (double) TEXTURE_SIZE;
+                double fromX = from.getDouble(0) / TEXTURE_SIZE;
+                double fromY = from.getDouble(1) / TEXTURE_SIZE;
+                double fromZ = from.getDouble(2) / TEXTURE_SIZE;
+                double toX = to.getDouble(0) / TEXTURE_SIZE;
+                double toY = to.getDouble(1) / TEXTURE_SIZE;
+                double toZ = to.getDouble(2) / TEXTURE_SIZE;
 
                 if (axis != null && origin != null) {
-                    double originX = origin.getDouble(0) / (double) TEXTURE_SIZE;
-                    double originY = origin.getDouble(1) / (double) TEXTURE_SIZE;
-                    double originZ = origin.getDouble(2) / (double) TEXTURE_SIZE;
+                    double originX = origin.getDouble(0) / TEXTURE_SIZE;
+                    double originY = origin.getDouble(1) / TEXTURE_SIZE;
+                    double originZ = origin.getDouble(2) / TEXTURE_SIZE;
                     gl.glTranslated(originX, originY, originZ);
-                    double rescaleFactor = Math.sqrt(Math.pow(16.0, 2.0) + Math.pow(16.0, 2.0)) / (double) TEXTURE_SIZE; // TODO Do not assume that the angle is 45.0.
+                    double rescaleFactor = Math.sqrt(Math.pow(16.0, 2.0) + Math.pow(16.0, 2.0)) / TEXTURE_SIZE; // TODO Do not assume that the angle is 45.0.
                     switch (axis) {
                         case "x" -> {
                             gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);

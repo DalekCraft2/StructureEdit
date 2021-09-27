@@ -3,6 +3,9 @@ package me.dalekcraft.structureedit.schematic;
 import me.dalekcraft.structureedit.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.tag.CompoundTag;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
@@ -12,6 +15,9 @@ import java.io.File;
 import java.io.IOException;
 
 public interface Schematic {
+
+    Logger LOGGER = LogManager.getLogger(Schematic.class);
+
 
     /**
      * The extension for Minecraft structure files.
@@ -49,7 +55,7 @@ public interface Schematic {
                 return new NbtStructure(NBTUtil.read(file));
             }
             case EXTENSION_MCEDIT -> {
-                System.err.println("MCEdit schematics are not yet supported!");
+                LOGGER.log(Level.WARN, "MCEdit schematics are not yet supported!");
                 return new McEditSchematic(NBTUtil.read(file));
             }
             case EXTENSION_SPONGE -> {

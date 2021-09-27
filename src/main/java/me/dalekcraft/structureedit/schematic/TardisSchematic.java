@@ -4,6 +4,9 @@ import me.dalekcraft.structureedit.util.GzipUtils;
 import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -13,6 +16,8 @@ import java.io.File;
 import java.io.IOException;
 
 public record TardisSchematic(JSONObject schematic) implements Schematic {
+
+    private static final Logger LOGGER = LogManager.getLogger(TardisSchematic.class);
 
     @Override
     public void saveTo(File file) throws IOException {
@@ -92,7 +97,7 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
             tag = (CompoundTag) SNBTUtil.fromSNBT(replaced);
         } catch (StringIndexOutOfBoundsException ignored) {
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         return PropertyUtils.byteToString(tag);
     }
@@ -103,12 +108,12 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
         try {
             propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace("\"", "");
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         try {
             setBlockPropertiesAsString(block, propertiesString);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
     }
 

@@ -16,7 +16,7 @@ public final class Tint {
 
     @NotNull
     public static Color getTint(String namespacedId, CompoundTag properties) {
-        Block block = Block.getFromId(namespacedId);
+        Block block = Block.fromId(namespacedId);
         switch (block) {
             case REDSTONE_WIRE -> {
                 int power = 0;
