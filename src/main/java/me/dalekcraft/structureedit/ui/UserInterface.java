@@ -23,7 +23,7 @@ import me.dalekcraft.structureedit.drawing.Block;
 import me.dalekcraft.structureedit.drawing.SchematicRenderer;
 import me.dalekcraft.structureedit.schematic.NbtStructure;
 import me.dalekcraft.structureedit.schematic.Schematic;
-import me.dalekcraft.structureedit.util.Language;
+import me.dalekcraft.structureedit.util.Configuration;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
 import org.apache.logging.log4j.Level;
@@ -44,8 +44,10 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.ResourceBundle;
 
 import static me.dalekcraft.structureedit.schematic.Schematic.*;
 
@@ -71,6 +73,7 @@ public class UserInterface extends JPanel {
     private JMenuBar menuBar;
     private JMenu fileMenu;
     private JMenu settingsMenu;
+    private JMenu helpMenu;
     private JPanel editorPanel;
     private JPanel gridPanel;
     private JLabel blockLabel;
@@ -90,7 +93,6 @@ public class UserInterface extends JPanel {
     private final ActionListener actionListener = this::squareActionPerformed;
     private JLabel sizeLabel;
     private JTextField sizeTextField;
-    private JMenu helpMenu;
 
     {
         schematicChooser = new JFileChooser();
@@ -124,7 +126,7 @@ public class UserInterface extends JPanel {
         });
 
         JPopupMenu filePopup = fileMenu.getPopupMenu();
-        JMenuItem openButton = new JMenuItem("Open");
+        JMenuItem openButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.open"));
         openButton.addActionListener(e -> {
             renderer.pause();
             schematicChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
@@ -141,7 +143,7 @@ public class UserInterface extends JPanel {
             renderer.resume();
         });
         filePopup.add(openButton);
-        JMenuItem saveButton = new JMenuItem("Save");
+        JMenuItem saveButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.save"));
         saveButton.addActionListener(e -> {
             if (schematic != null) {
                 renderer.pause();
@@ -150,24 +152,24 @@ public class UserInterface extends JPanel {
                 if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
                     try {
                         File file = schematicChooser.getSelectedFile().getCanonicalFile();
-                        LOGGER.printf(Level.INFO, Language.SAVING, file);
+                        LOGGER.printf(Level.INFO, Configuration.LANGUAGE.getProperty("log.saving"), file);
                         schematic.saveTo(file);
-                        LOGGER.printf(Level.INFO, Language.SAVED, file);
-                        Main.frame.setTitle(String.format(Language.TITLE_WITH_FILE, file.getName()));
+                        LOGGER.printf(Level.INFO, Configuration.LANGUAGE.getProperty("log.saved"), file);
+                        Main.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
                     } catch (IOException e1) {
-                        LOGGER.printf(Level.ERROR, Language.ERROR_SAVING_SCHEMATIC, e1.getMessage());
+                        LOGGER.printf(Level.ERROR, Configuration.LANGUAGE.getProperty("log.error_saving_schematic"), e1.getMessage());
                     }
                 }
                 renderer.resume();
             } else {
-                LOGGER.log(Level.ERROR, Language.NULL_SCHEMATIC);
+                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.null_schematic"));
             }
         });
         filePopup.add(saveButton);
 
         settingsMenu.setVisible(false); // Just so an unfinished feature is not visible
         JPopupMenu settingsPopup = settingsMenu.getPopupMenu();
-        JMenuItem assetsButton = new JMenuItem("Assets Path");
+        JMenuItem assetsButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.assets_path"));
         assetsButton.addActionListener(e -> {
             renderer.pause();
             //            assetsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
@@ -187,20 +189,10 @@ public class UserInterface extends JPanel {
 
 
         JPopupMenu helpPopup = helpMenu.getPopupMenu();
-        JMenuItem controlsButton = new JMenuItem("Controls");
+        JMenuItem controlsButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls"));
         controlsButton.addActionListener(e -> {
             renderer.pause();
-            JOptionPane.showMessageDialog(Main.frame, """
-                    Drag mouse: Rotate view
-                    SCROLL: Zoom
-                    W or UP ARROW: Zoom in
-                    S or DOWN ARROW: Zoom out
-                    A: Move left
-                    D: Move right
-                    SPACE: Move up
-                    SHIFT: Move down
-                    LEFT ARROW: Decrease the rendered height
-                    RIGHT ARROW: Increase the rendered height""", "Controls", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(Main.frame, Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls_dialog"), Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls_title"), JOptionPane.INFORMATION_MESSAGE);
             renderer.resume();
         });
         helpPopup.add(controlsButton);
@@ -315,7 +307,7 @@ public class UserInterface extends JPanel {
 
     public void open(@NotNull File file) {
         SwingUtilities.invokeLater(() -> {
-            LOGGER.printf(Level.INFO, Language.LOADING, file);
+            LOGGER.printf(Level.INFO, Configuration.LANGUAGE.getProperty("log.loading"), file);
             try {
                 schematic = openFrom(file);
                 renderer.setSchematic(schematic);
@@ -356,14 +348,14 @@ public class UserInterface extends JPanel {
                         paletteSpinner.setEnabled(false);
                     }
                     loadLayer();
-                    LOGGER.printf(Level.INFO, Language.LOADED, file);
-                    Main.frame.setTitle(String.format(Language.TITLE_WITH_FILE, file.getName()));
+                    LOGGER.printf(Level.INFO, Configuration.LANGUAGE.getProperty("log.loaded"), file);
+                    Main.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
                 } else {
-                    LOGGER.log(Level.ERROR, Language.NOT_SCHEMATIC);
+                    LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.not_schematic"));
                 }
             } catch (IOException | JSONException e) {
-                LOGGER.printf(Level.ERROR, Language.ERROR_READING_SCHEMATIC, e.getMessage());
-                Main.frame.setTitle(Language.TITLE);
+                LOGGER.printf(Level.ERROR, Configuration.LANGUAGE.getProperty("log.error_reading_schematic"), e.getMessage());
+                Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
             }
         });
     }
@@ -407,7 +399,7 @@ public class UserInterface extends JPanel {
                 }
             }
         } else {
-            LOGGER.log(Level.ERROR, Language.NULL_SCHEMATIC);
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.null_schematic"));
         }
     }
 
@@ -509,71 +501,71 @@ public class UserInterface extends JPanel {
         editorPanel.setLayout(new GridLayoutManager(9, 2, new Insets(0, 0, 0, 0), -1, -1));
         panel.add(editorPanel, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         blockLabel = new JLabel();
-        blockLabel.setText("Block:");
+        this.$$$loadLabelText$$$(blockLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block.text"));
         editorPanel.add(blockLabel, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        blockComboBox.setToolTipText("The ID of the selected block");
+        blockComboBox.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block.tooltip"));
         editorPanel.add(blockComboBox, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         propertiesLabel = new JLabel();
-        propertiesLabel.setText("Properties:");
+        this.$$$loadLabelText$$$(propertiesLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.properties.text"));
         editorPanel.add(propertiesLabel, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         propertiesTextField = new JFormattedTextField();
-        propertiesTextField.setToolTipText("The properties of the selected block");
-        editorPanel.add(propertiesTextField, new GridConstraints(6, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        propertiesTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.properties.tooltip"));
+        editorPanel.add(propertiesTextField, new GridConstraints(6, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         blockPositionLabel = new JLabel();
-        blockPositionLabel.setText("Block Position:");
-        editorPanel.add(blockPositionLabel, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(77, 33), null, 0, false));
+        this.$$$loadLabelText$$$(blockPositionLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_position.text"));
+        editorPanel.add(blockPositionLabel, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPositionTextField = new JTextField();
         blockPositionTextField.setEditable(false);
         blockPositionTextField.setText("");
-        blockPositionTextField.setToolTipText("The position of the selected block, ordered as [x, y, z]");
-        editorPanel.add(blockPositionTextField, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 33), null, 0, false));
+        blockPositionTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_position.tooltip"));
+        editorPanel.add(blockPositionTextField, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 33), null, 0, false));
         layerLabel = new JLabel();
-        layerLabel.setText("Layer:");
+        this.$$$loadLabelText$$$(layerLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.layer.text"));
         editorPanel.add(layerLabel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         nbtTextField = new JFormattedTextField();
-        nbtTextField.setToolTipText("The NBT of the selected block");
-        editorPanel.add(nbtTextField, new GridConstraints(7, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
+        nbtTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.nbt.tooltip"));
+        editorPanel.add(nbtTextField, new GridConstraints(7, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         paletteLabel = new JLabel();
-        paletteLabel.setText("Palette:");
+        this.$$$loadLabelText$$$(paletteLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.palette.text"));
         editorPanel.add(paletteLabel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         paletteSpinner = new JSpinner();
-        paletteSpinner.setToolTipText("The index of the active palette");
-        editorPanel.add(paletteSpinner, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        paletteSpinner.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.palette.tooltip"));
+        editorPanel.add(paletteSpinner, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         nbtLabel = new JLabel();
-        nbtLabel.setText("NBT:");
+        this.$$$loadLabelText$$$(nbtLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.nbt.text"));
         editorPanel.add(nbtLabel, new GridConstraints(7, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         gridPanel = new JPanel();
         gridPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         editorPanel.add(gridPanel, new GridConstraints(8, 0, 1, 2, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         sizeLabel = new JLabel();
-        sizeLabel.setText("Schematic Size:");
+        this.$$$loadLabelText$$$(sizeLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.schematic_size.text"));
         editorPanel.add(sizeLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         sizeTextField = new JTextField();
         sizeTextField.setEditable(false);
-        sizeTextField.setToolTipText("The dimensions of the schematic, ordered as [sizeX, sizeY, sizeZ]");
-        editorPanel.add(sizeTextField, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 33), null, 0, false));
+        sizeTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.schematic_size.tooltip"));
+        editorPanel.add(sizeTextField, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, 33), null, 0, false));
         blockPaletteLabel = new JLabel();
-        blockPaletteLabel.setText("Block Palette:");
+        this.$$$loadLabelText$$$(blockPaletteLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_palette.text"));
         editorPanel.add(blockPaletteLabel, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPaletteSpinner = new JSpinner();
-        blockPaletteSpinner.setToolTipText("The index of the selected block's state in the active palette");
-        editorPanel.add(blockPaletteSpinner, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        blockPaletteSpinner.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_palette.tooltip"));
+        editorPanel.add(blockPaletteSpinner, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         layerSpinner = new JSpinner();
-        layerSpinner.setToolTipText("The currently viewed layer");
+        layerSpinner.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.layer.tooltip"));
         editorPanel.add(layerSpinner, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         panel.add(rawRenderer, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         menuBar = new JMenuBar();
         menuBar.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
         panel.add(menuBar, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         fileMenu = new JMenu();
-        fileMenu.setText("File");
+        this.$$$loadButtonText$$$(fileMenu, this.$$$getMessageFromBundle$$$("language", "ui.menu_bar.file_menu.text"));
         menuBar.add(fileMenu, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         settingsMenu = new JMenu();
-        settingsMenu.setText("Settings");
+        this.$$$loadButtonText$$$(settingsMenu, this.$$$getMessageFromBundle$$$("language", "ui.menu_bar.settings_menu.text"));
         menuBar.add(settingsMenu, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         helpMenu = new JMenu();
         helpMenu.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        helpMenu.setText("Help");
+        this.$$$loadButtonText$$$(helpMenu, this.$$$getMessageFromBundle$$$("language", "ui.menu_bar.help_menu.text"));
         menuBar.add(helpMenu, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         blockLabel.setLabelFor(blockComboBox);
         propertiesLabel.setLabelFor(propertiesTextField);
@@ -583,6 +575,81 @@ public class UserInterface extends JPanel {
         nbtLabel.setLabelFor(nbtTextField);
         sizeLabel.setLabelFor(sizeTextField);
         blockPaletteLabel.setLabelFor(blockPaletteSpinner);
+    }
+
+    private static Method $$$cachedGetBundleMethod$$$ = null;
+
+    private String $$$getMessageFromBundle$$$(String path, String key) {
+        ResourceBundle bundle;
+        try {
+            Class<?> thisClass = this.getClass();
+            if ($$$cachedGetBundleMethod$$$ == null) {
+                Class<?> dynamicBundleClass = thisClass.getClassLoader().loadClass("com.intellij.DynamicBundle");
+                $$$cachedGetBundleMethod$$$ = dynamicBundleClass.getMethod("getBundle", String.class, Class.class);
+            }
+            bundle = (ResourceBundle) $$$cachedGetBundleMethod$$$.invoke(null, path, thisClass);
+        } catch (Exception e) {
+            bundle = ResourceBundle.getBundle(path);
+        }
+        return bundle.getString(key);
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    private void $$$loadLabelText$$$(JLabel component, String text) {
+        StringBuffer result = new StringBuffer();
+        boolean haveMnemonic = false;
+        char mnemonic = '\0';
+        int mnemonicIndex = -1;
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '&') {
+                i++;
+                if (i == text.length()) {
+                    break;
+                }
+                if (!haveMnemonic && text.charAt(i) != '&') {
+                    haveMnemonic = true;
+                    mnemonic = text.charAt(i);
+                    mnemonicIndex = result.length();
+                }
+            }
+            result.append(text.charAt(i));
+        }
+        component.setText(result.toString());
+        if (haveMnemonic) {
+            component.setDisplayedMnemonic(mnemonic);
+            component.setDisplayedMnemonicIndex(mnemonicIndex);
+        }
+    }
+
+    /**
+     * @noinspection ALL
+     */
+    private void $$$loadButtonText$$$(AbstractButton component, String text) {
+        StringBuffer result = new StringBuffer();
+        boolean haveMnemonic = false;
+        char mnemonic = '\0';
+        int mnemonicIndex = -1;
+        for (int i = 0; i < text.length(); i++) {
+            if (text.charAt(i) == '&') {
+                i++;
+                if (i == text.length()) {
+                    break;
+                }
+                if (!haveMnemonic && text.charAt(i) != '&') {
+                    haveMnemonic = true;
+                    mnemonic = text.charAt(i);
+                    mnemonicIndex = result.length();
+                }
+            }
+            result.append(text.charAt(i));
+        }
+        component.setText(result.toString());
+        if (haveMnemonic) {
+            component.setMnemonic(mnemonic);
+            component.setDisplayedMnemonicIndex(mnemonicIndex);
+        }
     }
 
     /**

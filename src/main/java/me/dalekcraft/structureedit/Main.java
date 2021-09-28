@@ -20,7 +20,7 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import me.dalekcraft.structureedit.drawing.SchematicRenderer;
 import me.dalekcraft.structureedit.ui.UserInterface;
-import me.dalekcraft.structureedit.util.Language;
+import me.dalekcraft.structureedit.util.Configuration;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -55,14 +55,14 @@ public final class Main {
      */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
-            LOGGER.log(Level.INFO, "Starting...");
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.starting"));
             GLProfile profile = GLProfile.getDefault();
             GLCapabilities capabilities = new GLCapabilities(profile);
             SchematicRenderer renderer = new SchematicRenderer(capabilities);
             UserInterface userInterface = new UserInterface(renderer);
             frame = new JFrame();
             frame.add(userInterface);
-            frame.setTitle(Language.TITLE);
+            frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
             try {
                 frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")).getScaledInstance(128, 128, Image.SCALE_SMOOTH));
             } catch (IOException e) {
@@ -82,7 +82,7 @@ public final class Main {
             frame.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosing(WindowEvent e) {
-                    LOGGER.log(Level.INFO, "Stopping...");
+                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.stopping"));
                 }
             });
 
@@ -96,15 +96,15 @@ public final class Main {
                     File assets = new File(assetsArg).getCanonicalFile();
                     if (assets.exists()) {
                         Main.assets = assets;
-                        LOGGER.log(Level.INFO, "Setting assets path: " + assets);
+                        LOGGER.printf(Level.INFO, Configuration.LANGUAGE.getProperty("log.setting_assets"), assets);
                     } else {
-                        LOGGER.log(Level.WARN, "Path does not exist: " + assets);
+                        LOGGER.printf(Level.WARN, Configuration.LANGUAGE.getProperty("log.invalid_assets_path"), assets);
                     }
                 } catch (IOException e) {
-                    LOGGER.log(org.apache.logging.log4j.Level.ERROR, e.getMessage());
+                    LOGGER.log(Level.ERROR, e.getMessage());
                 }
             } else {
-                LOGGER.log(Level.WARN, "Path to assets directory is not set! Use the \"-assets\" argument in the command line to set it.");
+                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets_not_set"));
             }
             String path = getArgument(argList, "-path");
             if (path != null) {
@@ -112,7 +112,7 @@ public final class Main {
                     File file = new File(path).getCanonicalFile();
                     userInterface.open(file);
                 } catch (JSONException | IOException e) {
-                    LOGGER.printf(Level.ERROR, Language.ERROR_READING_SCHEMATIC, e.getMessage());
+                    LOGGER.printf(Level.ERROR, Configuration.LANGUAGE.getProperty("log.error_reading_schematic"), e.getMessage());
                 }
             }
         });
