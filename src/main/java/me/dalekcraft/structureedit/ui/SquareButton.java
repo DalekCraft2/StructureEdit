@@ -30,9 +30,6 @@ import java.io.Serial;
  */
 public final class SquareButton extends JButton {
 
-    @Serial
-    private static final long serialVersionUID = 7623333770238989633L;
-
     private final int[] position = new int[3];
 
     public SquareButton(@NotNull Block block, int x, int y, int z) {
