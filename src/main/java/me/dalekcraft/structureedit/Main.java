@@ -20,10 +20,12 @@ import com.jogamp.opengl.GLCapabilities;
 import com.jogamp.opengl.GLProfile;
 import me.dalekcraft.structureedit.drawing.SchematicRenderer;
 import me.dalekcraft.structureedit.ui.UserInterface;
+import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
@@ -43,7 +45,6 @@ public final class Main {
     public static final int FRAME_WIDTH = 1024;
     public static final int FRAME_HEIGHT = 600;
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
-    public static File assets;
     public static JFrame frame;
 
     private Main() {
@@ -54,68 +55,80 @@ public final class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> {
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.starting"));
-            GLProfile profile = GLProfile.getDefault();
-            GLCapabilities capabilities = new GLCapabilities(profile);
-            SchematicRenderer renderer = new SchematicRenderer(capabilities);
-            UserInterface userInterface = new UserInterface(renderer);
-            frame = new JFrame();
-            frame.add(userInterface);
-            frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.starting"));
+
+        ArrayList<String> argList = new ArrayList<>(List.of(args));
+        String levelName = getArgument(argList, "-log_level");
+        if (levelName != null) {
             try {
-                frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")).getScaledInstance(128, 128, Image.SCALE_SMOOTH));
-            } catch (IOException e) {
-                LOGGER.log(Level.ERROR, e.getMessage());
+                Level level = Level.valueOf(levelName);
+                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.setting"), level);
+                Configurator.setAllLevels(LogManager.getRootLogger().getName(), level);
+            } catch (IllegalArgumentException e) {
+                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.invalid"), levelName);
             }
-            frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
-            Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-            int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
-            int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
-            frame.setLocation(x, y);
-            frame.setVisible(true);
+        }
 
-            // by default, an AWT Frame doesn't do anything when you click
-            // the close button; this bit of code will terminate the program when
-            // the window is asked to close
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosing(WindowEvent e) {
-                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.stopping"));
-                }
-            });
+        GLProfile profile = GLProfile.getDefault();
+        GLCapabilities capabilities = new GLCapabilities(profile);
+        SchematicRenderer renderer = new SchematicRenderer(capabilities);
+        UserInterface userInterface = new UserInterface(renderer);
+        frame = new JFrame();
+        frame.add(userInterface);
+        frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+        try {
+            frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")).getScaledInstance(128, 128, Image.SCALE_SMOOTH));
+        } catch (IOException e) {
+            LOGGER.log(Level.ERROR, e.getMessage());
+        }
+        frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+        frame.setLocation(x, y);
+        frame.setVisible(true);
 
-            renderer.requestFocus();
-
-            // TODO Make logging level configurable via arguments.
-            ArrayList<String> argList = new ArrayList<>(List.of(args));
-            String assetsArg = getArgument(argList, "-assets");
-            if (assetsArg != null) {
-                try {
-                    File assets = new File(assetsArg).getCanonicalFile();
-                    if (assets.exists()) {
-                        Main.assets = assets;
-                        LOGGER.printf(Level.INFO, Configuration.LANGUAGE.getProperty("log.setting_assets"), assets);
-                    } else {
-                        LOGGER.printf(Level.WARN, Configuration.LANGUAGE.getProperty("log.invalid_assets_path"), assets);
-                    }
-                } catch (IOException e) {
-                    LOGGER.log(Level.ERROR, e.getMessage());
-                }
-            } else {
-                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets_not_set"));
-            }
-            String path = getArgument(argList, "-path");
-            if (path != null) {
-                try {
-                    File file = new File(path).getCanonicalFile();
-                    userInterface.open(file);
-                } catch (JSONException | IOException e) {
-                    LOGGER.printf(Level.ERROR, Configuration.LANGUAGE.getProperty("log.error_reading_schematic"), e.getMessage());
-                }
+        // by default, an AWT Frame doesn't do anything when you click
+        // the close button; this bit of code will terminate the program when
+        // the window is asked to close
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.stopping"));
             }
         });
+
+        renderer.requestFocus();
+
+        String assetsArg = getArgument(argList, "-assets");
+        if (assetsArg != null) {
+            try {
+                File assets = new File(assetsArg).getCanonicalFile();
+                if (assets.exists()) {
+                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
+                    Assets.setAssets(assets);
+                } else {
+                    LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.invalid"), assets);
+                    Assets.setAssets(null);
+                }
+            } catch (IOException e) {
+                LOGGER.log(Level.ERROR, e.getMessage());
+                Assets.setAssets(null);
+            }
+        } else {
+            LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.not_set"));
+            Assets.setAssets(null);
+        }
+        String path = getArgument(argList, "-path");
+        if (path != null) {
+            try {
+                File file = new File(path).getCanonicalFile();
+                userInterface.open(file);
+            } catch (JSONException | IOException e) {
+                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
+            }
+        }
     }
 
     @Nullable

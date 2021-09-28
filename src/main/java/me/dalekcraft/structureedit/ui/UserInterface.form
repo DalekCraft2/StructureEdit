@@ -22,7 +22,7 @@
             </constraints>
             <properties>
               <labelFor value="28be3"/>
-              <text resource-bundle="language" key="ui.editor.block.text"/>
+              <text resource-bundle="language" key="ui.editor.block_id.text"/>
             </properties>
           </component>
           <component id="28be3" class="javax.swing.JComboBox" binding="blockComboBox" custom-create="true">
@@ -30,7 +30,7 @@
               <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
             <properties>
-              <toolTipText resource-bundle="language" key="ui.editor.block.tooltip"/>
+              <toolTipText resource-bundle="language" key="ui.editor.block_id.tooltip"/>
             </properties>
           </component>
           <component id="67b1a" class="javax.swing.JLabel" binding="propertiesLabel">
@@ -39,7 +39,7 @@
             </constraints>
             <properties>
               <labelFor value="f8690"/>
-              <text resource-bundle="language" key="ui.editor.properties.text"/>
+              <text resource-bundle="language" key="ui.editor.block_properties.text"/>
             </properties>
           </component>
           <component id="f8690" class="javax.swing.JFormattedTextField" binding="propertiesTextField">
@@ -49,7 +49,7 @@
               </grid>
             </constraints>
             <properties>
-              <toolTipText resource-bundle="language" key="ui.editor.properties.tooltip"/>
+              <toolTipText resource-bundle="language" key="ui.editor.block_properties.tooltip"/>
             </properties>
           </component>
           <component id="58cc5" class="javax.swing.JLabel" binding="blockPositionLabel">
@@ -89,7 +89,7 @@
               </grid>
             </constraints>
             <properties>
-              <toolTipText resource-bundle="language" key="ui.editor.nbt.tooltip"/>
+              <toolTipText resource-bundle="language" key="ui.editor.block_nbt.tooltip"/>
             </properties>
           </component>
           <component id="3da84" class="javax.swing.JLabel" binding="paletteLabel">
@@ -115,7 +115,7 @@
             </constraints>
             <properties>
               <labelFor value="efa94"/>
-              <text resource-bundle="language" key="ui.editor.nbt.text"/>
+              <text resource-bundle="language" key="ui.editor.block_nbt.text"/>
             </properties>
           </component>
           <grid id="54086" binding="gridPanel" layout-manager="GridLayoutManager" row-count="1" column-count="1" same-size-horizontally="false" same-size-vertically="false" hgap="-1" vgap="-1">

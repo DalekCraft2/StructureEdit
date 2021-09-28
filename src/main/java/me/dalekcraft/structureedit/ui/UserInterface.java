@@ -23,6 +23,7 @@ import me.dalekcraft.structureedit.drawing.Block;
 import me.dalekcraft.structureedit.drawing.SchematicRenderer;
 import me.dalekcraft.structureedit.schematic.NbtStructure;
 import me.dalekcraft.structureedit.schematic.Schematic;
+import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
@@ -106,11 +107,9 @@ public class UserInterface extends JPanel {
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
-    }
 
-    {
         assetsChooser = new JFileChooser();
-        //        assetsChooser.setCurrentDirectory(Assets.getAssets());
+        assetsChooser.setCurrentDirectory(Assets.getAssets());
     }
 
     public UserInterface(SchematicRenderer renderer) {
@@ -152,41 +151,39 @@ public class UserInterface extends JPanel {
                 if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
                     try {
                         File file = schematicChooser.getSelectedFile().getCanonicalFile();
-                        LOGGER.printf(Level.INFO, Configuration.LANGUAGE.getProperty("log.saving"), file);
+                        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saving"), file);
                         schematic.saveTo(file);
-                        LOGGER.printf(Level.INFO, Configuration.LANGUAGE.getProperty("log.saved"), file);
+                        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saved"), file);
                         Main.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
                     } catch (IOException e1) {
-                        LOGGER.printf(Level.ERROR, Configuration.LANGUAGE.getProperty("log.error_saving_schematic"), e1.getMessage());
+                        LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_saving"), e1.getMessage());
                     }
                 }
                 renderer.resume();
             } else {
-                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.null_schematic"));
+                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.null"));
             }
         });
         filePopup.add(saveButton);
 
-        settingsMenu.setVisible(false); // Just so an unfinished feature is not visible
         JPopupMenu settingsPopup = settingsMenu.getPopupMenu();
         JMenuItem assetsButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.assets_path"));
         assetsButton.addActionListener(e -> {
             renderer.pause();
-            //            assetsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            //            int result = assetsChooser.showOpenDialog(panel);
-            //            if (result == JFileChooser.APPROVE_OPTION && assetsChooser.getSelectedFile() != null) {
-            //                File directory;
-            //                try {
-            //                    directory = assetsChooser.getSelectedFile().getCanonicalFile();
-            //                    Assets.setAssets(directory);
-            //                } catch (IOException e1) {
-            //                    e1.printStackTrace();
-            //                }
-            //            }
+            assetsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+            int result = assetsChooser.showOpenDialog(panel);
+            if (result == JFileChooser.APPROVE_OPTION && assetsChooser.getSelectedFile() != null) {
+                File directory;
+                try {
+                    directory = assetsChooser.getSelectedFile().getCanonicalFile();
+                    Assets.setAssets(directory);
+                } catch (IOException e1) {
+                    LOGGER.log(Level.ERROR, e1.getMessage());
+                }
+            }
             renderer.resume();
         });
         settingsPopup.add(assetsButton);
-
 
         JPopupMenu helpPopup = helpMenu.getPopupMenu();
         JMenuItem controlsButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls"));
@@ -307,7 +304,7 @@ public class UserInterface extends JPanel {
 
     public void open(@NotNull File file) {
         SwingUtilities.invokeLater(() -> {
-            LOGGER.printf(Level.INFO, Configuration.LANGUAGE.getProperty("log.loading"), file);
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loading"), file);
             try {
                 schematic = openFrom(file);
                 renderer.setSchematic(schematic);
@@ -348,13 +345,13 @@ public class UserInterface extends JPanel {
                         paletteSpinner.setEnabled(false);
                     }
                     loadLayer();
-                    LOGGER.printf(Level.INFO, Configuration.LANGUAGE.getProperty("log.loaded"), file);
+                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loaded"), file);
                     Main.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
                 } else {
-                    LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.not_schematic"));
+                    LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.not_schematic"));
                 }
             } catch (IOException | JSONException e) {
-                LOGGER.printf(Level.ERROR, Configuration.LANGUAGE.getProperty("log.error_reading_schematic"), e.getMessage());
+                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
                 Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
             }
         });
@@ -399,7 +396,7 @@ public class UserInterface extends JPanel {
                 }
             }
         } else {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.null_schematic"));
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.null"));
         }
     }
 
@@ -501,15 +498,15 @@ public class UserInterface extends JPanel {
         editorPanel.setLayout(new GridLayoutManager(9, 2, new Insets(0, 0, 0, 0), -1, -1));
         panel.add(editorPanel, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_VERTICAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         blockLabel = new JLabel();
-        this.$$$loadLabelText$$$(blockLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block.text"));
+        this.$$$loadLabelText$$$(blockLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_id.text"));
         editorPanel.add(blockLabel, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        blockComboBox.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block.tooltip"));
+        blockComboBox.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_id.tooltip"));
         editorPanel.add(blockComboBox, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         propertiesLabel = new JLabel();
-        this.$$$loadLabelText$$$(propertiesLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.properties.text"));
+        this.$$$loadLabelText$$$(propertiesLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_properties.text"));
         editorPanel.add(propertiesLabel, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         propertiesTextField = new JFormattedTextField();
-        propertiesTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.properties.tooltip"));
+        propertiesTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_properties.tooltip"));
         editorPanel.add(propertiesTextField, new GridConstraints(6, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         blockPositionLabel = new JLabel();
         this.$$$loadLabelText$$$(blockPositionLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_position.text"));
@@ -523,7 +520,7 @@ public class UserInterface extends JPanel {
         this.$$$loadLabelText$$$(layerLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.layer.text"));
         editorPanel.add(layerLabel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         nbtTextField = new JFormattedTextField();
-        nbtTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.nbt.tooltip"));
+        nbtTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_nbt.tooltip"));
         editorPanel.add(nbtTextField, new GridConstraints(7, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         paletteLabel = new JLabel();
         this.$$$loadLabelText$$$(paletteLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.palette.text"));
@@ -532,7 +529,7 @@ public class UserInterface extends JPanel {
         paletteSpinner.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.palette.tooltip"));
         editorPanel.add(paletteSpinner, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         nbtLabel = new JLabel();
-        this.$$$loadLabelText$$$(nbtLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.nbt.text"));
+        this.$$$loadLabelText$$$(nbtLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_nbt.text"));
         editorPanel.add(nbtLabel, new GridConstraints(7, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         gridPanel = new JPanel();
         gridPanel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
