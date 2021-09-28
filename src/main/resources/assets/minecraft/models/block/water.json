@@ -8,14 +8,14 @@
 	"elements": [
 		{
 			"from": [0, 0, 0],
-			"to": [16, 15, 16],
+			"to": [16, 16, 16],
 			"faces": {
-				"north": {"uv": [0, 9, 8, 16], "texture": "#1", "cullface": "north", "tintindex": 0},
-				"east": {"uv": [0, 9, 8, 16], "texture": "#1", "cullface": "north", "tintindex": 0},
-				"south": {"uv": [0, 9, 8, 16], "texture": "#1", "cullface": "north", "tintindex": 0},
-				"west": {"uv": [0, 9, 8, 16], "texture": "#1", "cullface": "north", "tintindex": 0},
+				"north": {"uv": [8, 0, 0, 8], "texture": "#1", "cullface": "north", "tintindex": 0},
+				"east": {"uv": [8, 0, 0, 8], "texture": "#1", "cullface": "north", "tintindex": 0},
+				"south": {"uv": [8, 0, 0, 8], "texture": "#1", "cullface": "north", "tintindex": 0},
+				"west": {"uv": [8, 0, 0, 8], "texture": "#1", "cullface": "north", "tintindex": 0},
 				"up": {"uv": [0, 0, 16, 16], "texture": "#2", "tintindex": 0},
-				"down": {"uv": [0, 0, 16, 16], "texture": "#2", "cullface": "up", "tintindex": 0}
+				"down": {"uv": [0, 16, 16, 0], "texture": "#2", "cullface": "up", "tintindex": 0}
 			}
 		}
 	]
