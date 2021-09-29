@@ -16,7 +16,7 @@
         <properties/>
         <border type="none"/>
         <children>
-          <component id="1c5ce" class="javax.swing.JLabel" binding="blockLabel">
+          <component id="1c5ce" class="javax.swing.JLabel" binding="blockIdLabel">
             <constraints>
               <grid row="5" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -25,7 +25,7 @@
               <text resource-bundle="language" key="ui.editor.block_id.text"/>
             </properties>
           </component>
-          <component id="28be3" class="javax.swing.JComboBox" binding="blockComboBox" custom-create="true">
+          <component id="28be3" class="javax.swing.JComboBox" binding="blockIdComboBox" custom-create="true">
             <constraints>
               <grid row="5" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="2" anchor="8" fill="1" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -33,7 +33,7 @@
               <toolTipText resource-bundle="language" key="ui.editor.block_id.tooltip"/>
             </properties>
           </component>
-          <component id="67b1a" class="javax.swing.JLabel" binding="propertiesLabel">
+          <component id="67b1a" class="javax.swing.JLabel" binding="blockPropertiesLabel">
             <constraints>
               <grid row="6" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>
@@ -42,7 +42,7 @@
               <text resource-bundle="language" key="ui.editor.block_properties.text"/>
             </properties>
           </component>
-          <component id="f8690" class="javax.swing.JFormattedTextField" binding="propertiesTextField">
+          <component id="f8690" class="javax.swing.JFormattedTextField" binding="blockPropertiesTextField">
             <constraints>
               <grid row="6" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
@@ -82,7 +82,7 @@
               <text resource-bundle="language" key="ui.editor.layer.text"/>
             </properties>
           </component>
-          <component id="efa94" class="javax.swing.JFormattedTextField" binding="nbtTextField">
+          <component id="efa94" class="javax.swing.JFormattedTextField" binding="blockNbtTextField">
             <constraints>
               <grid row="7" column="1" row-span="1" col-span="1" vsize-policy="0" hsize-policy="6" anchor="8" fill="1" indent="0" use-parent-layout="false">
                 <preferred-size width="150" height="-1"/>
@@ -109,7 +109,7 @@
               <toolTipText resource-bundle="language" key="ui.editor.palette.tooltip"/>
             </properties>
           </component>
-          <component id="ba341" class="javax.swing.JLabel" binding="nbtLabel">
+          <component id="ba341" class="javax.swing.JLabel" binding="blockNbtLabel">
             <constraints>
               <grid row="7" column="0" row-span="1" col-span="1" vsize-policy="0" hsize-policy="0" anchor="8" fill="0" indent="0" use-parent-layout="false"/>
             </constraints>

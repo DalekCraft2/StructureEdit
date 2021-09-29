@@ -18,7 +18,6 @@ public interface Schematic {
 
     Logger LOGGER = LogManager.getLogger(Schematic.class);
 
-
     /**
      * The extension for Minecraft structure files.
      */

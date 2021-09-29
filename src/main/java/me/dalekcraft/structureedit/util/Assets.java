@@ -1,5 +1,6 @@
 package me.dalekcraft.structureedit.util;
 
+import com.jogamp.opengl.GLException;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 import me.dalekcraft.structureedit.drawing.Block;
@@ -63,6 +64,7 @@ public final class Assets {
                 TEXTURES.put("minecraft:missing", TextureIO.newTexture(LOADER.getResourceAsStream("assets/minecraft/textures/missing.png"), false, "png"));
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
+            } catch (GLException ignored) {
             }
             ANIMATIONS.put("minecraft:missing", null);
             for (Block block : Block.values()) {

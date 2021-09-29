@@ -23,12 +23,11 @@ import org.jetbrains.annotations.NotNull;
 import javax.swing.*;
 import javax.swing.border.LineBorder;
 import java.awt.*;
-import java.io.Serial;
 
 /**
  * @author eccentric_nz
  */
-public final class SquareButton extends JButton {
+public class SquareButton extends JButton {
 
     private final int[] position = new int[3];
 
