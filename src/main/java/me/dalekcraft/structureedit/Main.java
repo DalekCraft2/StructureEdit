@@ -102,29 +102,29 @@ public final class Main {
         renderer.requestFocus();
 
         String assetsArg = getArgument(argList, "-assets");
+        File assets = null;
         if (assetsArg != null) {
             try {
-                File assets = new File(assetsArg).getCanonicalFile();
+                assets = new File(assetsArg).getCanonicalFile();
                 if (assets.exists()) {
                     LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
-                    Assets.setAssets(assets);
                 } else {
                     LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.invalid"), assets);
-                    Assets.setAssets(null);
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
-                Assets.setAssets(null);
             }
         } else {
             LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.not_set"));
-            Assets.setAssets(null);
         }
+        Assets.setAssets(assets);
+        userInterface.assetsChooser.setCurrentDirectory(assets);
         String path = getArgument(argList, "-path");
         if (path != null) {
             try {
                 File file = new File(path).getCanonicalFile();
                 userInterface.open(file);
+                userInterface.schematicChooser.setCurrentDirectory(file);
             } catch (JSONException | IOException e) {
                 LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
             }

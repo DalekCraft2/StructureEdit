@@ -63,9 +63,9 @@ public class UserInterface extends JPanel {
     private static final FileNameExtensionFilter FILTER_MCEDIT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.mcedit"), EXTENSION_MCEDIT);
     private static final FileNameExtensionFilter FILTER_SPONGE = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.sponge"), EXTENSION_SPONGE);
     private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.tardis"), EXTENSION_TARDIS);
+    public final JFileChooser schematicChooser = new JFileChooser();
+    public final JFileChooser assetsChooser = new JFileChooser();
     private final SchematicRenderer renderer;
-    private final JFileChooser schematicChooser;
-    private final JFileChooser assetsChooser;
     private SquareButton selected;
     private Schematic schematic;
     private ListTag<CompoundTag> palette;
@@ -96,19 +96,11 @@ public class UserInterface extends JPanel {
     private JTextField sizeTextField;
 
     {
-        schematicChooser = new JFileChooser();
         schematicChooser.addChoosableFileFilter(FILTER_NBT);
         schematicChooser.addChoosableFileFilter(FILTER_MCEDIT);
         schematicChooser.addChoosableFileFilter(FILTER_SPONGE);
         schematicChooser.addChoosableFileFilter(FILTER_TARDIS);
         schematicChooser.setFileFilter(FILTER_NBT);
-        try {
-            schematicChooser.setCurrentDirectory(new File(".").getCanonicalFile());
-        } catch (IOException e) {
-            LOGGER.log(Level.ERROR, e.getMessage());
-        }
-
-        assetsChooser = new JFileChooser();
     }
 
     public UserInterface(SchematicRenderer renderer) {

@@ -72,41 +72,44 @@ public final class Assets {
         }).join();
     }
 
-    public static void loadAllBlockStatesInDirectory(File directory, String currentNamespace) {
+    public static void loadAllBlockStatesInDirectory(@NotNull File directory, String currentNamespace) {
         File[] files = directory.listFiles();
-        assert files != null;
-        for (File file : files) {
-            if (file.isDirectory()) {
-                loadAllBlockStatesInDirectory(file, currentNamespace + file.getName() + "/");
-            } else if (file.isFile()) {
-                String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
-                getBlockState(namespacedId);
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    loadAllBlockStatesInDirectory(file, currentNamespace + file.getName() + "/");
+                } else if (file.isFile()) {
+                    String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
+                    getBlockState(namespacedId);
+                }
             }
         }
     }
 
-    public static void loadAllModelsInDirectory(File directory, String currentNamespace) {
+    public static void loadAllModelsInDirectory(@NotNull File directory, String currentNamespace) {
         File[] files = directory.listFiles();
-        assert files != null;
-        for (File file : files) {
-            if (file.isDirectory()) {
-                loadAllModelsInDirectory(file, currentNamespace + file.getName() + "/");
-            } else if (file.isFile()) {
-                String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
-                getModel(namespacedId);
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    loadAllModelsInDirectory(file, currentNamespace + file.getName() + "/");
+                } else if (file.isFile()) {
+                    String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
+                    getModel(namespacedId);
+                }
             }
         }
     }
 
-    public static void loadAllTexturesInDirectory(File directory, String currentNamespace) {
+    public static void loadAllTexturesInDirectory(@NotNull File directory, String currentNamespace) {
         File[] files = directory.listFiles();
-        assert files != null;
-        for (File file : files) {
-            if (file.isDirectory()) {
-                loadAllTexturesInDirectory(file, currentNamespace + file.getName() + "/");
-            } else if (file.isFile()) {
-                String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".png"));
-                getTexture(namespacedId);
+        if (files != null) {
+            for (File file : files) {
+                if (file.isDirectory()) {
+                    loadAllTexturesInDirectory(file, currentNamespace + file.getName() + "/");
+                } else if (file.isFile()) {
+                    String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".png"));
+                    getTexture(namespacedId);
+                }
             }
         }
     }
@@ -129,7 +132,7 @@ public final class Assets {
         return new FileInputStream(file);
     }
 
-    public static JSONObject getBlockState(String namespacedId) {
+    public static JSONObject getBlockState(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
@@ -147,7 +150,7 @@ public final class Assets {
         return blockState;
     }
 
-    public static JSONObject getModel(String namespacedId) {
+    public static JSONObject getModel(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
@@ -165,7 +168,7 @@ public final class Assets {
         return model;
     }
 
-    public static Texture getTexture(String namespacedId) {
+    public static Texture getTexture(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
@@ -187,7 +190,7 @@ public final class Assets {
         return texture;
     }
 
-    public static JSONObject getAnimation(String namespacedId) {
+    public static JSONObject getAnimation(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
