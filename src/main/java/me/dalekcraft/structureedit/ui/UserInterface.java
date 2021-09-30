@@ -59,10 +59,10 @@ import static me.dalekcraft.structureedit.schematic.Schematic.*;
 public class UserInterface extends JPanel {
 
     private static final Logger LOGGER = LogManager.getLogger(UserInterface.class);
-    private static final FileNameExtensionFilter FILTER_NBT = new FileNameExtensionFilter("NBT structure file", EXTENSION_NBT);
-    private static final FileNameExtensionFilter FILTER_MCEDIT = new FileNameExtensionFilter("MCEdit schematic file", EXTENSION_MCEDIT);
-    private static final FileNameExtensionFilter FILTER_SPONGE = new FileNameExtensionFilter("Sponge schematic file", EXTENSION_SPONGE);
-    private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter("TARDIS schematic file", EXTENSION_TARDIS);
+    private static final FileNameExtensionFilter FILTER_NBT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.nbt"), EXTENSION_NBT);
+    private static final FileNameExtensionFilter FILTER_MCEDIT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.mcedit"), EXTENSION_MCEDIT);
+    private static final FileNameExtensionFilter FILTER_SPONGE = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.sponge"), EXTENSION_SPONGE);
+    private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.tardis"), EXTENSION_TARDIS);
     private final SchematicRenderer renderer;
     private final JFileChooser schematicChooser;
     private final JFileChooser assetsChooser;
