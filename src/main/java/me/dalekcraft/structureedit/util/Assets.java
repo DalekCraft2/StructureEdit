@@ -10,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
@@ -65,11 +66,33 @@ public final class Assets {
             //            } catch (GLException ignored) {
             //            }
             ANIMATIONS.put("minecraft:missing", null);
-            loadAllBlockStatesInDirectory(new File(assets, "minecraft" + File.separator + "blockstates"), "minecraft:");
-            loadAllModelsInDirectory(new File(assets, "minecraft" + File.separator + "models"), "minecraft:");
-            //            loadAllTexturesInDirectory(new File(assets, "minecraft" + File.separator + "textures"), "minecraft:");
+
+            try {
+                File internalAssets = new File(LOADER.getResource("assets").toURI());
+                File[] internalNamespaces = internalAssets.listFiles();
+                if (internalNamespaces != null) {
+                    for (File internalNamespace : internalNamespaces) {
+                        loadNamespace(internalNamespace);
+                    }
+                }
+            } catch (URISyntaxException e) {
+                LOGGER.log(Level.ERROR, e.getMessage());
+            }
+
+            File[] namespaces = assets.listFiles();
+            if (namespaces != null) {
+                for (File namespace : namespaces) {
+                    loadNamespace(namespace);
+                }
+            }
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.loaded"));
         }).join();
+    }
+
+    public static void loadNamespace(File namespace) {
+        loadAllBlockStatesInDirectory(new File(namespace, "blockstates"), namespace.getName() + ":");
+        loadAllModelsInDirectory(new File(namespace, "models"), namespace.getName() + ":");
+        //                    loadAllTexturesInDirectory(new File(namespace, "textures"), namespace.getName() + ":");
     }
 
     public static void loadAllBlockStatesInDirectory(@NotNull File directory, String currentNamespace) {
@@ -78,7 +101,7 @@ public final class Assets {
             for (File file : files) {
                 if (file.isDirectory()) {
                     loadAllBlockStatesInDirectory(file, currentNamespace + file.getName() + "/");
-                } else if (file.isFile()) {
+                } else if (file.isFile() && file.getName().endsWith(".json")) {
                     String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
                     getBlockState(namespacedId);
                 }
@@ -92,7 +115,7 @@ public final class Assets {
             for (File file : files) {
                 if (file.isDirectory()) {
                     loadAllModelsInDirectory(file, currentNamespace + file.getName() + "/");
-                } else if (file.isFile()) {
+                } else if (file.isFile() && file.getName().endsWith(".json")) {
                     String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
                     getModel(namespacedId);
                 }
@@ -106,7 +129,7 @@ public final class Assets {
             for (File file : files) {
                 if (file.isDirectory()) {
                     loadAllTexturesInDirectory(file, currentNamespace + file.getName() + "/");
-                } else if (file.isFile()) {
+                } else if (file.isFile() && file.getName().endsWith(".png")) {
                     String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".png"));
                     getTexture(namespacedId);
                 }
