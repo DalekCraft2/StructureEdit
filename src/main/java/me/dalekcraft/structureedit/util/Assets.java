@@ -1,9 +1,7 @@
 package me.dalekcraft.structureedit.util;
 
-import com.jogamp.opengl.GLException;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
-import me.dalekcraft.structureedit.drawing.Block;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -44,7 +42,7 @@ public final class Assets {
 
     public static void load() {
         CompletableFuture.runAsync(() -> {
-            //            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.loading"));
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.loading"));
             BLOCK_STATES.clear();
             MODELS.clear();
             TEXTURES.clear();
@@ -59,21 +57,58 @@ public final class Assets {
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
-            try {
-                // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
-                TEXTURES.put("minecraft:missing", TextureIO.newTexture(LOADER.getResourceAsStream("assets/minecraft/textures/missing.png"), false, "png"));
-            } catch (IOException e) {
-                LOGGER.log(Level.ERROR, e.getMessage());
-            } catch (GLException ignored) {
-            }
+            //            try {
+            //                // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
+            //                TEXTURES.put("minecraft:missing", TextureIO.newTexture(LOADER.getResourceAsStream("assets/minecraft/textures/missing.png"), false, "png"));
+            //            } catch (IOException e) {
+            //                LOGGER.log(Level.ERROR, e.getMessage());
+            //            } catch (GLException ignored) {
+            //            }
             ANIMATIONS.put("minecraft:missing", null);
-            for (Block block : Block.values()) {
-                String namespacedId = block.toId();
-                JSONObject blockState = getBlockState(namespacedId);
-                BLOCK_STATES.put(namespacedId, blockState);
+            loadAllBlockStatesInDirectory(new File(assets, "minecraft" + File.separator + "blockstates"), "minecraft:");
+            loadAllModelsInDirectory(new File(assets, "minecraft" + File.separator + "models"), "minecraft:");
+            //            loadAllTexturesInDirectory(new File(assets, "minecraft" + File.separator + "textures"), "minecraft:");
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.loaded"));
+        }).join();
+    }
+
+    public static void loadAllBlockStatesInDirectory(File directory, String currentNamespace) {
+        File[] files = directory.listFiles();
+        assert files != null;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                loadAllBlockStatesInDirectory(file, currentNamespace + file.getName() + "/");
+            } else if (file.isFile()) {
+                String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
+                getBlockState(namespacedId);
             }
-            //            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.loaded"));
-        });
+        }
+    }
+
+    public static void loadAllModelsInDirectory(File directory, String currentNamespace) {
+        File[] files = directory.listFiles();
+        assert files != null;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                loadAllModelsInDirectory(file, currentNamespace + file.getName() + "/");
+            } else if (file.isFile()) {
+                String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
+                getModel(namespacedId);
+            }
+        }
+    }
+
+    public static void loadAllTexturesInDirectory(File directory, String currentNamespace) {
+        File[] files = directory.listFiles();
+        assert files != null;
+        for (File file : files) {
+            if (file.isDirectory()) {
+                loadAllTexturesInDirectory(file, currentNamespace + file.getName() + "/");
+            } else if (file.isFile()) {
+                String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".png"));
+                getTexture(namespacedId);
+            }
+        }
     }
 
     @NotNull
@@ -95,6 +130,9 @@ public final class Assets {
     }
 
     public static JSONObject getBlockState(String namespacedId) {
+        if (!namespacedId.contains(":")) {
+            namespacedId = "minecraft:" + namespacedId;
+        }
         if (BLOCK_STATES.containsKey(namespacedId)) {
             return BLOCK_STATES.get(namespacedId);
         }
@@ -110,6 +148,9 @@ public final class Assets {
     }
 
     public static JSONObject getModel(String namespacedId) {
+        if (!namespacedId.contains(":")) {
+            namespacedId = "minecraft:" + namespacedId;
+        }
         if (MODELS.containsKey(namespacedId)) {
             return MODELS.get(namespacedId);
         }
@@ -125,6 +166,9 @@ public final class Assets {
     }
 
     public static Texture getTexture(String namespacedId) {
+        if (!namespacedId.contains(":")) {
+            namespacedId = "minecraft:" + namespacedId;
+        }
         if (TEXTURES.containsKey(namespacedId)) {
             return TEXTURES.get(namespacedId);
         }
@@ -144,6 +188,9 @@ public final class Assets {
     }
 
     public static JSONObject getAnimation(String namespacedId) {
+        if (!namespacedId.contains(":")) {
+            namespacedId = "minecraft:" + namespacedId;
+        }
         if (ANIMATIONS.containsKey(namespacedId)) {
             return ANIMATIONS.get(namespacedId);
         }

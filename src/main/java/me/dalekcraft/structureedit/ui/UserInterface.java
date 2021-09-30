@@ -109,7 +109,6 @@ public class UserInterface extends JPanel {
         }
 
         assetsChooser = new JFileChooser();
-        assetsChooser.setCurrentDirectory(Assets.getAssets());
     }
 
     public UserInterface(SchematicRenderer renderer) {

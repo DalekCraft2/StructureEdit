@@ -14,6 +14,7 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 
+// TODO Maybe make Schematic classes extend an abstract class which implements this?
 public interface Schematic {
 
     Logger LOGGER = LogManager.getLogger(Schematic.class);
