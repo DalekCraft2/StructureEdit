@@ -54,7 +54,6 @@ public final class Assets {
             String protocol = Assets.class.getResource("").getProtocol();
             if (Objects.equals(protocol, "jar")) {
                 // run in jar
-                // TODO Iterate over resources.
                 try (FileSystem fileSystem = FileSystems.newFileSystem(Path.of(Assets.class.getProtectionDomain().getCodeSource().getLocation().toURI()))) {
                     Path internalAssets = fileSystem.getPath("assets");
                     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {
