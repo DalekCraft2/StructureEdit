@@ -37,6 +37,8 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -63,6 +65,7 @@ public final class Main {
             try {
                 Level level = Level.valueOf(levelName);
                 LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.setting"), level);
+                // TODO Figure out why this only works in the IDE.
                 Configurator.setAllLevels(LogManager.getRootLogger().getName(), level);
             } catch (IllegalArgumentException e) {
                 LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.invalid"), levelName);
@@ -102,11 +105,11 @@ public final class Main {
         renderer.requestFocus();
 
         String assetsArg = getArgument(argList, "-assets");
-        File assets = null;
+        Path assets = null;
         if (assetsArg != null) {
             try {
-                assets = new File(assetsArg).getCanonicalFile();
-                if (assets.exists()) {
+                assets = new File(assetsArg).toPath().toRealPath();
+                if (Files.exists(assets)) {
                     LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
                 } else {
                     LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.invalid"), assets);
@@ -118,7 +121,7 @@ public final class Main {
             LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.not_set"));
         }
         Assets.setAssets(assets);
-        userInterface.assetsChooser.setCurrentDirectory(assets);
+        userInterface.assetsChooser.setCurrentDirectory(assets.toFile());
         String path = getArgument(argList, "-path");
         if (path != null) {
             try {

@@ -12,10 +12,12 @@ import org.json.JSONObject;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.*;
+import java.nio.file.FileSystem;
+import java.nio.file.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
-import java.util.jar.JarEntry;
-import java.util.jar.JarFile;
 
 public final class Assets {
 
@@ -25,7 +27,7 @@ public final class Assets {
     private static final Map<String, Texture> TEXTURES = new HashMap<>(); // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
     private static final Map<String, JSONObject> ANIMATIONS = new HashMap<>();
     private static final ClassLoader LOADER = Assets.class.getClassLoader();
-    private static File assets;
+    private static Path assets;
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
 
@@ -33,11 +35,11 @@ public final class Assets {
         throw new UnsupportedOperationException();
     }
 
-    public static File getAssets() {
+    public static Path getAssets() {
         return assets;
     }
 
-    public static void setAssets(File assets) {
+    public static void setAssets(Path assets) {
         Assets.assets = assets;
         load();
     }
@@ -49,121 +51,98 @@ public final class Assets {
             MODELS.clear();
             TEXTURES.clear();
             ANIMATIONS.clear();
-
             String protocol = Assets.class.getResource("").getProtocol();
             if (Objects.equals(protocol, "jar")) {
                 // run in jar
-                try {
-                    // TODO Iterate over resources.
-                    File jarPath = new File(Assets.class.getProtectionDomain().getCodeSource().getLocation().toURI());
-                    List<String> internalAssets = getJarContent(jarPath);
-                    //                    System.out.println(Arrays.toString(internalAssets.toArray()));
-                    //                    File[] internalNamespaces = internalAssets.listFiles();
-                    //                    if (internalNamespaces != null) {
-                    //                        for (File internalNamespace : internalNamespaces) {
-                    //                            loadNamespace(internalNamespace);
-                    //                        }
-                    //                    }
+                // TODO Iterate over resources.
+                try (FileSystem fileSystem = FileSystems.newFileSystem(Path.of(Assets.class.getProtectionDomain().getCodeSource().getLocation().toURI()))) {
+                    Path internalAssets = fileSystem.getPath("assets");
+                    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {
+                        directoryStream.forEach(Assets::loadNamespace);
+                    }
                 } catch (URISyntaxException | IOException e) {
                     LOGGER.log(Level.ERROR, e.getMessage());
                 }
             } else if (Objects.equals(protocol, "file")) {
                 // run in ide
                 try {
-                    File internalAssets = new File(LOADER.getResource("assets").toURI());
-                    File[] internalNamespaces = internalAssets.listFiles();
-                    if (internalNamespaces != null) {
-                        for (File internalNamespace : internalNamespaces) {
-                            loadNamespace(internalNamespace);
-                        }
+                    Path internalAssets = Path.of(LOADER.getResource("assets").toURI());
+                    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {
+                        directoryStream.forEach(Assets::loadNamespace);
                     }
-                } catch (URISyntaxException e) {
+                } catch (URISyntaxException | IOException e) {
                     LOGGER.log(Level.ERROR, e.getMessage());
                 }
-                File[] namespaces = assets.listFiles();
-                if (namespaces != null) {
-                    for (File namespace : namespaces) {
-                        loadNamespace(namespace);
-                    }
-                }
             }
-
-            if (assets != null) {
-                File[] namespaces = assets.listFiles();
-                if (namespaces != null) {
-                    for (File namespace : namespaces) {
-                        loadNamespace(namespace);
+            try {
+                if (assets != null) {
+                    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(assets)) {
+                        directoryStream.forEach(Assets::loadNamespace);
                     }
                 }
+            } catch (IOException e) {
+                LOGGER.log(Level.ERROR, e.getMessage());
             }
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.loaded"));
         }).join();
     }
 
-    /**
-     * List the content of the given jar
-     *
-     * @param jarPath
-     * @return
-     * @throws IOException
-     */
-    public static List<String> getJarContent(File jarPath) throws IOException {
-        List<String> content = new ArrayList<>();
-        try (JarFile jarFile = new JarFile(jarPath)) {
-            Enumeration<JarEntry> entries = jarFile.entries();
-            while (entries.hasMoreElements()) {
-                JarEntry entry = entries.nextElement();
-                String name = entry.getName();
-                content.add(name);
-            }
+    public static void loadNamespace(Path namespace) {
+        if (Files.exists(namespace) && Files.isDirectory(namespace)) {
+            FileSystem fileSystem = namespace.getFileSystem();
+            loadBlockStates(fileSystem.getPath(namespace.toString(), "blockstates"), namespace.getFileName() + ":");
+            loadModels(fileSystem.getPath(namespace.toString(), "models"), namespace.getFileName() + ":");
+            //            loadTextures(fileSystem.getPath(namespace.toString(), "textures"), namespace.getFileName() + ":");
         }
-        return content;
     }
 
-    public static void loadNamespace(File namespace) {
-        loadBlockStates(new File(namespace, "blockstates"), namespace.getName() + ":");
-        loadModels(new File(namespace, "models"), namespace.getName() + ":");
-        //        loadAllTexturesInDirectory(new File(namespace, "textures"), namespace.getName() + ":");
-    }
-
-    public static void loadBlockStates(@NotNull File directory, String currentNamespace) {
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    loadBlockStates(file, currentNamespace + file.getName() + "/");
-                } else if (file.isFile() && file.getName().endsWith(".json")) {
-                    String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
-                    getBlockState(namespacedId);
-                }
+    public static void loadBlockStates(@NotNull Path directory, String currentNamespace) {
+        if (Files.exists(directory)) {
+            try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
+                directoryStream.forEach((path) -> {
+                    if (Files.isDirectory(path)) {
+                        loadBlockStates(path, currentNamespace + path.getFileName() + "/");
+                    } else if (Files.isRegularFile(path) && path.toString().endsWith(".json")) {
+                        String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".json"));
+                        getBlockState(namespacedId);
+                    }
+                });
+            } catch (IOException e) {
+                LOGGER.log(Level.ERROR, e.getMessage());
             }
         }
     }
 
-    public static void loadModels(@NotNull File directory, String currentNamespace) {
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    loadModels(file, currentNamespace + file.getName() + "/");
-                } else if (file.isFile() && file.getName().endsWith(".json")) {
-                    String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
-                    getModel(namespacedId);
-                }
+    public static void loadModels(@NotNull Path directory, String currentNamespace) {
+        if (Files.exists(directory)) {
+            try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
+                directoryStream.forEach((path) -> {
+                    if (Files.isDirectory(path)) {
+                        loadModels(path, currentNamespace + path.getFileName() + "/");
+                    } else if (Files.isRegularFile(path) && path.toString().endsWith(".json")) {
+                        String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".json"));
+                        getModel(namespacedId);
+                    }
+                });
+            } catch (IOException e) {
+                LOGGER.log(Level.ERROR, e.getMessage());
             }
         }
     }
 
-    public static void loadTextures(@NotNull File directory, String currentNamespace) {
-        File[] files = directory.listFiles();
-        if (files != null) {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    loadTextures(file, currentNamespace + file.getName() + "/");
-                } else if (file.isFile() && file.getName().endsWith(".png")) {
-                    String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".png"));
-                    getTexture(namespacedId);
-                }
+    public static void loadTextures(@NotNull Path directory, String currentNamespace) {
+        if (Files.exists(directory)) {
+            try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
+                directoryStream.forEach((path) -> {
+                    if (Files.isDirectory(path)) {
+                        loadTextures(path, currentNamespace + path.getFileName() + "/");
+                    } else if (Files.isRegularFile(path) && path.toString().endsWith(".png")) {
+                        String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".png"));
+                        getTexture(namespacedId);
+                    }
+                });
+            } catch (IOException e) {
+                LOGGER.log(Level.ERROR, e.getMessage());
             }
         }
     }
@@ -179,11 +158,11 @@ public final class Assets {
             LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getProperty("log.assets.getting_internal"), internalPath);
             return internalStream;
         }
-        File file = new File(assets, namespace + File.separator + folder + File.separator + id + "." + extension).getCanonicalFile();
-        if (file.exists()) {
-            LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getProperty("log.assets.getting"), file);
+        Path path = Path.of(assets.toString(), namespace + File.separator + folder + File.separator + id + "." + extension).toRealPath();
+        if (Files.exists(path)) {
+            LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getProperty("log.assets.getting"), path);
         }
-        return new FileInputStream(file);
+        return Files.newInputStream(path);
     }
 
     public static JSONObject getBlockState(@NotNull String namespacedId) {

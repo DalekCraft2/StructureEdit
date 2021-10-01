@@ -47,6 +47,7 @@ import java.awt.event.ComponentEvent;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
 import java.util.ResourceBundle;
@@ -164,9 +165,9 @@ public class UserInterface extends JPanel {
             assetsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int result = assetsChooser.showOpenDialog(panel);
             if (result == JFileChooser.APPROVE_OPTION && assetsChooser.getSelectedFile() != null) {
-                File assets;
+                Path assets;
                 try {
-                    assets = assetsChooser.getSelectedFile().getCanonicalFile();
+                    assets = assetsChooser.getSelectedFile().toPath().toRealPath();
                     LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
                     Assets.setAssets(assets);
                 } catch (IOException e1) {
