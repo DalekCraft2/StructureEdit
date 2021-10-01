@@ -12,16 +12,17 @@ import org.json.JSONObject;
 import java.io.*;
 import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 public final class Assets {
 
     private static final Logger LOGGER = LogManager.getLogger(Assets.class);
     private static final Map<String, JSONObject> BLOCK_STATES = new HashMap<>();
     private static final Map<String, JSONObject> MODELS = new HashMap<>();
-    private static final Map<String, Texture> TEXTURES = new HashMap<>();
+    private static final Map<String, Texture> TEXTURES = new HashMap<>(); // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
     private static final Map<String, JSONObject> ANIMATIONS = new HashMap<>();
     private static final ClassLoader LOADER = Assets.class.getClassLoader();
     private static File assets;
@@ -48,59 +49,89 @@ public final class Assets {
             MODELS.clear();
             TEXTURES.clear();
             ANIMATIONS.clear();
-            try {
-                BLOCK_STATES.put("minecraft:missing", toJson(LOADER.getResourceAsStream("assets/minecraft/blockstates/missing.json")));
-            } catch (IOException e) {
-                LOGGER.log(Level.ERROR, e.getMessage());
-            }
-            try {
-                MODELS.put("minecraft:block/missing", toJson(LOADER.getResourceAsStream("assets/minecraft/models/block/missing.json")));
-            } catch (IOException e) {
-                LOGGER.log(Level.ERROR, e.getMessage());
-            }
-            //            try {
-            //                // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
-            //                TEXTURES.put("minecraft:missing", TextureIO.newTexture(LOADER.getResourceAsStream("assets/minecraft/textures/missing.png"), false, "png"));
-            //            } catch (IOException e) {
-            //                LOGGER.log(Level.ERROR, e.getMessage());
-            //            } catch (GLException ignored) {
-            //            }
-            ANIMATIONS.put("minecraft:missing", null);
 
-            try {
-                File internalAssets = new File(LOADER.getResource("assets").toURI());
-                File[] internalNamespaces = internalAssets.listFiles();
-                if (internalNamespaces != null) {
-                    for (File internalNamespace : internalNamespaces) {
-                        loadNamespace(internalNamespace);
+            String protocol = Assets.class.getResource("").getProtocol();
+            if (Objects.equals(protocol, "jar")) {
+                // run in jar
+                try {
+                    // TODO Iterate over resources.
+                    File jarPath = new File(Assets.class.getProtectionDomain().getCodeSource().getLocation().toURI());
+                    List<String> internalAssets = getJarContent(jarPath);
+                    //                    System.out.println(Arrays.toString(internalAssets.toArray()));
+                    //                    File[] internalNamespaces = internalAssets.listFiles();
+                    //                    if (internalNamespaces != null) {
+                    //                        for (File internalNamespace : internalNamespaces) {
+                    //                            loadNamespace(internalNamespace);
+                    //                        }
+                    //                    }
+                } catch (URISyntaxException | IOException e) {
+                    LOGGER.log(Level.ERROR, e.getMessage());
+                }
+            } else if (Objects.equals(protocol, "file")) {
+                // run in ide
+                try {
+                    File internalAssets = new File(LOADER.getResource("assets").toURI());
+                    File[] internalNamespaces = internalAssets.listFiles();
+                    if (internalNamespaces != null) {
+                        for (File internalNamespace : internalNamespaces) {
+                            loadNamespace(internalNamespace);
+                        }
+                    }
+                } catch (URISyntaxException e) {
+                    LOGGER.log(Level.ERROR, e.getMessage());
+                }
+                File[] namespaces = assets.listFiles();
+                if (namespaces != null) {
+                    for (File namespace : namespaces) {
+                        loadNamespace(namespace);
                     }
                 }
-            } catch (URISyntaxException e) {
-                LOGGER.log(Level.ERROR, e.getMessage());
             }
 
-            File[] namespaces = assets.listFiles();
-            if (namespaces != null) {
-                for (File namespace : namespaces) {
-                    loadNamespace(namespace);
+            if (assets != null) {
+                File[] namespaces = assets.listFiles();
+                if (namespaces != null) {
+                    for (File namespace : namespaces) {
+                        loadNamespace(namespace);
+                    }
                 }
             }
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.loaded"));
         }).join();
     }
 
-    public static void loadNamespace(File namespace) {
-        loadAllBlockStatesInDirectory(new File(namespace, "blockstates"), namespace.getName() + ":");
-        loadAllModelsInDirectory(new File(namespace, "models"), namespace.getName() + ":");
-        //                    loadAllTexturesInDirectory(new File(namespace, "textures"), namespace.getName() + ":");
+    /**
+     * List the content of the given jar
+     *
+     * @param jarPath
+     * @return
+     * @throws IOException
+     */
+    public static List<String> getJarContent(File jarPath) throws IOException {
+        List<String> content = new ArrayList<>();
+        try (JarFile jarFile = new JarFile(jarPath)) {
+            Enumeration<JarEntry> entries = jarFile.entries();
+            while (entries.hasMoreElements()) {
+                JarEntry entry = entries.nextElement();
+                String name = entry.getName();
+                content.add(name);
+            }
+        }
+        return content;
     }
 
-    public static void loadAllBlockStatesInDirectory(@NotNull File directory, String currentNamespace) {
+    public static void loadNamespace(File namespace) {
+        loadBlockStates(new File(namespace, "blockstates"), namespace.getName() + ":");
+        loadModels(new File(namespace, "models"), namespace.getName() + ":");
+        //        loadAllTexturesInDirectory(new File(namespace, "textures"), namespace.getName() + ":");
+    }
+
+    public static void loadBlockStates(@NotNull File directory, String currentNamespace) {
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    loadAllBlockStatesInDirectory(file, currentNamespace + file.getName() + "/");
+                    loadBlockStates(file, currentNamespace + file.getName() + "/");
                 } else if (file.isFile() && file.getName().endsWith(".json")) {
                     String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
                     getBlockState(namespacedId);
@@ -109,12 +140,12 @@ public final class Assets {
         }
     }
 
-    public static void loadAllModelsInDirectory(@NotNull File directory, String currentNamespace) {
+    public static void loadModels(@NotNull File directory, String currentNamespace) {
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    loadAllModelsInDirectory(file, currentNamespace + file.getName() + "/");
+                    loadModels(file, currentNamespace + file.getName() + "/");
                 } else if (file.isFile() && file.getName().endsWith(".json")) {
                     String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".json"));
                     getModel(namespacedId);
@@ -123,12 +154,12 @@ public final class Assets {
         }
     }
 
-    public static void loadAllTexturesInDirectory(@NotNull File directory, String currentNamespace) {
+    public static void loadTextures(@NotNull File directory, String currentNamespace) {
         File[] files = directory.listFiles();
         if (files != null) {
             for (File file : files) {
                 if (file.isDirectory()) {
-                    loadAllTexturesInDirectory(file, currentNamespace + file.getName() + "/");
+                    loadTextures(file, currentNamespace + file.getName() + "/");
                 } else if (file.isFile() && file.getName().endsWith(".png")) {
                     String namespacedId = currentNamespace + file.getName().substring(0, file.getName().lastIndexOf(".png"));
                     getTexture(namespacedId);
@@ -233,19 +264,6 @@ public final class Assets {
     @NotNull
     public static JSONObject toJson(String namespacedId, String folder, String extension) throws IOException {
         try (InputStream inputStream = getAsset(namespacedId, folder, extension); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
-            char[] buffer = new char[1024 * 16];
-            int length;
-            while ((length = inputStreamReader.read(buffer)) > 0) {
-                stringWriter.write(buffer, 0, length);
-            }
-            return new JSONObject(stringWriter.toString());
-        }
-    }
-
-    @Contract("_ -> new")
-    @NotNull
-    public static JSONObject toJson(InputStream inputStream) throws IOException {
-        try (InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
             char[] buffer = new char[1024 * 16];
             int length;
             while ((length = inputStreamReader.read(buffer)) > 0) {
