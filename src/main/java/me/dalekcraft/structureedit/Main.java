@@ -66,7 +66,7 @@ public final class Main {
                 Level level = Level.valueOf(levelName);
                 LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.setting"), level);
                 // TODO Figure out why this only works in the IDE.
-                Configurator.setAllLevels(LogManager.getRootLogger().getName(), level);
+                Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level);
             } catch (IllegalArgumentException e) {
                 LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.invalid"), levelName);
             }

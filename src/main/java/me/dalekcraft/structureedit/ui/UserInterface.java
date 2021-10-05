@@ -182,7 +182,7 @@ public class UserInterface extends JPanel {
             Level level = (Level) JOptionPane.showInputDialog(Main.frame, Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.label"), Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.title"), JOptionPane.PLAIN_MESSAGE, null, Level.values(), LogManager.getRootLogger().getLevel());
             if (level != null) {
                 LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.setting"), level);
-                Configurator.setAllLevels(LogManager.getRootLogger().getName(), level);
+                Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level);
             }
         });
         settingsPopup.add(logLevelButton);
