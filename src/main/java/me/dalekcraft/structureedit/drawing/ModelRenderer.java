@@ -279,14 +279,6 @@ public final class ModelRenderer {
                         default -> SCALE - fromY;
                     };
 
-                    for (int i = 0; i < faceRotation; i += 90) {
-                        double temp = textureLeft;
-                        textureLeft = SCALE - textureBottom;
-                        textureBottom = textureRight;
-                        textureRight = SCALE - textureTop;
-                        textureTop = temp;
-                    }
-
                     // TODO Animate these.
                     JSONObject animation = Assets.getAnimation(textures.getOrDefault(faceTexture, "minecraft:missing"));
                     if (animation != null) {
@@ -298,6 +290,14 @@ public final class ModelRenderer {
                         textureTop /= heightFactor;
                         textureRight /= widthFactor;
                         textureBottom /= heightFactor;
+                    }
+
+                    for (int i = 0; i < faceRotation; i += 90) {
+                        double temp = textureLeft;
+                        textureLeft = SCALE - textureBottom;
+                        textureBottom = textureRight;
+                        textureRight = SCALE - textureTop;
+                        textureTop = temp;
                     }
 
                     gl.glMatrixMode(GL_TEXTURE);
