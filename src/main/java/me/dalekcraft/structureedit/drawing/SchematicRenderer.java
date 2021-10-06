@@ -30,6 +30,7 @@ import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
 import org.jetbrains.annotations.NotNull;
 
+import javax.swing.*;
 import java.awt.event.*;
 
 import static com.jogamp.opengl.GL4bc.*;
@@ -41,15 +42,15 @@ public class SchematicRenderer extends GLJPanel {
 
     public static final float SCALE = 1.0f;
     public static final float ROTATION_SENSITIVITY = 1.0f;
-    public static final float MOTION_SENSITIVITY = 1.0f;
+    public static final float MOTION_SENSITIVITY = 0.1f;
     /**
      * Rotational angle for x-axis in degrees.
      **/
-    private static float pitch = 45.0f;
+    private float pitch = 45.0f;
     /**
      * Rotational angle for y-axis in degrees.
      **/
-    private static float yaw = 45.0f;
+    private float yaw = 45.0f;
     /**
      * X location.
      */
@@ -62,7 +63,6 @@ public class SchematicRenderer extends GLJPanel {
      * Z location.
      */
     private float z = -30.0f;
-    private boolean sprint;
     private int mouseX = Main.FRAME_WIDTH / 2;
     private int mouseY = Main.FRAME_HEIGHT / 2;
     private int sizeX, sizeY, sizeZ, renderedHeight;
@@ -177,15 +177,13 @@ public class SchematicRenderer extends GLJPanel {
             @Override
             public void keyPressed(KeyEvent e) {
                 int keyCode = e.getKeyCode();
-                float interval = sprint ? 2.0f : 1.0f;
                 switch (keyCode) {
-                    case KeyEvent.VK_W, KeyEvent.VK_UP -> z += interval;
-                    case KeyEvent.VK_S, KeyEvent.VK_DOWN -> z -= interval;
-                    case KeyEvent.VK_A -> x += interval;
-                    case KeyEvent.VK_D -> x -= interval;
-                    case KeyEvent.VK_SHIFT -> y += interval;
-                    case KeyEvent.VK_SPACE -> y -= interval;
-                    case KeyEvent.VK_CONTROL -> sprint = true;
+                    case KeyEvent.VK_W, KeyEvent.VK_UP -> z++;
+                    case KeyEvent.VK_S, KeyEvent.VK_DOWN -> z--;
+                    case KeyEvent.VK_A -> x++;
+                    case KeyEvent.VK_D -> x--;
+                    case KeyEvent.VK_SHIFT -> y++;
+                    case KeyEvent.VK_SPACE -> y--;
                     case KeyEvent.VK_LEFT -> {
                         if (renderedHeight > 0) {
                             renderedHeight--;
@@ -204,16 +202,8 @@ public class SchematicRenderer extends GLJPanel {
                     }
                 }
             }
-
-            @Override
-            public void keyReleased(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_CONTROL) {
-                    sprint = false;
-                }
-            }
         });
 
-        // TODO Right-clicking could make the view moveable, and scrolling could zoom.
         MouseAdapter mouseAdapter = new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -222,37 +212,36 @@ public class SchematicRenderer extends GLJPanel {
 
             @Override
             public void mouseWheelMoved(@NotNull MouseWheelEvent e) {
-                float interval = sprint ? 2.0f : 1.0f;
-                z -= interval * e.getPreciseWheelRotation();
+                z -= e.getPreciseWheelRotation();
             }
 
             @Override
             public void mouseDragged(@NotNull MouseEvent e) {
                 requestFocus();
-                // change the camera angle
-                //                if (SwingUtilities.isLeftMouseButton(e)) {
-                final int buffer = 0;
-                if (e.getX() < mouseX - buffer || e.getX() > mouseX + buffer) {
-                    yaw += (e.getX() - mouseX) * ROTATION_SENSITIVITY;
-                }
-                if (pitch + e.getY() - mouseY > 90) {
-                    pitch = 90;
-                } else if (pitch + e.getY() - mouseY < -90) {
-                    pitch = -90;
-                } else {
-                    if (e.getY() < mouseY - buffer || e.getY() > mouseY + buffer) {
-                        pitch += (e.getY() - mouseY) * ROTATION_SENSITIVITY;
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    // Rotate the camera
+                    if (e.getX() < mouseX || e.getX() > mouseX) {
+                        yaw += (e.getX() - mouseX) * ROTATION_SENSITIVITY;
+                    }
+                    if (pitch + e.getY() - mouseY > 90) {
+                        pitch = 90;
+                    } else if (pitch + e.getY() - mouseY < -90) {
+                        pitch = -90;
+                    } else {
+                        if (e.getY() < mouseY || e.getY() > mouseY) {
+                            pitch += (e.getY() - mouseY) * ROTATION_SENSITIVITY;
+                        }
+                    }
+                } else if (SwingUtilities.isRightMouseButton(e)) {
+                    // TODO Make the camera drag translation more accurate.
+                    // Translate the camera
+                    if (e.getX() < mouseX || e.getX() > mouseX) {
+                        x += (e.getX() - mouseX) * MOTION_SENSITIVITY;
+                    }
+                    if (e.getY() < mouseY || e.getY() > mouseY) {
+                        y -= (e.getY() - mouseY) * MOTION_SENSITIVITY;
                     }
                 }
-                //                } else if (SwingUtilities.isRightMouseButton(e)) {
-                //                    final int buffer = 0;
-                //                    if (e.getX() < mouseX - buffer || e.getX() > mouseX + buffer) {
-                //                        x += (e.getX() - mouseX) * MOTION_SENSITIVITY;
-                //                    }
-                //                    if (e.getY() < mouseY - buffer || e.getY() > mouseY + buffer) {
-                //                        y -= (e.getY() - mouseY) * MOTION_SENSITIVITY;
-                //                    }
-                //                }
                 mouseX = e.getX();
                 mouseY = e.getY();
             }
