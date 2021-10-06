@@ -41,8 +41,8 @@ import static com.jogamp.opengl.GL4bc.*;
 public class SchematicRenderer extends GLJPanel {
 
     public static final float SCALE = 1.0f;
-    public static final float ROTATION_SENSITIVITY = 1.0f;
-    public static final float MOTION_SENSITIVITY = 0.1f;
+    private static final float ROTATION_SENSITIVITY = 1.0f;
+    private static final float MOTION_SENSITIVITY = 0.1f;
     /**
      * Rotational angle for x-axis in degrees.
      **/

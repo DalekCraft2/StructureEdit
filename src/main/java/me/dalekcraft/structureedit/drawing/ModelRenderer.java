@@ -22,6 +22,7 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import static com.jogamp.opengl.GL4bc.*;
 import static me.dalekcraft.structureedit.drawing.SchematicRenderer.SCALE;
@@ -29,6 +30,7 @@ import static me.dalekcraft.structureedit.drawing.SchematicRenderer.SCALE;
 public final class ModelRenderer {
 
     private static final int TEXTURE_SIZE = 16;
+    private static final double TICK_LENGTH = 0.05;
     private static final Logger LOGGER = LogManager.getLogger(ModelRenderer.class);
 
     private ModelRenderer() {
@@ -279,17 +281,40 @@ public final class ModelRenderer {
                         default -> SCALE - fromY;
                     };
 
-                    // TODO Animate these.
-                    JSONObject animation = Assets.getAnimation(textures.getOrDefault(faceTexture, "minecraft:missing"));
-                    if (animation != null) {
+                    JSONObject fullAnimation = Assets.getAnimation(textures.getOrDefault(faceTexture, "minecraft:missing"));
+                    if (fullAnimation != null) {
+                        JSONObject animation = fullAnimation.getJSONObject("animation");
+                        boolean interpolate = animation.has("interpolate") && animation.getBoolean("interpolate"); // TODO Interpolation.
                         int width = animation.has("width") ? animation.getInt("width") : TEXTURE_SIZE;
                         int height = animation.has("height") ? animation.getInt("height") : TEXTURE_SIZE;
+                        int frametime = animation.has("frametime") ? animation.getInt("frametime") : 1; // TODO Frametimes.
+
                         int widthFactor = Math.abs(texture.getWidth() / width);
                         int heightFactor = Math.abs(texture.getHeight() / height);
+
+                        JSONArray frames; // TODO Also check for arrays of objects.
+                        if (animation.has("frames")) {
+                            frames = animation.getJSONArray("frames");
+                        } else {
+                            frames = new JSONArray();
+                            for (int i = 0; i < heightFactor; i++) {
+                                frames.put(i, i);
+                            }
+                        }
+
+                        // Set all texture coordinates to the first frame
                         textureLeft /= widthFactor;
                         textureTop /= heightFactor;
                         textureRight /= widthFactor;
                         textureBottom /= heightFactor;
+
+                        long currentTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
+                        int index = ((int) currentTime % (frames.length()));
+                        int frame = frames.getInt(index);
+
+                        // Change to a frame in the animation
+                        textureTop += (double) frame / heightFactor;
+                        textureBottom += (double) frame / heightFactor;
                     }
 
                     for (int i = 0; i < faceRotation; i += 90) {
@@ -431,6 +456,7 @@ public final class ModelRenderer {
         }
     }
 
+    // TODO Fix StackOverflowError with Powder Snow.
     @Contract("_, _ -> param2")
     private static Map<String, String> getTextures(@NotNull JSONObject model, Map<String, String> textures) {
         if (model.has("textures")) {
