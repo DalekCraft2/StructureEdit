@@ -463,7 +463,6 @@ public final class ModelRenderer {
         }
     }
 
-    // TODO Fix StackOverflowError with Powder Snow.
     @Contract("_, _ -> param2")
     private static Map<String, String> getTextures(@NotNull JSONObject model, Map<String, String> textures) {
         if (model.has("textures")) {
@@ -491,7 +490,7 @@ public final class ModelRenderer {
                 if (path.startsWith("#")) {
                     String substring = path.substring(1);
                     if (texturesJson.has(substring)) {
-                        getTextureFromId(model, textures, name);
+                        getTextureFromId(model, textures, substring);
                     } else if (textures.containsKey(substring)) {
                         textures.put(name, textures.get(substring));
                     } else if (parent != null) {
