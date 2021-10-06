@@ -22,7 +22,6 @@ import java.awt.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
 import static com.jogamp.opengl.GL4bc.*;
 import static me.dalekcraft.structureedit.drawing.SchematicRenderer.SCALE;
@@ -30,7 +29,7 @@ import static me.dalekcraft.structureedit.drawing.SchematicRenderer.SCALE;
 public final class ModelRenderer {
 
     private static final int TEXTURE_SIZE = 16;
-    private static final double TICK_LENGTH = 0.05;
+    private static final long TICK_LENGTH = 50L;
     private static final Logger LOGGER = LogManager.getLogger(ModelRenderer.class);
 
     private ModelRenderer() {
@@ -287,7 +286,7 @@ public final class ModelRenderer {
                         boolean interpolate = animation.has("interpolate") && animation.getBoolean("interpolate"); // TODO Interpolation.
                         int width = animation.has("width") ? animation.getInt("width") : TEXTURE_SIZE;
                         int height = animation.has("height") ? animation.getInt("height") : TEXTURE_SIZE;
-                        int frametime = animation.has("frametime") ? animation.getInt("frametime") : 1; // TODO Frametimes.
+                        int frametime = animation.has("frametime") ? animation.getInt("frametime") : 1;
 
                         int widthFactor = Math.abs(texture.getWidth() / width);
                         int heightFactor = Math.abs(texture.getHeight() / height);
@@ -308,9 +307,9 @@ public final class ModelRenderer {
                         textureRight /= widthFactor;
                         textureBottom /= heightFactor;
 
-                        long currentTime = TimeUnit.MILLISECONDS.toSeconds(System.currentTimeMillis());
-                        int index = ((int) currentTime % (frames.length()));
-                        int frame = frames.getInt(index);
+                        long currentTick = System.currentTimeMillis() / (TICK_LENGTH * frametime);
+                        long index = (currentTick % (frames.length()));
+                        int frame = frames.getInt((int) index);
 
                         // Change to a frame in the animation
                         textureTop += (double) frame / heightFactor;
