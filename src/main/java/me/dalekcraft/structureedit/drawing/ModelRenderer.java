@@ -291,7 +291,7 @@ public final class ModelRenderer {
                         int widthFactor = Math.abs(texture.getWidth() / width);
                         int heightFactor = Math.abs(texture.getHeight() / height);
 
-                        JSONArray frames; // TODO Also check for arrays of objects.
+                        JSONArray frames;
                         if (animation.has("frames")) {
                             frames = animation.getJSONArray("frames");
                         } else {
@@ -309,11 +309,19 @@ public final class ModelRenderer {
 
                         long currentTick = System.currentTimeMillis() / (TICK_LENGTH * frametime);
                         long index = (currentTick % (frames.length()));
-                        int frame = frames.getInt((int) index);
+                        Object frame = frames.get((int) index);
+                        double frameDouble = 0.0;
+                        if (frame instanceof Integer frameInt) {
+                            frameDouble = (double) frameInt;
+                        } else if (frame instanceof JSONObject frameObject) {
+                            frameDouble = frameObject.getInt("index");
+                            // TODO Implement the "time" tag.
+                            int time = frameObject.has("time") ? frameObject.getInt("time") : frametime;
+                        }
 
                         // Change to a frame in the animation
-                        textureTop += (double) frame / heightFactor;
-                        textureBottom += (double) frame / heightFactor;
+                        textureTop += frameDouble / heightFactor;
+                        textureBottom += frameDouble / heightFactor;
                     }
 
                     for (int i = 0; i < faceRotation; i += 90) {
