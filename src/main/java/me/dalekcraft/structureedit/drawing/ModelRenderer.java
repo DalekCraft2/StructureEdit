@@ -36,7 +36,7 @@ public final class ModelRenderer {
         throw new UnsupportedOperationException();
     }
 
-    public static void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties) {
+    public static void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties, Random random) {
         Color tint = Tint.getTint(namespacedId, properties);
         JSONObject blockState = Assets.getBlockState(namespacedId);
         String propertiesString = "";
@@ -62,8 +62,8 @@ public final class ModelRenderer {
                         sendBlockState(gl, variant, tint);
                         return;
                     } else if (variants.has(variantName) && variants.get(variantName) instanceof JSONArray variantArray) {
-                        // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
-                        JSONObject variant = variantArray.getJSONObject(0);
+                        // TODO Implement weight.
+                        JSONObject variant = variantArray.getJSONObject(random.nextInt(0, variantArray.length() - 1));
                         sendBlockState(gl, variant, tint);
                         return;
                     }
@@ -104,8 +104,8 @@ public final class ModelRenderer {
                             if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
                                 sendBlockState(gl, apply, tint);
                             } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                                // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
-                                JSONObject apply = applyArray.getJSONObject(0);
+                                // TODO Implement weight.
+                                JSONObject apply = applyArray.getJSONObject(random.nextInt(0, applyArray.length() - 1));
                                 sendBlockState(gl, apply, tint);
                             }
                         }
@@ -130,8 +130,8 @@ public final class ModelRenderer {
                             if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
                                 sendBlockState(gl, apply, tint);
                             } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                                // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
-                                JSONObject apply = applyArray.getJSONObject(0);
+                                // TODO Implement weight.
+                                JSONObject apply = applyArray.getJSONObject(random.nextInt(0, applyArray.length() - 1));
                                 sendBlockState(gl, apply, tint);
                             }
                         }
@@ -140,8 +140,8 @@ public final class ModelRenderer {
                     if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
                         sendBlockState(gl, apply, tint);
                     } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                        // TODO Random model selection. Especially difficult when combined with the constant re-rendering of the schematic.
-                        JSONObject apply = applyArray.getJSONObject(0);
+                        // TODO Implement weight.
+                        JSONObject apply = applyArray.getJSONObject(random.nextInt(0, applyArray.length() - 1));
                         sendBlockState(gl, apply, tint);
                     }
                 }

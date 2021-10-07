@@ -32,6 +32,7 @@ import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
 import java.awt.event.*;
+import java.util.Random;
 
 import static com.jogamp.opengl.GL4bc.*;
 
@@ -140,10 +141,11 @@ public class SchematicRenderer extends GLJPanel {
                                         blockId = schematic.getBlockId(block);
                                         properties = schematic.getBlockProperties(block);
                                     }
+                                    Random random = new Random(x + ((long) y * sizeZ * sizeX) + ((long) z * sizeX));
 
                                     gl.glPushMatrix();
                                     gl.glTranslatef(x * SCALE, y * SCALE, z * SCALE);
-                                    ModelRenderer.readBlockState(gl, blockId, properties);
+                                    ModelRenderer.readBlockState(gl, blockId, properties, random);
                                     gl.glPopMatrix();
                                 }
                             }
