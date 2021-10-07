@@ -379,6 +379,9 @@ public final class ModelRenderer {
                     gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                     gl.glEnable(GL_BLEND);
 
+                    gl.glAlphaFunc(GL_GREATER, 0.0f);
+                    gl.glEnable(GL_ALPHA_TEST);
+
                     gl.glBegin(GL_QUADS);
 
                     switch (faceName) {
@@ -452,6 +455,7 @@ public final class ModelRenderer {
                     }
                     gl.glEnd();
                     texture.disable(gl);
+                    gl.glDisable(GL_ALPHA_TEST);
                     gl.glDisable(GL_BLEND);
                 }
                 gl.glPopMatrix();

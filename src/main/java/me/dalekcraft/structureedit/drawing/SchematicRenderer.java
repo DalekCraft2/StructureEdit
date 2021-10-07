@@ -78,7 +78,7 @@ public class SchematicRenderer extends GLJPanel {
             @Override
             public void init(GLAutoDrawable drawable) {
                 GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
-                gl.glClearColor(0.8f, 0.8f, 0.8f, 0.0f); // set background color to gray
+                gl.glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // set background color to gray
                 gl.glClearDepth(1.0f); // set clear depth value to farthest
                 gl.glEnable(GL_DEPTH_TEST); // enables depth testing
                 gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
