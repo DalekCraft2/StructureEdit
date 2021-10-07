@@ -141,7 +141,8 @@ public class SchematicRenderer extends GLJPanel {
                                         blockId = schematic.getBlockId(block);
                                         properties = schematic.getBlockProperties(block);
                                     }
-                                    Random random = new Random(x + ((long) y * sizeZ * sizeX) + ((long) z * sizeX));
+                                    long seed = x + ((long) y * sizeZ * sizeX) + ((long) z * sizeX);
+                                    Random random = new Random(seed);
 
                                     gl.glPushMatrix();
                                     gl.glTranslatef(x * SCALE, y * SCALE, z * SCALE);

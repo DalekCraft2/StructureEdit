@@ -62,8 +62,7 @@ public final class ModelRenderer {
                         sendBlockState(gl, variant, tint);
                         return;
                     } else if (variants.has(variantName) && variants.get(variantName) instanceof JSONArray variantArray) {
-                        // TODO Implement weight.
-                        JSONObject variant = variantArray.getJSONObject(random.nextInt(0, variantArray.length() - 1));
+                        JSONObject variant = chooseModel(variantArray, random);
                         sendBlockState(gl, variant, tint);
                         return;
                     }
@@ -104,8 +103,7 @@ public final class ModelRenderer {
                             if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
                                 sendBlockState(gl, apply, tint);
                             } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                                // TODO Implement weight.
-                                JSONObject apply = applyArray.getJSONObject(random.nextInt(0, applyArray.length() - 1));
+                                JSONObject apply = chooseModel(applyArray, random);
                                 sendBlockState(gl, apply, tint);
                             }
                         }
@@ -130,8 +128,7 @@ public final class ModelRenderer {
                             if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
                                 sendBlockState(gl, apply, tint);
                             } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                                // TODO Implement weight.
-                                JSONObject apply = applyArray.getJSONObject(random.nextInt(0, applyArray.length() - 1));
+                                JSONObject apply = chooseModel(applyArray, random);
                                 sendBlockState(gl, apply, tint);
                             }
                         }
@@ -140,13 +137,28 @@ public final class ModelRenderer {
                     if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
                         sendBlockState(gl, apply, tint);
                     } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                        // TODO Implement weight.
-                        JSONObject apply = applyArray.getJSONObject(random.nextInt(0, applyArray.length() - 1));
+                        JSONObject apply = chooseModel(applyArray, random);
                         sendBlockState(gl, apply, tint);
                     }
                 }
             }
         }
+    }
+
+    private static JSONObject chooseModel(@NotNull JSONArray models, Random random) {
+        int total = 0;
+        NavigableMap<Integer, JSONObject> weightTree = new TreeMap<>();
+        for (Object modelObject : models) {
+            JSONObject model = (JSONObject) modelObject;
+            int weight = model.has("weight") ? model.getInt("weight") : 1;
+            if (weight <= 0) {
+                continue;
+            }
+            total += weight;
+            weightTree.put(total, model);
+        }
+        int value = random.nextInt(0, total) + 1;
+        return weightTree.ceilingEntry(value).getValue();
     }
 
     private static void sendBlockState(GL4bc gl, @NotNull JSONObject jsonObject, Color tint) {
