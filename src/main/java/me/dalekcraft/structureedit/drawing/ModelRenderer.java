@@ -222,7 +222,7 @@ public final class ModelRenderer {
                     double originY = origin.getDouble(1) / TEXTURE_SIZE;
                     double originZ = origin.getDouble(2) / TEXTURE_SIZE;
                     gl.glTranslated(originX, originY, originZ);
-                    double rescaleFactor = Math.sqrt(Math.pow(16.0, 2.0) + Math.pow(16.0, 2.0)) / TEXTURE_SIZE; // TODO Do not assume that the angle is 45.0.
+                    double rescaleFactor = Math.hypot(TEXTURE_SIZE, TEXTURE_SIZE) / TEXTURE_SIZE; // TODO Do not assume that the angle is 45.0 degrees, nor that the cube is centered.
                     switch (axis) {
                         case "x" -> {
                             gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
@@ -295,7 +295,7 @@ public final class ModelRenderer {
                     JSONObject fullAnimation = Assets.getAnimation(textures.getOrDefault(faceTexture, "minecraft:missing"));
                     if (fullAnimation != null) {
                         JSONObject animation = fullAnimation.getJSONObject("animation");
-                        boolean interpolate = animation.has("interpolate") && animation.getBoolean("interpolate"); // TODO Interpolation.
+                        boolean interpolate = animation.has("interpolate") && animation.getBoolean("interpolate"); // TODO Implement interpolation.
                         int width = animation.has("width") ? animation.getInt("width") : TEXTURE_SIZE;
                         int height = animation.has("height") ? animation.getInt("height") : TEXTURE_SIZE;
                         int frametime = animation.has("frametime") ? animation.getInt("frametime") : 1;
@@ -331,7 +331,7 @@ public final class ModelRenderer {
                             int time = frameObject.has("time") ? frameObject.getInt("time") : frametime;
                         }
 
-                        // Change to a frame in the animation
+                        // Change to the current frame in the animation
                         textureTop += frameDouble / heightFactor;
                         textureBottom += frameDouble / heightFactor;
                     }

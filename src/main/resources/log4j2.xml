@@ -2,11 +2,13 @@
 <Configuration status="INFO">
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT" ignoreExceptions="false">
-            <PatternLayout pattern="%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%highlight{%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n}"
+                           disableAnsi="false"/>
         </Console>
         <File name="File" fileName="logs/StructureEdit-${date:yyyy-MM-dd}.log.gz" immediateFlush="false"
               append="true" ignoreExceptions="false">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n}"
+                           disableAnsi="false"/>
         </File>
     </Appenders>
     <Loggers>
