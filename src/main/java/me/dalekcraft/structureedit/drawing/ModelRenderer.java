@@ -363,7 +363,6 @@ public final class ModelRenderer {
                     gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                     gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                     gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                    gl.glEnable(GL_TEXTURE_2D);
 
                     gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                     gl.glEnable(GL_BLEND);
@@ -441,7 +440,6 @@ public final class ModelRenderer {
                     }
                     gl.glEnd();
                     texture.disable(gl);
-                    gl.glDisable(GL_TEXTURE_2D);
                     gl.glDisable(GL_BLEND);
                 }
                 gl.glPopMatrix();

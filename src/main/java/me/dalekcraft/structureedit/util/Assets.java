@@ -91,7 +91,7 @@ public final class Assets {
             FileSystem fileSystem = namespace.getFileSystem();
             loadBlockStates(fileSystem.getPath(namespace.toString(), "blockstates"), namespace.getFileName() + ":");
             loadModels(fileSystem.getPath(namespace.toString(), "models"), namespace.getFileName() + ":");
-            //            loadTextures(fileSystem.getPath(namespace.toString(), "textures"), namespace.getFileName() + ":");
+            loadTextures(fileSystem.getPath(namespace.toString(), "textures"), namespace.getFileName() + ":");
         }
     }
 
@@ -135,9 +135,14 @@ public final class Assets {
                 directoryStream.forEach((path) -> {
                     if (Files.isDirectory(path)) {
                         loadTextures(path, currentNamespace + path.getFileName() + "/");
-                    } else if (Files.isRegularFile(path) && path.toString().endsWith(".png")) {
-                        String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".png"));
-                        getTexture(namespacedId);
+                    } else if (Files.isRegularFile(path)) {
+                        if (path.toString().endsWith(".png")) {
+                            //                            String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".png"));
+                            //                            getTexture(namespacedId);
+                        } else if (path.toString().endsWith(".png.mcmeta")) {
+                            String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".png.mcmeta"));
+                            getAnimation(namespacedId);
+                        }
                     }
                 });
             } catch (IOException e) {
