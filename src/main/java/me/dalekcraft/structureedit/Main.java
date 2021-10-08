@@ -23,6 +23,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.fusesource.jansi.AnsiConsole;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
@@ -52,6 +53,7 @@ public final class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
+        AnsiConsole.systemInstall();
         LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.starting"));
 
         ArrayList<String> argList = new ArrayList<>(List.of(args));

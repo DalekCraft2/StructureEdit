@@ -98,9 +98,18 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <!-- Apache Log4j Core -->
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
             <version>2.14.1</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- Jansi -->
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>2.3.4</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
