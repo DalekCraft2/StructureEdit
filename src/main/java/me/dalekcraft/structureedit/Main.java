@@ -81,7 +81,7 @@ public final class Main {
             }
         });
         UserInterface userInterface = new UserInterface();
-        frame.setContentPane(userInterface.panel);
+        frame.setContentPane(userInterface.$$$getRootComponent$$$());
         frame.pack();
         Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
         int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);

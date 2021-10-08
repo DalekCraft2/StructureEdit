@@ -77,7 +77,6 @@ public class UserInterface {
     private static final float MOTION_SENSITIVITY = 0.1f;
     public final JFileChooser schematicChooser = new JFileChooser();
     public final JFileChooser assetsChooser = new JFileChooser();
-    public JPanel panel;
     /**
      * Rotational angle for x-axis in degrees.
      **/
@@ -105,6 +104,7 @@ public class UserInterface {
     private SquareButton selected;
     private Schematic schematic;
     private ListTag<CompoundTag> palette;
+    private JPanel panel;
     private JPanel rendererPanel;
     private JMenuBar menuBar;
     private JMenu fileMenu;
@@ -416,6 +416,8 @@ public class UserInterface {
                 loadLayer();
             }
         });
+        blockIdComboBox.setModel(new DefaultComboBoxModel<>(Block.values()));
+        blockIdComboBox.setSelectedItem(null);
         blockIdComboBox.addItemListener(e -> {
             if (schematic != null && selected != null) {
                 int[] position = selected.getPosition();
@@ -682,9 +684,6 @@ public class UserInterface {
 
     private void createUIComponents() {
         rendererPanel = new GLJPanel(new GLCapabilities(GLProfile.getDefault()));
-        blockIdComboBox = new JComboBox<>();
-        blockIdComboBox.setModel(new DefaultComboBoxModel<>(Block.values()));
-        blockIdComboBox.setSelectedItem(null);
     }
 
     /**
@@ -705,6 +704,7 @@ public class UserInterface {
         blockIdLabel = new JLabel();
         this.$$$loadLabelText$$$(blockIdLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_id.text"));
         editorPanel.add(blockIdLabel, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        blockIdComboBox = new JComboBox();
         blockIdComboBox.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_id.tooltip"));
         editorPanel.add(blockIdComboBox, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPropertiesLabel = new JLabel();
