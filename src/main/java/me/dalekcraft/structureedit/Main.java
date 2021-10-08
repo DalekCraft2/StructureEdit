@@ -16,9 +16,6 @@
  */
 package me.dalekcraft.structureedit;
 
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLProfile;
-import me.dalekcraft.structureedit.drawing.SchematicRenderer;
 import me.dalekcraft.structureedit.ui.UserInterface;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
@@ -72,13 +69,7 @@ public final class Main {
             }
         }
 
-        GLProfile profile = GLProfile.getDefault();
-        GLCapabilities capabilities = new GLCapabilities(profile);
-        SchematicRenderer renderer = new SchematicRenderer(capabilities);
-        UserInterface userInterface = new UserInterface(renderer);
-        frame = new JFrame();
-        frame.add(userInterface);
-        frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+        frame = new JFrame(Configuration.LANGUAGE.getProperty("ui.window.title"));
         try {
             frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")).getScaledInstance(128, 128, Image.SCALE_SMOOTH));
         } catch (IOException e) {
@@ -89,11 +80,6 @@ public final class Main {
         int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
         int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
         frame.setLocation(x, y);
-        frame.setVisible(true);
-
-        // by default, an AWT Frame doesn't do anything when you click
-        // the close button; this bit of code will terminate the program when
-        // the window is asked to close
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -101,8 +87,9 @@ public final class Main {
                 LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.stopping"));
             }
         });
-
-        renderer.requestFocus();
+        UserInterface userInterface = new UserInterface();
+        frame.setContentPane(userInterface.panel);
+        frame.setVisible(true);
 
         String assetsArg = getArgument(argList, "-assets");
         Path assets = null;

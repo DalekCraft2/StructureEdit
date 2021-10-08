@@ -18,6 +18,9 @@ package me.dalekcraft.structureedit.ui;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.jogamp.opengl.GLCapabilities;
+import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.awt.GLJPanel;
 import me.dalekcraft.structureedit.Main;
 import me.dalekcraft.structureedit.drawing.Block;
 import me.dalekcraft.structureedit.drawing.SchematicRenderer;
@@ -41,7 +44,6 @@ import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.io.File;
@@ -57,7 +59,7 @@ import static me.dalekcraft.structureedit.schematic.Schematic.*;
 /**
  * @author eccentric_nz
  */
-public class UserInterface extends JPanel {
+public class UserInterface {
 
     private static final Logger LOGGER = LogManager.getLogger(UserInterface.class);
     private static final FileNameExtensionFilter FILTER_NBT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.nbt"), EXTENSION_NBT);
@@ -67,11 +69,11 @@ public class UserInterface extends JPanel {
     public final JFileChooser schematicChooser = new JFileChooser();
     public final JFileChooser assetsChooser = new JFileChooser();
     private final SchematicRenderer renderer;
+    public JPanel panel;
     private SquareButton selected;
     private Schematic schematic;
     private ListTag<CompoundTag> palette;
-    private JPanel panel;
-    private JPanel rawRenderer;
+    private JPanel rendererPanel;
     private JMenuBar menuBar;
     private JMenu fileMenu;
     private JMenu settingsMenu;
@@ -92,7 +94,6 @@ public class UserInterface extends JPanel {
     private JSpinner paletteSpinner;
     private JLabel blockPaletteLabel;
     private JSpinner blockPaletteSpinner;
-    private final ActionListener actionListener = this::squareActionPerformed;
     private JLabel sizeLabel;
     private JTextField sizeTextField;
 
@@ -104,9 +105,16 @@ public class UserInterface extends JPanel {
         schematicChooser.setFileFilter(FILTER_NBT);
     }
 
-    public UserInterface(SchematicRenderer renderer) {
-        this.renderer = renderer;
+    public UserInterface() {
+        renderer = new SchematicRenderer();
         $$$setupUI$$$();
+
+        ((GLJPanel) rendererPanel).addGLEventListener(renderer);
+        rendererPanel.addKeyListener(renderer);
+        rendererPanel.addMouseListener(renderer);
+        rendererPanel.addMouseMotionListener(renderer);
+        rendererPanel.addMouseWheelListener(renderer);
+
         gridPanel.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent e) {
@@ -374,7 +382,7 @@ public class UserInterface extends JPanel {
                         squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
                         Font font = squareButton.getFont();
                         squareButton.setFont(new Font(font.getFontName(), font.getStyle(), buttonSideLength));
-                        squareButton.addActionListener(actionListener);
+                        squareButton.addActionListener(this::squareActionPerformed);
                         gridPanel.add(squareButton);
                         if (selected != null) {
                             int[] position = selected.getPosition();
@@ -468,8 +476,7 @@ public class UserInterface extends JPanel {
     }
 
     private void createUIComponents() {
-        panel = this;
-        rawRenderer = renderer;
+        rendererPanel = new GLJPanel(new GLCapabilities(GLProfile.getDefault()));
         blockIdComboBox = new JComboBox<>();
         blockIdComboBox.setModel(new DefaultComboBoxModel<>(Block.values()));
         blockIdComboBox.setSelectedItem(null);
@@ -484,6 +491,7 @@ public class UserInterface extends JPanel {
      */
     private void $$$setupUI$$$() {
         createUIComponents();
+        panel = new JPanel();
         panel.setLayout(new GridLayoutManager(2, 2, new Insets(0, 0, 0, 0), -1, -1));
         editorPanel = new JPanel();
         editorPanel.setLayout(new GridLayoutManager(9, 2, new Insets(0, 0, 0, 0), -1, -1));
@@ -541,7 +549,7 @@ public class UserInterface extends JPanel {
         layerSpinner = new JSpinner();
         layerSpinner.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.layer.tooltip"));
         editorPanel.add(layerSpinner, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        panel.add(rawRenderer, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
+        panel.add(rendererPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
         menuBar = new JMenuBar();
         menuBar.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
         panel.add(menuBar, new GridConstraints(0, 0, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
