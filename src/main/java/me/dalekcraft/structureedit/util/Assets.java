@@ -31,10 +31,12 @@ public final class Assets {
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
 
+    @Contract(value = " -> fail", pure = true)
     private Assets() {
         throw new UnsupportedOperationException();
     }
 
+    @Contract(pure = true)
     public static Path getAssets() {
         return assets;
     }

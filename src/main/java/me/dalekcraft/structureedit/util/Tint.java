@@ -4,12 +4,14 @@ import me.dalekcraft.structureedit.drawing.Block;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.StringTag;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
 
 public final class Tint {
 
+    @Contract(value = " -> fail", pure = true)
     private Tint() {
         throw new UnsupportedOperationException();
     }

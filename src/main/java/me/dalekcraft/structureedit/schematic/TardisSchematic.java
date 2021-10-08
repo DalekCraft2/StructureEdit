@@ -24,6 +24,7 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
         GzipUtils.zip(schematic, file);
     }
 
+    @Contract(pure = true)
     @Override
     public JSONObject getData() {
         return schematic;
@@ -72,8 +73,8 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
 
     @Override
     @NotNull
-    public String getBlockId(Object block) {
-        String state = ((JSONObject) block).getString("data");
+    public String getBlockId(int x, int y, int z) {
+        String state = getBlock(x, y, z).getString("data");
         int nameEndIndex = state.length();
         if (state.contains("[")) {
             nameEndIndex = state.indexOf('[');
@@ -84,13 +85,13 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
     }
 
     @Override
-    public void setBlockId(Object block, String id) {
-        ((JSONObject) block).put("data", id + getBlockPropertiesAsString(block));
+    public void setBlockId(int x, int y, int z, String id) {
+        getBlock(x, y, z).put("data", id + getBlockPropertiesAsString(x, y, z));
     }
 
     @Override
-    public CompoundTag getBlockProperties(Object block) {
-        String properties = getBlockPropertiesAsString(block);
+    public CompoundTag getBlockProperties(int x, int y, int z) {
+        String properties = getBlockPropertiesAsString(x, y, z);
         String replaced = properties.replace('[', '{').replace(']', '}').replace('=', ':');
         CompoundTag tag = new CompoundTag();
         try {
@@ -103,7 +104,7 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
     }
 
     @Override
-    public void setBlockProperties(Object block, CompoundTag properties) {
+    public void setBlockProperties(int x, int y, int z, CompoundTag properties) {
         String propertiesString = "";
         try {
             propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace("\"", "");
@@ -111,7 +112,7 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
         try {
-            setBlockPropertiesAsString(block, propertiesString);
+            setBlockPropertiesAsString(x, y, z, propertiesString);
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
@@ -119,38 +120,42 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
 
     @Override
     @NotNull
-    public String getBlockPropertiesAsString(Object block) {
-        String state = ((JSONObject) block).getString("data");
-        return !state.substring(getBlockId(block).length()).equals("") ? state.substring(getBlockId(block).length()) : "[]";
+    public String getBlockPropertiesAsString(int x, int y, int z) {
+        String state = getBlock(x, y, z).getString("data");
+        return !state.substring(getBlockId(x, y, z).length()).equals("") ? state.substring(getBlockId(x, y, z).length()) : "[]";
     }
 
     @Override
-    public void setBlockPropertiesAsString(Object block, @NotNull String propertiesString) throws IOException {
+    public void setBlockPropertiesAsString(int x, int y, int z, @NotNull String propertiesString) throws IOException {
         String replaced = propertiesString.replace('[', '{').replace(']', '}').replace('=', ':');
         try {
             SNBTUtil.fromSNBT(replaced); // Check whether the SNBT is parsable
-            ((JSONObject) block).put("data", getBlockId(block) + propertiesString);
+            getBlock(x, y, z).put("data", getBlockId(x, y, z) + propertiesString);
         } catch (StringIndexOutOfBoundsException ignored) {
         }
     }
 
+    @Contract(value = "_ -> fail", pure = true)
     @Override
-    public CompoundTag getBlockNbt(Object block) {
+    public CompoundTag getBlockNbt(int x, int y, int z) {
         throw new UnsupportedOperationException("NBT storage is not supported by the TSCHM format.");
     }
 
+    @Contract(value = "_, _ -> fail", pure = true)
     @Override
-    public void setBlockNbt(Object block, CompoundTag nbt) {
+    public void setBlockNbt(int x, int y, int z, CompoundTag nbt) {
         throw new UnsupportedOperationException("NBT storage is not supported by the TSCHM format.");
     }
 
+    @Contract(value = "_ -> fail", pure = true)
     @Override
-    public String getBlockSnbt(Object block) {
+    public String getBlockSnbt(int x, int y, int z) {
         throw new UnsupportedOperationException("NBT storage is not supported by the TSCHM format.");
     }
 
+    @Contract(value = "_, _ -> fail", pure = true)
     @Override
-    public void setBlockSnbt(Object block, String snbt) {
+    public void setBlockSnbt(int x, int y, int z, String snbt) {
         throw new UnsupportedOperationException("NBT storage is not supported by the TSCHM format.");
     }
 }

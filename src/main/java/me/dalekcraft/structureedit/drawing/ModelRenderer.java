@@ -32,6 +32,7 @@ public final class ModelRenderer {
     private static final long TICK_LENGTH = 50L;
     private static final Logger LOGGER = LogManager.getLogger(ModelRenderer.class);
 
+    @Contract(value = " -> fail", pure = true)
     private ModelRenderer() {
         throw new UnsupportedOperationException();
     }

@@ -24,6 +24,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.fusesource.jansi.AnsiConsole;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
@@ -45,6 +46,7 @@ public final class Main {
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static JFrame frame;
 
+    @Contract(value = " -> fail", pure = true)
     private Main() {
         throw new UnsupportedOperationException();
     }

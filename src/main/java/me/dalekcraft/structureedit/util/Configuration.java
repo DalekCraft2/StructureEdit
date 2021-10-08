@@ -4,6 +4,7 @@ import me.dalekcraft.structureedit.ui.UserInterface;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 
 import java.io.IOException;
 import java.util.Properties;
@@ -22,6 +23,7 @@ public final class Configuration {
         }
     }
 
+    @Contract(value = " -> fail", pure = true)
     private Configuration() {
         throw new UnsupportedOperationException();
     }

@@ -128,80 +128,100 @@ public interface Schematic {
     /**
      * Returns the namespaced ID of a block.
      *
-     * @param block the block from which to get the namespaced ID
+     * @param x the x coordinate of the block
+     * @param y the y coordinate of the block
+     * @param z the z coordinate of the block
      * @return the namespaced ID of the block
      */
-    String getBlockId(Object block);
+    String getBlockId(int x, int y, int z);
 
     /**
      * Sets the namespaced ID of a block.
      *
-     * @param block the block of which to set the namespaced ID
-     * @param id    the new namespaced ID for the block
+     * @param x  the x coordinate of the block
+     * @param y  the y coordinate of the block
+     * @param z  the z coordinate of the block
+     * @param id the new namespaced ID for the block
      */
-    void setBlockId(Object block, String id);
+    void setBlockId(int x, int y, int z, String id);
 
     /**
      * Returns the properties of a block, as a {@link CompoundTag}.
      *
-     * @param block the block from which to get the properties
+     * @param x the x coordinate of the block
+     * @param y the y coordinate of the block
+     * @param z the z coordinate of the block
      * @return the properties of the block, as a {@link CompoundTag}
      */
-    CompoundTag getBlockProperties(Object block);
+    CompoundTag getBlockProperties(int x, int y, int z);
 
     /**
      * Sets the properties of a block.
      *
-     * @param block      the block of which to set the properties
+     * @param x          the x coordinate of the block
+     * @param y          the y coordinate of the block
+     * @param z          the z coordinate of the block
      * @param properties the new properties for the block, as a {@link CompoundTag}
      */
-    void setBlockProperties(Object block, CompoundTag properties);
+    void setBlockProperties(int x, int y, int z, CompoundTag properties);
 
     /**
      * Returns the properties of a block, as a {@link String}.
      *
-     * @param block the block from which to get the properties
+     * @param x the x coordinate of the block
+     * @param y the y coordinate of the block
+     * @param z the z coordinate of the block
      * @return the properties of the block, as a {@link String}
      */
-    String getBlockPropertiesAsString(Object block);
+    String getBlockPropertiesAsString(int x, int y, int z);
 
     /**
      * Sets the properties of a block.
      *
-     * @param block            the block of which to set the properties
+     * @param x                the x coordinate of the block
+     * @param y                the y coordinate of the block
+     * @param z                the z coordinate of the block
      * @param propertiesString the new properties for the block, as a {@link String}
      */
-    void setBlockPropertiesAsString(Object block, String propertiesString) throws IOException;
+    void setBlockPropertiesAsString(int x, int y, int z, String propertiesString) throws IOException;
 
     /**
      * Returns the NBT of a block.
      *
-     * @param block the block from which to get the NBT
+     * @param x the x coordinate of the block
+     * @param y the y coordinate of the block
+     * @param z the z coordinate of the block
      * @return the NBT of the block
      */
-    CompoundTag getBlockNbt(Object block);
+    CompoundTag getBlockNbt(int x, int y, int z);
 
     /**
      * Sets the NBT of a block.
      *
-     * @param block the block of which to set the NBT
-     * @param nbt   the new NBT for the block
+     * @param x   the x coordinate of the block
+     * @param y   the y coordinate of the block
+     * @param z   the z coordinate of the block
+     * @param nbt the new NBT for the block
      */
-    void setBlockNbt(Object block, CompoundTag nbt);
+    void setBlockNbt(int x, int y, int z, CompoundTag nbt);
 
     /**
      * Returns the NBT of a block, translated into SNBT.
      *
-     * @param block the block from which to get the NBT
+     * @param x the x coordinate of the block
+     * @param y the y coordinate of the block
+     * @param z the z coordinate of the block
      * @return the NBT of the block, translated into SNBT
      */
-    String getBlockSnbt(Object block);
+    String getBlockSnbt(int x, int y, int z);
 
     /**
      * Sets the NBT of a block.
      *
-     * @param block the block of which to set the NBT
-     * @param snbt  the new NBT for the block, as SNBT
+     * @param x    the x coordinate of the block
+     * @param y    the y coordinate of the block
+     * @param z    the z coordinate of the block
+     * @param snbt the new NBT for the block, as SNBT
      */
-    void setBlockSnbt(Object block, String snbt) throws IOException;
+    void setBlockSnbt(int x, int y, int z, String snbt) throws IOException;
 }

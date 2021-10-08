@@ -8,6 +8,7 @@ import net.querz.nbt.tag.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,11 +26,13 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         NBTUtil.write(schematic, file);
     }
 
+    @Contract(pure = true)
     @Override
     public Object getData() {
         return schematic;
     }
 
+    @Contract(pure = true)
     @Override
     public String getFormat() {
         return EXTENSION_SPONGE;
@@ -51,7 +54,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
 
     @Override
     @Nullable
-    public Object getBlock(int x, int y, int z) {
+    public Byte getBlock(int x, int y, int z) {
         int[] size = getSize();
         byte[] blocks = getBlockList().getValue();
         for (int i = 0; i < blocks.length; i++) {
@@ -85,12 +88,12 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public String getBlockId(Object block) {
+    public String getBlockId(int x, int y, int z) {
         String blockId = null;
         CompoundTag palette = getPalette();
         Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
-            if (((IntTag) tagEntry.getValue()).asInt() == (Byte) block) {
+            if (((IntTag) tagEntry.getValue()).asInt() == getBlock(x, y, z)) {
                 String tagName = tagEntry.getKey();
                 int nameEndIndex = tagName.length();
                 if (tagName.contains("[")) {
@@ -106,21 +109,25 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public void setBlockId(Object block, String id) {
+    public void setBlockId(int x, int y, int z, String id) {
         CompoundTag palette = getPalette();
         Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
-            if (((IntTag) tagEntry.getValue()).asInt() == (Byte) block) {
+            if (((IntTag) tagEntry.getValue()).asInt() == getBlock(x, y, z)) {
                 String tagName = tagEntry.getKey();
-                palette.put(id + getBlockPropertiesAsString(block), palette.remove(tagName));
-                return;
+                palette.put(id + getBlockPropertiesAsString(x, y, z), palette.remove(tagName));
+                break;
             }
+        }
+        CompoundTag nbt = getBlockNbt(x, y, z);
+        if (nbt != null) {
+            nbt.putString("Id", id);
         }
     }
 
     @Override
-    public CompoundTag getBlockProperties(Object block) {
-        String properties = getBlockPropertiesAsString(block);
+    public CompoundTag getBlockProperties(int x, int y, int z) {
+        String properties = getBlockPropertiesAsString(x, y, z);
         String replaced = properties.replace('[', '{').replace(']', '}').replace('=', ':');
         CompoundTag tag = new CompoundTag();
         try {
@@ -133,7 +140,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public void setBlockProperties(Object block, CompoundTag properties) {
+    public void setBlockProperties(int x, int y, int z, CompoundTag properties) {
         String propertiesString = "";
         try {
             propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace("\"", "");
@@ -141,61 +148,102 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
         try {
-            setBlockPropertiesAsString(block, propertiesString);
+            setBlockPropertiesAsString(x, y, z, propertiesString);
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
     }
 
     @Override
-    public String getBlockPropertiesAsString(Object block) {
+    public String getBlockPropertiesAsString(int x, int y, int z) {
         String propertiesString = "[]";
         CompoundTag palette = getPalette();
         Set<String> keySet = palette.keySet();
         for (String tagName : keySet) {
-            if (palette.getInt(tagName) == (Byte) block) {
-                propertiesString = !tagName.substring(getBlockId(block).length()).equals("") ? tagName.substring(getBlockId(block).length()) : "[]";
+            if (palette.getInt(tagName) == getBlock(x, y, z)) {
+                propertiesString = !tagName.substring(getBlockId(x, y, z).length()).equals("") ? tagName.substring(getBlockId(x, y, z).length()) : "[]";
             }
         }
         return propertiesString;
     }
 
     @Override
-    public void setBlockPropertiesAsString(Object block, String propertiesString) throws IOException {
+    public void setBlockPropertiesAsString(int x, int y, int z, String propertiesString) throws IOException {
         CompoundTag palette = getPalette();
         Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
-            if (((IntTag) tagEntry.getValue()).asInt() == (Byte) block) {
+            if (((IntTag) tagEntry.getValue()).asInt() == getBlock(x, y, z)) {
                 String tagName = tagEntry.getKey();
                 String replaced = propertiesString.replace('[', '{').replace(']', '}').replace('=', ':').replace("\"", "");
                 try {
                     SNBTUtil.fromSNBT(replaced); // Check whether the SNBT is parsable
-                    palette.put(getBlockId(block) + propertiesString, palette.remove(tagName));
+                    palette.put(getBlockId(x, y, z) + propertiesString, palette.remove(tagName));
                 } catch (StringIndexOutOfBoundsException ignored) {
                 }
-                return;
+                break;
             }
         }
     }
 
+
     @Override
-    public CompoundTag getBlockNbt(Object block) {
+    @Nullable
+    public CompoundTag getBlockNbt(int x, int y, int z) {
+        for (CompoundTag block : getBlockEntityList()) {
+            IntArrayTag positionTag = block.getIntArrayTag("Pos");
+            int[] position = positionTag.getValue();
+            if (position[0] == x && position[1] == y && position[2] == z) {
+                return block;
+            }
+        }
         return null;
     }
 
     @Override
-    public void setBlockNbt(Object block, CompoundTag nbt) {
-
+    public void setBlockNbt(int x, int y, int z, CompoundTag nbt) {
+        ListTag<CompoundTag> blockEntityList = getBlockEntityList();
+        for (CompoundTag block : blockEntityList) {
+            IntArrayTag positionTag = block.getIntArrayTag("Pos");
+            int[] position = positionTag.getValue();
+            if (position[0] == x && position[1] == y && position[2] == z) {
+                CompoundTag clone = nbt.clone();
+                clone.remove("Id");
+                clone.remove("Pos");
+                clone.remove("Extra");
+                if (clone.size() == 0) {
+                    blockEntityList.remove(blockEntityList.indexOf(block));
+                } else {
+                    blockEntityList.set(blockEntityList.indexOf(block), nbt);
+                }
+                return;
+            }
+        }
+        CompoundTag newNbt = new CompoundTag();
+        newNbt.putString("Id", getBlockId(x, y, z));
+        newNbt.putIntArray("Pos", new int[]{x, y, z});
+        blockEntityList.add(newNbt);
     }
 
     @Override
-    public String getBlockSnbt(Object block) {
-        return null;
+    public String getBlockSnbt(int x, int y, int z) {
+        String snbt = "{}";
+        CompoundTag nbt = getBlockNbt(x, y, z) == null ? new CompoundTag() : getBlockNbt(x, y, z);
+        try {
+            snbt = SNBTUtil.toSNBT(nbt);
+        } catch (IOException e) {
+            LOGGER.log(Level.ERROR, e.getMessage());
+        }
+        return snbt;
     }
 
     @Override
-    public void setBlockSnbt(Object block, String snbt) throws IOException {
-
+    public void setBlockSnbt(int x, int y, int z, String snbt) throws IOException {
+        CompoundTag nbt = getBlockNbt(x, y, z) == null ? new CompoundTag() : getBlockNbt(x, y, z);
+        try {
+            nbt = (CompoundTag) SNBTUtil.fromSNBT(snbt);
+        } catch (StringIndexOutOfBoundsException ignored) {
+        }
+        setBlockNbt(x, y, z, nbt);
     }
 
     public ByteArrayTag getBlockList() {

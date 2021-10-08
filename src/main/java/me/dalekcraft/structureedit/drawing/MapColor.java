@@ -1,5 +1,7 @@
 package me.dalekcraft.structureedit.drawing;
 
+import org.jetbrains.annotations.Contract;
+
 import java.awt.*;
 
 public final class MapColor {
@@ -67,6 +69,7 @@ public final class MapColor {
     public static final Color RAW_IRON = new Color(216, 175, 147);
     public static final Color GLOW_LICHEN = new Color(127, 167, 150);
 
+    @Contract(value = " -> fail", pure = true)
     private MapColor() {
         throw new UnsupportedOperationException();
     }

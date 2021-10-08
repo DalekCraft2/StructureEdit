@@ -11,6 +11,7 @@ import java.util.Map;
 
 public final class PropertyUtils {
 
+    @Contract(value = " -> fail", pure = true)
     private PropertyUtils() {
         throw new UnsupportedOperationException();
     }

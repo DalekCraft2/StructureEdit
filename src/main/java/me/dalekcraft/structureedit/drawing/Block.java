@@ -16,6 +16,7 @@
  */
 package me.dalekcraft.structureedit.drawing;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
@@ -25,6 +26,8 @@ import java.util.Locale;
  * An enum of all materials accepted by the official server and client
  */
 public enum Block {
+
+    // TODO Possibly use this enum to make default block states for blocks.
 
     ACACIA_BUTTON(MapColor.COLOR_ORANGE),
     ACACIA_DOOR(MapColor.COLOR_ORANGE),
@@ -923,6 +926,7 @@ public enum Block {
 
     private final Color color;
 
+    @Contract(pure = true)
     Block(Color color) {
         this.color = color;
     }
@@ -941,6 +945,7 @@ public enum Block {
      *
      * @return Color of this material
      */
+    @Contract(pure = true)
     public Color getColor() {
         return color;
     }

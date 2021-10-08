@@ -16,6 +16,7 @@
  */
 package me.dalekcraft.structureedit.util;
 
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
@@ -28,6 +29,7 @@ import java.util.zip.GZIPOutputStream;
  */
 public final class GzipUtils {
 
+    @Contract(value = " -> fail", pure = true)
     private GzipUtils() {
         throw new UnsupportedOperationException();
     }

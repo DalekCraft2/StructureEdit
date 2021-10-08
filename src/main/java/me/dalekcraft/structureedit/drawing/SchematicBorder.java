@@ -1,6 +1,7 @@
 package me.dalekcraft.structureedit.drawing;
 
 import com.jogamp.opengl.GL4bc;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
 import static com.jogamp.opengl.GL4bc.GL_CURRENT_BIT;
@@ -8,6 +9,7 @@ import static com.jogamp.opengl.GL4bc.GL_LINES;
 
 public final class SchematicBorder {
 
+    @Contract(value = " -> fail", pure = true)
     private SchematicBorder() {
         throw new UnsupportedOperationException();
     }

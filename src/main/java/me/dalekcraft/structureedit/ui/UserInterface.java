@@ -28,6 +28,7 @@ import me.dalekcraft.structureedit.drawing.ModelRenderer;
 import me.dalekcraft.structureedit.drawing.SchematicBorder;
 import me.dalekcraft.structureedit.schematic.NbtStructure;
 import me.dalekcraft.structureedit.schematic.Schematic;
+import me.dalekcraft.structureedit.schematic.TardisSchematic;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
 import net.querz.nbt.tag.CompoundTag;
@@ -88,15 +89,15 @@ public class UserInterface {
     /**
      * X location.
      */
-    private float x;
+    private float cameraX;
     /**
      * Y location.
      */
-    private float y;
+    private float cameraY;
     /**
      * Z location.
      */
-    private float z = -30.0f;
+    private float cameraZ = -30.0f;
     private int mouseX;
     private int mouseY;
     private int renderedHeight;
@@ -134,7 +135,6 @@ public class UserInterface {
         schematicChooser.addChoosableFileFilter(FILTER_MCEDIT);
         schematicChooser.addChoosableFileFilter(FILTER_SPONGE);
         schematicChooser.addChoosableFileFilter(FILTER_TARDIS);
-        schematicChooser.setFileFilter(FILTER_NBT);
     }
 
     public UserInterface() {
@@ -181,7 +181,7 @@ public class UserInterface {
                     GL4bc gl = drawable.getGL().getGL4bc();
                     gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
                     gl.glLoadIdentity(); // reset the model-view matrix
-                    gl.glTranslatef(x, y, z); // translate into the screen
+                    gl.glTranslatef(cameraX, cameraY, cameraZ); // translate into the screen
                     gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
                     gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
                     int[] size = schematic.getSize();
@@ -198,11 +198,11 @@ public class UserInterface {
                                     String blockId;
                                     CompoundTag properties;
                                     if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                                        blockId = nbtStructure.getBlockId(block, palette);
-                                        properties = nbtStructure.getBlockProperties(block, palette);
+                                        blockId = nbtStructure.getBlockId(x, y, z, palette);
+                                        properties = nbtStructure.getBlockProperties(x, y, z, palette);
                                     } else {
-                                        blockId = schematic.getBlockId(block);
-                                        properties = schematic.getBlockProperties(block);
+                                        blockId = schematic.getBlockId(x, y, z);
+                                        properties = schematic.getBlockProperties(x, y, z);
                                     }
                                     long seed = x + ((long) y * size[2] * size[0]) + ((long) z * size[0]);
                                     Random random = new Random(seed);
@@ -243,12 +243,12 @@ public class UserInterface {
                 int[] size = schematic.getSize();
                 int keyCode = e.getKeyCode();
                 switch (keyCode) {
-                    case KeyEvent.VK_W, KeyEvent.VK_UP -> z++;
-                    case KeyEvent.VK_S, KeyEvent.VK_DOWN -> z--;
-                    case KeyEvent.VK_A -> x++;
-                    case KeyEvent.VK_D -> x--;
-                    case KeyEvent.VK_SHIFT -> y++;
-                    case KeyEvent.VK_SPACE -> y--;
+                    case KeyEvent.VK_W, KeyEvent.VK_UP -> cameraZ++;
+                    case KeyEvent.VK_S, KeyEvent.VK_DOWN -> cameraZ--;
+                    case KeyEvent.VK_A -> cameraX++;
+                    case KeyEvent.VK_D -> cameraX--;
+                    case KeyEvent.VK_SHIFT -> cameraY++;
+                    case KeyEvent.VK_SPACE -> cameraY--;
                     case KeyEvent.VK_LEFT -> {
                         if (renderedHeight > 0) {
                             renderedHeight--;
@@ -277,7 +277,7 @@ public class UserInterface {
 
             @Override
             public void mouseWheelMoved(@NotNull MouseWheelEvent e) {
-                z -= e.getPreciseWheelRotation();
+                cameraZ -= e.getPreciseWheelRotation();
             }
 
             @Override
@@ -301,10 +301,10 @@ public class UserInterface {
                     // TODO Make the camera drag translation more accurate.
                     // Translate the camera
                     if (e.getX() < mouseX || e.getX() > mouseX) {
-                        x += (e.getX() - mouseX) * MOTION_SENSITIVITY;
+                        cameraX += (e.getX() - mouseX) * MOTION_SENSITIVITY;
                     }
                     if (e.getY() < mouseY || e.getY() > mouseY) {
-                        y -= (e.getY() - mouseY) * MOTION_SENSITIVITY;
+                        cameraY -= (e.getY() - mouseY) * MOTION_SENSITIVITY;
                     }
                 }
                 mouseX = e.getX();
@@ -421,12 +421,11 @@ public class UserInterface {
         blockIdComboBox.addItemListener(e -> {
             if (schematic != null && selected != null) {
                 int[] position = selected.getPosition();
-                Object block = schematic.getBlock(position[0], position[1], position[2]);
                 String blockId = ((Block) blockIdComboBox.getSelectedItem()).toId();
                 if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                    nbtStructure.setBlockId(block, blockId, palette);
+                    nbtStructure.setBlockId(position[0], position[1], position[2], blockId, palette);
                 } else {
-                    schematic.setBlockId(block, blockId);
+                    schematic.setBlockId(position[0], position[1], position[2], blockId);
                 }
                 loadLayer();
             }
@@ -436,13 +435,12 @@ public class UserInterface {
             public void insertUpdate(DocumentEvent e) {
                 if (schematic != null && selected != null) {
                     int[] position = selected.getPosition();
-                    Object block = schematic.getBlock(position[0], position[1], position[2]);
                     String propertiesString = blockPropertiesTextField.getText().isEmpty() || blockPropertiesTextField.getText().equals("[]") ? "" : blockPropertiesTextField.getText();
                     try {
                         if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                            nbtStructure.setBlockPropertiesAsString(block, propertiesString, palette);
+                            nbtStructure.setBlockPropertiesAsString(position[0], position[1], position[2], propertiesString, palette);
                         } else {
-                            schematic.setBlockPropertiesAsString(block, propertiesString);
+                            schematic.setBlockPropertiesAsString(position[0], position[1], position[2], propertiesString);
                         }
                         blockPropertiesTextField.setForeground(Color.BLACK);
                     } catch (IOException e1) {
@@ -464,10 +462,10 @@ public class UserInterface {
         blockNbtTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
-                if (schematic != null && schematic instanceof NbtStructure nbtStructure && selected != null) {
+                if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
                     int[] position = selected.getPosition();
                     try {
-                        nbtStructure.setBlockSnbt(nbtStructure.getBlock(position[0], position[1], position[2]), blockNbtTextField.getText());
+                        schematic.setBlockSnbt(position[0], position[1], position[2], blockNbtTextField.getText());
                         blockNbtTextField.setForeground(Color.BLACK);
                     } catch (IOException e1) {
                         blockNbtTextField.setForeground(Color.RED);
@@ -502,7 +500,7 @@ public class UserInterface {
                 int[] position = selected.getPosition();
                 CompoundTag block = nbtStructure.getBlock(position[0], position[1], position[2]);
                 if (block != null) {
-                    nbtStructure.setBlockState(block, (Integer) blockPaletteSpinner.getValue());
+                    nbtStructure.setBlockState(position[0], position[1], position[2], (Integer) blockPaletteSpinner.getValue());
                 }
                 updateSelected();
                 loadLayer();
@@ -579,9 +577,9 @@ public class UserInterface {
                     if (block != null) {
                         String blockId;
                         if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                            blockId = nbtStructure.getBlockId(block, palette);
+                            blockId = nbtStructure.getBlockId(x, currentLayer, z, palette);
                         } else {
-                            blockId = schematic.getBlockId(block);
+                            blockId = schematic.getBlockId(x, currentLayer, z);
                         }
                         String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
                         Block blockEnum = Block.valueOf(blockName);
@@ -610,16 +608,14 @@ public class UserInterface {
         selected = (SquareButton) e.getSource();
         int[] position = selected.getPosition();
 
-        Object block = schematic.getBlock(position[0], position[1], position[2]);
-
         String blockId;
         String properties;
         if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-            blockId = nbtStructure.getBlockId(block, palette);
-            properties = nbtStructure.getBlockPropertiesAsString(block, palette);
+            blockId = nbtStructure.getBlockId(position[0], position[1], position[2], palette);
+            properties = nbtStructure.getBlockPropertiesAsString(position[0], position[1], position[2], palette);
         } else {
-            blockId = schematic.getBlockId(block);
-            properties = schematic.getBlockPropertiesAsString(block);
+            blockId = schematic.getBlockId(position[0], position[1], position[2]);
+            properties = schematic.getBlockPropertiesAsString(position[0], position[1], position[2]);
         }
 
         Block blockEnum = Block.fromId(blockId);
@@ -631,7 +627,7 @@ public class UserInterface {
         blockPropertiesTextField.setForeground(Color.BLACK);
 
         try {
-            String snbt = schematic.getBlockSnbt(block);
+            String snbt = schematic.getBlockSnbt(position[0], position[1], position[2]);
             blockNbtTextField.setText(snbt);
             blockNbtTextField.setEnabled(true);
         } catch (UnsupportedOperationException e1) {
@@ -644,7 +640,7 @@ public class UserInterface {
         blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
 
         if (schematic instanceof NbtStructure nbtStructure) {
-            int blockState = nbtStructure.getBlockState((CompoundTag) block);
+            int blockState = nbtStructure.getBlockState(position[0], position[1], position[2]);
             blockPaletteSpinner.setEnabled(true);
             blockPaletteSpinner.setValue(blockState);
         } else {
@@ -656,16 +652,14 @@ public class UserInterface {
         if (selected != null) {
             int[] position = selected.getPosition();
 
-            Object block = schematic.getBlock(position[0], position[1], position[2]);
-
             String blockId;
             String properties;
             if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                blockId = nbtStructure.getBlockId(block, palette);
-                properties = nbtStructure.getBlockPropertiesAsString(block, palette);
+                blockId = nbtStructure.getBlockId(position[0], position[1], position[2], palette);
+                properties = nbtStructure.getBlockPropertiesAsString(position[0], position[1], position[2], palette);
             } else {
-                blockId = schematic.getBlockId(block);
-                properties = schematic.getBlockPropertiesAsString(block);
+                blockId = schematic.getBlockId(position[0], position[1], position[2]);
+                properties = schematic.getBlockPropertiesAsString(position[0], position[1], position[2]);
             }
 
             Block blockEnum = Block.fromId(blockId);
@@ -674,7 +668,7 @@ public class UserInterface {
             blockPropertiesTextField.setText(properties);
 
             try {
-                String snbt = schematic.getBlockSnbt(block);
+                String snbt = schematic.getBlockSnbt(position[0], position[1], position[2]);
                 blockNbtTextField.setText(snbt);
             } catch (UnsupportedOperationException e) {
                 blockNbtTextField.setText(null);
