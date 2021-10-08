@@ -24,7 +24,7 @@ import java.util.List;
 import java.util.*;
 
 import static com.jogamp.opengl.GL4bc.*;
-import static me.dalekcraft.structureedit.drawing.SchematicRenderer.SCALE;
+import static me.dalekcraft.structureedit.ui.UserInterface.SCALE;
 
 public final class ModelRenderer {
 

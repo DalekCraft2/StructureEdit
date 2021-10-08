@@ -18,12 +18,14 @@ package me.dalekcraft.structureedit.ui;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.jogamp.opengl.GLCapabilities;
-import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLJPanel;
+import com.jogamp.opengl.glu.GLU;
+import com.jogamp.opengl.util.Animator;
 import me.dalekcraft.structureedit.Main;
 import me.dalekcraft.structureedit.drawing.Block;
-import me.dalekcraft.structureedit.drawing.SchematicRenderer;
+import me.dalekcraft.structureedit.drawing.ModelRenderer;
+import me.dalekcraft.structureedit.drawing.SchematicBorder;
 import me.dalekcraft.structureedit.schematic.NbtStructure;
 import me.dalekcraft.structureedit.schematic.Schematic;
 import me.dalekcraft.structureedit.util.Assets;
@@ -43,17 +45,21 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
+import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Locale;
+import java.util.Random;
 import java.util.ResourceBundle;
 
+import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2ES1.GL_PERSPECTIVE_CORRECTION_HINT;
+import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
+import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
+import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
 import static me.dalekcraft.structureedit.schematic.Schematic.*;
 
 /**
@@ -61,15 +67,41 @@ import static me.dalekcraft.structureedit.schematic.Schematic.*;
  */
 public class UserInterface {
 
+    public static final float SCALE = 1.0f;
     private static final Logger LOGGER = LogManager.getLogger(UserInterface.class);
     private static final FileNameExtensionFilter FILTER_NBT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.nbt"), EXTENSION_NBT);
     private static final FileNameExtensionFilter FILTER_MCEDIT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.mcedit"), EXTENSION_MCEDIT);
     private static final FileNameExtensionFilter FILTER_SPONGE = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.sponge"), EXTENSION_SPONGE);
     private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.tardis"), EXTENSION_TARDIS);
+    private static final float ROTATION_SENSITIVITY = 1.0f;
+    private static final float MOTION_SENSITIVITY = 0.1f;
     public final JFileChooser schematicChooser = new JFileChooser();
     public final JFileChooser assetsChooser = new JFileChooser();
-    private final SchematicRenderer renderer;
     public JPanel panel;
+    /**
+     * Rotational angle for x-axis in degrees.
+     **/
+    private float pitch = 45.0f;
+    /**
+     * Rotational angle for y-axis in degrees.
+     **/
+    private float yaw = 45.0f;
+    /**
+     * X location.
+     */
+    private float x;
+    /**
+     * Y location.
+     */
+    private float y;
+    /**
+     * Z location.
+     */
+    private float z = -30.0f;
+    private int mouseX;
+    private int mouseY;
+    private int renderedHeight;
+    private Animator animator;
     private SquareButton selected;
     private Schematic schematic;
     private ListTag<CompoundTag> palette;
@@ -106,14 +138,189 @@ public class UserInterface {
     }
 
     public UserInterface() {
-        renderer = new SchematicRenderer();
         $$$setupUI$$$();
+        ((GLJPanel) rendererPanel).addGLEventListener(new GLEventListener() {
+            @Override
+            public void init(@NotNull GLAutoDrawable drawable) {
+                GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
+                gl.glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // set background color to gray
+                gl.glClearDepth(1.0f); // set clear depth value to farthest
+                gl.glEnable(GL_DEPTH_TEST); // enables depth testing
+                gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
+                gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
+                gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
+                gl.setSwapInterval(1);
+                // Set up the lighting for Light-1
+                // Ambient light does not come from a particular direction. Need some ambient
+                // light to light up the scene. Ambient's value in RGBA
+                float[] lightAmbientValue = {0.2f, 0.2f, 0.2f, 1.0f};
+                // Diffuse light comes from a particular location. Diffuse's value in RGBA
+                float[] lightDiffuseValue = {0.75f, 0.75f, 0.75f, 1.0f};
+                // Diffuse light location xyz (in front of the screen).
+                float[] lightDiffusePosition = {8.0f, 0.0f, 8.0f, 1.0f};
+                gl.glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbientValue, 0);
+                gl.glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuseValue, 0);
+                gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
+                gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
+                gl.glEnable(GL_CULL_FACE);
 
-        ((GLJPanel) rendererPanel).addGLEventListener(renderer);
-        rendererPanel.addKeyListener(renderer);
-        rendererPanel.addMouseListener(renderer);
-        rendererPanel.addMouseMotionListener(renderer);
-        rendererPanel.addMouseWheelListener(renderer);
+                animator = new Animator(drawable);
+                animator.setRunAsFastAsPossible(true);
+
+                animator.start();
+            }
+
+            @Override
+            public void dispose(GLAutoDrawable drawable) {
+                animator.stop();
+            }
+
+            @Override
+            public void display(GLAutoDrawable drawable) {
+                if (schematic != null) {
+                    GL4bc gl = drawable.getGL().getGL4bc();
+                    gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                    gl.glLoadIdentity(); // reset the model-view matrix
+                    gl.glTranslatef(x, y, z); // translate into the screen
+                    gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
+                    gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
+                    int[] size = schematic.getSize();
+                    // bottom-left-front corner of schematic is (0,0,0) so we need to center it at the origin
+                    gl.glTranslatef(-size[0] / 2.0f, -size[1] / 2.0f, -size[2] / 2.0f);
+                    // draw schematic border
+                    SchematicBorder.draw(gl, size[0], size[1], size[2]);
+                    // draw a cube
+                    for (int x = 0; x < size[0]; x++) {
+                        for (int y = 0; y < renderedHeight; y++) {
+                            for (int z = 0; z < size[2]; z++) {
+                                Object block = schematic.getBlock(x, y, z);
+                                if (block != null) {
+                                    String blockId;
+                                    CompoundTag properties;
+                                    if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
+                                        blockId = nbtStructure.getBlockId(block, palette);
+                                        properties = nbtStructure.getBlockProperties(block, palette);
+                                    } else {
+                                        blockId = schematic.getBlockId(block);
+                                        properties = schematic.getBlockProperties(block);
+                                    }
+                                    long seed = x + ((long) y * size[2] * size[0]) + ((long) z * size[0]);
+                                    Random random = new Random(seed);
+
+                                    gl.glPushMatrix();
+                                    gl.glTranslatef(x * SCALE, y * SCALE, z * SCALE);
+                                    ModelRenderer.readBlockState(gl, blockId, properties, random);
+                                    gl.glPopMatrix();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            @Override
+            public void reshape(@NotNull GLAutoDrawable drawable, int x, int y, int width, int height) {
+                GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
+                GLU glu = GLU.createGLU(gl);
+                if (height == 0) {
+                    height = 1; // prevent divide by zero
+                }
+                float aspect = (float) width / height;
+                // Set the view port (display area) to cover the entire window
+                gl.glViewport(0, 0, width, height);
+                // Setup perspective projection, with aspect ratio matches viewport
+                gl.glMatrixMode(GL_PROJECTION); // choose projection matrix
+                gl.glLoadIdentity(); // reset projection matrix
+                glu.gluPerspective(45.0, aspect, 1.0, 1000.0); // fovy, aspect, zNear, zFar
+                // Enable the model-view transform
+                gl.glMatrixMode(GL_MODELVIEW);
+                gl.glLoadIdentity(); // reset
+            }
+        });
+        rendererPanel.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyPressed(@NotNull KeyEvent e) {
+                int[] size = schematic.getSize();
+                int keyCode = e.getKeyCode();
+                switch (keyCode) {
+                    case KeyEvent.VK_W, KeyEvent.VK_UP -> z++;
+                    case KeyEvent.VK_S, KeyEvent.VK_DOWN -> z--;
+                    case KeyEvent.VK_A -> x++;
+                    case KeyEvent.VK_D -> x--;
+                    case KeyEvent.VK_SHIFT -> y++;
+                    case KeyEvent.VK_SPACE -> y--;
+                    case KeyEvent.VK_LEFT -> {
+                        if (renderedHeight > 0) {
+                            renderedHeight--;
+                        }
+                        if (renderedHeight < 0) {
+                            renderedHeight = 0;
+                        }
+                    }
+                    case KeyEvent.VK_RIGHT -> {
+                        if (renderedHeight < size[1]) {
+                            renderedHeight++;
+                        }
+                        if (renderedHeight > size[1]) {
+                            renderedHeight = size[1];
+                        }
+                    }
+                }
+            }
+        });
+
+        MouseAdapter mouseAdapter = new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                rendererPanel.requestFocus();
+            }
+
+            @Override
+            public void mouseWheelMoved(@NotNull MouseWheelEvent e) {
+                z -= e.getPreciseWheelRotation();
+            }
+
+            @Override
+            public void mouseDragged(@NotNull MouseEvent e) {
+                rendererPanel.requestFocus();
+                if (SwingUtilities.isLeftMouseButton(e)) {
+                    // Rotate the camera
+                    if (e.getX() < mouseX || e.getX() > mouseX) {
+                        yaw += (e.getX() - mouseX) * ROTATION_SENSITIVITY;
+                    }
+                    if (pitch + e.getY() - mouseY > 90) {
+                        pitch = 90;
+                    } else if (pitch + e.getY() - mouseY < -90) {
+                        pitch = -90;
+                    } else {
+                        if (e.getY() < mouseY || e.getY() > mouseY) {
+                            pitch += (e.getY() - mouseY) * ROTATION_SENSITIVITY;
+                        }
+                    }
+                } else if (SwingUtilities.isRightMouseButton(e)) {
+                    // TODO Make the camera drag translation more accurate.
+                    // Translate the camera
+                    if (e.getX() < mouseX || e.getX() > mouseX) {
+                        x += (e.getX() - mouseX) * MOTION_SENSITIVITY;
+                    }
+                    if (e.getY() < mouseY || e.getY() > mouseY) {
+                        y -= (e.getY() - mouseY) * MOTION_SENSITIVITY;
+                    }
+                }
+                mouseX = e.getX();
+                mouseY = e.getY();
+            }
+
+            @Override
+            public void mouseMoved(@NotNull MouseEvent e) {
+                mouseX = e.getX();
+                mouseY = e.getY();
+            }
+        };
+
+        rendererPanel.addMouseListener(mouseAdapter);
+        rendererPanel.addMouseMotionListener(mouseAdapter);
+        rendererPanel.addMouseWheelListener(mouseAdapter);
 
         gridPanel.addComponentListener(new ComponentAdapter() {
             @Override
@@ -127,7 +334,7 @@ public class UserInterface {
         JPopupMenu filePopup = fileMenu.getPopupMenu();
         JMenuItem openButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.open"));
         openButton.addActionListener(e -> {
-            renderer.pause();
+            animator.pause();
             schematicChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             int result = schematicChooser.showOpenDialog(Main.frame);
             if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
@@ -139,13 +346,13 @@ public class UserInterface {
                     LOGGER.log(Level.ERROR, e1.getMessage());
                 }
             }
-            renderer.resume();
+            animator.resume();
         });
         filePopup.add(openButton);
         JMenuItem saveButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.save"));
         saveButton.addActionListener(e -> {
             if (schematic != null) {
-                renderer.pause();
+                animator.pause();
                 schematicChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
                 int result = schematicChooser.showSaveDialog(Main.frame);
                 if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
@@ -159,7 +366,7 @@ public class UserInterface {
                         LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_saving"), e1.getMessage());
                     }
                 }
-                renderer.resume();
+                animator.resume();
             } else {
                 LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.null"));
             }
@@ -169,7 +376,7 @@ public class UserInterface {
         JPopupMenu settingsPopup = settingsMenu.getPopupMenu();
         JMenuItem assetsPathButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.assets_path"));
         assetsPathButton.addActionListener(e -> {
-            renderer.pause();
+            animator.pause();
             assetsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
             int result = assetsChooser.showOpenDialog(panel);
             if (result == JFileChooser.APPROVE_OPTION && assetsChooser.getSelectedFile() != null) {
@@ -182,7 +389,7 @@ public class UserInterface {
                     LOGGER.log(Level.ERROR, e1.getMessage());
                 }
             }
-            renderer.resume();
+            animator.resume();
         });
         settingsPopup.add(assetsPathButton);
         JMenuItem logLevelButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level"));
@@ -198,9 +405,9 @@ public class UserInterface {
         JPopupMenu helpPopup = helpMenu.getPopupMenu();
         JMenuItem controlsButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls"));
         controlsButton.addActionListener(e -> {
-            renderer.pause();
+            animator.pause();
             JOptionPane.showMessageDialog(Main.frame, Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.dialog"), Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.title"), JOptionPane.INFORMATION_MESSAGE);
-            renderer.resume();
+            animator.resume();
         });
         helpPopup.add(controlsButton);
 
@@ -284,7 +491,6 @@ public class UserInterface {
                     palette = nbtStructure.getPalette();
                 }
             }
-            this.renderer.setPalette(palette);
             updateSelected();
             loadLayer();
         });
@@ -307,7 +513,6 @@ public class UserInterface {
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loading"), file);
             try {
                 schematic = openFrom(file);
-                renderer.setSchematic(schematic);
                 selected = null;
                 sizeTextField.setText(null);
                 paletteSpinner.setValue(0);
@@ -324,6 +529,7 @@ public class UserInterface {
                 blockPaletteSpinner.setEnabled(false);
                 if (schematic != null) {
                     int[] size = schematic.getSize();
+                    renderedHeight = size[1];
                     SpinnerModel layerModel = new SpinnerNumberModel(0, 0, size[1] - 1, 1);
                     layerSpinner.setModel(layerModel);
                     if (schematic instanceof NbtStructure nbtStructure) {
@@ -336,7 +542,6 @@ public class UserInterface {
                         } else {
                             palette = nbtStructure.getPalette();
                         }
-                        renderer.setPalette(palette);
                         int paletteSize = palette.size();
                         SpinnerModel blockPaletteModel = new SpinnerNumberModel(0, 0, paletteSize - 1, 1);
                         blockPaletteSpinner.setModel(blockPaletteModel);
