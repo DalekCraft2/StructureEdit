@@ -35,17 +35,15 @@ public final class GzipUtils {
     }
 
     public static void zip(@NotNull Object o, File file) throws IOException {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(file); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream)) {
-            gzipOutputStream.write(o.toString().getBytes());
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream); OutputStreamWriter outputStreamWriter = new OutputStreamWriter(gzipOutputStream, StandardCharsets.UTF_8); BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter)) {
+            bufferedWriter.write(o.toString());
         }
     }
 
     public static String unzip(File file) throws IOException {
-        try (GZIPInputStream gzipInputStream = new GZIPInputStream(new FileInputStream(file)); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
-            char[] buffer = new char[1024 * 16];
-            int length;
-            while ((length = inputStreamReader.read(buffer)) > 0) {
-                stringWriter.write(buffer, 0, length);
+        try (FileInputStream fileInputStream = new FileInputStream(file); GZIPInputStream gzipInputStream = new GZIPInputStream(fileInputStream); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); BufferedReader bufferedReader = new BufferedReader(inputStreamReader); StringWriter stringWriter = new StringWriter()) {
+            while (bufferedReader.ready()) {
+                stringWriter.write(bufferedReader.read());
             }
             return stringWriter.toString();
         }
