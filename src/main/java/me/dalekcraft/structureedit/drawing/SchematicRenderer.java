@@ -62,8 +62,8 @@ public class SchematicRenderer extends MouseAdapter implements GLEventListener, 
      * Z location.
      */
     private float z = -30.0f;
-    private int mouseX = Main.FRAME_WIDTH / 2;
-    private int mouseY = Main.FRAME_HEIGHT / 2;
+    private int mouseX;
+    private int mouseY;
     private int sizeX, sizeY, sizeZ, renderedHeight;
     private Schematic schematic;
     private ListTag<CompoundTag> palette;

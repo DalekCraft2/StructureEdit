@@ -41,8 +41,6 @@ import java.util.List;
 
 public final class Main {
 
-    public static final int FRAME_WIDTH = 1024;
-    public static final int FRAME_HEIGHT = 600;
     private static final Logger LOGGER = LogManager.getLogger(Main.class);
     public static JFrame frame;
 
@@ -75,11 +73,6 @@ public final class Main {
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
-        frame.setSize(FRAME_WIDTH, FRAME_HEIGHT);
-        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
-        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
-        frame.setLocation(x, y);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         frame.addWindowListener(new WindowAdapter() {
             @Override
@@ -89,6 +82,11 @@ public final class Main {
         });
         UserInterface userInterface = new UserInterface();
         frame.setContentPane(userInterface.panel);
+        frame.pack();
+        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
+        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
+        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
+        frame.setLocation(x, y);
         frame.setVisible(true);
 
         String assetsArg = getArgument(argList, "-assets");
