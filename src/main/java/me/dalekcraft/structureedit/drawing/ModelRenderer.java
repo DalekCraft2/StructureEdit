@@ -28,7 +28,7 @@ import static me.dalekcraft.structureedit.ui.UserInterface.SCALE;
 
 public final class ModelRenderer {
 
-    private static final int TEXTURE_SIZE = 16;
+    private static final double MODEL_SIZE = 16.0;
     private static final long TICK_LENGTH = 50L;
     private static final Logger LOGGER = LogManager.getLogger(ModelRenderer.class);
 
@@ -211,19 +211,19 @@ public final class ModelRenderer {
                 }
                 boolean shade = !element.has("shade") || element.getBoolean("shade");
 
-                double fromX = from.getDouble(0) / TEXTURE_SIZE;
-                double fromY = from.getDouble(1) / TEXTURE_SIZE;
-                double fromZ = from.getDouble(2) / TEXTURE_SIZE;
-                double toX = to.getDouble(0) / TEXTURE_SIZE;
-                double toY = to.getDouble(1) / TEXTURE_SIZE;
-                double toZ = to.getDouble(2) / TEXTURE_SIZE;
+                double fromX = from.getDouble(0) / MODEL_SIZE;
+                double fromY = from.getDouble(1) / MODEL_SIZE;
+                double fromZ = from.getDouble(2) / MODEL_SIZE;
+                double toX = to.getDouble(0) / MODEL_SIZE;
+                double toY = to.getDouble(1) / MODEL_SIZE;
+                double toZ = to.getDouble(2) / MODEL_SIZE;
 
                 if (axis != null && origin != null) {
-                    double originX = origin.getDouble(0) / TEXTURE_SIZE;
-                    double originY = origin.getDouble(1) / TEXTURE_SIZE;
-                    double originZ = origin.getDouble(2) / TEXTURE_SIZE;
+                    double originX = origin.getDouble(0) / MODEL_SIZE;
+                    double originY = origin.getDouble(1) / MODEL_SIZE;
+                    double originZ = origin.getDouble(2) / MODEL_SIZE;
                     gl.glTranslated(originX, originY, originZ);
-                    double rescaleFactor = Math.hypot(TEXTURE_SIZE, TEXTURE_SIZE) / TEXTURE_SIZE; // TODO Do not assume that the angle is 45.0 degrees, nor that the cube is centered.
+                    double rescaleFactor = Math.hypot(MODEL_SIZE, MODEL_SIZE) / MODEL_SIZE; // TODO Do not assume that the angle is 45.0 degrees, nor that the cube is centered.
                     switch (axis) {
                         case "x" -> {
                             gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
@@ -271,23 +271,21 @@ public final class ModelRenderer {
                     }
 
                     Texture texture = Assets.getTexture(textures.getOrDefault(faceTexture, "minecraft:missing"));
-                    texture.enable(gl);
-                    texture.bind(gl);
 
-                    double textureLeft = uv != null ? uv.getDouble(0) / TEXTURE_SIZE : switch (faceName) {
+                    double textureLeft = uv != null ? uv.getDouble(0) / MODEL_SIZE : switch (faceName) {
                         case "up", "down", "north", "south" -> fromX;
                         default -> fromZ;
                     };
-                    double textureTop = uv != null ? uv.getDouble(1) / TEXTURE_SIZE : switch (faceName) {
+                    double textureTop = uv != null ? uv.getDouble(1) / MODEL_SIZE : switch (faceName) {
                         case "up" -> fromZ;
                         case "down" -> SCALE - toZ;
                         default -> SCALE - toY;
                     };
-                    double textureRight = uv != null ? uv.getDouble(2) / TEXTURE_SIZE : switch (faceName) {
+                    double textureRight = uv != null ? uv.getDouble(2) / MODEL_SIZE : switch (faceName) {
                         case "up", "down", "north", "south" -> toX;
                         default -> toZ;
                     };
-                    double textureBottom = uv != null ? uv.getDouble(3) / TEXTURE_SIZE : switch (faceName) {
+                    double textureBottom = uv != null ? uv.getDouble(3) / MODEL_SIZE : switch (faceName) {
                         case "up" -> toZ;
                         case "down" -> SCALE - fromZ;
                         default -> SCALE - fromY;
@@ -297,8 +295,8 @@ public final class ModelRenderer {
                     if (fullAnimation != null) {
                         JSONObject animation = fullAnimation.getJSONObject("animation");
                         boolean interpolate = animation.has("interpolate") && animation.getBoolean("interpolate"); // TODO Implement interpolation.
-                        int width = animation.has("width") ? animation.getInt("width") : TEXTURE_SIZE;
-                        int height = animation.has("height") ? animation.getInt("height") : TEXTURE_SIZE;
+                        int width = animation.has("width") ? animation.getInt("width") : texture.getWidth();
+                        int height = animation.has("height") ? animation.getInt("height") : texture.getWidth();
                         int frametime = animation.has("frametime") ? animation.getInt("frametime") : 1;
 
                         int widthFactor = Math.abs(texture.getWidth() / width);
@@ -335,6 +333,8 @@ public final class ModelRenderer {
                         // Change to the current frame in the animation
                         textureTop += frameDouble / heightFactor;
                         textureBottom += frameDouble / heightFactor;
+                    } else if (texture.getWidth() != texture.getHeight()) {
+                        texture = Assets.getTexture("minecraft:missing");
                     }
 
                     for (int i = 0; i < faceRotation; i += 90) {
@@ -376,6 +376,8 @@ public final class ModelRenderer {
                     gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                     gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                     gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                    texture.enable(gl);
+                    texture.bind(gl);
 
                     gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                     gl.glEnable(GL_BLEND);
