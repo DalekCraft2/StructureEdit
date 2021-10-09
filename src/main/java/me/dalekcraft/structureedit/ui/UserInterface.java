@@ -33,6 +33,7 @@ import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
+import net.querz.nbt.tag.Tag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -104,7 +105,7 @@ public class UserInterface {
     private Animator animator;
     private SquareButton selected;
     private Schematic schematic;
-    private ListTag<CompoundTag> palette;
+    private Tag<?> palette;
     private JPanel panel;
     private JPanel rendererPanel;
     private JMenuBar menuBar;
@@ -198,8 +199,8 @@ public class UserInterface {
                                     String blockId;
                                     CompoundTag properties;
                                     if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                                        blockId = nbtStructure.getBlockId(x, y, z, palette);
-                                        properties = nbtStructure.getBlockProperties(x, y, z, palette);
+                                        blockId = nbtStructure.getBlockId(x, y, z, (ListTag<CompoundTag>) palette);
+                                        properties = nbtStructure.getBlockProperties(x, y, z, (ListTag<CompoundTag>) palette);
                                     } else {
                                         blockId = schematic.getBlockId(x, y, z);
                                         properties = schematic.getBlockProperties(x, y, z);
@@ -423,7 +424,7 @@ public class UserInterface {
                 int[] position = selected.getPosition();
                 String blockId = ((Block) blockIdComboBox.getSelectedItem()).toId();
                 if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                    nbtStructure.setBlockId(position[0], position[1], position[2], blockId, palette);
+                    nbtStructure.setBlockId(position[0], position[1], position[2], blockId, (ListTag<CompoundTag>) palette);
                 } else {
                     schematic.setBlockId(position[0], position[1], position[2], blockId);
                 }
@@ -438,7 +439,7 @@ public class UserInterface {
                     String propertiesString = blockPropertiesTextField.getText().isEmpty() || blockPropertiesTextField.getText().equals("[]") ? "" : blockPropertiesTextField.getText();
                     try {
                         if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                            nbtStructure.setBlockPropertiesAsString(position[0], position[1], position[2], propertiesString, palette);
+                            nbtStructure.setBlockPropertiesAsString(position[0], position[1], position[2], propertiesString, (ListTag<CompoundTag>) palette);
                         } else {
                             schematic.setBlockPropertiesAsString(position[0], position[1], position[2], propertiesString);
                         }
@@ -484,11 +485,11 @@ public class UserInterface {
             }
         });
         paletteSpinner.addChangeListener(e -> {
-            if (schematic != null && schematic instanceof NbtStructure nbtStructure) {
-                if (nbtStructure.hasPaletteList()) {
+            if (schematic != null) {
+                if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
                     palette = nbtStructure.getPaletteListEntry((Integer) paletteSpinner.getValue());
-                } else {
-                    palette = nbtStructure.getPalette();
+                } else if (!(schematic instanceof TardisSchematic)) {
+                    palette = schematic.getPalette();
                 }
             }
             updateSelected();
@@ -496,11 +497,11 @@ public class UserInterface {
         });
         // TODO Blockbench-style palette editor, with a list of palettes and palette IDs?
         blockPaletteSpinner.addChangeListener(e -> {
-            if (schematic != null && schematic instanceof NbtStructure nbtStructure && selected != null) {
+            if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
                 int[] position = selected.getPosition();
-                CompoundTag block = nbtStructure.getBlock(position[0], position[1], position[2]);
+                Object block = schematic.getBlock(position[0], position[1], position[2]);
                 if (block != null) {
-                    nbtStructure.setBlockState(position[0], position[1], position[2], (Integer) blockPaletteSpinner.getValue());
+                    schematic.setBlockState(position[0], position[1], position[2], (Integer) blockPaletteSpinner.getValue());
                 }
                 updateSelected();
                 loadLayer();
@@ -532,17 +533,22 @@ public class UserInterface {
                     renderedHeight = size[1];
                     SpinnerModel layerModel = new SpinnerNumberModel(0, 0, size[1] - 1, 1);
                     layerSpinner.setModel(layerModel);
-                    if (schematic instanceof NbtStructure nbtStructure) {
-                        if (nbtStructure.hasPaletteList()) {
+                    if (!(schematic instanceof TardisSchematic)) {
+                        if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
                             int palettesSize = nbtStructure.getPaletteList().size();
                             SpinnerModel paletteModel = new SpinnerNumberModel(0, 0, palettesSize - 1, 1);
                             paletteSpinner.setEnabled(true);
                             paletteSpinner.setModel(paletteModel);
                             palette = nbtStructure.getPaletteListEntry(0);
                         } else {
-                            palette = nbtStructure.getPalette();
+                            palette = schematic.getPalette();
                         }
-                        int paletteSize = palette.size();
+                        int paletteSize = 0;
+                        if (palette instanceof ListTag paletteListTag) {
+                            paletteSize = paletteListTag.size();
+                        } else if (palette instanceof CompoundTag paletteCompoundTag) {
+                            paletteSize = paletteCompoundTag.size();
+                        }
                         SpinnerModel blockPaletteModel = new SpinnerNumberModel(0, 0, paletteSize - 1, 1);
                         blockPaletteSpinner.setModel(blockPaletteModel);
                     } else {
@@ -577,7 +583,7 @@ public class UserInterface {
                     if (block != null) {
                         String blockId;
                         if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                            blockId = nbtStructure.getBlockId(x, currentLayer, z, palette);
+                            blockId = nbtStructure.getBlockId(x, currentLayer, z, (ListTag<CompoundTag>) palette);
                         } else {
                             blockId = schematic.getBlockId(x, currentLayer, z);
                         }
@@ -611,8 +617,8 @@ public class UserInterface {
         String blockId;
         String properties;
         if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-            blockId = nbtStructure.getBlockId(position[0], position[1], position[2], palette);
-            properties = nbtStructure.getBlockPropertiesAsString(position[0], position[1], position[2], palette);
+            blockId = nbtStructure.getBlockId(position[0], position[1], position[2], (ListTag<CompoundTag>) palette);
+            properties = nbtStructure.getBlockPropertiesAsString(position[0], position[1], position[2], (ListTag<CompoundTag>) palette);
         } else {
             blockId = schematic.getBlockId(position[0], position[1], position[2]);
             properties = schematic.getBlockPropertiesAsString(position[0], position[1], position[2]);
@@ -639,8 +645,8 @@ public class UserInterface {
         blockPositionTextField.setEnabled(true);
         blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
 
-        if (schematic instanceof NbtStructure nbtStructure) {
-            int blockState = nbtStructure.getBlockState(position[0], position[1], position[2]);
+        if (!(schematic instanceof TardisSchematic)) {
+            int blockState = schematic.getBlockState(position[0], position[1], position[2]);
             blockPaletteSpinner.setEnabled(true);
             blockPaletteSpinner.setValue(blockState);
         } else {
@@ -655,8 +661,8 @@ public class UserInterface {
             String blockId;
             String properties;
             if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                blockId = nbtStructure.getBlockId(position[0], position[1], position[2], palette);
-                properties = nbtStructure.getBlockPropertiesAsString(position[0], position[1], position[2], palette);
+                blockId = nbtStructure.getBlockId(position[0], position[1], position[2], (ListTag<CompoundTag>) palette);
+                properties = nbtStructure.getBlockPropertiesAsString(position[0], position[1], position[2], (ListTag<CompoundTag>) palette);
             } else {
                 blockId = schematic.getBlockId(position[0], position[1], position[2]);
                 properties = schematic.getBlockPropertiesAsString(position[0], position[1], position[2]);

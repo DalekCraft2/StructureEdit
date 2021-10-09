@@ -54,37 +54,16 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
 
     @Override
     @Nullable
-    public Byte getBlock(int x, int y, int z) {
-        int[] size = getSize();
-        byte[] blocks = getBlockList().getValue();
-        for (int i = 0; i < blocks.length; i++) {
-            Byte block = blocks[i];
-            // index = x + (y * length * width) + (z * width)
-            int x1 = (i % (size[0] * size[2])) % size[0];
-            int y1 = i / (size[0] * size[2]);
-            int z1 = (i % (size[0] * size[2])) / size[0];
-            if (x == x1 && y == y1 && z == z1) {
-                return block;
-            }
-        }
-        return null;
+    public Integer getBlock(int x, int y, int z) {
+        return getBlockState(x, y, z);
     }
 
     @Override
     public void setBlock(int x, int y, int z, Object block) {
-        int[] size = getSize();
-        ByteArrayTag blocks = getBlockList();
-        byte[] blocksArray = blocks.getValue();
-        for (int i = 0; i < blocksArray.length; i++) {
-            // index = x + (y * length * width) + (z * width)
-            int x1 = (i % (size[0] * size[2])) % size[0];
-            int y1 = i / (size[0] * size[2]);
-            int z1 = (i % (size[0] * size[2])) / size[0];
-            if (x == x1 && y == y1 && z == z1) {
-                blocksArray[i] = (Byte) block;
-                blocks.setValue(blocksArray);
-            }
+        if (block instanceof Integer blockInt) {
+            setBlockState(x, y, z, blockInt);
         }
+        throw new IllegalArgumentException("Block must be a number");
     }
 
     @Override
@@ -93,7 +72,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         CompoundTag palette = getPalette();
         Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
-            if (((IntTag) tagEntry.getValue()).asInt() == getBlock(x, y, z)) {
+            if (((IntTag) tagEntry.getValue()).asInt() == getBlockState(x, y, z)) {
                 String tagName = tagEntry.getKey();
                 int nameEndIndex = tagName.length();
                 if (tagName.contains("[")) {
@@ -113,7 +92,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         CompoundTag palette = getPalette();
         Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
-            if (((IntTag) tagEntry.getValue()).asInt() == getBlock(x, y, z)) {
+            if (((IntTag) tagEntry.getValue()).asInt() == getBlockState(x, y, z)) {
                 String tagName = tagEntry.getKey();
                 palette.put(id + getBlockPropertiesAsString(x, y, z), palette.remove(tagName));
                 break;
@@ -160,7 +139,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         CompoundTag palette = getPalette();
         Set<String> keySet = palette.keySet();
         for (String tagName : keySet) {
-            if (palette.getInt(tagName) == getBlock(x, y, z)) {
+            if (palette.getInt(tagName) == getBlockState(x, y, z)) {
                 propertiesString = !tagName.substring(getBlockId(x, y, z).length()).equals("") ? tagName.substring(getBlockId(x, y, z).length()) : "[]";
             }
         }
@@ -172,7 +151,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         CompoundTag palette = getPalette();
         Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
-            if (((IntTag) tagEntry.getValue()).asInt() == getBlock(x, y, z)) {
+            if (((IntTag) tagEntry.getValue()).asInt() == getBlockState(x, y, z)) {
                 String tagName = tagEntry.getKey();
                 String replaced = propertiesString.replace('[', '{').replace(']', '}').replace('=', ':').replace("\"", "");
                 try {
@@ -209,7 +188,6 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
                 CompoundTag clone = nbt.clone();
                 clone.remove("Id");
                 clone.remove("Pos");
-                clone.remove("Extra");
                 if (clone.size() == 0) {
                     blockEntityList.remove(blockEntityList.indexOf(block));
                 } else {
@@ -246,6 +224,60 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         setBlockNbt(x, y, z, nbt);
     }
 
+    @Override
+    public int getBlockState(int x, int y, int z) {
+        int[] size = getSize();
+        byte[] blocks = getBlockList().getValue();
+        for (int i = 0; i < blocks.length; i++) {
+            byte block = blocks[i];
+            // index = x + (y * length * width) + (z * width)
+            int x1 = (i % (size[0] * size[2])) % size[0];
+            int y1 = i / (size[0] * size[2]);
+            int z1 = (i % (size[0] * size[2])) / size[0];
+            if (x == x1 && y == y1 && z == z1) {
+                return block;
+            }
+        }
+        return -1;
+    }
+
+    @Override
+    public void setBlockState(int x, int y, int z, int state) {
+        int[] size = getSize();
+        ByteArrayTag blocks = getBlockList();
+        byte[] blocksArray = blocks.getValue();
+        for (int i = 0; i < blocksArray.length; i++) {
+            // index = x + (y * length * width) + (z * width)
+            int x1 = (i % (size[0] * size[2])) % size[0];
+            int y1 = i / (size[0] * size[2]);
+            int z1 = (i % (size[0] * size[2])) / size[0];
+            if (x == x1 && y == y1 && z == z1) {
+                blocksArray[i] = (byte) state;
+                blocks.setValue(blocksArray);
+            }
+        }
+    }
+
+    @Override
+    public CompoundTag getState(int x, int y, int z) {
+        return null;
+    }
+
+    @Override
+    public void setState(int x, int y, int z, CompoundTag state) {
+
+    }
+
+    @Override
+    public CompoundTag getPalette() {
+        return ((CompoundTag) schematic.getTag()).getCompoundTag("Palette");
+    }
+
+    @Override
+    public void setPalette(Tag<?> palette) {
+        ((CompoundTag) schematic.getTag()).put("Palette", palette);
+    }
+
     public ByteArrayTag getBlockList() {
         return ((CompoundTag) schematic.getTag()).getByteArrayTag("BlockData");
     }
@@ -260,14 +292,6 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
 
     public void setBlockEntityList(ListTag<CompoundTag> blockEntities) {
         ((CompoundTag) schematic.getTag()).put("BlockEntities", blockEntities);
-    }
-
-    public CompoundTag getPalette() {
-        return ((CompoundTag) schematic.getTag()).getCompoundTag("Palette");
-    }
-
-    public void setPalette(CompoundTag palette) {
-        ((CompoundTag) schematic.getTag()).put("Palette", palette);
     }
 
     // TODO Change how methods work depending on which Sponge schematic version is used by the schematic.

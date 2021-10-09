@@ -4,6 +4,7 @@ import me.dalekcraft.structureedit.util.GzipUtils;
 import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
+import net.querz.nbt.tag.Tag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -157,5 +158,41 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
     @Override
     public void setBlockSnbt(int x, int y, int z, String snbt) {
         throw new UnsupportedOperationException("NBT storage is not supported by the TSCHM format.");
+    }
+
+    @Contract(value = "_, _, _ -> fail", pure = true)
+    @Override
+    public int getBlockState(int x, int y, int z) {
+        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
+    }
+
+    @Contract(value = "_, _, _, _ -> fail", pure = true)
+    @Override
+    public void setBlockState(int x, int y, int z, int state) {
+        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
+    }
+
+    @Contract(value = "_, _, _ -> fail", pure = true)
+    @Override
+    public CompoundTag getState(int x, int y, int z) {
+        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
+    }
+
+    @Contract(value = "_, _, _, _ -> fail", pure = true)
+    @Override
+    public void setState(int x, int y, int z, CompoundTag state) {
+        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
+    }
+
+    @Contract(value = " -> fail", pure = true)
+    @Override
+    public Tag<?> getPalette() {
+        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
+    }
+
+    @Contract(value = "_ -> fail", pure = true)
+    @Override
+    public void setPalette(Tag<?> palette) {
+        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
     }
 }

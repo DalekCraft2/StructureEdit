@@ -3,6 +3,7 @@ package me.dalekcraft.structureedit.schematic;
 import me.dalekcraft.structureedit.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.tag.CompoundTag;
+import net.querz.nbt.tag.Tag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,6 +16,7 @@ import java.io.File;
 import java.io.IOException;
 
 // TODO Maybe make Schematic classes extend an abstract class which implements this?
+// TODO Make an interface for blocks, too, so performance can be optimized for getting things like nbt and properties.
 public interface Schematic {
 
     Logger LOGGER = LogManager.getLogger(Schematic.class);
@@ -224,4 +226,16 @@ public interface Schematic {
      * @param snbt the new NBT for the block, as SNBT
      */
     void setBlockSnbt(int x, int y, int z, String snbt) throws IOException;
+
+    int getBlockState(int x, int y, int z);
+
+    void setBlockState(int x, int y, int z, int state);
+
+    CompoundTag getState(int x, int y, int z);
+
+    void setState(int x, int y, int z, CompoundTag state);
+
+    Tag<?> getPalette();
+
+    void setPalette(Tag<?> palette);
 }

@@ -3,6 +3,7 @@ package me.dalekcraft.structureedit.schematic;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
+import net.querz.nbt.tag.Tag;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -99,6 +100,36 @@ public record McEditSchematic(NamedTag schematic) implements Schematic {
 
     @Override
     public void setBlockSnbt(int x, int y, int z, String snbt) throws IOException {
+
+    }
+
+    @Override
+    public int getBlockState(int x, int y, int z) {
+        return 0;
+    }
+
+    @Override
+    public void setBlockState(int x, int y, int z, int state) {
+
+    }
+
+    @Override
+    public CompoundTag getState(int x, int y, int z) {
+        return null;
+    }
+
+    @Override
+    public void setState(int x, int y, int z, CompoundTag state) {
+
+    }
+
+    @Override
+    public Tag<?> getPalette() {
+        return null;
+    }
+
+    @Override
+    public void setPalette(Tag<?> palette) {
 
     }
 }

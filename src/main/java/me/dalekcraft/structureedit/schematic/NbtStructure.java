@@ -7,6 +7,7 @@ import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
+import net.querz.nbt.tag.Tag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -208,18 +209,22 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
         setBlockNbt(x, y, z, nbt);
     }
 
+    @Override
     public int getBlockState(int x, int y, int z) {
         return getBlock(x, y, z).getInt("state");
     }
 
+    @Override
     public void setBlockState(int x, int y, int z, int state) {
         getBlock(x, y, z).putInt("state", state);
     }
 
+    @Override
     public CompoundTag getState(int x, int y, int z) {
         return getPalette().get(getBlock(x, y, z).getInt("state"));
     }
 
+    @Override
     public void setState(int x, int y, int z, CompoundTag state) {
         getPalette().set(getBlock(x, y, z).getInt("state"), state);
     }
@@ -240,11 +245,13 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
         ((CompoundTag) schematic.getTag()).put("blocks", blocks);
     }
 
+    @Override
     public ListTag<CompoundTag> getPalette() {
         return ((CompoundTag) schematic.getTag()).getListTag("palette").asCompoundTagList();
     }
 
-    public void setPalette(ListTag<CompoundTag> palette) {
+    @Override
+    public void setPalette(Tag<?> palette) {
         ((CompoundTag) schematic.getTag()).put("palette", palette);
     }
 
