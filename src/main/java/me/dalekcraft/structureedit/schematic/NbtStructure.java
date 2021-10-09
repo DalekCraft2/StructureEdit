@@ -1,16 +1,11 @@
 package me.dalekcraft.structureedit.schematic;
 
-import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
-import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
 import net.querz.nbt.tag.Tag;
-import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -19,8 +14,6 @@ import java.io.File;
 import java.io.IOException;
 
 public record NbtStructure(NamedTag schematic) implements Schematic {
-
-    private static final Logger LOGGER = LogManager.getLogger(NbtStructure.class);
 
     @Override
     public void saveTo(File file) throws IOException {
@@ -57,7 +50,7 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
 
     @Override
     @Nullable
-    public CompoundTag getBlock(int x, int y, int z) {
+    public NbtBlock getBlock(int x, int y, int z) {
         for (CompoundTag block : getBlockList()) {
             ListTag<IntTag> positionTag = block.getListTag("pos").asIntTagList();
             int[] position = new int[3];
@@ -65,14 +58,51 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
             position[1] = positionTag.get(1).asInt();
             position[2] = positionTag.get(2).asInt();
             if (position[0] == x && position[1] == y && position[2] == z) {
-                return block;
+                CompoundTag state = getState(block.getInt("state"));
+                return new NbtBlock(block, state);
             }
         }
         return null;
     }
 
     @Override
-    public void setBlock(int x, int y, int z, Object block) {
+    public void setBlock(int x, int y, int z, Block block) {
+        ListTag<CompoundTag> blocks = getBlockList();
+        for (CompoundTag block1 : blocks) {
+            int[] position = block1.getIntArray("pos");
+            if (position[0] == x && position[1] == y && position[2] == z) {
+                blocks.set(blocks.indexOf(block1), (CompoundTag) block);
+                setBlockList(blocks);
+            }
+        }
+    }
+
+    @Nullable
+    public NbtBlock getBlock(int @NotNull [] position, ListTag<CompoundTag> palette) {
+        return getBlock(position[0], position[1], position[2], palette);
+    }
+
+    @Nullable
+    public NbtBlock getBlock(int x, int y, int z, ListTag<CompoundTag> palette) {
+        for (CompoundTag block : getBlockList()) {
+            ListTag<IntTag> positionTag = block.getListTag("pos").asIntTagList();
+            int[] position = new int[3];
+            position[0] = positionTag.get(0).asInt();
+            position[1] = positionTag.get(1).asInt();
+            position[2] = positionTag.get(2).asInt();
+            if (position[0] == x && position[1] == y && position[2] == z) {
+                CompoundTag state = getState(block.getInt("state"), palette);
+                return new NbtBlock(block, state);
+            }
+        }
+        return null;
+    }
+
+    public void setBlock(int @NotNull [] position, Block block, ListTag<CompoundTag> palette) {
+        setBlock(position[0], position[1], position[2], block, palette);
+    }
+
+    public void setBlock(int x, int y, int z, Block block, ListTag<CompoundTag> palette) {
         ListTag<CompoundTag> blocks = getBlockList();
         for (CompoundTag block1 : blocks) {
             int[] position = block1.getIntArray("pos");
@@ -84,157 +114,21 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public String getBlockId(int x, int y, int z) {
-        return getState(x, y, z).getString("Name");
+    public CompoundTag getState(int index) {
+        return getPalette().get(index);
     }
 
     @Override
-    public void setBlockId(int x, int y, int z, String id) {
-        CompoundTag state = getState(x, y, z);
-        state.putString("Name", id);
-        setState(x, y, z, state);
+    public void setState(int index, CompoundTag state) {
+        getPalette().set(index, state);
     }
 
-    public String getBlockId(int x, int y, int z, ListTag<CompoundTag> palette) {
-        return getState(x, y, z, palette).getString("Name");
+    public CompoundTag getState(int index, @NotNull ListTag<CompoundTag> palette) {
+        return palette.get(index);
     }
 
-    public void setBlockId(int x, int y, int z, String id, ListTag<CompoundTag> palette) {
-        CompoundTag state = getState(x, y, z, palette);
-        state.putString("Name", id);
-        setState(x, y, z, state, palette);
-    }
-
-    @Override
-    public CompoundTag getBlockProperties(int x, int y, int z) {
-        if (getState(x, y, z).getCompoundTag("Properties") == null) {
-            return new CompoundTag();
-        }
-        return PropertyUtils.byteToString(getState(x, y, z).getCompoundTag("Properties"));
-    }
-
-    @Override
-    public void setBlockProperties(int x, int y, int z, CompoundTag properties) {
-        CompoundTag state = getState(x, y, z);
-        state.put("Properties", properties);
-    }
-
-    public CompoundTag getBlockProperties(int x, int y, int z, ListTag<CompoundTag> palette) {
-        if (getState(x, y, z, palette).getCompoundTag("Properties") == null) {
-            return new CompoundTag();
-        }
-        return PropertyUtils.byteToString(getState(x, y, z, palette).getCompoundTag("Properties"));
-    }
-
-    public void setBlockProperties(int x, int y, int z, CompoundTag properties, ListTag<CompoundTag> palette) {
-        CompoundTag state = getState(x, y, z, palette);
-        state.put("Properties", properties);
-    }
-
-    @Override
-    public String getBlockPropertiesAsString(int x, int y, int z) {
-        String propertiesString = "{}";
-        CompoundTag properties = getBlockProperties(x, y, z) == null ? new CompoundTag() : getBlockProperties(x, y, z);
-        try {
-            propertiesString = SNBTUtil.toSNBT(properties).replace("\"", "");
-        } catch (IOException e) {
-            LOGGER.log(Level.ERROR, e.getMessage());
-        }
-        return propertiesString;
-    }
-
-    @Override
-    public void setBlockPropertiesAsString(int x, int y, int z, String propertiesString) throws IOException {
-        CompoundTag properties = new CompoundTag();
-        try {
-            properties = (CompoundTag) SNBTUtil.fromSNBT(propertiesString);
-        } catch (StringIndexOutOfBoundsException ignored) {
-        }
-        setBlockProperties(x, y, z, properties);
-    }
-
-    public String getBlockPropertiesAsString(int x, int y, int z, ListTag<CompoundTag> palette) {
-        String propertiesString = "{}";
-        CompoundTag properties = getBlockProperties(x, y, z, palette) == null ? new CompoundTag() : getBlockProperties(x, y, z, palette);
-        try {
-            propertiesString = SNBTUtil.toSNBT(properties).replace("\"", "");
-        } catch (IOException e) {
-            LOGGER.log(Level.ERROR, e.getMessage());
-        }
-        return propertiesString;
-    }
-
-    public void setBlockPropertiesAsString(int x, int y, int z, String propertiesString, ListTag<CompoundTag> palette) throws IOException {
-        CompoundTag properties = new CompoundTag();
-        try {
-            properties = (CompoundTag) SNBTUtil.fromSNBT(propertiesString);
-        } catch (StringIndexOutOfBoundsException ignored) {
-        }
-        setBlockProperties(x, y, z, properties, palette);
-    }
-
-    @Override
-    public CompoundTag getBlockNbt(int x, int y, int z) {
-        return getBlock(x, y, z).getCompoundTag("nbt");
-    }
-
-    @Override
-    public void setBlockNbt(int x, int y, int z, CompoundTag nbt) {
-        if (nbt != null && !nbt.entrySet().isEmpty()) {
-            getBlock(x, y, z).put("nbt", nbt);
-        } else {
-            getBlock(x, y, z).remove("nbt");
-        }
-    }
-
-    @Override
-    public String getBlockSnbt(int x, int y, int z) {
-        String snbt = "{}";
-        CompoundTag nbt = getBlockNbt(x, y, z) == null ? new CompoundTag() : getBlockNbt(x, y, z);
-        try {
-            snbt = SNBTUtil.toSNBT(nbt);
-        } catch (IOException e) {
-            LOGGER.log(Level.ERROR, e.getMessage());
-        }
-        return snbt;
-    }
-
-    @Override
-    public void setBlockSnbt(int x, int y, int z, String snbt) throws IOException {
-        CompoundTag nbt = getBlockNbt(x, y, z) == null ? new CompoundTag() : getBlockNbt(x, y, z);
-        try {
-            nbt = (CompoundTag) SNBTUtil.fromSNBT(snbt);
-        } catch (StringIndexOutOfBoundsException ignored) {
-        }
-        setBlockNbt(x, y, z, nbt);
-    }
-
-    @Override
-    public int getBlockState(int x, int y, int z) {
-        return getBlock(x, y, z).getInt("state");
-    }
-
-    @Override
-    public void setBlockState(int x, int y, int z, int state) {
-        getBlock(x, y, z).putInt("state", state);
-    }
-
-    @Override
-    public CompoundTag getState(int x, int y, int z) {
-        return getPalette().get(getBlock(x, y, z).getInt("state"));
-    }
-
-    @Override
-    public void setState(int x, int y, int z, CompoundTag state) {
-        getPalette().set(getBlock(x, y, z).getInt("state"), state);
-    }
-
-    public CompoundTag getState(int x, int y, int z, @NotNull ListTag<CompoundTag> palette) {
-        return palette.get(getBlock(x, y, z).getInt("state"));
-    }
-
-    public void setState(int x, int y, int z, CompoundTag state, @NotNull ListTag<CompoundTag> palette) {
-        palette.set(getBlock(x, y, z).getInt("state"), state);
+    public void setState(int index, CompoundTag state, @NotNull ListTag<CompoundTag> palette) {
+        palette.set(index, state);
     }
 
     public ListTag<CompoundTag> getBlockList() {

@@ -16,7 +16,6 @@ import java.io.File;
 import java.io.IOException;
 
 // TODO Maybe make Schematic classes extend an abstract class which implements this?
-// TODO Make an interface for blocks, too, so performance can be optimized for getting things like nbt and properties.
 public interface Schematic {
 
     Logger LOGGER = LogManager.getLogger(Schematic.class);
@@ -101,6 +100,17 @@ public interface Schematic {
     /**
      * Sets the dimensions of this {@link Schematic}.
      *
+     * @param size the new dimensions for this schematic
+     */
+    default void setSize(int @NotNull [] size) {
+        setSize(size[0], size[1], size[2]);
+    }
+
+    ;
+
+    /**
+     * Sets the dimensions of this {@link Schematic}.
+     *
      * @param sizeX the size of the x dimension
      * @param sizeY the size of the y dimension
      * @param sizeZ the size of the z dimension
@@ -108,14 +118,32 @@ public interface Schematic {
     void setSize(int sizeX, int sizeY, int sizeZ);
 
     /**
-     * Returns the block at the specified position, as an {@link Object}.
+     * Sets the position of  block.
+     *
+     * @param position the position of the block
+     */
+    default Block getBlock(int @NotNull [] position) {
+        return getBlock(position[0], position[1], position[2]);
+    }
+
+    /**
+     * Returns the block at the specified position.
      *
      * @param x the x coordinate of the block
      * @param y the y coordinate of the block
      * @param z the z coordinate of the block
-     * @return the block {@link Object}, or {@code null} if no block is at the position
+     * @return the block, or {@code null} if no block is at the position
      */
-    Object getBlock(int x, int y, int z);
+    Block getBlock(int x, int y, int z);
+
+    /**
+     * Sets the dimensions of this {@link Schematic}.
+     *
+     * @param position the new dimensions for this schematic
+     */
+    default void setBlock(int @NotNull [] position, Block block) {
+        setBlock(position[0], position[1], position[2], block);
+    }
 
     /**
      * Sets the block at the specified position.
@@ -123,117 +151,13 @@ public interface Schematic {
      * @param x     the x coordinate of the block
      * @param y     the y coordinate of the block
      * @param z     the z coordinate of the block
-     * @param block the new block {@link Object}
+     * @param block the new block
      */
-    void setBlock(int x, int y, int z, Object block);
+    void setBlock(int x, int y, int z, Block block);
 
-    /**
-     * Returns the namespaced ID of a block.
-     *
-     * @param x the x coordinate of the block
-     * @param y the y coordinate of the block
-     * @param z the z coordinate of the block
-     * @return the namespaced ID of the block
-     */
-    String getBlockId(int x, int y, int z);
+    CompoundTag getState(int index);
 
-    /**
-     * Sets the namespaced ID of a block.
-     *
-     * @param x  the x coordinate of the block
-     * @param y  the y coordinate of the block
-     * @param z  the z coordinate of the block
-     * @param id the new namespaced ID for the block
-     */
-    void setBlockId(int x, int y, int z, String id);
-
-    /**
-     * Returns the properties of a block, as a {@link CompoundTag}.
-     *
-     * @param x the x coordinate of the block
-     * @param y the y coordinate of the block
-     * @param z the z coordinate of the block
-     * @return the properties of the block, as a {@link CompoundTag}
-     */
-    CompoundTag getBlockProperties(int x, int y, int z);
-
-    /**
-     * Sets the properties of a block.
-     *
-     * @param x          the x coordinate of the block
-     * @param y          the y coordinate of the block
-     * @param z          the z coordinate of the block
-     * @param properties the new properties for the block, as a {@link CompoundTag}
-     */
-    void setBlockProperties(int x, int y, int z, CompoundTag properties);
-
-    /**
-     * Returns the properties of a block, as a {@link String}.
-     *
-     * @param x the x coordinate of the block
-     * @param y the y coordinate of the block
-     * @param z the z coordinate of the block
-     * @return the properties of the block, as a {@link String}
-     */
-    String getBlockPropertiesAsString(int x, int y, int z);
-
-    /**
-     * Sets the properties of a block.
-     *
-     * @param x                the x coordinate of the block
-     * @param y                the y coordinate of the block
-     * @param z                the z coordinate of the block
-     * @param propertiesString the new properties for the block, as a {@link String}
-     */
-    void setBlockPropertiesAsString(int x, int y, int z, String propertiesString) throws IOException;
-
-    /**
-     * Returns the NBT of a block.
-     *
-     * @param x the x coordinate of the block
-     * @param y the y coordinate of the block
-     * @param z the z coordinate of the block
-     * @return the NBT of the block
-     */
-    CompoundTag getBlockNbt(int x, int y, int z);
-
-    /**
-     * Sets the NBT of a block.
-     *
-     * @param x   the x coordinate of the block
-     * @param y   the y coordinate of the block
-     * @param z   the z coordinate of the block
-     * @param nbt the new NBT for the block
-     */
-    void setBlockNbt(int x, int y, int z, CompoundTag nbt);
-
-    /**
-     * Returns the NBT of a block, translated into SNBT.
-     *
-     * @param x the x coordinate of the block
-     * @param y the y coordinate of the block
-     * @param z the z coordinate of the block
-     * @return the NBT of the block, translated into SNBT
-     */
-    String getBlockSnbt(int x, int y, int z);
-
-    /**
-     * Sets the NBT of a block.
-     *
-     * @param x    the x coordinate of the block
-     * @param y    the y coordinate of the block
-     * @param z    the z coordinate of the block
-     * @param snbt the new NBT for the block, as SNBT
-     */
-    void setBlockSnbt(int x, int y, int z, String snbt) throws IOException;
-
-    int getBlockState(int x, int y, int z);
-
-    void setBlockState(int x, int y, int z, int state);
-
-    CompoundTag getState(int x, int y, int z);
-
-    void setState(int x, int y, int z, CompoundTag state);
+    void setState(int index, CompoundTag state);
 
     Tag<?> getPalette();
 

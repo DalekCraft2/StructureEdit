@@ -17,7 +17,10 @@ public final class PropertyUtils {
     }
 
     @Contract("_ -> param1")
-    public static CompoundTag byteToString(@NotNull CompoundTag nbt) {
+    public static CompoundTag byteToString(CompoundTag nbt) {
+        if (nbt == null) {
+            return new CompoundTag();
+        }
         for (Map.Entry<String, Tag<?>> entry : nbt) {
             if (entry.getValue() instanceof ByteTag) {
                 String key = entry.getKey();

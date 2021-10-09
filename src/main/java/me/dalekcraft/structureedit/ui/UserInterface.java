@@ -194,17 +194,15 @@ public class UserInterface {
                     for (int x = 0; x < size[0]; x++) {
                         for (int y = 0; y < renderedHeight; y++) {
                             for (int z = 0; z < size[2]; z++) {
-                                Object block = schematic.getBlock(x, y, z);
+                                me.dalekcraft.structureedit.schematic.Block block;
+                                if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
+                                    block = nbtStructure.getBlock(x, y, z, (ListTag<CompoundTag>) palette);
+                                } else {
+                                    block = schematic.getBlock(x, y, z);
+                                }
                                 if (block != null) {
-                                    String blockId;
-                                    CompoundTag properties;
-                                    if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                                        blockId = nbtStructure.getBlockId(x, y, z, (ListTag<CompoundTag>) palette);
-                                        properties = nbtStructure.getBlockProperties(x, y, z, (ListTag<CompoundTag>) palette);
-                                    } else {
-                                        blockId = schematic.getBlockId(x, y, z);
-                                        properties = schematic.getBlockProperties(x, y, z);
-                                    }
+                                    String blockId = block.getId();
+                                    CompoundTag properties = block.getProperties();
                                     long seed = x + ((long) y * size[2] * size[0]) + ((long) z * size[0]);
                                     Random random = new Random(seed);
 
@@ -422,12 +420,14 @@ public class UserInterface {
         blockIdComboBox.addItemListener(e -> {
             if (schematic != null && selected != null) {
                 int[] position = selected.getPosition();
-                String blockId = ((Block) blockIdComboBox.getSelectedItem()).toId();
+                me.dalekcraft.structureedit.schematic.Block block;
                 if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                    nbtStructure.setBlockId(position[0], position[1], position[2], blockId, (ListTag<CompoundTag>) palette);
+                    block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
                 } else {
-                    schematic.setBlockId(position[0], position[1], position[2], blockId);
+                    block = schematic.getBlock(position);
                 }
+                String blockId = ((Block) blockIdComboBox.getSelectedItem()).toId();
+                block.setId(blockId);
                 loadLayer();
             }
         });
@@ -436,13 +436,14 @@ public class UserInterface {
             public void insertUpdate(DocumentEvent e) {
                 if (schematic != null && selected != null) {
                     int[] position = selected.getPosition();
-                    String propertiesString = blockPropertiesTextField.getText().isEmpty() || blockPropertiesTextField.getText().equals("[]") ? "" : blockPropertiesTextField.getText();
+                    me.dalekcraft.structureedit.schematic.Block block;
+                    if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
+                        block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
+                    } else {
+                        block = schematic.getBlock(position);
+                    }
                     try {
-                        if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                            nbtStructure.setBlockPropertiesAsString(position[0], position[1], position[2], propertiesString, (ListTag<CompoundTag>) palette);
-                        } else {
-                            schematic.setBlockPropertiesAsString(position[0], position[1], position[2], propertiesString);
-                        }
+                        block.setPropertiesAsString(blockPropertiesTextField.getText());
                         blockPropertiesTextField.setForeground(Color.BLACK);
                     } catch (IOException e1) {
                         blockPropertiesTextField.setForeground(Color.RED);
@@ -465,8 +466,14 @@ public class UserInterface {
             public void insertUpdate(DocumentEvent e) {
                 if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
                     int[] position = selected.getPosition();
+                    me.dalekcraft.structureedit.schematic.Block block;
+                    if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
+                        block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
+                    } else {
+                        block = schematic.getBlock(position);
+                    }
                     try {
-                        schematic.setBlockSnbt(position[0], position[1], position[2], blockNbtTextField.getText());
+                        block.setSnbt(blockNbtTextField.getText());
                         blockNbtTextField.setForeground(Color.BLACK);
                     } catch (IOException e1) {
                         blockNbtTextField.setForeground(Color.RED);
@@ -499,9 +506,14 @@ public class UserInterface {
         blockPaletteSpinner.addChangeListener(e -> {
             if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
                 int[] position = selected.getPosition();
-                Object block = schematic.getBlock(position[0], position[1], position[2]);
+                me.dalekcraft.structureedit.schematic.Block block;
+                if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
+                    block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
+                } else {
+                    block = schematic.getBlock(position);
+                }
                 if (block != null) {
-                    schematic.setBlockState(position[0], position[1], position[2], (Integer) blockPaletteSpinner.getValue());
+                    block.setState((Integer) blockPaletteSpinner.getValue());
                 }
                 updateSelected();
                 loadLayer();
@@ -579,14 +591,14 @@ public class UserInterface {
             int buttonSideLength = Math.min(gridPanel.getWidth() / size[0], gridPanel.getHeight() / size[2]);
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {
-                    Object block = schematic.getBlock(x, currentLayer, z);
+                    me.dalekcraft.structureedit.schematic.Block block;
+                    if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
+                        block = nbtStructure.getBlock(x, currentLayer, z, (ListTag<CompoundTag>) palette);
+                    } else {
+                        block = schematic.getBlock(x, currentLayer, z);
+                    }
                     if (block != null) {
-                        String blockId;
-                        if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                            blockId = nbtStructure.getBlockId(x, currentLayer, z, (ListTag<CompoundTag>) palette);
-                        } else {
-                            blockId = schematic.getBlockId(x, currentLayer, z);
-                        }
+                        String blockId = block.getId();
                         String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
                         Block blockEnum = Block.valueOf(blockName);
                         SquareButton squareButton = new SquareButton(blockEnum, x, currentLayer, z);
@@ -613,42 +625,36 @@ public class UserInterface {
     private void squareActionPerformed(@NotNull ActionEvent e) {
         selected = (SquareButton) e.getSource();
         int[] position = selected.getPosition();
-
-        String blockId;
-        String properties;
+        me.dalekcraft.structureedit.schematic.Block block;
         if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-            blockId = nbtStructure.getBlockId(position[0], position[1], position[2], (ListTag<CompoundTag>) palette);
-            properties = nbtStructure.getBlockPropertiesAsString(position[0], position[1], position[2], (ListTag<CompoundTag>) palette);
+            block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
         } else {
-            blockId = schematic.getBlockId(position[0], position[1], position[2]);
-            properties = schematic.getBlockPropertiesAsString(position[0], position[1], position[2]);
+            block = schematic.getBlock(position);
         }
 
-        Block blockEnum = Block.fromId(blockId);
-        blockIdComboBox.setEnabled(true);
+        Block blockEnum = Block.fromId(block.getId());
         blockIdComboBox.setSelectedItem(blockEnum);
+        blockIdComboBox.setEnabled(true);
 
-        blockPropertiesTextField.setEnabled(true);
-        blockPropertiesTextField.setText(properties);
+        blockPropertiesTextField.setText(block.getPropertiesAsString());
         blockPropertiesTextField.setForeground(Color.BLACK);
+        blockPropertiesTextField.setEnabled(true);
 
         try {
-            String snbt = schematic.getBlockSnbt(position[0], position[1], position[2]);
-            blockNbtTextField.setText(snbt);
+            blockNbtTextField.setText(block.getSnbt());
             blockNbtTextField.setEnabled(true);
         } catch (UnsupportedOperationException e1) {
-            blockNbtTextField.setEnabled(false);
             blockNbtTextField.setText(null);
+            blockNbtTextField.setEnabled(false);
         }
         blockNbtTextField.setForeground(Color.BLACK);
 
-        blockPositionTextField.setEnabled(true);
         blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
+        blockPositionTextField.setEnabled(true);
 
         if (!(schematic instanceof TardisSchematic)) {
-            int blockState = schematic.getBlockState(position[0], position[1], position[2]);
+            blockPaletteSpinner.setValue(block.getState());
             blockPaletteSpinner.setEnabled(true);
-            blockPaletteSpinner.setValue(blockState);
         } else {
             blockPaletteSpinner.setEnabled(false);
         }
@@ -657,25 +663,20 @@ public class UserInterface {
     public void updateSelected() {
         if (selected != null) {
             int[] position = selected.getPosition();
-
-            String blockId;
-            String properties;
+            me.dalekcraft.structureedit.schematic.Block block;
             if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                blockId = nbtStructure.getBlockId(position[0], position[1], position[2], (ListTag<CompoundTag>) palette);
-                properties = nbtStructure.getBlockPropertiesAsString(position[0], position[1], position[2], (ListTag<CompoundTag>) palette);
+                block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
             } else {
-                blockId = schematic.getBlockId(position[0], position[1], position[2]);
-                properties = schematic.getBlockPropertiesAsString(position[0], position[1], position[2]);
+                block = schematic.getBlock(position);
             }
 
-            Block blockEnum = Block.fromId(blockId);
+            Block blockEnum = Block.fromId(block.getId());
             blockIdComboBox.setSelectedItem(blockEnum);
 
-            blockPropertiesTextField.setText(properties);
+            blockPropertiesTextField.setText(block.getPropertiesAsString());
 
             try {
-                String snbt = schematic.getBlockSnbt(position[0], position[1], position[2]);
-                blockNbtTextField.setText(snbt);
+                blockNbtTextField.setText(block.getSnbt());
             } catch (UnsupportedOperationException e) {
                 blockNbtTextField.setText(null);
             }

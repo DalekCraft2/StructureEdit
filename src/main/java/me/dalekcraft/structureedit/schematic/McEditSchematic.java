@@ -44,82 +44,22 @@ public record McEditSchematic(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public Object getBlock(int x, int y, int z) {
+    public Block getBlock(int x, int y, int z) {
         return null;
     }
 
     @Override
-    public void setBlock(int x, int y, int z, Object block) {
+    public void setBlock(int x, int y, int z, Block block) {
 
     }
 
     @Override
-    public String getBlockId(int x, int y, int z) {
+    public CompoundTag getState(int index) {
         return null;
     }
 
     @Override
-    public void setBlockId(int x, int y, int z, String id) {
-
-    }
-
-    @Override
-    public CompoundTag getBlockProperties(int x, int y, int z) {
-        return null;
-    }
-
-    @Override
-    public void setBlockProperties(int x, int y, int z, CompoundTag properties) {
-
-    }
-
-    @Override
-    public String getBlockPropertiesAsString(int x, int y, int z) {
-        return null;
-    }
-
-    @Override
-    public void setBlockPropertiesAsString(int x, int y, int z, String propertiesString) throws IOException {
-
-    }
-
-    @Override
-    public CompoundTag getBlockNbt(int x, int y, int z) {
-        return null;
-    }
-
-    @Override
-    public void setBlockNbt(int x, int y, int z, CompoundTag nbt) {
-
-    }
-
-    @Override
-    public String getBlockSnbt(int x, int y, int z) {
-        return null;
-    }
-
-    @Override
-    public void setBlockSnbt(int x, int y, int z, String snbt) throws IOException {
-
-    }
-
-    @Override
-    public int getBlockState(int x, int y, int z) {
-        return 0;
-    }
-
-    @Override
-    public void setBlockState(int x, int y, int z, int state) {
-
-    }
-
-    @Override
-    public CompoundTag getState(int x, int y, int z) {
-        return null;
-    }
-
-    @Override
-    public void setState(int x, int y, int z, CompoundTag state) {
+    public void setState(int index, CompoundTag state) {
 
     }
 
