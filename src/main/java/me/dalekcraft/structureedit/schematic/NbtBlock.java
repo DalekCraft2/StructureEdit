@@ -3,9 +3,12 @@ package me.dalekcraft.structureedit.schematic;
 import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
+import net.querz.nbt.tag.IntTag;
+import net.querz.nbt.tag.ListTag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.jetbrains.annotations.Contract;
 
 import java.io.IOException;
 
@@ -16,6 +19,7 @@ public class NbtBlock implements Block {
     private final CompoundTag blockTag;
     private final CompoundTag stateTag;
 
+    @Contract(pure = true)
     public NbtBlock(CompoundTag blockTag, CompoundTag stateTag) {
         this.blockTag = blockTag;
         this.stateTag = stateTag;
@@ -23,12 +27,17 @@ public class NbtBlock implements Block {
 
     @Override
     public int[] getPosition() {
-        return blockTag.getIntArray("pos");
+        ListTag<IntTag> position = blockTag.getListTag("pos").asIntTagList();
+        return new int[]{position.get(0).asInt(), position.get(1).asInt(), position.get(2).asInt()};
     }
 
     @Override
     public void setPosition(int x, int y, int z) {
-        blockTag.putIntArray("pos", new int[]{x, y, z});
+        ListTag<IntTag> position = new ListTag<>(IntTag.class);
+        position.add(new IntTag(x));
+        position.add(new IntTag(y));
+        position.add(new IntTag(z));
+        blockTag.put("pos", position);
     }
 
     @Override

@@ -16,6 +16,7 @@
  */
 package me.dalekcraft.structureedit.ui;
 
+import me.dalekcraft.structureedit.schematic.Block;
 import org.jetbrains.annotations.Contract;
 
 import javax.swing.*;
@@ -23,18 +24,16 @@ import javax.swing.*;
 /**
  * @author eccentric_nz
  */
-public class SquareButton extends JButton {
+public class BlockButton extends JButton {
 
-    private final int[] position = new int[3];
+    private final Block block;
 
-    public SquareButton(int x, int y, int z) {
-        position[0] = x;
-        position[1] = y;
-        position[2] = z;
+    public BlockButton(Block block) {
+        this.block = block;
     }
 
     @Contract(pure = true)
-    public int[] getPosition() {
-        return position;
+    public Block getBlock() {
+        return block;
     }
 }

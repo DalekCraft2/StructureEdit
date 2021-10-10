@@ -23,9 +23,9 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.Animator;
 import me.dalekcraft.structureedit.Main;
-import me.dalekcraft.structureedit.drawing.Block;
+import me.dalekcraft.structureedit.drawing.BlockColor;
 import me.dalekcraft.structureedit.drawing.ModelRenderer;
-import me.dalekcraft.structureedit.drawing.SchematicBorder;
+import me.dalekcraft.structureedit.schematic.Block;
 import me.dalekcraft.structureedit.schematic.NbtStructure;
 import me.dalekcraft.structureedit.schematic.Schematic;
 import me.dalekcraft.structureedit.schematic.TardisSchematic;
@@ -58,6 +58,7 @@ import java.util.Random;
 import java.util.ResourceBundle;
 
 import static com.jogamp.opengl.GL.*;
+import static com.jogamp.opengl.GL2.GL_CURRENT_BIT;
 import static com.jogamp.opengl.GL2ES1.GL_PERSPECTIVE_CORRECTION_HINT;
 import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
 import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
@@ -104,7 +105,7 @@ public class UserInterface {
     private int mouseY;
     private int renderedHeight;
     private Animator animator;
-    private SquareButton selected;
+    private BlockButton selected;
     private Schematic schematic;
     private Tag<?> palette;
     private JPanel panel;
@@ -143,6 +144,34 @@ public class UserInterface {
         $$$setupUI$$$();
         new AutoCompletion(blockIdComboBox);
         ((GLJPanel) rendererPanel).addGLEventListener(new GLEventListener() {
+            public static void drawAxes(@NotNull GL4bc gl, float sizeX, float sizeY, float sizeZ) {
+                // save the current color
+                gl.glPushAttrib(GL_CURRENT_BIT);
+
+                gl.glLineWidth(2.0f);
+                gl.glBegin(GL_LINES);
+
+                // X-axis (red)
+                gl.glColor3f(1.0f, 0.0f, 0.0f);
+                gl.glVertex3f(0.0f, 0.0f, 0.0f);
+                gl.glVertex3f(sizeX, 0.0f, 0.0f);
+
+                // Y-axis (green)
+                gl.glColor3f(0.0f, 1.0f, 0.0f);
+                gl.glVertex3f(0.0f, 0.0f, 0.0f);
+                gl.glVertex3f(0.0f, sizeY, 0.0f);
+
+                // Z-axis (blue)
+                gl.glColor3f(0.0f, 0.0f, 1.0f);
+                gl.glVertex3f(0.0f, 0.0f, 0.0f);
+                gl.glVertex3f(0.0f, 0.0f, sizeZ);
+
+                gl.glEnd();
+
+                // reset the color
+                gl.glPopAttrib();
+            }
+
             @Override
             public void init(@NotNull GLAutoDrawable drawable) {
                 GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
@@ -180,37 +209,35 @@ public class UserInterface {
 
             @Override
             public void display(GLAutoDrawable drawable) {
+                GL4bc gl = drawable.getGL().getGL4bc();
+                gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+                gl.glLoadIdentity(); // reset the model-view matrix
+                gl.glTranslatef(cameraX, cameraY, cameraZ); // translate into the screen
+                gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
+                gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
                 if (schematic != null) {
-                    GL4bc gl = drawable.getGL().getGL4bc();
-                    gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                    gl.glLoadIdentity(); // reset the model-view matrix
-                    gl.glTranslatef(cameraX, cameraY, cameraZ); // translate into the screen
-                    gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
-                    gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
                     int[] size = schematic.getSize();
                     // bottom-left-front corner of schematic is (0,0,0) so we need to center it at the origin
                     gl.glTranslatef(-size[0] / 2.0f, -size[1] / 2.0f, -size[2] / 2.0f);
                     // draw schematic border
-                    SchematicBorder.draw(gl, size[0], size[1], size[2]);
+                    drawAxes(gl, size[0], size[1], size[2]);
                     // draw a cube
                     for (int x = 0; x < size[0]; x++) {
                         for (int y = 0; y < renderedHeight; y++) {
                             for (int z = 0; z < size[2]; z++) {
-                                me.dalekcraft.structureedit.schematic.Block block;
+                                Block block;
                                 if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
                                     block = nbtStructure.getBlock(x, y, z, (ListTag<CompoundTag>) palette);
                                 } else {
                                     block = schematic.getBlock(x, y, z);
                                 }
                                 if (block != null) {
-                                    String blockId = block.getId();
-                                    CompoundTag properties = block.getProperties();
                                     long seed = x + ((long) y * size[2] * size[0]) + ((long) z * size[0]);
                                     Random random = new Random(seed);
 
                                     gl.glPushMatrix();
                                     gl.glTranslatef(x * SCALE, y * SCALE, z * SCALE);
-                                    ModelRenderer.readBlockState(gl, blockId, properties, random);
+                                    ModelRenderer.readBlockState(gl, block, random);
                                     gl.glPopMatrix();
                                 }
                             }
@@ -393,6 +420,7 @@ public class UserInterface {
                     LOGGER.log(Level.ERROR, e1.getMessage());
                 }
             }
+            updateSelected();
             animator.resume();
         });
         settingsPopup.add(assetsPathButton);
@@ -424,14 +452,8 @@ public class UserInterface {
         blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
         blockIdComboBox.setSelectedItem(null);
         blockIdComboBox.addItemListener(e -> {
-            if (schematic != null && selected != null) {
-                int[] position = selected.getPosition();
-                me.dalekcraft.structureedit.schematic.Block block;
-                if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                    block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
-                } else {
-                    block = schematic.getBlock(position);
-                }
+            if (schematic != null && selected != null && blockIdComboBox.getSelectedItem() != null) {
+                Block block = selected.getBlock();
                 String blockId = blockIdComboBox.getSelectedItem().toString();
                 block.setId(blockId);
                 loadLayer();
@@ -442,13 +464,7 @@ public class UserInterface {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 if (schematic != null && selected != null) {
-                    int[] position = selected.getPosition();
-                    me.dalekcraft.structureedit.schematic.Block block;
-                    if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                        block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
-                    } else {
-                        block = schematic.getBlock(position);
-                    }
+                    Block block = selected.getBlock();
                     try {
                         block.setPropertiesAsString(blockPropertiesTextField.getText());
                         blockPropertiesTextField.setForeground(Color.BLACK);
@@ -472,13 +488,7 @@ public class UserInterface {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
-                    int[] position = selected.getPosition();
-                    me.dalekcraft.structureedit.schematic.Block block;
-                    if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                        block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
-                    } else {
-                        block = schematic.getBlock(position);
-                    }
+                    Block block = selected.getBlock();
                     try {
                         block.setSnbt(blockNbtTextField.getText());
                         blockNbtTextField.setForeground(Color.BLACK);
@@ -506,24 +516,18 @@ public class UserInterface {
                     palette = schematic.getPalette();
                 }
             }
-            updateSelected();
             loadLayer();
+            updateSelected();
         });
         // TODO Blockbench-style palette editor, with a list of palettes and palette IDs?
         blockPaletteSpinner.addChangeListener(e -> {
             if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
-                int[] position = selected.getPosition();
-                me.dalekcraft.structureedit.schematic.Block block;
-                if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                    block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
-                } else {
-                    block = schematic.getBlock(position);
-                }
+                Block block = selected.getBlock();
                 if (block != null) {
                     block.setState((Integer) blockPaletteSpinner.getValue());
                 }
-                updateSelected();
                 loadLayer();
+                updateSelected();
             }
         });
     }
@@ -600,7 +604,7 @@ public class UserInterface {
             int buttonSideLength = Math.min(gridPanel.getWidth() / size[0], gridPanel.getHeight() / size[2]);
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {
-                    me.dalekcraft.structureedit.schematic.Block block;
+                    Block block;
                     if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
                         block = nbtStructure.getBlock(x, currentLayer, z, (ListTag<CompoundTag>) palette);
                     } else {
@@ -611,26 +615,27 @@ public class UserInterface {
                         String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
                         Color color;
                         try {
-                            color = Block.valueOf(blockName).getColor();
+                            color = BlockColor.valueOf(blockName).getColor();
                         } catch (IllegalArgumentException e) {
                             color = new Color(251, 64, 249);
                         }
                         color = new Color(color.getRed(), color.getGreen(), color.getBlue());
-                        SquareButton squareButton = new SquareButton(x, currentLayer, z);
-                        squareButton.setBackground(color);
-                        squareButton.setText(blockName.substring(0, 1));
-                        squareButton.setToolTipText(blockId);
-                        squareButton.setBorder(new LineBorder(Color.BLACK));
-                        squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
-                        Font font = squareButton.getFont();
-                        squareButton.setFont(new Font(font.getFontName(), font.getStyle(), buttonSideLength));
-                        squareButton.addActionListener(this::squareActionPerformed);
-                        gridPanel.add(squareButton);
+                        BlockButton blockButton = new BlockButton(block);
+                        blockButton.setBackground(color);
+                        blockButton.setText(blockName.substring(0, 1));
+                        blockButton.setToolTipText(blockId);
+                        blockButton.setBorder(new LineBorder(Color.BLACK));
+                        blockButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
+                        Font font = blockButton.getFont();
+                        blockButton.setFont(new Font(font.getFontName(), font.getStyle(), buttonSideLength));
+                        blockButton.addActionListener(this::blockButtonPressed);
+                        gridPanel.add(blockButton);
                         if (selected != null) {
-                            int[] position = selected.getPosition();
+                            int[] position = selected.getBlock().getPosition();
                             if (Arrays.equals(position, new int[]{x, currentLayer, z})) {
+                                selected = blockButton;
                                 // Set selected tile's border color to red
-                                squareButton.setBorder(new LineBorder(Color.RED));
+                                blockButton.setBorder(new LineBorder(Color.RED));
                             }
                         }
                     }
@@ -641,15 +646,9 @@ public class UserInterface {
         }
     }
 
-    private void squareActionPerformed(@NotNull ActionEvent e) {
-        selected = (SquareButton) e.getSource();
-        int[] position = selected.getPosition();
-        me.dalekcraft.structureedit.schematic.Block block;
-        if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-            block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
-        } else {
-            block = schematic.getBlock(position);
-        }
+    private void blockButtonPressed(@NotNull ActionEvent e) {
+        selected = (BlockButton) e.getSource();
+        Block block = selected.getBlock();
 
         blockIdComboBox.setSelectedItem(block.getId());
         blockIdComboBox.setEnabled(true);
@@ -667,7 +666,7 @@ public class UserInterface {
         }
         blockNbtTextField.setForeground(Color.BLACK);
 
-        blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
+        blockPositionTextField.setText(Arrays.toString(block.getPosition()));
         blockPositionTextField.setEnabled(true);
 
         if (!(schematic instanceof TardisSchematic)) {
@@ -680,13 +679,7 @@ public class UserInterface {
 
     public void updateSelected() {
         if (selected != null) {
-            int[] position = selected.getPosition();
-            me.dalekcraft.structureedit.schematic.Block block;
-            if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                block = nbtStructure.getBlock(position, (ListTag<CompoundTag>) palette);
-            } else {
-                block = schematic.getBlock(position);
-            }
+            Block block = selected.getBlock();
 
             blockIdComboBox.setSelectedItem(block.getId());
             blockPropertiesTextField.setText(block.getPropertiesAsString());

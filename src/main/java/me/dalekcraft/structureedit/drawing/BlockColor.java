@@ -17,15 +17,13 @@
 package me.dalekcraft.structureedit.drawing;
 
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import java.awt.*;
-import java.util.Locale;
 
 /**
  * An enum of all materials accepted by the official server and client
  */
-public enum Block {
+public enum BlockColor {
 
     // TODO Possibly use this enum to make default block states for blocks.
 
@@ -927,17 +925,8 @@ public enum Block {
     private final Color color;
 
     @Contract(pure = true)
-    Block(Color color) {
+    BlockColor(Color color) {
         this.color = color;
-    }
-
-    public static Block fromId(@NotNull String namespacedId) {
-        return valueOf(namespacedId.substring(namespacedId.indexOf(':') + 1).toUpperCase(Locale.ROOT));
-    }
-
-    @NotNull
-    public String toId() {
-        return "minecraft:" + name().toLowerCase(Locale.ROOT);
     }
 
     /**

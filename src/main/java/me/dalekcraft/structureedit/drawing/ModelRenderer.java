@@ -2,9 +2,9 @@ package me.dalekcraft.structureedit.drawing;
 
 import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.util.texture.Texture;
+import me.dalekcraft.structureedit.schematic.Block;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.PropertyUtils;
-import me.dalekcraft.structureedit.util.Tint;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
@@ -37,8 +37,10 @@ public final class ModelRenderer {
         throw new UnsupportedOperationException();
     }
 
-    public static void readBlockState(GL4bc gl, String namespacedId, CompoundTag properties, Random random) {
-        Color tint = Tint.getTint(namespacedId, properties);
+    public static void readBlockState(GL4bc gl, Block block, Random random) {
+        Color tint = getTint(block);
+        String namespacedId = block.getId();
+        CompoundTag properties = block.getProperties();
         JSONObject blockState = Assets.getBlockState(namespacedId);
         String propertiesString = "";
         try {
@@ -522,6 +524,93 @@ public final class ModelRenderer {
         }
         if (parent != null) {
             getTextureFromId(parent, textures, name);
+        }
+    }
+
+    @NotNull
+    public static Color getTint(Block block) {
+        String namespacedId = block.getId();
+        CompoundTag properties = block.getProperties();
+        switch (namespacedId) {
+            case "minecraft:redstone_wire" -> {
+                int power = 0;
+                if (properties.containsKey("power") && properties.get("power") instanceof IntTag intTag) {
+                    power = intTag.asInt();
+                } else if (properties.containsKey("power") && properties.get("power") instanceof StringTag stringTag) {
+                    power = Integer.parseInt(stringTag.getValue());
+                }
+                switch (power) {
+                    case 1 -> {
+                        return Color.decode("#6F0000");
+                    }
+                    case 2 -> {
+                        return Color.decode("#790000");
+                    }
+                    case 3 -> {
+                        return Color.decode("#820000");
+                    }
+                    case 4 -> {
+                        return Color.decode("#8C0000");
+                    }
+                    case 5 -> {
+                        return Color.decode("#970000");
+                    }
+                    case 6 -> {
+                        return Color.decode("#A10000");
+                    }
+                    case 7 -> {
+                        return Color.decode("#AB0000");
+                    }
+                    case 8 -> {
+                        return Color.decode("#B50000");
+                    }
+                    case 9 -> {
+                        return Color.decode("#BF0000");
+                    }
+                    case 10 -> {
+                        return Color.decode("#CA0000");
+                    }
+                    case 11 -> {
+                        return Color.decode("#D30000");
+                    }
+                    case 12 -> {
+                        return Color.decode("#DD0000");
+                    }
+                    case 13 -> {
+                        return Color.decode("#E70600");
+                    }
+                    case 14 -> {
+                        return Color.decode("#F11B00");
+                    }
+                    case 15 -> {
+                        return Color.decode("#FC3100");
+                    }
+                    default -> { // 0
+                        return Color.decode("#4B0000");
+                    }
+                }
+            }
+            case "minecraft:grass_block", "minecraft:grass", "minecraft:tall_grass", "minecraft:fern", "minecraft:large_fern", "minecraft:potted_fern", "minecraft:sugar_cane" -> {
+                return Color.decode("#91BD59");
+            }
+            case "minecraft:oak_leaves", "minecraft:dark_oak_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves", "minecraft:vine" -> {
+                return Color.decode("#77AB2F");
+            }
+            case "minecraft:water", "minecraft:water_cauldron" -> {
+                return Color.decode("#3F76E4");
+            }
+            case "minecraft:birch_leaves" -> {
+                return Color.decode("#80A755");
+            }
+            case "minecraft:spruce_leaves" -> {
+                return Color.decode("#619961");
+            }
+            case "minecraft:lily_pad" -> {
+                return Color.decode("#208030");
+            }
+            default -> {
+                return new Color(255, 255, 255, 255);
+            }
         }
     }
 }
