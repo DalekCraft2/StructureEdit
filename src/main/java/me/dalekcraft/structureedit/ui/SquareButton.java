@@ -16,13 +16,9 @@
  */
 package me.dalekcraft.structureedit.ui;
 
-import me.dalekcraft.structureedit.drawing.Block;
 import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
-import java.awt.*;
 
 /**
  * @author eccentric_nz
@@ -31,17 +27,10 @@ public class SquareButton extends JButton {
 
     private final int[] position = new int[3];
 
-    public SquareButton(@NotNull Block block, int x, int y, int z) {
+    public SquareButton(int x, int y, int z) {
         position[0] = x;
         position[1] = y;
         position[2] = z;
-        Color color = block.getColor();
-        Color noAlpha = new Color(color.getRed(), color.getGreen(), color.getBlue());
-        setBackground(noAlpha);
-        setOpaque(true);
-        setText(block.name().substring(0, 1));
-        setToolTipText(block.toId());
-        setBorder(new LineBorder(Color.BLACK));
     }
 
     @Contract(pure = true)

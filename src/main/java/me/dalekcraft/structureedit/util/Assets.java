@@ -14,9 +14,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.*;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.concurrent.CompletableFuture;
 
 public final class Assets {
@@ -187,6 +185,14 @@ public final class Assets {
         }
         BLOCK_STATES.put(namespacedId, blockState);
         return blockState;
+    }
+
+    public static String @NotNull [] getBlockStateArray() {
+        Set<String> keySet = new HashSet<>(BLOCK_STATES.keySet());
+        keySet.remove("minecraft:missing");
+        String[] array = keySet.toArray(new String[0]);
+        Arrays.sort(array);
+        return array;
     }
 
     public static JSONObject getModel(@NotNull String namespacedId) {

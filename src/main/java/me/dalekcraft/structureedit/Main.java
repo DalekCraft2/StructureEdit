@@ -111,12 +111,15 @@ public final class Main {
         }
         Assets.setAssets(assets);
         userInterface.assetsChooser.setCurrentDirectory(assets.toFile());
+        userInterface.assetsChooser.setSelectedFile(assets.toFile());
+        userInterface.blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
         String path = getArgument(argList, "-path");
         if (path != null) {
             try {
                 File file = new File(path).getCanonicalFile();
                 userInterface.open(file);
                 userInterface.schematicChooser.setCurrentDirectory(file);
+                userInterface.schematicChooser.setSelectedFile(file);
             } catch (JSONException | IOException e) {
                 LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
             }

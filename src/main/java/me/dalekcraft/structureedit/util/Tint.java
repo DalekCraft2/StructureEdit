@@ -18,7 +18,12 @@ public final class Tint {
 
     @NotNull
     public static Color getTint(String namespacedId, CompoundTag properties) {
-        Block block = Block.fromId(namespacedId);
+        Block block;
+        try {
+            block = Block.fromId(namespacedId);
+        } catch (IllegalArgumentException e) {
+            return new Color(255, 255, 255, 255);
+        }
         switch (block) {
             case REDSTONE_WIRE -> {
                 int power = 0;

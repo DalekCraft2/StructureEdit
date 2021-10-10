@@ -79,6 +79,7 @@ public class UserInterface {
     private static final float MOTION_SENSITIVITY = 0.1f;
     public final JFileChooser schematicChooser = new JFileChooser();
     public final JFileChooser assetsChooser = new JFileChooser();
+    public JComboBox<String> blockIdComboBox;
     /**
      * Rotational angle for x-axis in degrees.
      **/
@@ -115,7 +116,6 @@ public class UserInterface {
     private JPanel editorPanel;
     private JPanel gridPanel;
     private JLabel blockIdLabel;
-    private JComboBox<Block> blockIdComboBox;
     private JLabel blockPropertiesLabel;
     private JFormattedTextField blockPropertiesTextField;
     private JLabel layerLabel;
@@ -384,6 +384,7 @@ public class UserInterface {
                     assets = assetsChooser.getSelectedFile().toPath().toRealPath();
                     LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
                     Assets.setAssets(assets);
+                    blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
                 } catch (IOException e1) {
                     LOGGER.log(Level.ERROR, e1.getMessage());
                 }
@@ -415,7 +416,7 @@ public class UserInterface {
                 loadLayer();
             }
         });
-        blockIdComboBox.setModel(new DefaultComboBoxModel<>(Block.values()));
+        blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
         blockIdComboBox.setSelectedItem(null);
         blockIdComboBox.addItemListener(e -> {
             if (schematic != null && selected != null) {
@@ -426,11 +427,12 @@ public class UserInterface {
                 } else {
                     block = schematic.getBlock(position);
                 }
-                String blockId = ((Block) blockIdComboBox.getSelectedItem()).toId();
+                String blockId = blockIdComboBox.getSelectedItem().toString();
                 block.setId(blockId);
                 loadLayer();
             }
         });
+        // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
         blockPropertiesTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
             public void insertUpdate(DocumentEvent e) {
@@ -600,8 +602,18 @@ public class UserInterface {
                     if (block != null) {
                         String blockId = block.getId();
                         String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
-                        Block blockEnum = Block.valueOf(blockName);
-                        SquareButton squareButton = new SquareButton(blockEnum, x, currentLayer, z);
+                        Color color;
+                        try {
+                            color = Block.valueOf(blockName).getColor();
+                        } catch (IllegalArgumentException e) {
+                            color = new Color(251, 64, 249);
+                        }
+                        color = new Color(color.getRed(), color.getGreen(), color.getBlue());
+                        SquareButton squareButton = new SquareButton(x, currentLayer, z);
+                        squareButton.setBackground(color);
+                        squareButton.setText(blockName.substring(0, 1));
+                        squareButton.setToolTipText(blockId);
+                        squareButton.setBorder(new LineBorder(Color.BLACK));
                         squareButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
                         Font font = squareButton.getFont();
                         squareButton.setFont(new Font(font.getFontName(), font.getStyle(), buttonSideLength));
@@ -632,8 +644,7 @@ public class UserInterface {
             block = schematic.getBlock(position);
         }
 
-        Block blockEnum = Block.fromId(block.getId());
-        blockIdComboBox.setSelectedItem(blockEnum);
+        blockIdComboBox.setSelectedItem(block.getId());
         blockIdComboBox.setEnabled(true);
 
         blockPropertiesTextField.setText(block.getPropertiesAsString());
@@ -670,9 +681,7 @@ public class UserInterface {
                 block = schematic.getBlock(position);
             }
 
-            Block blockEnum = Block.fromId(block.getId());
-            blockIdComboBox.setSelectedItem(blockEnum);
-
+            blockIdComboBox.setSelectedItem(block.getId());
             blockPropertiesTextField.setText(block.getPropertiesAsString());
 
             try {
@@ -706,6 +715,7 @@ public class UserInterface {
         this.$$$loadLabelText$$$(blockIdLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_id.text"));
         editorPanel.add(blockIdLabel, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockIdComboBox = new JComboBox();
+        blockIdComboBox.setEditable(true);
         blockIdComboBox.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_id.tooltip"));
         editorPanel.add(blockIdComboBox, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPropertiesLabel = new JLabel();
