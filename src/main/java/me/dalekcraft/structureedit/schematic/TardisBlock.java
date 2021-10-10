@@ -48,7 +48,10 @@ public class TardisBlock implements Block {
     }
 
     @Override
-    public void setId(String id) {
+    public void setId(@NotNull String id) {
+        if (!id.contains(":")) {
+            id = "minecraft:" + id;
+        }
         blockObject.put("data", id + getPropertiesAsString());
     }
 

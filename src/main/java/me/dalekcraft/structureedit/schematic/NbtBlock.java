@@ -9,6 +9,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
@@ -46,7 +47,10 @@ public class NbtBlock implements Block {
     }
 
     @Override
-    public void setId(String id) {
+    public void setId(@NotNull String id) {
+        if (!id.contains(":")) {
+            id = "minecraft:" + id;
+        }
         stateTag.putString("Name", id);
     }
 

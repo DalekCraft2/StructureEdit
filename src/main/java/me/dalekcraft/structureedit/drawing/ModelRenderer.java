@@ -62,11 +62,11 @@ public final class ModelRenderer {
                 }
                 if (contains) {
                     if (variants.has(variantName) && variants.get(variantName) instanceof JSONObject variant) {
-                        sendBlockState(gl, variant, tint);
+                        drawModel(gl, variant, tint);
                         return;
                     } else if (variants.has(variantName) && variants.get(variantName) instanceof JSONArray variantArray) {
                         JSONObject variant = chooseModel(variantArray, random);
-                        sendBlockState(gl, variant, tint);
+                        drawModel(gl, variant, tint);
                         return;
                     }
                 }
@@ -104,10 +104,10 @@ public final class ModelRenderer {
                         }
                         if (contains) {
                             if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
-                                sendBlockState(gl, apply, tint);
+                                drawModel(gl, apply, tint);
                             } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
                                 JSONObject apply = chooseModel(applyArray, random);
-                                sendBlockState(gl, apply, tint);
+                                drawModel(gl, apply, tint);
                             }
                         }
                     } else {
@@ -129,19 +129,19 @@ public final class ModelRenderer {
                         }
                         if (contains) {
                             if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
-                                sendBlockState(gl, apply, tint);
+                                drawModel(gl, apply, tint);
                             } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
                                 JSONObject apply = chooseModel(applyArray, random);
-                                sendBlockState(gl, apply, tint);
+                                drawModel(gl, apply, tint);
                             }
                         }
                     }
                 } else {
                     if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
-                        sendBlockState(gl, apply, tint);
+                        drawModel(gl, apply, tint);
                     } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
                         JSONObject apply = chooseModel(applyArray, random);
-                        sendBlockState(gl, apply, tint);
+                        drawModel(gl, apply, tint);
                     }
                 }
             }
@@ -164,7 +164,7 @@ public final class ModelRenderer {
         return weightTree.ceilingEntry(value).getValue();
     }
 
-    private static void sendBlockState(GL4bc gl, @NotNull JSONObject jsonObject, Color tint) {
+    private static void drawModel(@NotNull GL4bc gl, @NotNull JSONObject jsonObject, Color tint) {
         String modelPath = jsonObject.getString("model");
         JSONObject model = Assets.getModel(modelPath);
         int x = 0;
@@ -179,10 +179,7 @@ public final class ModelRenderer {
         if (jsonObject.has("uvlock")) {
             uvlock = jsonObject.getBoolean("uvlock");
         }
-        drawModel(gl, model, x, y, uvlock, tint);
-    }
 
-    private static void drawModel(@NotNull GL4bc gl, JSONObject model, int x, int y, boolean uvlock, Color tint) {
         gl.glPushMatrix();
 
         gl.glTranslated(0.5, 0.5, 0.5);
@@ -528,7 +525,7 @@ public final class ModelRenderer {
     }
 
     @NotNull
-    public static Color getTint(Block block) {
+    public static Color getTint(@NotNull Block block) {
         String namespacedId = block.getId();
         CompoundTag properties = block.getProperties();
         switch (namespacedId) {

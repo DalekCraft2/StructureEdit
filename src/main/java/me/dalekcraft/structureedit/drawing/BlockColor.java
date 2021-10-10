@@ -938,5 +938,4 @@ public enum BlockColor {
     public Color getColor() {
         return color;
     }
-
 }
