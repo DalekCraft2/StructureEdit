@@ -136,10 +136,12 @@ public class UserInterface {
         schematicChooser.addChoosableFileFilter(FILTER_MCEDIT);
         schematicChooser.addChoosableFileFilter(FILTER_SPONGE);
         schematicChooser.addChoosableFileFilter(FILTER_TARDIS);
+        assetsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
     }
 
     public UserInterface() {
         $$$setupUI$$$();
+        new AutoCompletion(blockIdComboBox);
         ((GLJPanel) rendererPanel).addGLEventListener(new GLEventListener() {
             @Override
             public void init(@NotNull GLAutoDrawable drawable) {
@@ -239,7 +241,6 @@ public class UserInterface {
         rendererPanel.addKeyListener(new KeyAdapter() {
             @Override
             public void keyPressed(@NotNull KeyEvent e) {
-                int[] size = schematic.getSize();
                 int keyCode = e.getKeyCode();
                 switch (keyCode) {
                     case KeyEvent.VK_W, KeyEvent.VK_UP -> cameraZ++;
@@ -257,11 +258,14 @@ public class UserInterface {
                         }
                     }
                     case KeyEvent.VK_RIGHT -> {
-                        if (renderedHeight < size[1]) {
-                            renderedHeight++;
-                        }
-                        if (renderedHeight > size[1]) {
-                            renderedHeight = size[1];
+                        if (schematic != null) {
+                            int[] size = schematic.getSize();
+                            if (renderedHeight < size[1]) {
+                                renderedHeight++;
+                            }
+                            if (renderedHeight > size[1]) {
+                                renderedHeight = size[1];
+                            }
                         }
                     }
                 }
@@ -334,7 +338,6 @@ public class UserInterface {
         JMenuItem openButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.open"));
         openButton.addActionListener(e -> {
             animator.pause();
-            schematicChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
             int result = schematicChooser.showOpenDialog(Main.frame);
             if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
                 File file;
@@ -385,6 +388,7 @@ public class UserInterface {
                     LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
                     Assets.setAssets(assets);
                     blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
+                    blockIdComboBox.setSelectedItem(null);
                 } catch (IOException e1) {
                     LOGGER.log(Level.ERROR, e1.getMessage());
                 }
@@ -416,6 +420,7 @@ public class UserInterface {
                 loadLayer();
             }
         });
+
         blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
         blockIdComboBox.setSelectedItem(null);
         blockIdComboBox.addItemListener(e -> {
@@ -543,6 +548,8 @@ public class UserInterface {
                 blockPaletteSpinner.setValue(0);
                 blockPaletteSpinner.setEnabled(false);
                 if (schematic != null) {
+                    sizeTextField.setEnabled(true);
+                    layerSpinner.setEnabled(true);
                     int[] size = schematic.getSize();
                     renderedHeight = size[1];
                     SpinnerModel layerModel = new SpinnerNumberModel(0, 0, size[1] - 1, 1);
@@ -716,12 +723,14 @@ public class UserInterface {
         editorPanel.add(blockIdLabel, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockIdComboBox = new JComboBox();
         blockIdComboBox.setEditable(true);
+        blockIdComboBox.setEnabled(false);
         blockIdComboBox.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_id.tooltip"));
         editorPanel.add(blockIdComboBox, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPropertiesLabel = new JLabel();
         this.$$$loadLabelText$$$(blockPropertiesLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_properties.text"));
         editorPanel.add(blockPropertiesLabel, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPropertiesTextField = new JFormattedTextField();
+        blockPropertiesTextField.setEnabled(false);
         blockPropertiesTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_properties.tooltip"));
         editorPanel.add(blockPropertiesTextField, new GridConstraints(6, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         blockPositionLabel = new JLabel();
@@ -729,6 +738,7 @@ public class UserInterface {
         editorPanel.add(blockPositionLabel, new GridConstraints(4, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPositionTextField = new JTextField();
         blockPositionTextField.setEditable(false);
+        blockPositionTextField.setEnabled(false);
         blockPositionTextField.setText("");
         blockPositionTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_position.tooltip"));
         editorPanel.add(blockPositionTextField, new GridConstraints(4, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
@@ -736,12 +746,14 @@ public class UserInterface {
         this.$$$loadLabelText$$$(layerLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.layer.text"));
         editorPanel.add(layerLabel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockNbtTextField = new JFormattedTextField();
+        blockNbtTextField.setEnabled(false);
         blockNbtTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_nbt.tooltip"));
         editorPanel.add(blockNbtTextField, new GridConstraints(7, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         paletteLabel = new JLabel();
         this.$$$loadLabelText$$$(paletteLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.palette.text"));
         editorPanel.add(paletteLabel, new GridConstraints(2, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         paletteSpinner = new JSpinner();
+        paletteSpinner.setEnabled(false);
         paletteSpinner.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.palette.tooltip"));
         editorPanel.add(paletteSpinner, new GridConstraints(2, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockNbtLabel = new JLabel();
@@ -755,15 +767,18 @@ public class UserInterface {
         editorPanel.add(sizeLabel, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         sizeTextField = new JTextField();
         sizeTextField.setEditable(false);
+        sizeTextField.setEnabled(false);
         sizeTextField.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.schematic_size.tooltip"));
         editorPanel.add(sizeTextField, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, new Dimension(150, -1), null, 0, false));
         blockPaletteLabel = new JLabel();
         this.$$$loadLabelText$$$(blockPaletteLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_palette.text"));
         editorPanel.add(blockPaletteLabel, new GridConstraints(3, 0, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_FIXED, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPaletteSpinner = new JSpinner();
+        blockPaletteSpinner.setEnabled(false);
         blockPaletteSpinner.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_palette.tooltip"));
         editorPanel.add(blockPaletteSpinner, new GridConstraints(3, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         layerSpinner = new JSpinner();
+        layerSpinner.setEnabled(false);
         layerSpinner.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.layer.tooltip"));
         editorPanel.add(layerSpinner, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         panel.add(rendererPanel, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, null, null, 0, false));
