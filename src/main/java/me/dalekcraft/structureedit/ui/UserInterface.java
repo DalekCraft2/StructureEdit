@@ -40,6 +40,7 @@ import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
+import org.json.JSONObject;
 
 import javax.swing.*;
 import javax.swing.border.LineBorder;
@@ -52,10 +53,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.nio.file.Path;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Random;
-import java.util.ResourceBundle;
+import java.util.List;
+import java.util.*;
 
 import static com.jogamp.opengl.GL.*;
 import static com.jogamp.opengl.GL2.GL_CURRENT_BIT;
@@ -225,19 +224,18 @@ public class UserInterface {
                     for (int x = 0; x < size[0]; x++) {
                         for (int y = 0; y < renderedHeight; y++) {
                             for (int z = 0; z < size[2]; z++) {
-                                Block block;
-                                if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                                    block = nbtStructure.getBlock(x, y, z, (ListTag<CompoundTag>) palette);
-                                } else {
-                                    block = schematic.getBlock(x, y, z);
-                                }
+                                Block block = schematic.getBlock(x, y, z);
                                 if (block != null) {
                                     long seed = x + ((long) y * size[2] * size[0]) + ((long) z * size[0]);
                                     Random random = new Random(seed);
+                                    List<JSONObject> modelList = ModelRenderer.getModelsFromBlockState(block, random);
+                                    Color tint = ModelRenderer.getTint(block);
 
                                     gl.glPushMatrix();
                                     gl.glTranslatef(x * SCALE, y * SCALE, z * SCALE);
-                                    ModelRenderer.readBlockState(gl, block, random);
+                                    for (JSONObject model : modelList) {
+                                        ModelRenderer.drawModel(gl, model, tint);
+                                    }
                                     gl.glPopMatrix();
                                 }
                             }
@@ -511,9 +509,7 @@ public class UserInterface {
         paletteSpinner.addChangeListener(e -> {
             if (schematic != null) {
                 if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                    palette = nbtStructure.getPaletteListEntry((Integer) paletteSpinner.getValue());
-                } else if (!(schematic instanceof TardisSchematic)) {
-                    palette = schematic.getPalette();
+                    nbtStructure.setActivePalette((Integer) paletteSpinner.getValue());
                 }
             }
             loadLayer();
@@ -604,12 +600,7 @@ public class UserInterface {
             int buttonSideLength = Math.min(gridPanel.getWidth() / size[0], gridPanel.getHeight() / size[2]);
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {
-                    Block block;
-                    if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                        block = nbtStructure.getBlock(x, currentLayer, z, (ListTag<CompoundTag>) palette);
-                    } else {
-                        block = schematic.getBlock(x, currentLayer, z);
-                    }
+                    Block block = schematic.getBlock(x, currentLayer, z);
                     if (block != null) {
                         String blockId = block.getId();
                         String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);

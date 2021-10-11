@@ -37,8 +37,9 @@ public final class ModelRenderer {
         throw new UnsupportedOperationException();
     }
 
-    public static void readBlockState(GL4bc gl, Block block, Random random) {
-        Color tint = getTint(block);
+    @NotNull
+    public static List<JSONObject> getModelsFromBlockState(@NotNull Block block, Random random) {
+        List<JSONObject> modelList = new ArrayList<>();
         String namespacedId = block.getId();
         CompoundTag properties = block.getProperties();
         JSONObject blockState = Assets.getBlockState(namespacedId);
@@ -62,12 +63,12 @@ public final class ModelRenderer {
                 }
                 if (contains) {
                     if (variants.has(variantName) && variants.get(variantName) instanceof JSONObject variant) {
-                        drawModel(gl, variant, tint);
-                        return;
+                        modelList.add(variant);
+                        return modelList;
                     } else if (variants.has(variantName) && variants.get(variantName) instanceof JSONArray variantArray) {
-                        JSONObject variant = chooseModel(variantArray, random);
-                        drawModel(gl, variant, tint);
-                        return;
+                        JSONObject variant = chooseRandomModel(variantArray, random);
+                        modelList.add(variant);
+                        return modelList;
                     }
                 }
             }
@@ -104,10 +105,10 @@ public final class ModelRenderer {
                         }
                         if (contains) {
                             if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
-                                drawModel(gl, apply, tint);
+                                modelList.add(apply);
                             } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                                JSONObject apply = chooseModel(applyArray, random);
-                                drawModel(gl, apply, tint);
+                                JSONObject apply = chooseRandomModel(applyArray, random);
+                                modelList.add(apply);
                             }
                         }
                     } else {
@@ -129,26 +130,27 @@ public final class ModelRenderer {
                         }
                         if (contains) {
                             if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
-                                drawModel(gl, apply, tint);
+                                modelList.add(apply);
                             } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                                JSONObject apply = chooseModel(applyArray, random);
-                                drawModel(gl, apply, tint);
+                                JSONObject apply = chooseRandomModel(applyArray, random);
+                                modelList.add(apply);
                             }
                         }
                     }
                 } else {
                     if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
-                        drawModel(gl, apply, tint);
+                        modelList.add(apply);
                     } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                        JSONObject apply = chooseModel(applyArray, random);
-                        drawModel(gl, apply, tint);
+                        JSONObject apply = chooseRandomModel(applyArray, random);
+                        modelList.add(apply);
                     }
                 }
             }
         }
+        return modelList;
     }
 
-    private static JSONObject chooseModel(@NotNull JSONArray models, Random random) {
+    private static JSONObject chooseRandomModel(@NotNull JSONArray models, Random random) {
         int total = 0;
         NavigableMap<Integer, JSONObject> weightTree = new TreeMap<>();
         for (Object modelObject : models) {
@@ -164,7 +166,7 @@ public final class ModelRenderer {
         return weightTree.ceilingEntry(value).getValue();
     }
 
-    private static void drawModel(@NotNull GL4bc gl, @NotNull JSONObject jsonObject, Color tint) {
+    public static void drawModel(@NotNull GL4bc gl, @NotNull JSONObject jsonObject, Color tint) {
         String modelPath = jsonObject.getString("model");
         JSONObject model = Assets.getModel(modelPath);
         int x = 0;

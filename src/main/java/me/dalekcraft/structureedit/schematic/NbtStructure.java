@@ -13,7 +13,19 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 
-public record NbtStructure(NamedTag schematic) implements Schematic {
+public class NbtStructure implements Schematic {
+
+    private final NamedTag schematic;
+    private ListTag<CompoundTag> palette;
+
+    public NbtStructure(NamedTag schematic) {
+        this.schematic = schematic;
+        if (hasPaletteList()) {
+            palette = getPaletteListEntry(0);
+        } else {
+            palette = getPalette();
+        }
+    }
 
     @Override
     public void saveTo(File file) throws IOException {
@@ -77,57 +89,13 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
         }
     }
 
-    @Nullable
-    public NbtBlock getBlock(int @NotNull [] position, ListTag<CompoundTag> palette) {
-        return getBlock(position[0], position[1], position[2], palette);
-    }
-
-    @Nullable
-    public NbtBlock getBlock(int x, int y, int z, ListTag<CompoundTag> palette) {
-        for (CompoundTag block : getBlockList()) {
-            ListTag<IntTag> positionTag = block.getListTag("pos").asIntTagList();
-            int[] position = new int[3];
-            position[0] = positionTag.get(0).asInt();
-            position[1] = positionTag.get(1).asInt();
-            position[2] = positionTag.get(2).asInt();
-            if (position[0] == x && position[1] == y && position[2] == z) {
-                CompoundTag state = getState(block.getInt("state"), palette);
-                return new NbtBlock(block, state);
-            }
-        }
-        return null;
-    }
-
-    public void setBlock(int @NotNull [] position, Block block, ListTag<CompoundTag> palette) {
-        setBlock(position[0], position[1], position[2], block, palette);
-    }
-
-    public void setBlock(int x, int y, int z, Block block, ListTag<CompoundTag> palette) {
-        ListTag<CompoundTag> blocks = getBlockList();
-        for (CompoundTag block1 : blocks) {
-            int[] position = block1.getIntArray("pos");
-            if (position[0] == x && position[1] == y && position[2] == z) {
-                blocks.set(blocks.indexOf(block1), (CompoundTag) block);
-                setBlockList(blocks);
-            }
-        }
-    }
-
     @Override
     public CompoundTag getState(int index) {
-        return getPalette().get(index);
+        return palette.get(index);
     }
 
     @Override
     public void setState(int index, CompoundTag state) {
-        getPalette().set(index, state);
-    }
-
-    public CompoundTag getState(int index, @NotNull ListTag<CompoundTag> palette) {
-        return palette.get(index);
-    }
-
-    public void setState(int index, CompoundTag state, @NotNull ListTag<CompoundTag> palette) {
         palette.set(index, state);
     }
 
@@ -167,5 +135,9 @@ public record NbtStructure(NamedTag schematic) implements Schematic {
 
     public boolean hasPaletteList() {
         return ((CompoundTag) schematic.getTag()).containsKey("palettes");
+    }
+
+    public void setActivePalette(int index) {
+        palette = getPaletteListEntry(index);
     }
 }

@@ -137,9 +137,10 @@ public interface Schematic {
     Block getBlock(int x, int y, int z);
 
     /**
-     * Sets the dimensions of this {@link Schematic}.
+     * Sets the block at the specified position.
      *
-     * @param position the new dimensions for this schematic
+     * @param position the position of the block
+     * @param block    the new block
      */
     default void setBlock(int @NotNull [] position, Block block) {
         setBlock(position[0], position[1], position[2], block);
