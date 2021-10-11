@@ -106,8 +106,6 @@ public interface Schematic {
         setSize(size[0], size[1], size[2]);
     }
 
-    ;
-
     /**
      * Sets the dimensions of this {@link Schematic}.
      *
@@ -118,9 +116,10 @@ public interface Schematic {
     void setSize(int sizeX, int sizeY, int sizeZ);
 
     /**
-     * Sets the position of  block.
+     * Returns the block at the specified position.
      *
      * @param position the position of the block
+     * @return the block, or {@code null} if no block is at the position
      */
     default Block getBlock(int @NotNull [] position) {
         return getBlock(position[0], position[1], position[2]);
