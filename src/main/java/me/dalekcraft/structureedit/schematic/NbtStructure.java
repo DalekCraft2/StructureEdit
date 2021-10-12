@@ -5,7 +5,6 @@ import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
 import net.querz.nbt.tag.ListTag;
-import net.querz.nbt.tag.Tag;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -16,14 +15,14 @@ import java.io.IOException;
 public class NbtStructure implements Schematic {
 
     private final NamedTag schematic;
-    private ListTag<CompoundTag> palette;
+    private NbtPalette palette;
 
     public NbtStructure(NamedTag schematic) {
         this.schematic = schematic;
         if (hasPaletteList()) {
             palette = getPaletteListEntry(0);
         } else {
-            palette = getPalette();
+            palette = new NbtPalette(((CompoundTag) schematic.getTag()).getListTag("palette").asCompoundTagList());
         }
     }
 
@@ -70,7 +69,7 @@ public class NbtStructure implements Schematic {
             position[1] = positionTag.get(1).asInt();
             position[2] = positionTag.get(2).asInt();
             if (position[0] == x && position[1] == y && position[2] == z) {
-                CompoundTag state = getState(block.getInt("state"));
+                CompoundTag state = palette.getState(block.getInt("state"));
                 return new NbtBlock(block, state);
             }
         }
@@ -89,16 +88,6 @@ public class NbtStructure implements Schematic {
         }
     }
 
-    @Override
-    public CompoundTag getState(int index) {
-        return palette.get(index);
-    }
-
-    @Override
-    public void setState(int index, CompoundTag state) {
-        palette.set(index, state);
-    }
-
     public ListTag<CompoundTag> getBlockList() {
         return ((CompoundTag) schematic.getTag()).getListTag("blocks").asCompoundTagList();
     }
@@ -108,21 +97,22 @@ public class NbtStructure implements Schematic {
     }
 
     @Override
-    public ListTag<CompoundTag> getPalette() {
-        return ((CompoundTag) schematic.getTag()).getListTag("palette").asCompoundTagList();
+    public NbtPalette getPalette() {
+        return palette;
     }
 
     @Override
-    public void setPalette(Tag<?> palette) {
-        ((CompoundTag) schematic.getTag()).put("palette", palette);
+    public void setPalette(Palette palette) {
+        this.palette = (NbtPalette) palette;
+        ((CompoundTag) schematic.getTag()).put("palette", ((NbtPalette) palette).getData());
     }
 
-    public ListTag<CompoundTag> getPaletteListEntry(int index) {
-        return getPaletteList().get(index).asCompoundTagList();
+    public NbtPalette getPaletteListEntry(int index) {
+        return new NbtPalette(getPaletteList().get(index).asCompoundTagList());
     }
 
-    public void setPaletteListEntry(int index, ListTag<CompoundTag> palette) {
-        getPaletteList().set(index, palette);
+    public void setPaletteListEntry(int index, Palette palette) {
+        getPaletteList().set(index, ((NbtPalette) palette).getData());
     }
 
     public ListTag<ListTag<?>> getPaletteList() {

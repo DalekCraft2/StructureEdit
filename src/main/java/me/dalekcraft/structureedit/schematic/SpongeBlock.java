@@ -43,7 +43,7 @@ public class SpongeBlock implements Block {
     @Override
     public String getId() {
         String blockId = null;
-        CompoundTag palette = schematic.getPalette();
+        CompoundTag palette = schematic.getPalette().getData();
         Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
             if (((IntTag) tagEntry.getValue()).asInt() == getState()) {
@@ -66,7 +66,7 @@ public class SpongeBlock implements Block {
         if (!id.contains(":")) {
             id = "minecraft:" + id;
         }
-        CompoundTag palette = schematic.getPalette();
+        CompoundTag palette = schematic.getPalette().getData();
         Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
             if (((IntTag) tagEntry.getValue()).asInt() == getState()) {
@@ -113,7 +113,7 @@ public class SpongeBlock implements Block {
     @Override
     public String getPropertiesAsString() {
         String propertiesString = "[]";
-        CompoundTag palette = schematic.getPalette();
+        CompoundTag palette = schematic.getPalette().getData();
         Set<String> keySet = palette.keySet();
         for (String tagName : keySet) {
             if (palette.getInt(tagName) == getState()) {
@@ -125,7 +125,7 @@ public class SpongeBlock implements Block {
 
     @Override
     public void setPropertiesAsString(String propertiesString) throws IOException {
-        CompoundTag palette = schematic.getPalette();
+        CompoundTag palette = schematic.getPalette().getData();
         Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
             if (((IntTag) tagEntry.getValue()).asInt() == getState()) {

@@ -3,7 +3,6 @@ package me.dalekcraft.structureedit.schematic;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
-import net.querz.nbt.tag.Tag;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -54,22 +53,12 @@ public record McEditSchematic(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public CompoundTag getState(int index) {
+    public Palette getPalette() {
         return null;
     }
 
     @Override
-    public void setState(int index, CompoundTag state) {
-
-    }
-
-    @Override
-    public Tag<?> getPalette() {
-        return null;
-    }
-
-    @Override
-    public void setPalette(Tag<?> palette) {
+    public void setPalette(Palette palette) {
 
     }
 }

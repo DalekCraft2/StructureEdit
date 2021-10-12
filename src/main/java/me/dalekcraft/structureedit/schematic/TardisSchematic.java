@@ -1,8 +1,6 @@
 package me.dalekcraft.structureedit.schematic;
 
 import me.dalekcraft.structureedit.util.GzipUtils;
-import net.querz.nbt.tag.CompoundTag;
-import net.querz.nbt.tag.Tag;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -67,27 +65,15 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
         schematic.put("input", blocks);
     }
 
-    @Contract(value = "_ -> fail", pure = true)
-    @Override
-    public CompoundTag getState(int index) {
-        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
-    }
-
-    @Contract(value = "_, _ -> fail", pure = true)
-    @Override
-    public void setState(int index, CompoundTag state) {
-        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
-    }
-
     @Contract(value = " -> fail", pure = true)
     @Override
-    public Tag<?> getPalette() {
+    public Palette getPalette() {
         throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
     }
 
     @Contract(value = "_ -> fail", pure = true)
     @Override
-    public void setPalette(Tag<?> palette) {
+    public void setPalette(Palette palette) {
         throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
     }
 }

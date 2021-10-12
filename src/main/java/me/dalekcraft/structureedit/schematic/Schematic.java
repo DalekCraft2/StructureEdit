@@ -2,8 +2,6 @@ package me.dalekcraft.structureedit.schematic;
 
 import me.dalekcraft.structureedit.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
-import net.querz.nbt.tag.CompoundTag;
-import net.querz.nbt.tag.Tag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -15,7 +13,6 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 
-// TODO Maybe make Schematic classes extend an abstract class which implements this?
 public interface Schematic {
 
     Logger LOGGER = LogManager.getLogger(Schematic.class);
@@ -155,11 +152,17 @@ public interface Schematic {
      */
     void setBlock(int x, int y, int z, Block block);
 
-    CompoundTag getState(int index);
+    /**
+     * Returns the palette of this {@link Schematic}.
+     *
+     * @return the palette of this {@link Schematic}
+     */
+    Palette getPalette();
 
-    void setState(int index, CompoundTag state);
-
-    Tag<?> getPalette();
-
-    void setPalette(Tag<?> palette);
+    /**
+     * Sets the palette of this {@link Schematic}.
+     *
+     * @param palette the new palette
+     */
+    void setPalette(Palette palette);
 }

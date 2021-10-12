@@ -2,10 +2,12 @@ package me.dalekcraft.structureedit.schematic;
 
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
-import net.querz.nbt.tag.*;
+import net.querz.nbt.tag.ByteArrayTag;
+import net.querz.nbt.tag.CompoundTag;
+import net.querz.nbt.tag.IntArrayTag;
+import net.querz.nbt.tag.ListTag;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
@@ -43,9 +45,9 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         tag.putShort("Length", (short) sizeZ);
     }
 
+    @Contract("_, _, _ -> new")
     @Override
-    @Nullable
-    public SpongeBlock getBlock(int x, int y, int z) {
+    public @NotNull SpongeBlock getBlock(int x, int y, int z) {
 
         int[] size = getSize();
         byte[] blocks = getBlockList().getValue();
@@ -77,23 +79,13 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
     }
 
     @Override
-    public CompoundTag getState(int index) {
-        return null;
+    public SpongePalette getPalette() {
+        return new SpongePalette(((CompoundTag) schematic.getTag()).getCompoundTag("Palette"));
     }
 
     @Override
-    public void setState(int index, CompoundTag state) {
-
-    }
-
-    @Override
-    public CompoundTag getPalette() {
-        return ((CompoundTag) schematic.getTag()).getCompoundTag("Palette");
-    }
-
-    @Override
-    public void setPalette(Tag<?> palette) {
-        ((CompoundTag) schematic.getTag()).put("Palette", palette);
+    public void setPalette(Palette palette) {
+        ((CompoundTag) schematic.getTag()).put("Palette", ((SpongePalette) palette).getData());
     }
 
     public ByteArrayTag getBlockList() {

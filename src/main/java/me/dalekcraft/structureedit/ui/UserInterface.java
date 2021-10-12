@@ -31,9 +31,6 @@ import me.dalekcraft.structureedit.schematic.Schematic;
 import me.dalekcraft.structureedit.schematic.TardisSchematic;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
-import net.querz.nbt.tag.CompoundTag;
-import net.querz.nbt.tag.ListTag;
-import net.querz.nbt.tag.Tag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -106,7 +103,6 @@ public class UserInterface {
     private Animator animator;
     private BlockButton selected;
     private Schematic schematic;
-    private Tag<?> palette;
     private JPanel panel;
     private JPanel rendererPanel;
     private JMenuBar menuBar;
@@ -412,7 +408,10 @@ public class UserInterface {
                     assets = assetsChooser.getSelectedFile().toPath().toRealPath();
                     LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
                     Assets.setAssets(assets);
-                    blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
+                    blockIdComboBox.removeAllItems();
+                    for (String blockId : Assets.getBlockStateArray()) {
+                        blockIdComboBox.addItem(blockId);
+                    }
                     blockIdComboBox.setSelectedItem(null);
                 } catch (IOException e1) {
                     LOGGER.log(Level.ERROR, e1.getMessage());
@@ -447,7 +446,10 @@ public class UserInterface {
             }
         });
 
-        blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
+        blockIdComboBox.removeAllItems();
+        for (String blockId : Assets.getBlockStateArray()) {
+            blockIdComboBox.addItem(blockId);
+        }
         blockIdComboBox.setSelectedItem(null);
         blockIdComboBox.addItemListener(e -> {
             if (schematic != null && selected != null && blockIdComboBox.getSelectedItem() != null) {
@@ -560,16 +562,9 @@ public class UserInterface {
                             SpinnerModel paletteModel = new SpinnerNumberModel(0, 0, palettesSize - 1, 1);
                             paletteSpinner.setEnabled(true);
                             paletteSpinner.setModel(paletteModel);
-                            palette = nbtStructure.getPaletteListEntry(0);
-                        } else {
-                            palette = schematic.getPalette();
+                            nbtStructure.setActivePalette(0);
                         }
-                        int paletteSize = 0;
-                        if (palette instanceof ListTag paletteListTag) {
-                            paletteSize = paletteListTag.size();
-                        } else if (palette instanceof CompoundTag paletteCompoundTag) {
-                            paletteSize = paletteCompoundTag.size();
-                        }
+                        int paletteSize = schematic.getPalette().size();
                         SpinnerModel blockPaletteModel = new SpinnerNumberModel(0, 0, paletteSize - 1, 1);
                         blockPaletteSpinner.setModel(blockPaletteModel);
                     } else {

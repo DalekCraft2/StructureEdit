@@ -112,7 +112,10 @@ public final class Main {
         Assets.setAssets(assets);
         userInterface.assetsChooser.setCurrentDirectory(assets.toFile());
         userInterface.assetsChooser.setSelectedFile(assets.toFile());
-        userInterface.blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
+        userInterface.blockIdComboBox.removeAllItems();
+        for (String blockId : Assets.getBlockStateArray()) {
+            userInterface.blockIdComboBox.addItem(blockId);
+        }
         String path = getArgument(argList, "-path");
         if (path != null) {
             try {
