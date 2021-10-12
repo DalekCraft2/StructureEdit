@@ -42,23 +42,15 @@ public class SpongeBlock implements Block {
 
     @Override
     public String getId() {
-        String blockId = null;
-        CompoundTag palette = schematic.getPalette().getData();
-        Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
-        for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
-            if (((IntTag) tagEntry.getValue()).asInt() == getState()) {
-                String tagName = tagEntry.getKey();
-                int nameEndIndex = tagName.length();
-                if (tagName.contains("[")) {
-                    nameEndIndex = tagName.indexOf('[');
-                } else if (tagName.contains("{")) {
-                    nameEndIndex = tagName.indexOf('{');
-                }
-                blockId = tagName.substring(0, nameEndIndex);
-                break;
-            }
+        SpongePalette palette = schematic.getPalette();
+        String state = palette.getState(getState());
+        int nameEndIndex = state.length();
+        if (state.contains("[")) {
+            nameEndIndex = state.indexOf('[');
+        } else if (state.contains("{")) {
+            nameEndIndex = state.indexOf('{');
         }
-        return blockId;
+        return state.substring(0, nameEndIndex);
     }
 
     @Override
@@ -112,15 +104,9 @@ public class SpongeBlock implements Block {
 
     @Override
     public String getPropertiesAsString() {
-        String propertiesString = "[]";
-        CompoundTag palette = schematic.getPalette().getData();
-        Set<String> keySet = palette.keySet();
-        for (String tagName : keySet) {
-            if (palette.getInt(tagName) == getState()) {
-                propertiesString = !tagName.substring(getId().length()).equals("") ? tagName.substring(getId().length()) : "[]";
-            }
-        }
-        return propertiesString;
+        SpongePalette palette = schematic.getPalette();
+        String state = palette.getState(getState());
+        return !state.substring(getId().length()).equals("") ? state.substring(getId().length()) : "[]";
     }
 
     @Override
@@ -147,7 +133,13 @@ public class SpongeBlock implements Block {
     }
 
     @Override
-    public void setNbt(CompoundTag nbt) {
+    public void setNbt(@NotNull CompoundTag nbt) {
+        if (!nbt.containsKey("Id")) {
+            nbt.putString("Id", getId());
+        }
+        if (!nbt.containsKey("Pos")) {
+            nbt.putIntArray("Pos", position);
+        }
         ListTag<CompoundTag> blockEntityList = schematic.getBlockEntityList();
         for (CompoundTag block : blockEntityList) {
             IntArrayTag positionTag = block.getIntArrayTag("Pos");
@@ -164,10 +156,7 @@ public class SpongeBlock implements Block {
                 return;
             }
         }
-        CompoundTag newNbt = new CompoundTag();
-        newNbt.putString("Id", getId());
-        newNbt.putIntArray("Pos", getPosition());
-        blockEntityList.add(newNbt);
+        blockEntityList.add(nbt);
     }
 
     @Override

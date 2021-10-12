@@ -73,13 +73,15 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
         return new SpongeBlock(blockEntityTag, this, new int[]{x, y, z});
     }
 
+    @Contract(pure = true)
     @Override
     public void setBlock(int x, int y, int z, Block block) {
 
     }
 
+    @Contract(" -> new")
     @Override
-    public SpongePalette getPalette() {
+    public @NotNull SpongePalette getPalette() {
         return new SpongePalette(((CompoundTag) schematic.getTag()).getCompoundTag("Palette"));
     }
 

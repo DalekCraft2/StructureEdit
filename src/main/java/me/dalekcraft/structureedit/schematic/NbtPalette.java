@@ -2,11 +2,13 @@ package me.dalekcraft.structureedit.schematic;
 
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
+import org.jetbrains.annotations.Contract;
 
 public class NbtPalette implements Palette {
 
     private final ListTag<CompoundTag> palette;
 
+    @Contract(pure = true)
     public NbtPalette(ListTag<CompoundTag> palette) {
         this.palette = palette;
     }
@@ -27,7 +29,7 @@ public class NbtPalette implements Palette {
     }
 
     @Override
-    public void setState(int index, CompoundTag state) {
-        palette.set(index, state);
+    public void setState(int index, Object state) {
+        palette.set(index, (CompoundTag) state);
     }
 }
