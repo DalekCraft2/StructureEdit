@@ -47,28 +47,22 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
 
     @Contract("_, _, _ -> new")
     @Override
-    public @NotNull SpongeBlock getBlock(int x, int y, int z) {
-        String state = null;
+    @NotNull
+    public SpongeBlock getBlock(int x, int y, int z) {
         int[] size = getSize();
-        byte[] blocks = getBlockList().getValue();
-        for (int i = 0; i < blocks.length; i++) {
-            byte block = blocks[i];
-            // index = x + (y * length * width) + (z * width)
-            int x1 = (i % (size[0] * size[2])) % size[0];
-            int y1 = i / (size[0] * size[2]);
-            int z1 = (i % (size[0] * size[2])) / size[0];
-            if (x == x1 && y == y1 && z == z1) {
-                state = getPalette().getState(block);
-                break;
-            }
-        }
+        // index = x + (y * length * width) + (z * width)
+        int index = x + (y * size[2] * size[0]) + (z * size[0]);
+        int stateIndex = getBlockList().getValue()[index];
+        String state = getPalette().getState(stateIndex);
         CompoundTag blockEntityTag = null;
-        for (CompoundTag block : getBlockEntityList()) {
-            IntArrayTag positionTag = block.getIntArrayTag("Pos");
-            int[] position = positionTag.getValue();
-            if (position[0] == x && position[1] == y && position[2] == z) {
-                blockEntityTag = block;
-                break;
+        for (CompoundTag blockEntity : getBlockEntityList()) {
+            if (blockEntity.containsKey("Pos")) { // Should always have the position key.
+                IntArrayTag positionTag = blockEntity.getIntArrayTag("Pos");
+                int[] position = positionTag.getValue();
+                if (position[0] == x && position[1] == y && position[2] == z) {
+                    blockEntityTag = blockEntity;
+                    break;
+                }
             }
         }
         return new SpongeBlock(state, blockEntityTag, this, new int[]{x, y, z});

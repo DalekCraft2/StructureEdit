@@ -522,7 +522,7 @@ public class UserInterface {
             if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
                 Block block = selected.getBlock();
                 if (block != null) {
-                    block.setState((Integer) blockPaletteSpinner.getValue());
+                    block.setStateIndex((Integer) blockPaletteSpinner.getValue());
                 }
                 loadLayer();
                 updateSelected();
@@ -656,7 +656,7 @@ public class UserInterface {
         blockPositionTextField.setEnabled(true);
 
         if (!(schematic instanceof TardisSchematic)) {
-            blockPaletteSpinner.setValue(block.getState());
+            blockPaletteSpinner.setValue(block.getStateIndex());
             blockPaletteSpinner.setEnabled(true);
         } else {
             blockPaletteSpinner.setEnabled(false);

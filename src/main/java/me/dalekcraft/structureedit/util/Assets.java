@@ -254,11 +254,9 @@ public final class Assets {
     @Contract("_, _, _ -> new")
     @NotNull
     public static JSONObject toJson(String namespacedId, String folder, String extension) throws IOException {
-        try (InputStream inputStream = getAsset(namespacedId, folder, extension); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); StringWriter stringWriter = new StringWriter()) {
-            char[] buffer = new char[1024 * 16];
-            int length;
-            while ((length = inputStreamReader.read(buffer)) > 0) {
-                stringWriter.write(buffer, 0, length);
+        try (InputStream inputStream = getAsset(namespacedId, folder, extension); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); BufferedReader bufferedReader = new BufferedReader(inputStreamReader); StringWriter stringWriter = new StringWriter()) {
+            while (bufferedReader.ready()) {
+                stringWriter.write(bufferedReader.read());
             }
             return new JSONObject(stringWriter.toString());
         }

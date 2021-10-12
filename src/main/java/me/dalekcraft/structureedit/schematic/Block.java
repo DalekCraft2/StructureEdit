@@ -107,12 +107,12 @@ public interface Block {
      *
      * @return the palette index of this block
      */
-    int getState();
+    int getStateIndex();
 
     /**
      * Sets the palette index of this block.
      *
      * @param state the new palette index for this block
      */
-    void setState(int state);
+    void setStateIndex(int state);
 }

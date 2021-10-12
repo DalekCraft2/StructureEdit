@@ -121,12 +121,12 @@ public class TardisBlock implements Block {
     }
 
     @Override
-    public int getState() {
+    public int getStateIndex() {
         throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
     }
 
     @Override
-    public void setState(int state) {
+    public void setStateIndex(int state) {
         throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
     }
 }

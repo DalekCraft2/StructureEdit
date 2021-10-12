@@ -92,7 +92,11 @@ public class NbtBlock implements Block {
 
     @Override
     public CompoundTag getNbt() {
-        return blockTag.getCompoundTag("nbt");
+        if (blockTag.containsKey("nbt")) {
+            return blockTag.getCompoundTag("nbt");
+        } else {
+            return new CompoundTag();
+        }
     }
 
     @Override
@@ -127,12 +131,12 @@ public class NbtBlock implements Block {
     }
 
     @Override
-    public int getState() {
+    public int getStateIndex() {
         return blockTag.getInt("state");
     }
 
     @Override
-    public void setState(int state) {
+    public void setStateIndex(int state) {
         blockTag.putInt("state", state);
     }
 }

@@ -2,7 +2,9 @@ package me.dalekcraft.structureedit.schematic;
 
 import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
-import net.querz.nbt.tag.*;
+import net.querz.nbt.tag.CompoundTag;
+import net.querz.nbt.tag.IntArrayTag;
+import net.querz.nbt.tag.ListTag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -11,14 +13,12 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Map;
-import java.util.Set;
 
 public class SpongeBlock implements Block {
 
     private static final Logger LOGGER = LogManager.getLogger(SpongeSchematic.class);
-    private final CompoundTag blockEntityTag;
     private final SpongeSchematic schematic;
+    private CompoundTag blockEntityTag;
     private String state;
     private int[] position;
 
@@ -56,19 +56,18 @@ public class SpongeBlock implements Block {
         if (!id.contains(":")) {
             id = "minecraft:" + id;
         }
-        CompoundTag palette = schematic.getPalette().getData();
-        Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
-        for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
-            if (((IntTag) tagEntry.getValue()).asInt() == getState()) {
-                String tagName = tagEntry.getKey();
-                state = id + getPropertiesAsString();
-                palette.put(state, palette.remove(tagName));
-                break;
-            }
-        }
+        SpongePalette palette = schematic.getPalette();
+        state = id + getPropertiesAsString();
+        palette.setState(getStateIndex(), state);
+
         CompoundTag nbt = getNbt();
         if (nbt != null) {
-            nbt.putString("Id", id);
+            CompoundTag clone = nbt.clone();
+            clone.remove("Id");
+            clone.remove("Pos");
+            if (clone.entrySet().isEmpty()) {
+                nbt.putString("Id", id);
+            }
         }
     }
 
@@ -108,21 +107,14 @@ public class SpongeBlock implements Block {
 
     @Override
     public void setPropertiesAsString(String propertiesString) throws IOException {
-        CompoundTag palette = schematic.getPalette().getData();
-        Set<Map.Entry<String, Tag<?>>> entrySet = palette.entrySet();
-        for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
-            if (((IntTag) tagEntry.getValue()).asInt() == getState()) {
-                String tagName = tagEntry.getKey();
-                String replaced = propertiesString.replace('[', '{').replace(']', '}').replace('=', ':').replace("\"", "");
-                try {
-                    SNBTUtil.fromSNBT(replaced); // Check whether the SNBT is parsable
-                } catch (StringIndexOutOfBoundsException ignored) {
-                }
-                state = getId() + propertiesString;
-                palette.put(state, palette.remove(tagName));
-                break;
-            }
+        SpongePalette palette = schematic.getPalette();
+        String replaced = propertiesString.replace('[', '{').replace(']', '}').replace('=', ':').replace("\"", "");
+        try {
+            SNBTUtil.fromSNBT(replaced); // Check whether the SNBT is parsable
+        } catch (StringIndexOutOfBoundsException ignored) {
         }
+        state = getId() + propertiesString;
+        palette.setState(getStateIndex(), state);
     }
 
     @Override
@@ -131,30 +123,43 @@ public class SpongeBlock implements Block {
     }
 
     @Override
-    public void setNbt(@NotNull CompoundTag nbt) {
-        if (!nbt.containsKey("Id")) {
-            nbt.putString("Id", getId());
-        }
-        if (!nbt.containsKey("Pos")) {
-            nbt.putIntArray("Pos", position);
-        }
+    public void setNbt(CompoundTag nbt) {
         ListTag<CompoundTag> blockEntityList = schematic.getBlockEntityList();
         for (CompoundTag block : blockEntityList) {
-            IntArrayTag positionTag = block.getIntArrayTag("Pos");
-            int[] position = positionTag.getValue();
-            if (Arrays.equals(this.position, position)) {
-                CompoundTag clone = nbt.clone();
-                clone.remove("Id");
-                clone.remove("Pos");
-                if (clone.entrySet().isEmpty()) {
-                    blockEntityList.remove(blockEntityList.indexOf(block));
-                } else {
-                    blockEntityList.set(blockEntityList.indexOf(block), nbt);
+            if (block.containsKey("Pos")) {
+                IntArrayTag positionTag = block.getIntArrayTag("Pos");
+                int[] position = positionTag.getValue();
+                if (Arrays.equals(this.position, position)) {
+                    if (nbt != null) {
+                        nbt.remove("Id");
+                        nbt.remove("Pos");
+                        if (nbt.entrySet().isEmpty()) {
+                            blockEntityTag = null;
+                            blockEntityList.remove(blockEntityList.indexOf(block));
+                        } else {
+                            nbt.putString("Id", getId());
+                            nbt.putIntArray("Pos", position);
+                            blockEntityTag = nbt;
+                            blockEntityList.set(blockEntityList.indexOf(block), nbt);
+                        }
+                    } else {
+                        blockEntityTag = null;
+                        blockEntityList.remove(blockEntityList.indexOf(block));
+                    }
+                    return;
                 }
-                return;
             }
         }
-        blockEntityList.add(nbt);
+        if (nbt != null) {
+            nbt.remove("Id");
+            nbt.remove("Pos");
+            if (!nbt.entrySet().isEmpty()) {
+                nbt.putString("Id", getId());
+                nbt.putIntArray("Pos", position);
+                blockEntityTag = nbt;
+                blockEntityList.add(nbt);
+            }
+        }
     }
 
     @Override
@@ -171,7 +176,7 @@ public class SpongeBlock implements Block {
 
     @Override
     public void setSnbt(String snbt) throws IOException {
-        CompoundTag nbt = getNbt() == null ? new CompoundTag() : getNbt();
+        CompoundTag nbt = new CompoundTag();
         try {
             nbt = (CompoundTag) SNBTUtil.fromSNBT(snbt);
         } catch (StringIndexOutOfBoundsException ignored) {
@@ -180,38 +185,20 @@ public class SpongeBlock implements Block {
     }
 
     @Override
-    public int getState() {
+    public int getStateIndex() {
         int[] size = schematic.getSize();
-        byte[] blocks = schematic.getBlockList().getValue();
-        for (int i = 0; i < blocks.length; i++) {
-            byte block = blocks[i];
-            // index = x + (y * length * width) + (z * width)
-            int x1 = (i % (size[0] * size[2])) % size[0];
-            int y1 = i / (size[0] * size[2]);
-            int z1 = (i % (size[0] * size[2])) / size[0];
-            int[] position = {x1, y1, z1};
-            if (Arrays.equals(this.position, position)) {
-                return block;
-            }
-        }
-        return -1;
+        int[] position = getPosition();
+        // index = x + (y * length * width) + (z * width)
+        int index = position[0] + (position[1] * size[2] * size[0]) + (position[2] * size[0]);
+        return schematic.getBlockList().getValue()[index];
     }
 
     @Override
-    public void setState(int state) {
+    public void setStateIndex(int state) {
         int[] size = schematic.getSize();
-        ByteArrayTag blocks = schematic.getBlockList();
-        byte[] blocksArray = blocks.getValue();
-        for (int i = 0; i < blocksArray.length; i++) {
-            // index = x + (y * length * width) + (z * width)
-            int x1 = (i % (size[0] * size[2])) % size[0];
-            int y1 = i / (size[0] * size[2]);
-            int z1 = (i % (size[0] * size[2])) / size[0];
-            int[] position = {x1, y1, z1};
-            if (Arrays.equals(this.position, position)) {
-                blocksArray[i] = (byte) state;
-                blocks.setValue(blocksArray);
-            }
-        }
+        int[] position = getPosition();
+        // index = x + (y * length * width) + (z * width)
+        int index = position[0] + (position[1] * size[2] * size[0]) + (position[2] * size[0]);
+        schematic.getBlockList().getValue()[index] = (byte) state;
     }
 }
