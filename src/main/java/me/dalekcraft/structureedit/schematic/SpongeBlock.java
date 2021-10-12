@@ -14,17 +14,17 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 
-// TODO Optimize this entire class. god this format is killing me
 public class SpongeBlock implements Block {
 
     private static final Logger LOGGER = LogManager.getLogger(SpongeSchematic.class);
-
     private final CompoundTag blockEntityTag;
     private final SpongeSchematic schematic;
+    private String state;
     private int[] position;
 
     @Contract(pure = true)
-    public SpongeBlock(CompoundTag blockEntityTag, SpongeSchematic schematic, int[] position) {
+    public SpongeBlock(String state, CompoundTag blockEntityTag, SpongeSchematic schematic, int[] position) {
+        this.state = state;
         this.blockEntityTag = blockEntityTag;
         this.schematic = schematic;
         this.position = position;
@@ -42,8 +42,6 @@ public class SpongeBlock implements Block {
 
     @Override
     public String getId() {
-        SpongePalette palette = schematic.getPalette();
-        String state = palette.getState(getState());
         int nameEndIndex = state.length();
         if (state.contains("[")) {
             nameEndIndex = state.indexOf('[');
@@ -63,7 +61,8 @@ public class SpongeBlock implements Block {
         for (Map.Entry<String, Tag<?>> tagEntry : entrySet) {
             if (((IntTag) tagEntry.getValue()).asInt() == getState()) {
                 String tagName = tagEntry.getKey();
-                palette.put(id + getPropertiesAsString(), palette.remove(tagName));
+                state = id + getPropertiesAsString();
+                palette.put(state, palette.remove(tagName));
                 break;
             }
         }
@@ -104,8 +103,6 @@ public class SpongeBlock implements Block {
 
     @Override
     public String getPropertiesAsString() {
-        SpongePalette palette = schematic.getPalette();
-        String state = palette.getState(getState());
         return !state.substring(getId().length()).equals("") ? state.substring(getId().length()) : "[]";
     }
 
@@ -121,7 +118,8 @@ public class SpongeBlock implements Block {
                     SNBTUtil.fromSNBT(replaced); // Check whether the SNBT is parsable
                 } catch (StringIndexOutOfBoundsException ignored) {
                 }
-                palette.put(getId() + propertiesString, palette.remove(tagName));
+                state = getId() + propertiesString;
+                palette.put(state, palette.remove(tagName));
                 break;
             }
         }

@@ -48,7 +48,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
     @Contract("_, _, _ -> new")
     @Override
     public @NotNull SpongeBlock getBlock(int x, int y, int z) {
-
+        String state = null;
         int[] size = getSize();
         byte[] blocks = getBlockList().getValue();
         for (int i = 0; i < blocks.length; i++) {
@@ -58,7 +58,8 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
             int y1 = i / (size[0] * size[2]);
             int z1 = (i % (size[0] * size[2])) / size[0];
             if (x == x1 && y == y1 && z == z1) {
-
+                state = getPalette().getState(block);
+                break;
             }
         }
         CompoundTag blockEntityTag = null;
@@ -70,7 +71,7 @@ public record SpongeSchematic(NamedTag schematic) implements Schematic {
                 break;
             }
         }
-        return new SpongeBlock(blockEntityTag, this, new int[]{x, y, z});
+        return new SpongeBlock(state, blockEntityTag, this, new int[]{x, y, z});
     }
 
     @Contract(pure = true)
