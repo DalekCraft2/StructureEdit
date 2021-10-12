@@ -37,11 +37,12 @@ public final class ModelRenderer {
         throw new UnsupportedOperationException();
     }
 
+    // TODO Add a water model to this list if the block's "waterlogged" property is "true".
     @NotNull
     public static List<JSONObject> getModelsFromBlockState(@NotNull Block block, Random random) {
         List<JSONObject> modelList = new ArrayList<>();
         String namespacedId = block.getId();
-        CompoundTag properties = block.getProperties();
+        CompoundTag properties = block.getProperties().clone();
         JSONObject blockState = Assets.getBlockState(namespacedId);
         String propertiesString = "";
         try {
@@ -536,7 +537,10 @@ public final class ModelRenderer {
                 if (properties.containsKey("power") && properties.get("power") instanceof IntTag intTag) {
                     power = intTag.asInt();
                 } else if (properties.containsKey("power") && properties.get("power") instanceof StringTag stringTag) {
-                    power = Integer.parseInt(stringTag.getValue());
+                    try {
+                        power = Integer.parseInt(stringTag.getValue());
+                    } catch (NumberFormatException ignored) {
+                    }
                 }
                 switch (power) {
                     case 1 -> {

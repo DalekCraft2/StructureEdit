@@ -62,7 +62,7 @@ public class NbtBlock implements Block {
     @Override
     public void setProperties(CompoundTag properties) {
         if (properties != null && !properties.entrySet().isEmpty()) {
-            stateTag.put("Properties", properties);
+            stateTag.put("Properties", PropertyUtils.byteToString(properties));
         } else {
             stateTag.remove("Properties");
         }
@@ -73,7 +73,7 @@ public class NbtBlock implements Block {
         String propertiesString = "{}";
         CompoundTag properties = getProperties() == null ? new CompoundTag() : getProperties();
         try {
-            propertiesString = SNBTUtil.toSNBT(properties).replace("\"", "");
+            propertiesString = SNBTUtil.toSNBT(properties);
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
         }

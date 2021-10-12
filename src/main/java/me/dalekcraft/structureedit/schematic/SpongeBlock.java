@@ -89,7 +89,7 @@ public class SpongeBlock implements Block {
     public void setProperties(CompoundTag properties) {
         String propertiesString = "";
         try {
-            propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace("\"", "");
+            propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties));
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
         }

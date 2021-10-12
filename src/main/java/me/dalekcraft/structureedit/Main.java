@@ -55,7 +55,9 @@ public final class Main {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        AnsiConsole.systemInstall();
+        if (!AnsiConsole.isInstalled()) {
+            AnsiConsole.systemInstall();
+        }
         LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.starting"));
 
         ArrayList<String> argList = new ArrayList<>(List.of(args));
@@ -71,62 +73,58 @@ public final class Main {
             }
         }
 
-        frame = new JFrame(Configuration.LANGUAGE.getProperty("ui.window.title"));
-        try {
-            frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")).getScaledInstance(128, 128, Image.SCALE_SMOOTH));
-        } catch (IOException e) {
-            LOGGER.log(Level.ERROR, e.getMessage());
-        }
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.addWindowListener(new WindowAdapter() {
-            @Override
-            public void windowClosing(WindowEvent e) {
-                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.stopping"));
-            }
-        });
-        UserInterface userInterface = new UserInterface();
-        frame.setContentPane(userInterface.$$$getRootComponent$$$());
-        frame.pack();
-        Dimension dimension = Toolkit.getDefaultToolkit().getScreenSize();
-        int x = (int) ((dimension.getWidth() - frame.getWidth()) / 2);
-        int y = (int) ((dimension.getHeight() - frame.getHeight()) / 2);
-        frame.setLocation(x, y);
-        frame.setVisible(true);
-
-        String assetsArg = getArgument(argList, "-assets");
-        Path assets = null;
-        if (assetsArg != null) {
+        SwingUtilities.invokeLater(() -> {
+            frame = new JFrame(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            UserInterface userInterface = new UserInterface();
+            frame.add(userInterface.$$$getRootComponent$$$());
             try {
-                assets = new File(assetsArg).toPath().toRealPath();
-                if (Files.exists(assets)) {
-                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
-                } else {
-                    LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.invalid"), assets);
-                }
+                frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")).getScaledInstance(128, 128, Image.SCALE_SMOOTH));
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
-        } else {
-            LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.not_set"));
-        }
-        Assets.setAssets(assets);
-        Path finalAssets = assets;
-        SwingUtilities.invokeLater(() -> {
-            userInterface.assetsChooser.setCurrentDirectory(finalAssets.toFile());
-            userInterface.assetsChooser.setSelectedFile(finalAssets.toFile());
-            userInterface.blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
-        });
-        String path = getArgument(argList, "-path");
-        if (path != null) {
-            try {
-                File file = new File(path).getCanonicalFile();
-                userInterface.open(file);
-                userInterface.schematicChooser.setCurrentDirectory(file);
-                userInterface.schematicChooser.setSelectedFile(file);
-            } catch (JSONException | IOException e) {
-                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
+            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            frame.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosing(WindowEvent e) {
+                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.stopping"));
+                }
+            });
+            frame.setLocationByPlatform(true);
+            frame.pack();
+            frame.setVisible(true);
+
+            String assetsArg = getArgument(argList, "-assets");
+            Path assets = null;
+            if (assetsArg != null) {
+                try {
+                    assets = new File(assetsArg).toPath().toRealPath();
+                    if (Files.exists(assets)) {
+                        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
+                    } else {
+                        LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.invalid"), assets);
+                    }
+                } catch (IOException e) {
+                    LOGGER.log(Level.ERROR, e.getMessage());
+                }
+            } else {
+                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.not_set"));
             }
-        }
+            Assets.setAssets(assets);
+            userInterface.assetsChooser.setCurrentDirectory(assets.toFile());
+            userInterface.assetsChooser.setSelectedFile(assets.toFile());
+            userInterface.blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
+            String path = getArgument(argList, "-path");
+            if (path != null) {
+                try {
+                    File file = new File(path).getCanonicalFile();
+                    userInterface.open(file);
+                    userInterface.schematicChooser.setCurrentDirectory(file);
+                    userInterface.schematicChooser.setSelectedFile(file);
+                } catch (JSONException | IOException e) {
+                    LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
+                }
+            }
+        });
     }
 
     @Nullable
