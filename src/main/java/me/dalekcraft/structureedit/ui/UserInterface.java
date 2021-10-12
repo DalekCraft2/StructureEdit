@@ -264,29 +264,27 @@ public class UserInterface {
             public void keyPressed(@NotNull KeyEvent e) {
                 int keyCode = e.getKeyCode();
                 switch (keyCode) {
-                    case KeyEvent.VK_W, KeyEvent.VK_UP -> cameraZ++;
-                    case KeyEvent.VK_S, KeyEvent.VK_DOWN -> cameraZ--;
-                    case KeyEvent.VK_A -> cameraX++;
-                    case KeyEvent.VK_D -> cameraX--;
-                    case KeyEvent.VK_SHIFT -> cameraY++;
-                    case KeyEvent.VK_SPACE -> cameraY--;
-                    case KeyEvent.VK_LEFT -> {
-                        if (renderedHeight > 0) {
-                            renderedHeight--;
-                        }
-                        if (renderedHeight < 0) {
-                            renderedHeight = 0;
-                        }
-                    }
-                    case KeyEvent.VK_RIGHT -> {
+                    case KeyEvent.VK_UP -> {
                         if (schematic != null) {
                             int[] size = schematic.getSize();
                             if (renderedHeight < size[1]) {
                                 renderedHeight++;
+                            } else {
+                                Toolkit.getDefaultToolkit().beep();
                             }
                             if (renderedHeight > size[1]) {
                                 renderedHeight = size[1];
                             }
+                        }
+                    }
+                    case KeyEvent.VK_DOWN -> {
+                        if (renderedHeight > 0) {
+                            renderedHeight--;
+                        } else {
+                            Toolkit.getDefaultToolkit().beep();
+                        }
+                        if (renderedHeight < 0) {
+                            renderedHeight = 0;
                         }
                     }
                 }
@@ -408,10 +406,7 @@ public class UserInterface {
                     assets = assetsChooser.getSelectedFile().toPath().toRealPath();
                     LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
                     Assets.setAssets(assets);
-                    blockIdComboBox.removeAllItems();
-                    for (String blockId : Assets.getBlockStateArray()) {
-                        blockIdComboBox.addItem(blockId);
-                    }
+                    blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
                     blockIdComboBox.setSelectedItem(null);
                 } catch (IOException e1) {
                     LOGGER.log(Level.ERROR, e1.getMessage());
@@ -446,10 +441,7 @@ public class UserInterface {
             }
         });
 
-        blockIdComboBox.removeAllItems();
-        for (String blockId : Assets.getBlockStateArray()) {
-            blockIdComboBox.addItem(blockId);
-        }
+        blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
         blockIdComboBox.setSelectedItem(null);
         blockIdComboBox.addItemListener(e -> {
             if (schematic != null && selected != null && blockIdComboBox.getSelectedItem() != null) {

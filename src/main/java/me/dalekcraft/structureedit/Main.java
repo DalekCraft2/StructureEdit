@@ -110,12 +110,12 @@ public final class Main {
             LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.not_set"));
         }
         Assets.setAssets(assets);
-        userInterface.assetsChooser.setCurrentDirectory(assets.toFile());
-        userInterface.assetsChooser.setSelectedFile(assets.toFile());
-        userInterface.blockIdComboBox.removeAllItems();
-        for (String blockId : Assets.getBlockStateArray()) {
-            userInterface.blockIdComboBox.addItem(blockId);
-        }
+        Path finalAssets = assets;
+        SwingUtilities.invokeLater(() -> {
+            userInterface.assetsChooser.setCurrentDirectory(finalAssets.toFile());
+            userInterface.assetsChooser.setSelectedFile(finalAssets.toFile());
+            userInterface.blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
+        });
         String path = getArgument(argList, "-path");
         if (path != null) {
             try {
