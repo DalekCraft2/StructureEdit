@@ -5,7 +5,7 @@
             <PatternLayout pattern="%highlight{%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n}"
                            disableAnsi="false"/>
         </Console>
-        <RollingFile name="RollingFile" filePattern="logs/StructureEdit-${date:yyyy-MM-dd}.log.gz"
+        <RollingFile name="RollingFile" fileName="logs/StructureEdit-latest.log.gz" filePattern="logs/StructureEdit-${date:yyyy-MM-dd}.log.gz"
                      immediateFlush="false" append="true" ignoreExceptions="false">
             <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
             <Policies/>

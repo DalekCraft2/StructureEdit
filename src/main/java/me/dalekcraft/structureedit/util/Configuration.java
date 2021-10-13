@@ -23,10 +23,13 @@ public final class Configuration {
         @Override
         public Object setProperty(String key, String value) {
             Object o = super.setProperty(key, value);
-            try (FileOutputStream fileOutputStream = new FileOutputStream("config.properties")) {
-                store(fileOutputStream, null);
-            } catch (IOException e) {
-                LOGGER.log(Level.ERROR, e.getMessage());
+            String protocol = Main.class.getResource("").getProtocol();
+            if (protocol.equals("jar")) {
+                try (FileOutputStream fileOutputStream = new FileOutputStream("config.properties")) {
+                    store(fileOutputStream, null);
+                } catch (IOException e) {
+                    LOGGER.log(Level.ERROR, e.getMessage());
+                }
             }
             return o;
         }

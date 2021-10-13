@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public final class Main {
@@ -121,7 +120,12 @@ public final class Main {
             }
             userInterface.blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
 
-            String path = getArgument(argList, "-path");
+            String path;
+            if (protocol.equals("jar") && args.length > 0) {
+                path = args[0];
+            } else {
+                path = getArgument(argList, "-path");
+            }
             if (path != null) {
                 try {
                     File file = new File(path).getCanonicalFile();
