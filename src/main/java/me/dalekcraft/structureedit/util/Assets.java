@@ -41,12 +41,20 @@ public final class Assets {
 
     public static void setAssets(Path assets) {
         Assets.assets = assets;
+        if (assets != null) {
+            Configuration.CONFIG.setProperty("assets_path", assets.toString());
+        } else {
+            Configuration.CONFIG.setProperty("assets_path", "");
+        }
         load();
     }
 
     public static void load() {
         CompletableFuture.runAsync(() -> {
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.loading"));
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.loading"), assets);
+            if (assets == null || !Files.exists(assets)) {
+                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.invalid"), assets);
+            }
             BLOCK_STATES.clear();
             MODELS.clear();
             TEXTURES.clear();

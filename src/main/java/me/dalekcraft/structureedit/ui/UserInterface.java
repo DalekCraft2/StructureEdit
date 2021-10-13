@@ -405,7 +405,6 @@ public class UserInterface {
                 Path assets;
                 try {
                     assets = assetsChooser.getSelectedFile().toPath().toRealPath();
-                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
                     Assets.setAssets(assets);
                     blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
                     blockIdComboBox.setSelectedItem(null);

@@ -39,6 +39,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public final class Main {
@@ -93,14 +94,18 @@ public final class Main {
             frame.pack();
             frame.setVisible(true);
 
-            String assetsArg = getArgument(argList, "-assets");
+            String assetsArg;
+            String protocol = Main.class.getResource("").getProtocol();
+            if (protocol.equals("jar")) {
+                assetsArg = Configuration.CONFIG.getProperty("assets_path");
+            } else {
+                assetsArg = getArgument(argList, "-assets");
+            }
             Path assets = null;
             if (assetsArg != null) {
                 try {
-                    assets = new File(assetsArg).toPath().toRealPath();
-                    if (Files.exists(assets)) {
-                        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.setting"), assets);
-                    } else {
+                    assets = Path.of(assetsArg).toRealPath();
+                    if (!Files.exists(assets)) {
                         LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.invalid"), assets);
                     }
                 } catch (IOException e) {
@@ -110,9 +115,12 @@ public final class Main {
                 LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.not_set"));
             }
             Assets.setAssets(assets);
-            userInterface.assetsChooser.setCurrentDirectory(assets.toFile());
-            userInterface.assetsChooser.setSelectedFile(assets.toFile());
+            if (assets != null) {
+                userInterface.assetsChooser.setCurrentDirectory(assets.toFile());
+                userInterface.assetsChooser.setSelectedFile(assets.toFile());
+            }
             userInterface.blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
+
             String path = getArgument(argList, "-path");
             if (path != null) {
                 try {
