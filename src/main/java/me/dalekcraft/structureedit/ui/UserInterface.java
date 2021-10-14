@@ -18,6 +18,7 @@ package me.dalekcraft.structureedit.ui;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
+import com.intellij.uiDesigner.core.Spacer;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.glu.GLU;
@@ -406,8 +407,9 @@ public class UserInterface {
                 try {
                     assets = assetsChooser.getSelectedFile().toPath().toRealPath();
                     Assets.setAssets(assets);
+                    Object selectedItem = blockIdComboBox.getSelectedItem();
                     blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
-                    blockIdComboBox.setSelectedItem(null);
+                    blockIdComboBox.setSelectedItem(selectedItem);
                 } catch (IOException e1) {
                     LOGGER.log(Level.ERROR, e1.getMessage());
                 }
@@ -692,7 +694,7 @@ public class UserInterface {
         panel.add(splitPane, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(200, 200), null, 0, false));
         splitPane.setLeftComponent(rendererPanel);
         editorPanel = new JPanel();
-        editorPanel.setLayout(new GridLayoutManager(9, 2, new Insets(0, 0, 0, 0), -1, -1));
+        editorPanel.setLayout(new GridLayoutManager(9, 3, new Insets(0, 0, 0, 0), -1, -1));
         editorPanel.setMinimumSize(new Dimension(0, 0));
         splitPane.setRightComponent(editorPanel);
         blockIdLabel = new JLabel();
@@ -702,7 +704,7 @@ public class UserInterface {
         blockIdComboBox.setEditable(true);
         blockIdComboBox.setEnabled(false);
         blockIdComboBox.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_id.tooltip"));
-        editorPanel.add(blockIdComboBox, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(blockIdComboBox, new GridConstraints(5, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPropertiesLabel = new JLabel();
         this.$$$loadLabelText$$$(blockPropertiesLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_properties.text"));
         editorPanel.add(blockPropertiesLabel, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, 1, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));

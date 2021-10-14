@@ -40,12 +40,8 @@ public final class Assets {
     }
 
     public static void setAssets(Path assets) {
-        Assets.assets = assets;
-        if (assets != null) {
-            Configuration.CONFIG.setProperty("assets_path", assets.toString());
-        } else {
-            Configuration.CONFIG.setProperty("assets_path", "");
-        }
+        Assets.assets = Objects.requireNonNullElseGet(assets, () -> Path.of(""));
+        Configuration.CONFIG.setProperty("assets_path", Assets.assets.toString());
         load();
     }
 
