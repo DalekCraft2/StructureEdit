@@ -122,7 +122,7 @@ public final class Main {
 
             String path;
             if (protocol.equals("jar") && args.length > 0) {
-                path = args[0];
+                path = args[args.length - 1];
             } else {
                 path = getArgument(argList, "-path");
             }

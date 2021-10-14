@@ -21,7 +21,7 @@ public final class Configuration {
     private static final Logger LOGGER = LogManager.getLogger(UserInterface.class);
     public static final Properties CONFIG = new Properties() {
         @Override
-        public Object setProperty(String key, String value) {
+        public synchronized Object setProperty(String key, String value) {
             Object o = super.setProperty(key, value);
             String protocol = Main.class.getResource("").getProtocol();
             if (protocol.equals("jar")) {

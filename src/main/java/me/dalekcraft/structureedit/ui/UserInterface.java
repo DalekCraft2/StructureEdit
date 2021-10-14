@@ -509,7 +509,7 @@ public class UserInterface {
             loadLayer();
             updateSelected();
         });
-        // TODO Blockbench-style palette editor, with a list of palettes and palette IDs?
+        // TODO Blockbench-style palette editor, with a list of palettes and palette IDs (This will also involve separating palette editing and block editing).
         blockPaletteSpinner.addChangeListener(e -> {
             if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
                 Block block = selected.getBlock();
