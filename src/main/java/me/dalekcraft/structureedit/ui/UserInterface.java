@@ -18,7 +18,6 @@ package me.dalekcraft.structureedit.ui;
 
 import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
-import com.intellij.uiDesigner.core.Spacer;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.glu.GLU;
@@ -35,7 +34,6 @@ import me.dalekcraft.structureedit.util.Configuration;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.logging.log4j.core.config.Configurator;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -78,7 +76,7 @@ public class UserInterface {
     public final JFileChooser schematicChooser = new JFileChooser();
     public final JFileChooser assetsChooser = new JFileChooser();
     public JComboBox<String> blockIdComboBox;
-    public JSplitPane splitPane;
+    private JSplitPane splitPane;
     /**
      * Rotational angle for x-axis in degrees.
      **/
@@ -107,10 +105,6 @@ public class UserInterface {
     private Schematic schematic;
     private JPanel panel;
     private JPanel rendererPanel;
-    private JMenuBar menuBar;
-    private JMenu fileMenu;
-    private JMenu settingsMenu;
-    private JMenu helpMenu;
     private JPanel editorPanel;
     private JPanel gridPanel;
     private JLabel blockIdLabel;
@@ -355,88 +349,6 @@ public class UserInterface {
             }
         });
 
-        JPopupMenu filePopup = fileMenu.getPopupMenu();
-        JMenuItem openButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.open"));
-        openButton.addActionListener(e -> {
-            animator.pause();
-            int result = schematicChooser.showOpenDialog(Main.frame);
-            if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
-                File file;
-                try {
-                    file = schematicChooser.getSelectedFile().getCanonicalFile();
-                    open(file);
-                } catch (IOException e1) {
-                    LOGGER.log(Level.ERROR, e1.getMessage());
-                }
-            }
-            animator.resume();
-        });
-        filePopup.add(openButton);
-        JMenuItem saveButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.save"));
-        saveButton.addActionListener(e -> {
-            if (schematic != null) {
-                animator.pause();
-                schematicChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-                int result = schematicChooser.showSaveDialog(Main.frame);
-                if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
-                    try {
-                        File file = schematicChooser.getSelectedFile().getCanonicalFile();
-                        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saving"), file);
-                        schematic.saveTo(file);
-                        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saved"), file);
-                        Main.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
-                    } catch (IOException e1) {
-                        LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_saving"), e1.getMessage());
-                    }
-                }
-                animator.resume();
-            } else {
-                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.null"));
-            }
-        });
-        filePopup.add(saveButton);
-
-        JPopupMenu settingsPopup = settingsMenu.getPopupMenu();
-        JMenuItem assetsPathButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.assets_path"));
-        assetsPathButton.addActionListener(e -> {
-            animator.pause();
-            assetsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-            int result = assetsChooser.showOpenDialog(panel);
-            if (result == JFileChooser.APPROVE_OPTION && assetsChooser.getSelectedFile() != null) {
-                Path assets;
-                try {
-                    assets = assetsChooser.getSelectedFile().toPath().toRealPath();
-                    Assets.setAssets(assets);
-                    Object selectedItem = blockIdComboBox.getSelectedItem();
-                    blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
-                    blockIdComboBox.setSelectedItem(selectedItem);
-                } catch (IOException e1) {
-                    LOGGER.log(Level.ERROR, e1.getMessage());
-                }
-            }
-            updateSelected();
-            animator.resume();
-        });
-        settingsPopup.add(assetsPathButton);
-        JMenuItem logLevelButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level"));
-        logLevelButton.addActionListener(e -> {
-            Level level = (Level) JOptionPane.showInputDialog(Main.frame, Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.label"), Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.title"), JOptionPane.PLAIN_MESSAGE, null, Level.values(), LogManager.getRootLogger().getLevel());
-            if (level != null) {
-                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.setting"), level);
-                Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level);
-            }
-        });
-        settingsPopup.add(logLevelButton);
-
-        JPopupMenu helpPopup = helpMenu.getPopupMenu();
-        JMenuItem controlsButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls"));
-        controlsButton.addActionListener(e -> {
-            animator.pause();
-            JOptionPane.showMessageDialog(Main.frame, Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.dialog"), Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.title"), JOptionPane.INFORMATION_MESSAGE);
-            animator.resume();
-        });
-        helpPopup.add(controlsButton);
-
         layerSpinner.addChangeListener(e -> {
             if (schematic != null) {
                 loadLayer();
@@ -506,10 +418,10 @@ public class UserInterface {
             if (schematic != null) {
                 if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
                     nbtStructure.setActivePalette((Integer) paletteSpinner.getValue());
+                    loadLayer();
+                    updateSelected();
                 }
             }
-            loadLayer();
-            updateSelected();
         });
         // TODO Blockbench-style palette editor, with a list of palettes and palette IDs (This will also involve separating palette editing and block editing).
         blockPaletteSpinner.addChangeListener(e -> {
@@ -517,19 +429,73 @@ public class UserInterface {
                 Block block = selected.getBlock();
                 if (block != null) {
                     block.setStateIndex((Integer) blockPaletteSpinner.getValue());
+                    loadLayer();
+                    updateSelected();
                 }
-                loadLayer();
-                updateSelected();
             }
         });
     }
 
+    public void showControlsDialog() {
+        animator.pause();
+        JOptionPane.showMessageDialog(Main.frame, Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.dialog"), Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.title"), JOptionPane.INFORMATION_MESSAGE);
+        animator.resume();
+    }
+
+    public void selectAssets() {
+        animator.pause();
+        assetsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        int result = assetsChooser.showOpenDialog(panel);
+        if (result == JFileChooser.APPROVE_OPTION && assetsChooser.getSelectedFile() != null) {
+            Path assets = assetsChooser.getSelectedFile().toPath();
+            Assets.setAssets(assets);
+            Object selectedItem = blockIdComboBox.getSelectedItem();
+            blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
+            blockIdComboBox.setSelectedItem(selectedItem);
+        }
+        updateSelected();
+        animator.resume();
+    }
+
+    public void saveSchematic() {
+        if (schematic != null) {
+            animator.pause();
+            schematicChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+            int result = schematicChooser.showSaveDialog(Main.frame);
+            if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
+                try {
+                    File file = schematicChooser.getSelectedFile();
+                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saving"), file);
+                    schematic.saveTo(file);
+                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saved"), file);
+                    Main.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
+                } catch (IOException e1) {
+                    LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_saving"), e1.getMessage());
+                }
+            }
+            animator.resume();
+        } else {
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.null"));
+        }
+    }
+
+    public void openSchematic() {
+        animator.pause();
+        int result = schematicChooser.showOpenDialog(Main.frame);
+        if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
+            File file = schematicChooser.getSelectedFile();
+            open(file);
+        }
+        animator.resume();
+    }
+
     public void open(@NotNull File file) {
-        SwingUtilities.invokeLater(() -> {
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loading"), file);
-            try {
-                schematic = openFrom(file);
-                selected = null;
+
+        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loading"), file);
+        try {
+            schematic = openFrom(file);
+            selected = null;
+            SwingUtilities.invokeLater(() -> {
                 sizeTextField.setText(null);
                 paletteSpinner.setValue(0);
                 paletteSpinner.setEnabled(false);
@@ -561,20 +527,16 @@ public class UserInterface {
                         int paletteSize = schematic.getPalette().size();
                         SpinnerModel blockPaletteModel = new SpinnerNumberModel(0, 0, paletteSize - 1, 1);
                         blockPaletteSpinner.setModel(blockPaletteModel);
-                    } else {
-                        paletteSpinner.setEnabled(false);
                     }
                     loadLayer();
                     LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loaded"), file);
                     Main.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
-                } else {
-                    LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.not_schematic"));
                 }
-            } catch (IOException | JSONException e) {
-                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
-                Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
-            }
-        });
+            });
+        } catch (IOException | JSONException e) {
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
+            Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+        }
     }
 
     // TODO Make the editor built into the 3D view instead of being a layer-by-layer editor.
@@ -602,6 +564,8 @@ public class UserInterface {
                         color = new Color(color.getRed(), color.getGreen(), color.getBlue());
                         BlockButton blockButton = new BlockButton(block);
                         blockButton.setBackground(color);
+                        blockButton.setContentAreaFilled(false);
+                        blockButton.setOpaque(true);
                         blockButton.setText(blockName.substring(0, 1));
                         blockButton.setToolTipText(blockId);
                         blockButton.setBorder(new LineBorder(Color.BLACK));
@@ -630,30 +594,33 @@ public class UserInterface {
         selected = (BlockButton) e.getSource();
         Block block = selected.getBlock();
 
-        blockIdComboBox.setSelectedItem(block.getId());
-        blockIdComboBox.setEnabled(true);
+        if (block != null) {
+            blockIdComboBox.setSelectedItem(block.getId());
+            blockIdComboBox.setEnabled(true);
 
-        blockPropertiesTextField.setText(block.getPropertiesAsString());
-        blockPropertiesTextField.setForeground(Color.BLACK);
-        blockPropertiesTextField.setEnabled(true);
+            blockPropertiesTextField.setText(block.getPropertiesAsString());
+            blockPropertiesTextField.setForeground(Color.BLACK);
+            blockPropertiesTextField.setEnabled(true);
 
-        try {
-            blockNbtTextField.setText(block.getSnbt());
-            blockNbtTextField.setEnabled(true);
-        } catch (UnsupportedOperationException e1) {
-            blockNbtTextField.setText(null);
-            blockNbtTextField.setEnabled(false);
-        }
-        blockNbtTextField.setForeground(Color.BLACK);
+            try {
+                blockNbtTextField.setText(block.getSnbt());
+                blockNbtTextField.setEnabled(true);
+            } catch (UnsupportedOperationException e1) {
+                blockNbtTextField.setText(null);
+                blockNbtTextField.setEnabled(false);
+            }
+            blockNbtTextField.setForeground(Color.BLACK);
 
-        blockPositionTextField.setText(Arrays.toString(block.getPosition()));
-        blockPositionTextField.setEnabled(true);
+            blockPositionTextField.setText(Arrays.toString(block.getPosition()));
+            blockPositionTextField.setEnabled(true);
 
-        if (!(schematic instanceof TardisSchematic)) {
-            blockPaletteSpinner.setValue(block.getStateIndex());
-            blockPaletteSpinner.setEnabled(true);
-        } else {
-            blockPaletteSpinner.setEnabled(false);
+            try {
+                blockPaletteSpinner.setValue(block.getStateIndex());
+                blockPaletteSpinner.setEnabled(true);
+            } catch (UnsupportedOperationException e1) {
+                blockPaletteSpinner.setValue(0);
+                blockPaletteSpinner.setEnabled(false);
+            }
         }
     }
 
@@ -666,8 +633,10 @@ public class UserInterface {
 
             try {
                 blockNbtTextField.setText(block.getSnbt());
+                blockNbtTextField.setEnabled(true);
             } catch (UnsupportedOperationException e) {
                 blockNbtTextField.setText(null);
+                blockNbtTextField.setEnabled(false);
             }
         }
     }
@@ -686,17 +655,19 @@ public class UserInterface {
     private void $$$setupUI$$$() {
         createUIComponents();
         panel = new JPanel();
-        panel.setLayout(new GridLayoutManager(2, 1, new Insets(0, 0, 0, 0), -1, -1));
+        panel.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
         panel.setPreferredSize(new Dimension(1024, 600));
         splitPane = new JSplitPane();
         splitPane.setContinuousLayout(true);
         splitPane.setResizeWeight(1.0);
-        panel.add(splitPane, new GridConstraints(1, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_WANT_GROW, null, new Dimension(200, 200), null, 0, false));
+        panel.add(splitPane, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_BOTH, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, new Dimension(200, 200), null, 0, false));
         splitPane.setLeftComponent(rendererPanel);
+        final JScrollPane scrollPane1 = new JScrollPane();
+        splitPane.setRightComponent(scrollPane1);
         editorPanel = new JPanel();
-        editorPanel.setLayout(new GridLayoutManager(9, 3, new Insets(0, 0, 0, 0), -1, -1));
+        editorPanel.setLayout(new GridLayoutManager(9, 2, new Insets(0, 0, 0, 0), -1, -1));
         editorPanel.setMinimumSize(new Dimension(0, 0));
-        splitPane.setRightComponent(editorPanel);
+        scrollPane1.setViewportView(editorPanel);
         blockIdLabel = new JLabel();
         this.$$$loadLabelText$$$(blockIdLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_id.text"));
         editorPanel.add(blockIdLabel, new GridConstraints(5, 0, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, 1, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -704,7 +675,7 @@ public class UserInterface {
         blockIdComboBox.setEditable(true);
         blockIdComboBox.setEnabled(false);
         blockIdComboBox.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.block_id.tooltip"));
-        editorPanel.add(blockIdComboBox, new GridConstraints(5, 1, 1, 2, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
+        editorPanel.add(blockIdComboBox, new GridConstraints(5, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
         blockPropertiesLabel = new JLabel();
         this.$$$loadLabelText$$$(blockPropertiesLabel, this.$$$getMessageFromBundle$$$("language", "ui.editor.block_properties.text"));
         editorPanel.add(blockPropertiesLabel, new GridConstraints(6, 0, 1, 1, GridConstraints.ANCHOR_EAST, GridConstraints.FILL_NONE, 1, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
@@ -760,19 +731,6 @@ public class UserInterface {
         layerSpinner.setEnabled(false);
         layerSpinner.setToolTipText(this.$$$getMessageFromBundle$$$("language", "ui.editor.layer.tooltip"));
         editorPanel.add(layerSpinner, new GridConstraints(1, 1, 1, 1, GridConstraints.ANCHOR_WEST, GridConstraints.FILL_HORIZONTAL, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_FIXED, null, null, null, 0, false));
-        menuBar = new JMenuBar();
-        menuBar.setLayout(new GridLayoutManager(1, 3, new Insets(0, 0, 0, 0), -1, -1));
-        panel.add(menuBar, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_NORTHWEST, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        fileMenu = new JMenu();
-        this.$$$loadButtonText$$$(fileMenu, this.$$$getMessageFromBundle$$$("language", "ui.menu_bar.file_menu.text"));
-        menuBar.add(fileMenu, new GridConstraints(0, 0, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        settingsMenu = new JMenu();
-        this.$$$loadButtonText$$$(settingsMenu, this.$$$getMessageFromBundle$$$("language", "ui.menu_bar.settings_menu.text"));
-        menuBar.add(settingsMenu, new GridConstraints(0, 1, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
-        helpMenu = new JMenu();
-        helpMenu.setLayout(new GridLayoutManager(1, 1, new Insets(0, 0, 0, 0), -1, -1));
-        this.$$$loadButtonText$$$(helpMenu, this.$$$getMessageFromBundle$$$("language", "ui.menu_bar.help_menu.text"));
-        menuBar.add(helpMenu, new GridConstraints(0, 2, 1, 1, GridConstraints.ANCHOR_CENTER, GridConstraints.FILL_NONE, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, GridConstraints.SIZEPOLICY_CAN_SHRINK | GridConstraints.SIZEPOLICY_CAN_GROW, null, null, null, 0, false));
         blockIdLabel.setLabelFor(blockIdComboBox);
         blockPropertiesLabel.setLabelFor(blockPropertiesTextField);
         blockPositionLabel.setLabelFor(blockPositionTextField);
@@ -825,35 +783,6 @@ public class UserInterface {
         component.setText(result.toString());
         if (haveMnemonic) {
             component.setDisplayedMnemonic(mnemonic);
-            component.setDisplayedMnemonicIndex(mnemonicIndex);
-        }
-    }
-
-    /**
-     * @noinspection ALL
-     */
-    private void $$$loadButtonText$$$(AbstractButton component, String text) {
-        StringBuffer result = new StringBuffer();
-        boolean haveMnemonic = false;
-        char mnemonic = '\0';
-        int mnemonicIndex = -1;
-        for (int i = 0; i < text.length(); i++) {
-            if (text.charAt(i) == '&') {
-                i++;
-                if (i == text.length()) {
-                    break;
-                }
-                if (!haveMnemonic && text.charAt(i) != '&') {
-                    haveMnemonic = true;
-                    mnemonic = text.charAt(i);
-                    mnemonicIndex = result.length();
-                }
-            }
-            result.append(text.charAt(i));
-        }
-        component.setText(result.toString());
-        if (haveMnemonic) {
-            component.setMnemonic(mnemonic);
             component.setDisplayedMnemonicIndex(mnemonicIndex);
         }
     }

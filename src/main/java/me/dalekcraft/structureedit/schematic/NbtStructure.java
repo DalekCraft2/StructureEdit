@@ -15,14 +15,20 @@ import java.io.IOException;
 public class NbtStructure implements Schematic {
 
     private final NamedTag schematic;
+    private final CompoundTag root;
     private NbtPalette palette;
 
-    public NbtStructure(NamedTag schematic) {
+    public NbtStructure(NamedTag schematic) throws IOException {
         this.schematic = schematic;
+        if (schematic.getTag() instanceof CompoundTag compoundTag) {
+            root = compoundTag;
+        } else {
+            throw new IOException("Not a schematic file");
+        }
         if (hasPaletteList()) {
             palette = getPaletteListEntry(0);
         } else {
-            palette = new NbtPalette(((CompoundTag) schematic.getTag()).getListTag("palette").asCompoundTagList());
+            palette = new NbtPalette(root.getListTag("palette").asCompoundTagList());
         }
     }
 
@@ -46,17 +52,17 @@ public class NbtStructure implements Schematic {
 
     @Override
     public int @NotNull [] getSize() {
-        ListTag<IntTag> size = ((CompoundTag) schematic.getTag()).getListTag("size").asIntTagList();
+        ListTag<IntTag> size = root.getListTag("size").asIntTagList();
         return new int[]{size.get(0).asInt(), size.get(1).asInt(), size.get(2).asInt()};
     }
 
     @Override
     public void setSize(int sizeX, int sizeY, int sizeZ) {
-        ListTag<IntTag> size = ((CompoundTag) schematic.getTag()).getListTag("size").asIntTagList();
+        ListTag<IntTag> size = root.getListTag("size").asIntTagList();
         size.set(0, new IntTag(sizeX));
         size.set(1, new IntTag(sizeY));
         size.set(2, new IntTag(sizeZ));
-        ((CompoundTag) schematic.getTag()).put("size", size);
+        root.put("size", size);
     }
 
     @Override
@@ -89,11 +95,11 @@ public class NbtStructure implements Schematic {
     }
 
     public ListTag<CompoundTag> getBlockList() {
-        return ((CompoundTag) schematic.getTag()).getListTag("blocks").asCompoundTagList();
+        return root.getListTag("blocks").asCompoundTagList();
     }
 
     public void setBlockList(ListTag<CompoundTag> blocks) {
-        ((CompoundTag) schematic.getTag()).put("blocks", blocks);
+        root.put("blocks", blocks);
     }
 
     @Override
@@ -104,7 +110,7 @@ public class NbtStructure implements Schematic {
     @Override
     public void setPalette(Palette palette) {
         this.palette = (NbtPalette) palette;
-        ((CompoundTag) schematic.getTag()).put("palette", ((NbtPalette) palette).getData());
+        root.put("palette", ((NbtPalette) palette).getData());
     }
 
     public NbtPalette getPaletteListEntry(int index) {
@@ -116,15 +122,15 @@ public class NbtStructure implements Schematic {
     }
 
     public ListTag<ListTag<?>> getPaletteList() {
-        return ((CompoundTag) schematic.getTag()).getListTag("palettes").asListTagList();
+        return root.getListTag("palettes").asListTagList();
     }
 
     public void setPaletteList(ListTag<ListTag<?>> palettes) {
-        ((CompoundTag) schematic.getTag()).put("palettes", palettes);
+        root.put("palettes", palettes);
     }
 
     public boolean hasPaletteList() {
-        return ((CompoundTag) schematic.getTag()).containsKey("palettes");
+        return root.containsKey("palettes");
     }
 
     public void setActivePalette(int index) {

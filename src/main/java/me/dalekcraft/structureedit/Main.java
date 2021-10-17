@@ -27,7 +27,6 @@ import org.fusesource.jansi.AnsiConsole;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.json.JSONException;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -74,6 +73,12 @@ public final class Main {
         }
 
         SwingUtilities.invokeLater(() -> {
+            try {
+                // Set the look and feel to be similar to the user's OS, if possible
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ignored) {
+            }
+
             frame = new JFrame(Configuration.LANGUAGE.getProperty("ui.window.title"));
             UserInterface userInterface = new UserInterface();
             frame.add(userInterface.$$$getRootComponent$$$());
@@ -82,6 +87,11 @@ public final class Main {
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
+
+            JMenuBar menuBar = createMenuBar(userInterface);
+
+            frame.setJMenuBar(menuBar);
+
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             frame.addWindowListener(new WindowAdapter() {
                 @Override
@@ -115,10 +125,10 @@ public final class Main {
             }
             Assets.setAssets(assets);
             if (assets != null) {
-                userInterface.assetsChooser.setCurrentDirectory(assets.toFile());
                 userInterface.assetsChooser.setSelectedFile(assets.toFile());
             }
             userInterface.blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
+            frame.pack();
 
             String path;
             if (protocol.equals("jar") && args.length > 0) {
@@ -127,16 +137,52 @@ public final class Main {
                 path = getArgument(argList, "-path");
             }
             if (path != null) {
-                try {
-                    File file = new File(path).getCanonicalFile();
-                    userInterface.open(file);
-                    userInterface.schematicChooser.setCurrentDirectory(file);
-                    userInterface.schematicChooser.setSelectedFile(file);
-                } catch (JSONException | IOException e) {
-                    LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
-                }
+                File file = new File(path);
+                userInterface.open(file);
+                userInterface.schematicChooser.setSelectedFile(file);
             }
         });
+    }
+
+    @NotNull
+    public static JMenuBar createMenuBar(UserInterface userInterface) {
+        JMenuBar menuBar = new JMenuBar();
+
+        JMenu fileMenu = new JMenu(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.text"));
+        JPopupMenu filePopup = fileMenu.getPopupMenu();
+        JMenuItem openButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.open"));
+        openButton.setIcon(UIManager.getIcon("FileView.directoryIcon"));
+        openButton.addActionListener(e -> userInterface.openSchematic());
+        filePopup.add(openButton);
+        JMenuItem saveButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.save"));
+        saveButton.setIcon(UIManager.getIcon("FileView.floppyDriveIcon"));
+        saveButton.addActionListener(e -> userInterface.saveSchematic());
+        filePopup.add(saveButton);
+        menuBar.add(fileMenu);
+
+        JMenu settingsMenu = new JMenu(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.text"));
+        JPopupMenu settingsPopup = settingsMenu.getPopupMenu();
+        JMenuItem assetsPathButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.assets_path"));
+        assetsPathButton.addActionListener(e -> userInterface.selectAssets());
+        settingsPopup.add(assetsPathButton);
+        JMenuItem logLevelButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level"));
+        logLevelButton.addActionListener(e -> {
+            Level level = (Level) JOptionPane.showInputDialog(frame, Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.label"), Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.title"), JOptionPane.PLAIN_MESSAGE, null, Level.values(), LogManager.getRootLogger().getLevel());
+            if (level != null) {
+                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.setting"), level);
+                Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level);
+            }
+        });
+        settingsPopup.add(logLevelButton);
+        menuBar.add(settingsMenu);
+
+        JMenu helpMenu = new JMenu(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.text"));
+        JPopupMenu helpPopup = helpMenu.getPopupMenu();
+        JMenuItem controlsButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls"));
+        controlsButton.addActionListener(e -> userInterface.showControlsDialog());
+        helpPopup.add(controlsButton);
+        menuBar.add(helpMenu);
+        return menuBar;
     }
 
     @Nullable

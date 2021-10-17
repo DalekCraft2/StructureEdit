@@ -1,5 +1,6 @@
 package me.dalekcraft.structureedit.schematic;
 
+import me.dalekcraft.structureedit.util.Configuration;
 import me.dalekcraft.structureedit.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
 import org.apache.logging.log4j.Level;
@@ -60,6 +61,7 @@ public interface Schematic {
                 return new SpongeSchematic(NBTUtil.read(file));
             }
             default -> {
+                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.not_schematic"));
                 return null;
             }
         }

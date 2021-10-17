@@ -141,8 +141,8 @@ public final class Assets {
                         loadTextures(path, currentNamespace + path.getFileName() + "/");
                     } else if (Files.isRegularFile(path)) {
                         if (path.toString().endsWith(".png")) {
-                            //                            String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".png"));
-                            //                            getTexture(namespacedId);
+                            // String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".png"));
+                            // getTexture(namespacedId);
                         } else if (path.toString().endsWith(".png.mcmeta")) {
                             String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".png.mcmeta"));
                             getAnimation(namespacedId);
@@ -166,7 +166,7 @@ public final class Assets {
             LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getProperty("log.assets.getting_internal"), internalPath);
             return internalStream;
         }
-        Path path = Path.of(assets.toString(), namespace + File.separator + folder + File.separator + id + "." + extension).toRealPath();
+        Path path = Path.of(assets.toString(), namespace + File.separator + folder + File.separator + id + "." + extension);
         if (Files.exists(path)) {
             LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getProperty("log.assets.getting"), path);
         }

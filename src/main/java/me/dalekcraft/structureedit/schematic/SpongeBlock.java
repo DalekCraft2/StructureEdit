@@ -131,14 +131,13 @@ public class SpongeBlock implements Block {
                 int[] position = positionTag.getValue();
                 if (Arrays.equals(this.position, position)) {
                     if (nbt != null) {
-                        nbt.remove("Id");
-                        nbt.remove("Pos");
-                        if (nbt.entrySet().isEmpty()) {
+                        CompoundTag clone = nbt.clone();
+                        clone.remove("Id");
+                        clone.remove("Pos");
+                        if (clone.entrySet().isEmpty()) {
                             blockEntityTag = null;
                             blockEntityList.remove(blockEntityList.indexOf(block));
                         } else {
-                            nbt.putString("Id", getId());
-                            nbt.putIntArray("Pos", position);
                             blockEntityTag = nbt;
                             blockEntityList.set(blockEntityList.indexOf(block), nbt);
                         }
