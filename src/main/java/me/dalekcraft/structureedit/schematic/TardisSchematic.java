@@ -11,6 +11,8 @@ import java.io.IOException;
 
 public record TardisSchematic(JSONObject schematic) implements Schematic {
 
+    public static final String EXTENSION = "tschm";
+
     @Override
     public void saveTo(File file) throws IOException {
         GzipUtils.zip(schematic, file);
@@ -26,7 +28,7 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
     @Override
     @NotNull
     public String getFormat() {
-        return EXTENSION_TARDIS;
+        return EXTENSION;
     }
 
     @Override

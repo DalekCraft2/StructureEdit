@@ -14,6 +14,7 @@ import java.io.IOException;
 
 public class NbtStructure implements Schematic {
 
+    public static final String EXTENSION = "nbt";
     private final NamedTag schematic;
     private final CompoundTag root;
     private NbtPalette palette;
@@ -47,7 +48,7 @@ public class NbtStructure implements Schematic {
     @Override
     @NotNull
     public String getFormat() {
-        return EXTENSION_NBT;
+        return EXTENSION;
     }
 
     @Override

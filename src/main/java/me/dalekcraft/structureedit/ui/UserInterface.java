@@ -25,10 +25,7 @@ import com.jogamp.opengl.util.Animator;
 import me.dalekcraft.structureedit.Main;
 import me.dalekcraft.structureedit.drawing.BlockColor;
 import me.dalekcraft.structureedit.drawing.ModelRenderer;
-import me.dalekcraft.structureedit.schematic.Block;
-import me.dalekcraft.structureedit.schematic.NbtStructure;
-import me.dalekcraft.structureedit.schematic.Schematic;
-import me.dalekcraft.structureedit.schematic.TardisSchematic;
+import me.dalekcraft.structureedit.schematic.*;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
 import org.apache.logging.log4j.Level;
@@ -58,7 +55,7 @@ import static com.jogamp.opengl.GL2ES1.GL_PERSPECTIVE_CORRECTION_HINT;
 import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
 import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
-import static me.dalekcraft.structureedit.schematic.Schematic.*;
+import static me.dalekcraft.structureedit.schematic.Schematic.openFrom;
 
 /**
  * @author eccentric_nz
@@ -67,10 +64,10 @@ public class UserInterface {
 
     public static final float SCALE = 1.0f;
     private static final Logger LOGGER = LogManager.getLogger(UserInterface.class);
-    private static final FileNameExtensionFilter FILTER_NBT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.nbt"), EXTENSION_NBT);
-    private static final FileNameExtensionFilter FILTER_MCEDIT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.mcedit"), EXTENSION_MCEDIT);
-    private static final FileNameExtensionFilter FILTER_SPONGE = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.sponge"), EXTENSION_SPONGE);
-    private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.tardis"), EXTENSION_TARDIS);
+    private static final FileNameExtensionFilter FILTER_NBT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.nbt"), NbtStructure.EXTENSION);
+    private static final FileNameExtensionFilter FILTER_MCEDIT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.mcedit"), McEditSchematic.EXTENSION);
+    private static final FileNameExtensionFilter FILTER_SPONGE = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.sponge"), SpongeSchematic.EXTENSION);
+    private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.tardis"), TardisSchematic.EXTENSION);
     private static final float ROTATION_SENSITIVITY = 1.0f;
     private static final float MOTION_SENSITIVITY = 0.1f;
     public final JFileChooser schematicChooser = new JFileChooser();

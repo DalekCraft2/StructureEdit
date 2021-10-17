@@ -16,7 +16,7 @@ import java.util.Arrays;
 
 public class SpongeBlock implements Block {
 
-    private static final Logger LOGGER = LogManager.getLogger(SpongeSchematic.class);
+    private static final Logger LOGGER = LogManager.getLogger(SpongeBlock.class);
     private final SpongeSchematic schematic;
     private CompoundTag blockEntityTag;
     private String state;

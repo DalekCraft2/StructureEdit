@@ -11,6 +11,8 @@ import java.io.IOException;
 
 public record McEditSchematic(NamedTag schematic) implements Schematic {
 
+    public static final String EXTENSION = "schematic";
+
     @Override
     public void saveTo(File file) throws IOException {
         NBTUtil.write(schematic, file);
@@ -25,7 +27,7 @@ public record McEditSchematic(NamedTag schematic) implements Schematic {
     @Contract(pure = true)
     @Override
     public String getFormat() {
-        return EXTENSION_MCEDIT;
+        return EXTENSION;
     }
 
     @Override

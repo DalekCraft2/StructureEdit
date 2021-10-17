@@ -19,23 +19,6 @@ public interface Schematic {
     Logger LOGGER = LogManager.getLogger(Schematic.class);
 
     /**
-     * The extension for Minecraft structure files.
-     */
-    String EXTENSION_NBT = "nbt";
-    /**
-     * The extension for MCEdit schematic files.
-     */
-    String EXTENSION_MCEDIT = "schematic";
-    /**
-     * The extension for Sponge schematic files.
-     */
-    String EXTENSION_SPONGE = "schem";
-    /**
-     * The extension for TARDIS schematic files.
-     */
-    String EXTENSION_TARDIS = "tschm";
-
-    /**
      * Extracts a {@link Schematic} from a {@link File}.
      *
      * @param file the file that contains the {@link Schematic}
@@ -47,18 +30,18 @@ public interface Schematic {
     static Schematic openFrom(@NotNull File file) throws IOException, JSONException {
         String path = file.getCanonicalPath();
         switch (path.substring(path.lastIndexOf('.') + 1)) {
-            case EXTENSION_TARDIS -> {
+            case TardisSchematic.EXTENSION -> {
                 return new TardisSchematic(new JSONObject(GzipUtils.unzip(file)));
             }
-            case EXTENSION_NBT -> {
+            case NbtStructure.EXTENSION -> {
                 return new NbtStructure(NBTUtil.read(file));
             }
-            case EXTENSION_MCEDIT -> {
+            case McEditSchematic.EXTENSION -> {
                 LOGGER.log(Level.WARN, "MCEdit schematics are not yet supported!");
                 return new McEditSchematic(NBTUtil.read(file));
             }
-            case EXTENSION_SPONGE -> {
-                return new SpongeSchematic(NBTUtil.read(file));
+            case SpongeSchematic.EXTENSION -> {
+                return SpongeSchematic.getInstance(NBTUtil.read(file));
             }
             default -> {
                 LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.not_schematic"));

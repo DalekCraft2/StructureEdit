@@ -14,16 +14,36 @@ import java.io.IOException;
 
 public class SpongeSchematic implements Schematic {
 
-    private final NamedTag schematic;
-    private final CompoundTag root;
+    public static final String EXTENSION = "schem";
+    protected final NamedTag schematic;
+    protected CompoundTag root;
 
     public SpongeSchematic(NamedTag schematic) throws IOException {
         this.schematic = schematic;
         if (schematic.getTag() instanceof CompoundTag compoundTag) {
-            if (compoundTag.size() == 1 && compoundTag.containsKey("Schematic")) {
-                root = compoundTag.getCompoundTag("Schematic");
+            root = compoundTag;
+        } else {
+            throw new IOException("Not a schematic file");
+        }
+    }
+
+    @Contract("_ -> new")
+    public static @NotNull SpongeSchematic getInstance(@NotNull NamedTag namedTag) throws IOException {
+        if (namedTag.getTag() instanceof CompoundTag compoundTag) {
+            if (compoundTag.containsKey("Schematic")) {
+                int version = compoundTag.getCompoundTag("Schematic").getInt("Version");
+                if (version == 3) {
+                    return new SpongeV3Schematic(namedTag);
+                }
+                throw new IOException("Illegal schematic version " + version);
             } else {
-                root = compoundTag;
+                int version = compoundTag.getInt("Version");
+                if (version == 1) {
+                    return new SpongeSchematic(namedTag);
+                } else if (version == 2) {
+                    return new SpongeV2Schematic(namedTag);
+                }
+                throw new IOException("Illegal schematic version " + version);
             }
         } else {
             throw new IOException("Not a schematic file");
@@ -35,16 +55,14 @@ public class SpongeSchematic implements Schematic {
         NBTUtil.write(schematic, file);
     }
 
-    @Contract(pure = true)
     @Override
-    public Object getData() {
+    public NamedTag getData() {
         return schematic;
     }
 
-    @Contract(pure = true)
     @Override
     public String getFormat() {
-        return EXTENSION_SPONGE;
+        return EXTENSION;
     }
 
     @Override
@@ -59,7 +77,6 @@ public class SpongeSchematic implements Schematic {
         root.putShort("Length", (short) sizeZ);
     }
 
-    @Contract("_, _, _ -> new")
     @Override
     @NotNull
     public SpongeBlock getBlock(int x, int y, int z) {
@@ -85,63 +102,37 @@ public class SpongeSchematic implements Schematic {
     @Contract(pure = true)
     @Override
     public void setBlock(int x, int y, int z, Block block) {
-
+        // TODO This.
     }
 
-    @Contract(" -> new")
     @Override
-    public @NotNull SpongePalette getPalette() {
-        if (getVersion() == 3) {
-            return new SpongePalette(root.getCompoundTag("Blocks").getCompoundTag("Palette"));
-        }
-        return new SpongePalette(root.getCompoundTag("Palette")); // Versions 1 and 2
+    @NotNull
+    public SpongePalette getPalette() {
+        return new SpongePalette(root.getCompoundTag("Palette"));
     }
 
     @Override
     public void setPalette(Palette palette) {
-        if (getVersion() == 3) {
-            root.getCompoundTag("Blocks").put("Palette", ((SpongePalette) palette).getData());
-        } else {
-            root.put("Palette", ((SpongePalette) palette).getData()); // Versions 1 and 2
-        }
+        root.put("Palette", ((SpongePalette) palette).getData());
     }
 
     public ByteArrayTag getBlockList() {
-        if (getVersion() == 3) {
-            return root.getCompoundTag("Blocks").getByteArrayTag("Data");
-        }
-        return root.getByteArrayTag("BlockData"); // Versions 1 and 2
+        return root.getByteArrayTag("BlockData");
     }
 
     public void setBlockList(ByteArrayTag blocks) {
-        if (getVersion() == 3) {
-            root.getCompoundTag("Blocks").put("Data", blocks);
-        } else {
-            root.put("BlockData", blocks); // Versions 1 and 2
-        }
+        root.put("BlockData", blocks);
     }
 
     public ListTag<CompoundTag> getBlockEntityList() {
-        if (getVersion() == 3) {
-            return root.getCompoundTag("Blocks").getListTag("BlockEntities").asCompoundTagList();
-        }
-        return root.getListTag("BlockEntities").asCompoundTagList(); // Versions 1 and 2
+        return root.getListTag("TileEntities").asCompoundTagList();
     }
 
     public void setBlockEntityList(ListTag<CompoundTag> blockEntities) {
-        if (getVersion() == 3) {
-            root.getCompoundTag("Blocks").put("BlockEntities", blockEntities);
-        } else {
-            root.put("BlockEntities", blockEntities); // Versions 1 and 2
-        }
+        root.put("TileEntities", blockEntities);
     }
 
-    // TODO Change how methods work depending on which Sponge schematic version is used by the schematic.
     public int getVersion() {
-        if (root.containsKey("Version")) {
-            return root.getInt("Version");
-        } else {
-            return 1;
-        }
+        return root.getInt("Version");
     }
 }
