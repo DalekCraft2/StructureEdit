@@ -12,23 +12,20 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 
-public class SpongeSchematic implements Schematic {
+public class SpongeSchematic implements PaletteSchematic {
 
     public static final String EXTENSION = "schem";
     protected final NamedTag schematic;
-    protected CompoundTag root;
+    protected final CompoundTag root;
 
-    public SpongeSchematic(NamedTag schematic) throws IOException {
+    public SpongeSchematic(@NotNull NamedTag schematic) throws IOException {
         this.schematic = schematic;
-        if (schematic.getTag() instanceof CompoundTag compoundTag) {
-            root = compoundTag;
-        } else {
-            throw new IOException("Not a schematic file");
-        }
+        root = initializeRoot();
     }
 
     @Contract("_ -> new")
-    public static @NotNull SpongeSchematic getInstance(@NotNull NamedTag namedTag) throws IOException {
+    @NotNull
+    public static SpongeSchematic getInstance(@NotNull NamedTag namedTag) throws IOException {
         if (namedTag.getTag() instanceof CompoundTag compoundTag) {
             if (compoundTag.containsKey("Schematic")) {
                 int version = compoundTag.getCompoundTag("Schematic").getInt("Version");
@@ -45,6 +42,14 @@ public class SpongeSchematic implements Schematic {
                 }
                 throw new IOException("Illegal schematic version " + version);
             }
+        } else {
+            throw new IOException("Not a schematic file");
+        }
+    }
+
+    protected CompoundTag initializeRoot() throws IOException {
+        if (schematic.getTag() instanceof CompoundTag compoundTag) {
+            return compoundTag;
         } else {
             throw new IOException("Not a schematic file");
         }

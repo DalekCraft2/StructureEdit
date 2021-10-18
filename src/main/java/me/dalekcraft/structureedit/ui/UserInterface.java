@@ -263,7 +263,7 @@ public class UserInterface {
                             if (renderedHeight < size[1]) {
                                 renderedHeight++;
                             } else {
-                                Toolkit.getDefaultToolkit().beep();
+                                rendererPanel.getToolkit().beep();
                             }
                             if (renderedHeight > size[1]) {
                                 renderedHeight = size[1];
@@ -274,7 +274,7 @@ public class UserInterface {
                         if (renderedHeight > 0) {
                             renderedHeight--;
                         } else {
-                            Toolkit.getDefaultToolkit().beep();
+                            rendererPanel.getToolkit().beep();
                         }
                         if (renderedHeight < 0) {
                             renderedHeight = 0;
@@ -413,8 +413,8 @@ public class UserInterface {
         });
         paletteSpinner.addChangeListener(e -> {
             if (schematic != null) {
-                if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                    nbtStructure.setActivePalette((Integer) paletteSpinner.getValue());
+                if (schematic instanceof MultiPaletteSchematic multiPaletteSchematic && multiPaletteSchematic.hasPaletteList()) {
+                    multiPaletteSchematic.setActivePalette((Integer) paletteSpinner.getValue());
                     loadLayer();
                     updateSelected();
                 }
@@ -422,10 +422,10 @@ public class UserInterface {
         });
         // TODO Blockbench-style palette editor, with a list of palettes and palette IDs (This will also involve separating palette editing and block editing).
         blockPaletteSpinner.addChangeListener(e -> {
-            if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
+            if (schematic != null && schematic instanceof PaletteSchematic && selected != null) {
                 Block block = selected.getBlock();
-                if (block != null) {
-                    block.setStateIndex((Integer) blockPaletteSpinner.getValue());
+                if (block instanceof PaletteBlock paletteBlock) {
+                    paletteBlock.setStateIndex((Integer) blockPaletteSpinner.getValue());
                     loadLayer();
                     updateSelected();
                 }
@@ -500,9 +500,9 @@ public class UserInterface {
                 blockPositionTextField.setEnabled(false);
                 blockIdComboBox.setSelectedItem(null);
                 blockIdComboBox.setEnabled(false);
-                blockPropertiesTextField.setText(null);
+                blockPropertiesTextField.setValue(null);
                 blockPropertiesTextField.setEnabled(false);
-                blockNbtTextField.setText(null);
+                blockNbtTextField.setValue(null);
                 blockNbtTextField.setEnabled(false);
                 blockPaletteSpinner.setValue(0);
                 blockPaletteSpinner.setEnabled(false);
@@ -513,15 +513,15 @@ public class UserInterface {
                     renderedHeight = size[1];
                     SpinnerModel layerModel = new SpinnerNumberModel(0, 0, size[1] - 1, 1);
                     layerSpinner.setModel(layerModel);
-                    if (!(schematic instanceof TardisSchematic)) {
-                        if (schematic instanceof NbtStructure nbtStructure && nbtStructure.hasPaletteList()) {
-                            int palettesSize = nbtStructure.getPaletteList().size();
+                    if (schematic instanceof PaletteSchematic paletteSchematic) {
+                        if (paletteSchematic instanceof MultiPaletteSchematic multiPaletteSchematic && multiPaletteSchematic.hasPaletteList()) {
+                            int palettesSize = multiPaletteSchematic.getPaletteList().size();
                             SpinnerModel paletteModel = new SpinnerNumberModel(0, 0, palettesSize - 1, 1);
                             paletteSpinner.setEnabled(true);
                             paletteSpinner.setModel(paletteModel);
-                            nbtStructure.setActivePalette(0);
+                            multiPaletteSchematic.setActivePalette(0);
                         }
-                        int paletteSize = schematic.getPalette().size();
+                        int paletteSize = paletteSchematic.getPalette().size();
                         SpinnerModel blockPaletteModel = new SpinnerNumberModel(0, 0, paletteSize - 1, 1);
                         blockPaletteSpinner.setModel(blockPaletteModel);
                     }
@@ -595,15 +595,15 @@ public class UserInterface {
             blockIdComboBox.setSelectedItem(block.getId());
             blockIdComboBox.setEnabled(true);
 
-            blockPropertiesTextField.setText(block.getPropertiesAsString());
+            blockPropertiesTextField.setValue(block.getPropertiesAsString());
             blockPropertiesTextField.setForeground(Color.BLACK);
             blockPropertiesTextField.setEnabled(true);
 
             try {
-                blockNbtTextField.setText(block.getSnbt());
+                blockNbtTextField.setValue(block.getSnbt());
                 blockNbtTextField.setEnabled(true);
             } catch (UnsupportedOperationException e1) {
-                blockNbtTextField.setText(null);
+                blockNbtTextField.setValue(null);
                 blockNbtTextField.setEnabled(false);
             }
             blockNbtTextField.setForeground(Color.BLACK);
@@ -611,10 +611,10 @@ public class UserInterface {
             blockPositionTextField.setText(Arrays.toString(block.getPosition()));
             blockPositionTextField.setEnabled(true);
 
-            try {
-                blockPaletteSpinner.setValue(block.getStateIndex());
+            if (block instanceof PaletteBlock paletteBlock) {
+                blockPaletteSpinner.setValue(paletteBlock.getStateIndex());
                 blockPaletteSpinner.setEnabled(true);
-            } catch (UnsupportedOperationException e1) {
+            } else {
                 blockPaletteSpinner.setValue(0);
                 blockPaletteSpinner.setEnabled(false);
             }
@@ -626,13 +626,13 @@ public class UserInterface {
             Block block = selected.getBlock();
 
             blockIdComboBox.setSelectedItem(block.getId());
-            blockPropertiesTextField.setText(block.getPropertiesAsString());
+            blockPropertiesTextField.setValue(block.getPropertiesAsString());
 
             try {
-                blockNbtTextField.setText(block.getSnbt());
+                blockNbtTextField.setValue(block.getSnbt());
                 blockNbtTextField.setEnabled(true);
             } catch (UnsupportedOperationException e) {
-                blockNbtTextField.setText(null);
+                blockNbtTextField.setValue(null);
                 blockNbtTextField.setEnabled(false);
             }
         }

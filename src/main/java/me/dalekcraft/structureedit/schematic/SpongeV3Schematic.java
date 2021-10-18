@@ -8,13 +8,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
-// TODO Make an interface for Sponge schematics, and a class for each version.
 public class SpongeV3Schematic extends SpongeV2Schematic {
 
     public SpongeV3Schematic(@NotNull NamedTag schematic) throws IOException {
         super(schematic);
+    }
+
+    @Override
+    protected CompoundTag initializeRoot() throws IOException {
         if (schematic.getTag() instanceof CompoundTag compoundTag) {
-            root = compoundTag.getCompoundTag("Schematic");
+            return compoundTag.getCompoundTag("Schematic");
         } else {
             throw new IOException("Not a schematic file");
         }

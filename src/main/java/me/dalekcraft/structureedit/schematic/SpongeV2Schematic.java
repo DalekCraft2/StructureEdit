@@ -7,10 +7,15 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
-public class SpongeV2Schematic extends SpongeSchematic {
+public class SpongeV2Schematic extends SpongeSchematic implements VersionedSchematic {
 
     public SpongeV2Schematic(@NotNull NamedTag schematic) throws IOException {
         super(schematic);
+    }
+
+    @Override
+    public int getDataVersion() {
+        return root.getInt("DataVersion");
     }
 
     @Override

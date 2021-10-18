@@ -9,9 +9,21 @@ import org.jetbrains.annotations.NotNull;
 import java.io.File;
 import java.io.IOException;
 
-public record McEditSchematic(NamedTag schematic) implements Schematic {
+public class McEditSchematic implements Schematic {
 
     public static final String EXTENSION = "schematic";
+    private final NamedTag schematic;
+    private final CompoundTag root;
+
+
+    public McEditSchematic(@NotNull NamedTag schematic) throws IOException {
+        this.schematic = schematic;
+        if (schematic.getTag() instanceof CompoundTag compoundTag) {
+            root = compoundTag;
+        } else {
+            throw new IOException("Not a schematic file");
+        }
+    }
 
     @Override
     public void saveTo(File file) throws IOException {
@@ -32,8 +44,7 @@ public record McEditSchematic(NamedTag schematic) implements Schematic {
 
     @Override
     public int @NotNull [] getSize() {
-        CompoundTag tag = (CompoundTag) schematic.getTag();
-        return new int[]{tag.getShort("Width"), tag.getShort("Height"), tag.getShort("Length")};
+        return new int[]{root.getShort("Width"), root.getShort("Height"), root.getShort("Length")};
     }
 
     @Override
@@ -51,16 +62,6 @@ public record McEditSchematic(NamedTag schematic) implements Schematic {
 
     @Override
     public void setBlock(int x, int y, int z, Block block) {
-
-    }
-
-    @Override
-    public Palette getPalette() {
-        return null;
-    }
-
-    @Override
-    public void setPalette(Palette palette) {
 
     }
 }

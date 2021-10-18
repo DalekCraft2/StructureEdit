@@ -9,9 +9,14 @@ import org.json.JSONObject;
 import java.io.File;
 import java.io.IOException;
 
-public record TardisSchematic(JSONObject schematic) implements Schematic {
+public class TardisSchematic implements Schematic {
 
     public static final String EXTENSION = "tschm";
+    private final JSONObject schematic;
+
+    public TardisSchematic(JSONObject schematic) {
+        this.schematic = schematic;
+    }
 
     @Override
     public void saveTo(File file) throws IOException {
@@ -65,17 +70,5 @@ public record TardisSchematic(JSONObject schematic) implements Schematic {
         level.put(x, row);
         blocks.put(y, level);
         schematic.put("input", blocks);
-    }
-
-    @Contract(value = " -> fail", pure = true)
-    @Override
-    public Palette getPalette() {
-        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
-    }
-
-    @Contract(value = "_ -> fail", pure = true)
-    @Override
-    public void setPalette(Palette palette) {
-        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
     }
 }

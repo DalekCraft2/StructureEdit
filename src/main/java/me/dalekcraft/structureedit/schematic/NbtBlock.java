@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 
-public class NbtBlock implements Block {
+public class NbtBlock implements PaletteBlock {
 
     private static final Logger LOGGER = LogManager.getLogger(NbtBlock.class);
 

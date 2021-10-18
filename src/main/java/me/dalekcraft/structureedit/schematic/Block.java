@@ -101,18 +101,4 @@ public interface Block {
      * @param snbt the new NBT for this block, as SNBT
      */
     void setSnbt(String snbt) throws IOException;
-
-    /**
-     * Returns the palette index of this block.
-     *
-     * @return the palette index of this block
-     */
-    int getStateIndex();
-
-    /**
-     * Sets the palette index of this block.
-     *
-     * @param state the new palette index for this block
-     */
-    void setStateIndex(int state);
 }

@@ -119,14 +119,4 @@ public class TardisBlock implements Block {
     public void setSnbt(String snbt) {
         throw new UnsupportedOperationException("NBT storage is not supported by the TSCHM format.");
     }
-
-    @Override
-    public int getStateIndex() {
-        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
-    }
-
-    @Override
-    public void setStateIndex(int state) {
-        throw new UnsupportedOperationException("Palettes are not supported by the TSCHM format.");
-    }
 }

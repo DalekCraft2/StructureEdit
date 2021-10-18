@@ -12,14 +12,14 @@ import org.jetbrains.annotations.Nullable;
 import java.io.File;
 import java.io.IOException;
 
-public class NbtStructure implements Schematic {
+public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
 
     public static final String EXTENSION = "nbt";
     private final NamedTag schematic;
     private final CompoundTag root;
     private NbtPalette palette;
 
-    public NbtStructure(NamedTag schematic) throws IOException {
+    public NbtStructure(@NotNull NamedTag schematic) throws IOException {
         this.schematic = schematic;
         if (schematic.getTag() instanceof CompoundTag compoundTag) {
             root = compoundTag;
@@ -49,6 +49,11 @@ public class NbtStructure implements Schematic {
     @NotNull
     public String getFormat() {
         return EXTENSION;
+    }
+
+    @Override
+    public int getDataVersion() {
+        return root.getInt("DataVersion");
     }
 
     @Override
@@ -114,26 +119,32 @@ public class NbtStructure implements Schematic {
         root.put("palette", ((NbtPalette) palette).getData());
     }
 
-    public NbtPalette getPaletteListEntry(int index) {
-        return new NbtPalette(getPaletteList().get(index).asCompoundTagList());
-    }
-
-    public void setPaletteListEntry(int index, Palette palette) {
-        getPaletteList().set(index, ((NbtPalette) palette).getData());
-    }
-
+    @Override
     public ListTag<ListTag<?>> getPaletteList() {
         return root.getListTag("palettes").asListTagList();
     }
 
+    @Override
     public void setPaletteList(ListTag<ListTag<?>> palettes) {
         root.put("palettes", palettes);
     }
 
+    @Override
+    public NbtPalette getPaletteListEntry(int index) {
+        return new NbtPalette(getPaletteList().get(index).asCompoundTagList());
+    }
+
+    @Override
+    public void setPaletteListEntry(int index, Palette palette) {
+        getPaletteList().set(index, ((NbtPalette) palette).getData());
+    }
+
+    @Override
     public boolean hasPaletteList() {
         return root.containsKey("palettes");
     }
 
+    @Override
     public void setActivePalette(int index) {
         palette = getPaletteListEntry(index);
     }

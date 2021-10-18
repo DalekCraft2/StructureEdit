@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 import java.io.IOException;
 import java.util.Arrays;
 
-public class SpongeBlock implements Block {
+public class SpongeBlock implements PaletteBlock {
 
     private static final Logger LOGGER = LogManager.getLogger(SpongeBlock.class);
     private final SpongeSchematic schematic;
