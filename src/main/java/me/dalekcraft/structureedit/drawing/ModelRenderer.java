@@ -156,7 +156,7 @@ public final class ModelRenderer {
         NavigableMap<Integer, JSONObject> weightTree = new TreeMap<>();
         for (Object modelObject : models) {
             JSONObject model = (JSONObject) modelObject;
-            int weight = model.has("weight") ? model.getInt("weight") : 1;
+            int weight = model.optInt("weight", 1);
             if (weight <= 0) {
                 continue;
             }
@@ -170,18 +170,9 @@ public final class ModelRenderer {
     public static void drawModel(@NotNull GL4bc gl, @NotNull JSONObject jsonObject, Color tint) {
         String modelPath = jsonObject.getString("model");
         JSONObject model = Assets.getModel(modelPath);
-        int x = 0;
-        int y = 0;
-        boolean uvlock = false;
-        if (jsonObject.has("x")) {
-            x = jsonObject.getInt("x");
-        }
-        if (jsonObject.has("y")) {
-            y = jsonObject.getInt("y");
-        }
-        if (jsonObject.has("uvlock")) {
-            uvlock = jsonObject.getBoolean("uvlock");
-        }
+        int x = jsonObject.optInt("x", 0);
+        int y = jsonObject.optInt("y", 0);
+        boolean uvlock = jsonObject.optBoolean("uvlock", false);
 
         gl.glPushMatrix();
 
@@ -200,7 +191,7 @@ public final class ModelRenderer {
                 JSONObject element = (JSONObject) elementObject;
                 JSONArray from = element.getJSONArray("from");
                 JSONArray to = element.getJSONArray("to");
-                JSONObject rotation = element.has("rotation") ? element.getJSONObject("rotation") : null;
+                JSONObject rotation = element.optJSONObject("rotation");
                 JSONArray origin = null;
                 String axis = null;
                 float angle = 0.0f;
@@ -208,10 +199,10 @@ public final class ModelRenderer {
                 if (rotation != null) {
                     origin = rotation.getJSONArray("origin");
                     axis = rotation.getString("axis");
-                    angle = rotation.has("angle") ? rotation.getFloat("angle") : 0.0f;
-                    rescale = rotation.has("rescale") && rotation.getBoolean("rescale");
+                    angle = rotation.optFloat("angle", 0.0f);
+                    rescale = rotation.optBoolean("rescale", false);
                 }
-                boolean shade = !element.has("shade") || element.getBoolean("shade");
+                boolean shade = element.optBoolean("shade", true);
 
                 double fromX = from.getDouble(0) / MODEL_SIZE;
                 double fromY = from.getDouble(1) / MODEL_SIZE;
@@ -259,11 +250,11 @@ public final class ModelRenderer {
                 for (String faceName : faceSet) {
                     JSONObject face = faces.getJSONObject(faceName);
 
-                    JSONArray uv = face.has("uv") ? face.getJSONArray("uv") : null;
+                    JSONArray uv = face.optJSONArray("uv");
                     String faceTexture = face.has("texture") ? face.getString("texture").substring(1) : null;
-                    String cullface = face.has("cullface") ? face.getString("cullface") : null; // TODO Implement culling.
-                    int faceRotation = face.has("rotation") ? face.getInt("rotation") : 0;
-                    int tintIndex = face.has("tintindex") ? face.getInt("tintindex") : -1;
+                    String cullface = face.optString("cullface"); // TODO Implement culling.
+                    int faceRotation = face.optInt("rotation", 0);
+                    int tintIndex = face.optInt("tintindex", -1);
 
                     if (tintIndex == -1) {
                         gl.glColor4f(1.0f, 1.0f, 1.0f, 1.0f);
@@ -296,10 +287,10 @@ public final class ModelRenderer {
                     JSONObject fullAnimation = Assets.getAnimation(textures.getOrDefault(faceTexture, "minecraft:missing"));
                     if (fullAnimation != null) {
                         JSONObject animation = fullAnimation.getJSONObject("animation");
-                        boolean interpolate = animation.has("interpolate") && animation.getBoolean("interpolate"); // TODO Implement interpolation.
-                        int width = animation.has("width") ? animation.getInt("width") : texture.getWidth();
-                        int height = animation.has("height") ? animation.getInt("height") : texture.getWidth();
-                        int frametime = animation.has("frametime") ? animation.getInt("frametime") : 1;
+                        boolean interpolate = animation.optBoolean("interpolate", false); // TODO Implement interpolation.
+                        int width = animation.optInt("width", texture.getWidth());
+                        int height = animation.optInt("height", texture.getWidth());
+                        int frametime = animation.optInt("frametime", 1);
 
                         int widthFactor = Math.abs(texture.getWidth() / width);
                         int heightFactor = Math.abs(texture.getHeight() / height);
@@ -329,7 +320,7 @@ public final class ModelRenderer {
                         } else if (frame instanceof JSONObject frameObject) {
                             frameDouble = frameObject.getInt("index");
                             // TODO Implement the "time" tag.
-                            int time = frameObject.has("time") ? frameObject.getInt("time") : frametime;
+                            int time = frameObject.optInt("time", frametime);
                         }
 
                         // Change to the current frame in the animation
