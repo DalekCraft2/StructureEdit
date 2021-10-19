@@ -3,16 +3,16 @@ package me.dalekcraft.structureedit.schematic;
 public interface PaletteSchematic extends Schematic {
 
     /**
-     * Returns the palette of this {@link Schematic}.
+     * Returns the {@link Palette} of this {@link Schematic}.
      *
-     * @return the palette of this {@link Schematic}
+     * @return the {@link Palette} of this {@link Schematic}
      */
     Palette getPalette();
 
     /**
-     * Sets the palette of this {@link Schematic}.
+     * Sets the {@link Palette} of this {@link Schematic}.
      *
-     * @param palette the new palette
+     * @param palette the new {@link Palette}
      */
     void setPalette(Palette palette);
 }
