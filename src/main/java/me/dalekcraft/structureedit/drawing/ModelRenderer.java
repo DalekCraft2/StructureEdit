@@ -2,7 +2,7 @@ package me.dalekcraft.structureedit.drawing;
 
 import com.jogamp.opengl.GL4bc;
 import com.jogamp.opengl.util.texture.Texture;
-import me.dalekcraft.structureedit.schematic.Block;
+import me.dalekcraft.structureedit.schematic.Schematic;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
@@ -39,7 +39,7 @@ public final class ModelRenderer {
 
     // TODO Add a water model to this list if the block's "waterlogged" property is "true".
     @NotNull
-    public static List<JSONObject> getModelsFromBlockState(@NotNull Block block, Random random) {
+    public static List<JSONObject> getModelsFromBlockState(@NotNull Schematic.Block block, Random random) {
         List<JSONObject> modelList = new ArrayList<>();
         String namespacedId = block.getId();
         CompoundTag properties = block.getProperties().clone();
@@ -528,7 +528,7 @@ public final class ModelRenderer {
     }
 
     @NotNull
-    public static Color getTint(@NotNull Block block) {
+    public static Color getTint(@NotNull Schematic.Block block) {
         String namespacedId = block.getId();
         CompoundTag properties = block.getProperties();
         switch (namespacedId) {

@@ -16,7 +16,7 @@
  */
 package me.dalekcraft.structureedit.ui;
 
-import me.dalekcraft.structureedit.schematic.Block;
+import me.dalekcraft.structureedit.schematic.Schematic;
 import org.jetbrains.annotations.Contract;
 
 import javax.swing.*;
@@ -26,14 +26,14 @@ import javax.swing.*;
  */
 public class BlockButton extends JButton {
 
-    private final Block block;
+    private final Schematic.Block block;
 
-    public BlockButton(Block block) {
+    public BlockButton(Schematic.Block block) {
         this.block = block;
     }
 
     @Contract(pure = true)
-    public Block getBlock() {
+    public Schematic.Block getBlock() {
         return block;
     }
 }

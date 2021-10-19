@@ -213,7 +213,7 @@ public class UserInterface {
                     for (int x = 0; x < size[0]; x++) {
                         for (int y = 0; y < renderedHeight; y++) {
                             for (int z = 0; z < size[2]; z++) {
-                                Block block = schematic.getBlock(x, y, z);
+                                Schematic.Block block = schematic.getBlock(x, y, z);
                                 if (block != null) {
                                     long seed = x + ((long) y * size[2] * size[0]) + ((long) z * size[0]);
                                     Random random = new Random(seed);
@@ -356,7 +356,7 @@ public class UserInterface {
         blockIdComboBox.setSelectedItem(null);
         blockIdComboBox.addItemListener(e -> {
             if (schematic != null && selected != null && blockIdComboBox.getSelectedItem() != null) {
-                Block block = selected.getBlock();
+                Schematic.Block block = selected.getBlock();
                 String blockId = blockIdComboBox.getSelectedItem().toString();
                 block.setId(blockId);
                 loadLayer();
@@ -367,7 +367,7 @@ public class UserInterface {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 if (schematic != null && selected != null) {
-                    Block block = selected.getBlock();
+                    Schematic.Block block = selected.getBlock();
                     try {
                         block.setPropertiesAsString(blockPropertiesTextField.getText());
                         blockPropertiesTextField.setForeground(Color.BLACK);
@@ -391,7 +391,7 @@ public class UserInterface {
             @Override
             public void insertUpdate(DocumentEvent e) {
                 if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
-                    Block block = selected.getBlock();
+                    Schematic.Block block = selected.getBlock();
                     try {
                         block.setSnbt(blockNbtTextField.getText());
                         blockNbtTextField.setForeground(Color.BLACK);
@@ -423,8 +423,8 @@ public class UserInterface {
         // TODO Blockbench-style palette editor, with a list of palettes and palette IDs (This will also involve separating palette editing and block editing).
         blockPaletteSpinner.addChangeListener(e -> {
             if (schematic != null && schematic instanceof PaletteSchematic && selected != null) {
-                Block block = selected.getBlock();
-                if (block instanceof PaletteBlock paletteBlock) {
+                Schematic.Block block = selected.getBlock();
+                if (block instanceof PaletteSchematic.PaletteBlock paletteBlock) {
                     paletteBlock.setStateIndex((Integer) blockPaletteSpinner.getValue());
                     loadLayer();
                     updateSelected();
@@ -548,7 +548,7 @@ public class UserInterface {
             int buttonSideLength = Math.min(gridPanel.getWidth() / size[0], gridPanel.getHeight() / size[2]);
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {
-                    Block block = schematic.getBlock(x, currentLayer, z);
+                    Schematic.Block block = schematic.getBlock(x, currentLayer, z);
                     if (block != null) {
                         String blockId = block.getId();
                         String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
@@ -589,7 +589,7 @@ public class UserInterface {
 
     private void blockButtonPressed(@NotNull ActionEvent e) {
         selected = (BlockButton) e.getSource();
-        Block block = selected.getBlock();
+        Schematic.Block block = selected.getBlock();
 
         if (block != null) {
             blockIdComboBox.setSelectedItem(block.getId());
@@ -611,7 +611,7 @@ public class UserInterface {
             blockPositionTextField.setText(Arrays.toString(block.getPosition()));
             blockPositionTextField.setEnabled(true);
 
-            if (block instanceof PaletteBlock paletteBlock) {
+            if (block instanceof PaletteSchematic.PaletteBlock paletteBlock) {
                 blockPaletteSpinner.setValue(paletteBlock.getStateIndex());
                 blockPaletteSpinner.setEnabled(true);
             } else {
@@ -623,7 +623,7 @@ public class UserInterface {
 
     public void updateSelected() {
         if (selected != null) {
-            Block block = selected.getBlock();
+            Schematic.Block block = selected.getBlock();
 
             blockIdComboBox.setSelectedItem(block.getId());
             blockPropertiesTextField.setValue(block.getPropertiesAsString());

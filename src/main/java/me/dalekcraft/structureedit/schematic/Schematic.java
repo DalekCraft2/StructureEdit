@@ -3,6 +3,7 @@ package me.dalekcraft.structureedit.schematic;
 import me.dalekcraft.structureedit.util.Configuration;
 import me.dalekcraft.structureedit.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
+import net.querz.nbt.tag.CompoundTag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -82,7 +83,7 @@ public interface Schematic {
     /**
      * Sets the dimensions of this {@link Schematic}.
      *
-     * @param size the new dimensions for this schematic
+     * @param size the new dimensions for this {@link Schematic}
      */
     default void setSize(int @NotNull [] size) {
         setSize(size[0], size[1], size[2]);
@@ -98,42 +99,140 @@ public interface Schematic {
     void setSize(int sizeX, int sizeY, int sizeZ);
 
     /**
-     * Returns the block at the specified position.
+     * Returns the {@link Block} at the specified position.
      *
-     * @param position the position of the block
-     * @return the block, or {@code null} if no block is at the position
+     * @param position the position of the {@link Block}
+     * @return the {@link Block}, or {@code null} if no {@link Block} is at the position
      */
     default Block getBlock(int @NotNull [] position) {
         return getBlock(position[0], position[1], position[2]);
     }
 
     /**
-     * Returns the block at the specified position.
+     * Returns the {@link Block} at the specified position.
      *
-     * @param x the x coordinate of the block
-     * @param y the y coordinate of the block
-     * @param z the z coordinate of the block
-     * @return the block, or {@code null} if no block is at the position
+     * @param x the x coordinate of the {@link Block}
+     * @param y the y coordinate of the {@link Block}
+     * @param z the z coordinate of the {@link Block}
+     * @return the block, or {@code null} if no {@link Block} is at the position
      */
     Block getBlock(int x, int y, int z);
 
     /**
-     * Sets the block at the specified position.
+     * Sets the {@link Block} at the specified position.
      *
-     * @param position the position of the block
-     * @param block    the new block
+     * @param position the position of the {@link Block}
+     * @param block    the new {@link Block}
      */
     default void setBlock(int @NotNull [] position, Block block) {
         setBlock(position[0], position[1], position[2], block);
     }
 
     /**
-     * Sets the block at the specified position.
+     * Sets the {@link Block} at the specified position.
      *
-     * @param x     the x coordinate of the block
-     * @param y     the y coordinate of the block
-     * @param z     the z coordinate of the block
-     * @param block the new block
+     * @param x     the x coordinate of the {@link Block}
+     * @param y     the y coordinate of the {@link Block}
+     * @param z     the z coordinate of the {@link Block}
+     * @param block the new {@link Block}
      */
     void setBlock(int x, int y, int z, Block block);
+
+    interface Block {
+
+        /**
+         * Returns the position of this {@link Block}.
+         *
+         * @return the position of this {@link Block}
+         */
+        int[] getPosition();
+
+        /**
+         * Sets the position of this {@link Block}.
+         *
+         * @param position the new x position for this {@link Block}
+         */
+        default void setPosition(int @NotNull [] position) {
+            setPosition(position[0], position[1], position[2]);
+        }
+
+        /**
+         * Sets the position of this {@link Block}.
+         *
+         * @param x the new x position for this {@link Block}
+         * @param y the new y position for this {@link Block}
+         * @param z the new z position for this {@link Block}
+         */
+        void setPosition(int x, int y, int z);
+
+        /**
+         * Returns the namespaced ID of this {@link Block}.
+         *
+         * @return the namespaced ID of this {@link Block}
+         */
+        String getId();
+
+        /**
+         * Sets the namespaced ID of this {@link Block}.
+         *
+         * @param id the new namespaced ID for this {@link Block}
+         */
+        void setId(String id);
+
+        /**
+         * Returns the properties of this {@link Block}, as a {@link CompoundTag}.
+         *
+         * @return the properties of this {@link Block}, as a {@link CompoundTag}
+         */
+        CompoundTag getProperties();
+
+        /**
+         * Sets the properties of this {@link Block}.
+         *
+         * @param properties the new properties for this {@link Block}, as a {@link CompoundTag}
+         */
+        void setProperties(CompoundTag properties);
+
+        /**
+         * Returns the properties of this {@link Block}, as a {@link String}.
+         *
+         * @return the properties of this {@link Block}, as a {@link String}
+         */
+        String getPropertiesAsString();
+
+        /**
+         * Sets the properties of this {@link Block}.
+         *
+         * @param propertiesString the new properties for this {@link Block}, as a {@link String}
+         */
+        void setPropertiesAsString(String propertiesString) throws IOException;
+
+        /**
+         * Returns the NBT of this {@link Block}.
+         *
+         * @return the NBT of this {@link Block}
+         */
+        CompoundTag getNbt();
+
+        /**
+         * Sets the NBT of this {@link Block}.
+         *
+         * @param nbt the new NBT for this {@link Block}
+         */
+        void setNbt(CompoundTag nbt);
+
+        /**
+         * Returns the NBT of this {@link Block}, translated into SNBT.
+         *
+         * @return the NBT of this {@link Block}, translated into SNBT
+         */
+        String getSnbt();
+
+        /**
+         * Sets the NBT of this {@link Block}.
+         *
+         * @param snbt the new NBT for this {@link Block}, as SNBT
+         */
+        void setSnbt(String snbt) throws IOException;
+    }
 }
