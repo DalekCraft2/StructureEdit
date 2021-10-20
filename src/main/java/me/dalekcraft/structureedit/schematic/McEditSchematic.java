@@ -1,6 +1,6 @@
 package me.dalekcraft.structureedit.schematic;
 
-import me.dalekcraft.structureedit.exception.MissingKeyException;
+import me.dalekcraft.structureedit.exception.ValidationException;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
@@ -17,20 +17,20 @@ public class McEditSchematic implements Schematic {
     private final CompoundTag root;
 
 
-    public McEditSchematic(@NotNull NamedTag schematic) throws MissingKeyException, IOException {
+    public McEditSchematic(@NotNull NamedTag schematic) throws ValidationException, UnsupportedOperationException {
         if (true) {
-            throw new IOException("MCEdit schematics are not yet supported!");
+            throw new UnsupportedOperationException("MCEdit schematics are not yet supported!");
         }
         this.schematic = schematic;
-        validate();
         if (!(schematic.getTag() instanceof CompoundTag compoundTag)) {
-            throw new MissingKeyException("Root tag is not an instance of " + CompoundTag.class.getSimpleName());
+            throw new ValidationException("Root tag is not an instance of " + CompoundTag.class.getSimpleName());
         }
         root = compoundTag;
+        validate();
     }
 
     @Override
-    public void validate() throws MissingKeyException {
+    public void validate() throws ValidationException {
 
     }
 

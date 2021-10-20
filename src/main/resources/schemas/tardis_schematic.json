@@ -1,0 +1,84 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "$id": "",
+    "title": "TARDIS Schematic Schema",
+    "description": "Schema for TARDIS schematics",
+    "type": "object",
+    "properties": {
+        "input": {
+            "description": "Array of levels of the schematic",
+            "type": "array",
+            "items": {
+                "description": "Array of rows of the level",
+                "type": "array",
+                "items": {
+                    "description": "Array of blocks of the row",
+                    "type": "array",
+                    "items": {
+                        "description": "A block",
+                        "type": "object",
+                        "properties": {
+                            "data": {
+                                "description": "A block state as a string",
+                                "type": "string"
+                            }
+                        },
+                        "required": [
+                            "data"
+                        ]
+                    }
+                }
+            }
+        },
+        "relative": {
+            "description": "Offset relative to the origin",
+            "type": "object",
+            "properties": {
+                "x": {
+                    "description": "X offset",
+                    "type": "integer"
+                },
+                "y": {
+                    "description": "X offset",
+                    "type": "integer"
+                },
+                "z": {
+                    "description": "X offset",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "x",
+                "y",
+                "z"
+            ]
+        },
+        "dimensions": {
+            "description": "Dimensions of the schematic",
+            "type": "object",
+            "properties": {
+                "width": {
+                    "description": "X size",
+                    "type": "integer"
+                },
+                "height": {
+                    "description": "Y size",
+                    "type": "integer"
+                },
+                "length": {
+                    "description": "Z size",
+                    "type": "integer"
+                }
+            },
+            "required": [
+                "width",
+                "height",
+                "length"
+            ]
+        }
+    },
+    "required": [
+        "input",
+        "dimensions"
+    ]
+}

@@ -1,6 +1,5 @@
 package me.dalekcraft.structureedit.schematic;
 
-import me.dalekcraft.structureedit.exception.MissingKeyException;
 import me.dalekcraft.structureedit.util.GzipUtils;
 import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
@@ -8,33 +7,43 @@ import net.querz.nbt.tag.CompoundTag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.everit.json.schema.Schema;
+import org.everit.json.schema.ValidationException;
+import org.everit.json.schema.loader.SchemaLoader;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 
 public class TardisSchematic implements Schematic {
 
     public static final String EXTENSION = "tschm";
     private final JSONObject schematic;
 
-    public TardisSchematic(JSONObject schematic) throws MissingKeyException {
+    public TardisSchematic(JSONObject schematic) throws ValidationException, IOException {
         this.schematic = schematic;
         validate();
     }
 
     @Override
-    public void validate() throws MissingKeyException {
-        String currentKey = "input";
+    public void validate() throws ValidationException, IOException {
+        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("schemas/tardis_schematic.json")) {
+            JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
+            Schema schema = SchemaLoader.load(rawSchema);
+            schema.validate(schematic); // throws a ValidationException if this object is invalid
+        }
+        /*String currentKey = "input";
         Class<?> expectedType = JSONArray.class;
         if (!schematic.has("input")) {
-            throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
         }
         if (!expectedType.isInstance(schematic.get("input"))) {
-            throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+            throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
         }
         JSONArray levels = schematic.getJSONArray("input");
         if (!levels.isEmpty()) {
@@ -42,7 +51,7 @@ public class TardisSchematic implements Schematic {
                 currentKey = "input[" + y + "]";
                 expectedType = JSONArray.class;
                 if (!expectedType.isInstance(levels.get(y))) {
-                    throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                 }
                 JSONArray rows = levels.getJSONArray(y);
                 if (!rows.isEmpty()) {
@@ -50,7 +59,7 @@ public class TardisSchematic implements Schematic {
                         currentKey = "input[" + y + "][" + x + "]";
                         expectedType = JSONArray.class;
                         if (!expectedType.isInstance(rows.get(x))) {
-                            throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                            throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                         }
                         JSONArray columns = rows.getJSONArray(x);
                         if (!columns.isEmpty()) {
@@ -58,16 +67,16 @@ public class TardisSchematic implements Schematic {
                                 currentKey = "input[" + y + "][" + x + "][" + z + "]";
                                 expectedType = JSONObject.class;
                                 if (!expectedType.isInstance(columns.get(z))) {
-                                    throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                                 }
                                 JSONObject block = columns.getJSONObject(z);
                                 currentKey = "input[" + y + "][" + x + "][" + z + "].data";
                                 expectedType = String.class;
                                 if (!block.has("data")) {
-                                    throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+                                    throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
                                 }
                                 if (!expectedType.isInstance(block.get("data"))) {
-                                    throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                                 }
                             }
                         }
@@ -80,46 +89,64 @@ public class TardisSchematic implements Schematic {
             currentKey = "relative";
             expectedType = JSONObject.class;
             if (!expectedType.isInstance(schematic.get("relative"))) {
-                throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
             JSONObject relative = schematic.getJSONObject("relative");
             currentKey = "relative.x";
             expectedType = Integer.class;
-            if (!relative.has("x") || !expectedType.isInstance(relative.get("x"))) {
-                throw new MissingKeyException("Key " + currentKey + " is either missing or not an instance of " + expectedType.getSimpleName());
+            if (!relative.has("x")) {
+                throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+            }
+            if (!expectedType.isInstance(relative.get("x"))) {
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
             currentKey = "relative.y";
-            if (!relative.has("y") || !expectedType.isInstance(relative.get("y"))) {
-                throw new MissingKeyException("Key " + currentKey + " is either missing or not an instance of " + expectedType.getSimpleName());
+            if (!relative.has("y")) {
+                throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+            }
+            if (!expectedType.isInstance(relative.get("y"))) {
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
             currentKey = "relative.z";
-            if (!relative.has("y") || !expectedType.isInstance(relative.get("z"))) {
-                throw new MissingKeyException("Key " + currentKey + " is either missing or not an instance of " + expectedType.getSimpleName());
+            if (!relative.has("z")) {
+                throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+            }
+            if (!expectedType.isInstance(relative.get("z"))) {
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
         }
 
         currentKey = "dimensions";
         expectedType = JSONObject.class;
         if (!schematic.has("dimensions")) {
-            throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
         }
         if (!expectedType.isInstance(schematic.get("dimensions"))) {
-            throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+            throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
         }
         JSONObject dimensions = schematic.getJSONObject("dimensions");
         currentKey = "dimensions.width";
         expectedType = Integer.class;
-        if (!dimensions.has("width") || !expectedType.isInstance(dimensions.get("width"))) {
-            throw new MissingKeyException("Key " + currentKey + " is either missing or not an instance of " + expectedType.getSimpleName());
+        if (!dimensions.has("width")) {
+            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+        }
+        if (!expectedType.isInstance(dimensions.get("width"))) {
+            throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
         }
         currentKey = "dimensions.length";
-        if (!dimensions.has("length") || !expectedType.isInstance(dimensions.get("length"))) {
-            throw new MissingKeyException("Key " + currentKey + " is either missing or not an instance of " + expectedType.getSimpleName());
+        if (!dimensions.has("length")) {
+            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+        }
+        if (!expectedType.isInstance(dimensions.get("length"))) {
+            throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
         }
         currentKey = "dimensions.height";
-        if (!dimensions.has("height") || !expectedType.isInstance(dimensions.get("height"))) {
-            throw new MissingKeyException("Key " + currentKey + " is either missing or not an instance of " + expectedType.getSimpleName());
+        if (!dimensions.has("height")) {
+            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
         }
+        if (!expectedType.isInstance(dimensions.get("height"))) {
+            throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+        }*/
     }
 
     @Override

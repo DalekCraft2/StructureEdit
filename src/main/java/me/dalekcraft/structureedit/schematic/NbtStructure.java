@@ -1,6 +1,6 @@
 package me.dalekcraft.structureedit.schematic;
 
-import me.dalekcraft.structureedit.exception.MissingKeyException;
+import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.io.NamedTag;
@@ -23,10 +23,10 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
     private final CompoundTag root;
     private NbtPalette palette;
 
-    public NbtStructure(@NotNull NamedTag schematic) throws MissingKeyException {
+    public NbtStructure(@NotNull NamedTag schematic) throws ValidationException {
         this.schematic = schematic;
         if (!(schematic.getTag() instanceof CompoundTag compoundTag)) {
-            throw new MissingKeyException("Root tag is not an instance of " + CompoundTag.class.getSimpleName());
+            throw new ValidationException("Root tag is not an instance of " + CompoundTag.class.getSimpleName());
         }
         root = compoundTag;
         validate();
@@ -38,43 +38,43 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
     }
 
     @Override
-    public void validate() throws MissingKeyException {
+    public void validate() throws ValidationException {
         String currentKey = "DataVersion";
         Class<?> expectedType = IntTag.class;
         if (!root.containsKey("DataVersion")) {
-            throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
         }
         if (!expectedType.isInstance(root.get("DataVersion"))) {
-            throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+            throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
         }
 
         currentKey = "size";
         expectedType = ListTag.class;
         if (!root.containsKey("size")) {
-            throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
         }
         if (!expectedType.isInstance(root.get("size"))) {
-            throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+            throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
         }
         ListTag<? extends Tag<?>> size = root.getListTag("size");
         expectedType = IntTag.class;
         if (!expectedType.equals(size.getTypeClass())) {
-            throw new MissingKeyException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+            throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
         }
         if (size.size() != 3) {
-            throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " has size " + size.size() + "; should be 3");
+            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " has size " + size.size() + "; should be 3");
         }
 
         if (root.containsKey("palette")) {
             currentKey = "palette";
             expectedType = ListTag.class;
             if (!expectedType.isInstance(root.get("palette"))) {
-                throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
             ListTag<? extends Tag<?>> rawPalette = root.getListTag("palette");
             expectedType = CompoundTag.class;
             if (!expectedType.equals(rawPalette.getTypeClass())) {
-                throw new MissingKeyException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+                throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
             }
             ListTag<CompoundTag> palette = rawPalette.asCompoundTagList();
             for (int i = 0; i < palette.size(); i++) {
@@ -82,27 +82,27 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
                 currentKey = "palette[" + i + "].Name";
                 expectedType = StringTag.class;
                 if (!state.containsKey("Name")) {
-                    throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+                    throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
                 }
                 if (!expectedType.isInstance(state.get("Name"))) {
-                    throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                 }
 
                 currentKey = "palette[" + i + "].Properties";
                 expectedType = CompoundTag.class;
                 if (state.containsKey("Properties") && !expectedType.isInstance(state.get("Properties"))) {
-                    throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                 }
             }
         } else if (root.containsKey("palettes")) {
             currentKey = "palettes";
             expectedType = ListTag.class;
             if (!expectedType.isInstance(root.get("palettes"))) {
-                throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
             ListTag<? extends Tag<?>> rawPaletteList = root.getListTag("palettes");
             if (!expectedType.equals(rawPaletteList.getTypeClass())) {
-                throw new MissingKeyException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+                throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
             }
             ListTag<ListTag<?>> paletteList = rawPaletteList.asListTagList();
             for (int i = 0; i < paletteList.size(); i++) {
@@ -110,7 +110,7 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
                 ListTag<? extends Tag<?>> rawPalette = paletteList.get(i);
                 expectedType = CompoundTag.class;
                 if (!expectedType.equals(rawPalette.getTypeClass())) {
-                    throw new MissingKeyException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+                    throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
                 }
                 ListTag<CompoundTag> palette = rawPalette.asCompoundTagList();
                 for (int j = 0; j < palette.size(); j++) {
@@ -118,35 +118,35 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
                     currentKey = "palettes[" + i + "][" + j + "].Name";
                     expectedType = StringTag.class;
                     if (!state.containsKey("Name")) {
-                        throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+                        throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
                     }
                     if (!expectedType.isInstance(state.get("Name"))) {
-                        throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                        throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                     }
 
                     currentKey = "palette[" + j + "].Properties";
                     expectedType = CompoundTag.class;
                     if (state.containsKey("Properties") && !expectedType.isInstance(state.get("Properties"))) {
-                        throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                        throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                     }
                 }
             }
         } else {
-            throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
         }
 
         currentKey = "blocks";
         expectedType = ListTag.class;
         if (!root.containsKey("blocks")) {
-            throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
         }
         if (!expectedType.isInstance(root.get("blocks"))) {
-            throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+            throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
         }
         ListTag<? extends Tag<?>> rawBlockList = root.getListTag("blocks");
         expectedType = CompoundTag.class;
         if (!expectedType.equals(rawBlockList.getTypeClass())) {
-            throw new MissingKeyException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+            throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
         }
         ListTag<CompoundTag> blockList = rawBlockList.asCompoundTagList();
         for (int i = 0; i < blockList.size(); i++) {
@@ -154,33 +154,33 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
             currentKey = "blocks[" + i + "].state";
             expectedType = IntTag.class;
             if (!block.containsKey("state")) {
-                throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+                throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
             }
             if (!expectedType.isInstance(block.get("state"))) {
-                throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
 
             currentKey = "blocks[" + i + "].pos";
             expectedType = ListTag.class;
             if (!block.containsKey("pos")) {
-                throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+                throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
             }
             if (!expectedType.isInstance(block.get("pos"))) {
-                throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
             ListTag<? extends Tag<?>> position = block.getListTag("pos");
             expectedType = IntTag.class;
             if (!expectedType.equals(position.getTypeClass())) {
-                throw new MissingKeyException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+                throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
             }
             if (position.size() != 3) {
-                throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " has size " + position.size() + "; should be 3");
+                throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " has size " + position.size() + "; should be 3");
             }
 
             currentKey = "blocks[" + i + "].nbt";
             expectedType = CompoundTag.class;
             if (block.containsKey("nbt") && !expectedType.isInstance(block.get("nbt"))) {
-                throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
         }
 
@@ -188,53 +188,53 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
             currentKey = "entities";
             expectedType = ListTag.class;
             if (!expectedType.isInstance(root.get("entities"))) {
-                throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
             ListTag<? extends Tag<?>> entityList = root.getListTag("entities");
             for (int i = 0; i < entityList.size(); i++) {
                 expectedType = CompoundTag.class;
                 if (!expectedType.isInstance(entityList.get(i))) {
-                    throw new MissingKeyException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+                    throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
                 }
                 CompoundTag entity = entityList.asCompoundTagList().get(i);
                 currentKey = "entities[" + i + "].pos";
                 expectedType = ListTag.class;
                 if (!entity.containsKey("pos")) {
-                    throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+                    throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
                 }
                 if (!expectedType.isInstance(entity.get("pos"))) {
-                    throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                 }
                 ListTag<? extends Tag<?>> position = entity.getListTag("pos");
                 expectedType = DoubleTag.class;
                 if (!expectedType.equals(position.getTypeClass())) {
-                    throw new MissingKeyException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+                    throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
                 }
                 if (position.size() != 3) {
-                    throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " has size " + position.size() + "; should be 3");
+                    throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " has size " + position.size() + "; should be 3");
                 }
 
                 currentKey = "entities[" + i + "].blockPos";
                 expectedType = ListTag.class;
                 if (!entity.containsKey("pos")) {
-                    throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+                    throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
                 }
                 if (!expectedType.isInstance(entity.get("blockPos"))) {
-                    throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                 }
                 ListTag<? extends Tag<?>> blockPosition = entity.getListTag("blockPos");
                 expectedType = IntTag.class;
                 if (!expectedType.equals(blockPosition.getTypeClass())) {
-                    throw new MissingKeyException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+                    throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
                 }
                 if (blockPosition.size() != 3) {
-                    throw new MissingKeyException(expectedType.getSimpleName() + " " + currentKey + " has size " + blockPosition.size() + "; should be 3");
+                    throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " has size " + blockPosition.size() + "; should be 3");
                 }
 
                 currentKey = "entities[" + i + "].nbt";
                 expectedType = CompoundTag.class;
                 if (entity.containsKey("nbt") && !expectedType.isInstance(entity.get("nbt"))) {
-                    throw new MissingKeyException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                 }
             }
         }

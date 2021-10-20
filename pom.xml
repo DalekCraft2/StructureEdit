@@ -60,6 +60,14 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <!-- everit-org/json-schema -->
+            <groupId>com.github.everit-org.json-schema</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>1.14.0</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <!-- GlueGen Runtime -->
             <groupId>org.jogamp.gluegen</groupId>
             <artifactId>gluegen-rt-main</artifactId>
@@ -119,7 +127,7 @@
 
     <repositories>
         <repository>
-            <!-- Querz/NBT -->
+            <!-- Querz/NBT, everit-org/json-schema -->
             <name>Jitpack</name>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>

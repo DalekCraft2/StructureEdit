@@ -1,11 +1,10 @@
 package me.dalekcraft.structureedit.schematic;
 
-import me.dalekcraft.structureedit.exception.MissingKeyException;
+import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.util.Configuration;
 import me.dalekcraft.structureedit.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
 import net.querz.nbt.tag.CompoundTag;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -26,10 +25,10 @@ public interface Schematic {
      * @return the {@link Schematic} stored in the {@link File}, or {@code null} if the {@link File} is not a {@link Schematic} file
      * @throws IOException         if the {@link File}'s NBT can not be parsed
      * @throws JSONException       if the {@link File}'s JSON can not be parsed (exclusive to TARDIS schematics)
-     * @throws MissingKeyException if the {@link Schematic} is missing required keys
+     * @throws ValidationException if the {@link Schematic} is missing required keys
      */
     @NotNull
-    static Schematic openFrom(@NotNull File file) throws IOException, JSONException, MissingKeyException {
+    static Schematic openFrom(@NotNull File file) throws IOException, JSONException, ValidationException {
         String path = file.getAbsolutePath();
         return switch (path.substring(path.lastIndexOf('.') + 1)) {
             case TardisSchematic.EXTENSION -> new TardisSchematic(new JSONObject(GzipUtils.unzip(file)));
@@ -43,9 +42,9 @@ public interface Schematic {
     /**
      * Verifies that this {@link Schematic} contains all necessary keys.
      *
-     * @throws MissingKeyException if this {@link Schematic} is missing required keys
+     * @throws ValidationException if this {@link Schematic} is missing required keys
      */
-    void validate() throws MissingKeyException;
+    void validate() throws ValidationException, IOException;
 
     /**
      * Saves this {@link Schematic} to a {@link File}.

@@ -25,7 +25,7 @@ import com.jogamp.opengl.util.Animator;
 import me.dalekcraft.structureedit.Main;
 import me.dalekcraft.structureedit.drawing.BlockColor;
 import me.dalekcraft.structureedit.drawing.ModelRenderer;
-import me.dalekcraft.structureedit.exception.MissingKeyException;
+import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.schematic.*;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
@@ -71,6 +71,7 @@ public class UserInterface {
     private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.tardis"), TardisSchematic.EXTENSION);
     private static final float ROTATION_SENSITIVITY = 1.0f;
     private static final float MOTION_SENSITIVITY = 0.1f;
+    private static Method $$$cachedGetBundleMethod$$$ = null;
     public final JFileChooser schematicChooser = new JFileChooser();
     public final JFileChooser assetsChooser = new JFileChooser();
     public JComboBox<String> blockIdComboBox;
@@ -492,8 +493,20 @@ public class UserInterface {
         try {
             schematic = openFrom(file);
             selected = null;
-        } catch (IOException | JSONException | MissingKeyException e) {
+        } catch (IOException | JSONException e) {
             LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
+            Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            schematic = null;
+        } catch (ValidationException e) {
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.invalid"), e.getMessage());
+            Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            schematic = null;
+        } catch (org.everit.json.schema.ValidationException e) {
+            List<String> messages = e.getAllMessages();
+            if (messages.size() > 1) {
+                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.invalid"), e.getViolationCount());
+            }
+            messages.forEach(message -> LOGGER.log(Level.ERROR, message));
             Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
             schematic = null;
         }
@@ -736,8 +749,6 @@ public class UserInterface {
         sizeLabel.setLabelFor(sizeTextField);
         blockPaletteLabel.setLabelFor(blockPaletteSpinner);
     }
-
-    private static Method $$$cachedGetBundleMethod$$$ = null;
 
     private String $$$getMessageFromBundle$$$(String path, String key) {
         ResourceBundle bundle;
