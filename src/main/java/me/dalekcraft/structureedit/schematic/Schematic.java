@@ -1,5 +1,6 @@
 package me.dalekcraft.structureedit.schematic;
 
+import me.dalekcraft.structureedit.exception.MissingKeyException;
 import me.dalekcraft.structureedit.util.Configuration;
 import me.dalekcraft.structureedit.util.GzipUtils;
 import net.querz.nbt.io.NBTUtil;
@@ -8,7 +9,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -24,32 +24,28 @@ public interface Schematic {
      *
      * @param file the file that contains the {@link Schematic}
      * @return the {@link Schematic} stored in the {@link File}, or {@code null} if the {@link File} is not a {@link Schematic} file
-     * @throws IOException   if the {@link File}'s NBT can not be parsed
-     * @throws JSONException if the {@link File}'s JSON can not be parsed (exclusive to TARDIS schematics)
+     * @throws IOException         if the {@link File}'s NBT can not be parsed
+     * @throws JSONException       if the {@link File}'s JSON can not be parsed (exclusive to TARDIS schematics)
+     * @throws MissingKeyException if the {@link Schematic} is missing required keys
      */
-    @Nullable
-    static Schematic openFrom(@NotNull File file) throws IOException, JSONException {
-        String path = file.getCanonicalPath();
-        switch (path.substring(path.lastIndexOf('.') + 1)) {
-            case TardisSchematic.EXTENSION -> {
-                return new TardisSchematic(new JSONObject(GzipUtils.unzip(file)));
-            }
-            case NbtStructure.EXTENSION -> {
-                return new NbtStructure(NBTUtil.read(file));
-            }
-            case McEditSchematic.EXTENSION -> {
-                LOGGER.log(Level.WARN, "MCEdit schematics are not yet supported!");
-                return new McEditSchematic(NBTUtil.read(file));
-            }
-            case SpongeSchematic.EXTENSION -> {
-                return SpongeSchematic.getInstance(NBTUtil.read(file));
-            }
-            default -> {
-                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.not_schematic"));
-                return null;
-            }
-        }
+    @NotNull
+    static Schematic openFrom(@NotNull File file) throws IOException, JSONException, MissingKeyException {
+        String path = file.getAbsolutePath();
+        return switch (path.substring(path.lastIndexOf('.') + 1)) {
+            case TardisSchematic.EXTENSION -> new TardisSchematic(new JSONObject(GzipUtils.unzip(file)));
+            case NbtStructure.EXTENSION -> new NbtStructure(NBTUtil.read(file));
+            case McEditSchematic.EXTENSION -> new McEditSchematic(NBTUtil.read(file));
+            case SpongeSchematic.EXTENSION -> SpongeSchematic.getInstance(NBTUtil.read(file));
+            default -> throw new IOException(Configuration.LANGUAGE.getProperty("log.schematic.not_schematic"));
+        };
     }
+
+    /**
+     * Verifies that this {@link Schematic} contains all necessary keys.
+     *
+     * @throws MissingKeyException if this {@link Schematic} is missing required keys
+     */
+    void validate() throws MissingKeyException;
 
     /**
      * Saves this {@link Schematic} to a {@link File}.

@@ -25,6 +25,7 @@ import com.jogamp.opengl.util.Animator;
 import me.dalekcraft.structureedit.Main;
 import me.dalekcraft.structureedit.drawing.BlockColor;
 import me.dalekcraft.structureedit.drawing.ModelRenderer;
+import me.dalekcraft.structureedit.exception.MissingKeyException;
 import me.dalekcraft.structureedit.schematic.*;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
@@ -487,61 +488,61 @@ public class UserInterface {
     }
 
     public void open(@NotNull File file) {
-
         LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loading"), file);
         try {
             schematic = openFrom(file);
             selected = null;
-            SwingUtilities.invokeLater(() -> {
-                sizeTextField.setText(null);
-                paletteSpinner.setValue(0);
-                paletteSpinner.setEnabled(false);
-                blockPositionTextField.setText(null);
-                blockPositionTextField.setEnabled(false);
-                blockIdComboBox.setSelectedItem(null);
-                blockIdComboBox.setEnabled(false);
-                blockPropertiesTextField.setValue(null);
-                blockPropertiesTextField.setEnabled(false);
-                blockNbtTextField.setValue(null);
-                blockNbtTextField.setEnabled(false);
-                blockPaletteSpinner.setValue(0);
-                blockPaletteSpinner.setEnabled(false);
-                if (schematic != null) {
-                    sizeTextField.setEnabled(true);
-                    layerSpinner.setEnabled(true);
-                    int[] size = schematic.getSize();
-                    renderedHeight = size[1];
-                    SpinnerModel layerModel = new SpinnerNumberModel(0, 0, size[1] - 1, 1);
-                    layerSpinner.setModel(layerModel);
-                    if (schematic instanceof PaletteSchematic paletteSchematic) {
-                        if (paletteSchematic instanceof MultiPaletteSchematic multiPaletteSchematic && multiPaletteSchematic.hasPaletteList()) {
-                            int palettesSize = multiPaletteSchematic.getPaletteList().size();
-                            SpinnerModel paletteModel = new SpinnerNumberModel(0, 0, palettesSize - 1, 1);
-                            paletteSpinner.setEnabled(true);
-                            paletteSpinner.setModel(paletteModel);
-                            multiPaletteSchematic.setActivePalette(0);
-                        }
-                        int paletteSize = paletteSchematic.getPalette().size();
-                        SpinnerModel blockPaletteModel = new SpinnerNumberModel(0, 0, paletteSize - 1, 1);
-                        blockPaletteSpinner.setModel(blockPaletteModel);
-                    }
-                    loadLayer();
-                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loaded"), file);
-                    Main.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
-                }
-            });
-        } catch (IOException | JSONException e) {
+        } catch (IOException | JSONException | MissingKeyException e) {
             LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
             Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            schematic = null;
         }
+        SwingUtilities.invokeLater(() -> {
+            sizeTextField.setText(null);
+            paletteSpinner.setValue(0);
+            paletteSpinner.setEnabled(false);
+            blockPositionTextField.setText(null);
+            blockPositionTextField.setEnabled(false);
+            blockIdComboBox.setSelectedItem(null);
+            blockIdComboBox.setEnabled(false);
+            blockPropertiesTextField.setValue(null);
+            blockPropertiesTextField.setEnabled(false);
+            blockNbtTextField.setValue(null);
+            blockNbtTextField.setEnabled(false);
+            blockPaletteSpinner.setValue(0);
+            blockPaletteSpinner.setEnabled(false);
+            if (schematic != null) {
+                sizeTextField.setEnabled(true);
+                layerSpinner.setEnabled(true);
+                int[] size = schematic.getSize();
+                renderedHeight = size[1];
+                SpinnerModel layerModel = new SpinnerNumberModel(0, 0, size[1] - 1, 1);
+                layerSpinner.setModel(layerModel);
+                if (schematic instanceof PaletteSchematic paletteSchematic) {
+                    if (paletteSchematic instanceof MultiPaletteSchematic multiPaletteSchematic && multiPaletteSchematic.hasPaletteList()) {
+                        int palettesSize = multiPaletteSchematic.getPaletteList().size();
+                        SpinnerModel paletteModel = new SpinnerNumberModel(0, 0, palettesSize - 1, 1);
+                        paletteSpinner.setEnabled(true);
+                        paletteSpinner.setModel(paletteModel);
+                        multiPaletteSchematic.setActivePalette(0);
+                    }
+                    int paletteSize = paletteSchematic.getPalette().size();
+                    SpinnerModel blockPaletteModel = new SpinnerNumberModel(0, 0, paletteSize - 1, 1);
+                    blockPaletteSpinner.setModel(blockPaletteModel);
+                }
+                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loaded"), file);
+                Main.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
+            }
+            loadLayer();
+        });
     }
 
     // TODO Make the editor built into the 3D view instead of being a layer-by-layer editor.
     public void loadLayer() {
+        gridPanel.removeAll();
+        gridPanel.setLayout(null);
+        gridPanel.updateUI();
         if (schematic != null) {
-            gridPanel.removeAll();
-            gridPanel.setLayout(null);
-            gridPanel.updateUI();
             int[] size = schematic.getSize();
             sizeTextField.setText(Arrays.toString(size));
             int currentLayer = (int) layerSpinner.getValue();
@@ -582,8 +583,6 @@ public class UserInterface {
                     }
                 }
             }
-        } else {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.null"));
         }
     }
 
