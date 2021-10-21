@@ -20,8 +20,8 @@ import com.intellij.uiDesigner.core.GridConstraints;
 import com.intellij.uiDesigner.core.GridLayoutManager;
 import com.jogamp.opengl.*;
 import com.jogamp.opengl.awt.GLJPanel;
-import com.jogamp.opengl.glu.GLU;
 import com.jogamp.opengl.util.Animator;
+import com.jogamp.opengl.util.GLBuffers;
 import me.dalekcraft.structureedit.Main;
 import me.dalekcraft.structureedit.drawing.BlockColor;
 import me.dalekcraft.structureedit.drawing.ModelRenderer;
@@ -46,16 +46,19 @@ import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 
 import static com.jogamp.opengl.GL.*;
-import static com.jogamp.opengl.GL2.GL_CURRENT_BIT;
 import static com.jogamp.opengl.GL2ES1.GL_PERSPECTIVE_CORRECTION_HINT;
+import static com.jogamp.opengl.GLES2.GL_VERTEX_ARRAY;
 import static com.jogamp.opengl.fixedfunc.GLLightingFunc.*;
 import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_MODELVIEW;
 import static com.jogamp.opengl.fixedfunc.GLMatrixFunc.GL_PROJECTION;
+import static com.jogamp.opengl.fixedfunc.GLPointerFunc.GL_COLOR_ARRAY;
 import static me.dalekcraft.structureedit.schematic.Schematic.openFrom;
 
 /**
@@ -69,35 +72,11 @@ public class UserInterface {
     private static final FileNameExtensionFilter FILTER_MCEDIT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.mcedit"), McEditSchematic.EXTENSION);
     private static final FileNameExtensionFilter FILTER_SPONGE = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.sponge"), SpongeSchematic.EXTENSION);
     private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.tardis"), TardisSchematic.EXTENSION);
-    private static final float ROTATION_SENSITIVITY = 1.0f;
-    private static final float MOTION_SENSITIVITY = 0.1f;
     private static Method $$$cachedGetBundleMethod$$$ = null;
     public final JFileChooser schematicChooser = new JFileChooser();
     public final JFileChooser assetsChooser = new JFileChooser();
     public JComboBox<String> blockIdComboBox;
     private JSplitPane splitPane;
-    /**
-     * Rotational angle for x-axis in degrees.
-     **/
-    private float pitch = 45.0f;
-    /**
-     * Rotational angle for y-axis in degrees.
-     **/
-    private float yaw = 45.0f;
-    /**
-     * X location.
-     */
-    private float cameraX;
-    /**
-     * Y location.
-     */
-    private float cameraY;
-    /**
-     * Z location.
-     */
-    private float cameraZ = -30.0f;
-    private int mouseX;
-    private int mouseY;
     private int renderedHeight;
     private Animator animator;
     private BlockButton selected;
@@ -133,211 +112,12 @@ public class UserInterface {
     public UserInterface() {
         $$$setupUI$$$();
         new AutoCompletion(blockIdComboBox);
-        ((GLJPanel) rendererPanel).addGLEventListener(new GLEventListener() {
-            public static void drawAxes(@NotNull GL4bc gl, float sizeX, float sizeY, float sizeZ) {
-                // save the current color
-                gl.glPushAttrib(GL_CURRENT_BIT);
-
-                gl.glLineWidth(2.0f);
-                gl.glBegin(GL_LINES);
-
-                // X-axis (red)
-                gl.glColor3f(1.0f, 0.0f, 0.0f);
-                gl.glVertex3f(0.0f, 0.0f, 0.0f);
-                gl.glVertex3f(sizeX, 0.0f, 0.0f);
-
-                // Y-axis (green)
-                gl.glColor3f(0.0f, 1.0f, 0.0f);
-                gl.glVertex3f(0.0f, 0.0f, 0.0f);
-                gl.glVertex3f(0.0f, sizeY, 0.0f);
-
-                // Z-axis (blue)
-                gl.glColor3f(0.0f, 0.0f, 1.0f);
-                gl.glVertex3f(0.0f, 0.0f, 0.0f);
-                gl.glVertex3f(0.0f, 0.0f, sizeZ);
-
-                gl.glEnd();
-
-                // reset the color
-                gl.glPopAttrib();
-            }
-
-            @Override
-            public void init(@NotNull GLAutoDrawable drawable) {
-                GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
-                gl.glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // set background color to gray
-                gl.glClearDepth(1.0f); // set clear depth value to farthest
-                gl.glEnable(GL_DEPTH_TEST); // enables depth testing
-                gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
-                gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
-                gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
-                gl.setSwapInterval(1);
-                // Set up the lighting for Light-1
-                // Ambient light does not come from a particular direction. Need some ambient
-                // light to light up the scene. Ambient's value in RGBA
-                float[] lightAmbientValue = {0.2f, 0.2f, 0.2f, 1.0f};
-                // Diffuse light comes from a particular location. Diffuse's value in RGBA
-                float[] lightDiffuseValue = {0.75f, 0.75f, 0.75f, 1.0f};
-                // Diffuse light location xyz (in front of the screen).
-                float[] lightDiffusePosition = {8.0f, 0.0f, 8.0f, 1.0f};
-                gl.glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbientValue, 0);
-                gl.glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuseValue, 0);
-                gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
-                gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
-                gl.glEnable(GL_CULL_FACE);
-
-                animator = new Animator(drawable);
-                animator.setRunAsFastAsPossible(true);
-
-                animator.start();
-            }
-
-            @Override
-            public void dispose(GLAutoDrawable drawable) {
-                animator.stop();
-            }
-
-            @Override
-            public void display(GLAutoDrawable drawable) {
-                GL4bc gl = drawable.getGL().getGL4bc();
-                gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-                gl.glLoadIdentity(); // reset the model-view matrix
-                gl.glTranslatef(cameraX, cameraY, cameraZ); // translate into the screen
-                gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
-                gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
-                if (schematic != null) {
-                    int[] size = schematic.getSize();
-                    // bottom-left-front corner of schematic is (0,0,0) so we need to center it at the origin
-                    gl.glTranslatef(-size[0] / 2.0f, -size[1] / 2.0f, -size[2] / 2.0f);
-                    // draw schematic border
-                    drawAxes(gl, size[0], size[1], size[2]);
-                    // draw a cube
-                    for (int x = 0; x < size[0]; x++) {
-                        for (int y = 0; y < renderedHeight; y++) {
-                            for (int z = 0; z < size[2]; z++) {
-                                Schematic.Block block = schematic.getBlock(x, y, z);
-                                if (block != null) {
-                                    long seed = x + ((long) y * size[2] * size[0]) + ((long) z * size[0]);
-                                    Random random = new Random(seed);
-                                    List<JSONObject> modelList = ModelRenderer.getModelsFromBlockState(block, random);
-                                    Color tint = ModelRenderer.getTint(block);
-
-                                    gl.glPushMatrix();
-                                    gl.glTranslatef(x * SCALE, y * SCALE, z * SCALE);
-                                    for (JSONObject model : modelList) {
-                                        ModelRenderer.drawModel(gl, model, tint);
-                                    }
-                                    gl.glPopMatrix();
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            @Override
-            public void reshape(@NotNull GLAutoDrawable drawable, int x, int y, int width, int height) {
-                GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
-                GLU glu = GLU.createGLU(gl);
-                if (height == 0) {
-                    height = 1; // prevent divide by zero
-                }
-                float aspect = (float) width / height;
-                // Set the view port (display area) to cover the entire window
-                gl.glViewport(0, 0, width, height);
-                // Setup perspective projection, with aspect ratio matches viewport
-                gl.glMatrixMode(GL_PROJECTION); // choose projection matrix
-                gl.glLoadIdentity(); // reset projection matrix
-                glu.gluPerspective(45.0, aspect, 1.0, 1000.0); // fovy, aspect, zNear, zFar
-                // Enable the model-view transform
-                gl.glMatrixMode(GL_MODELVIEW);
-                gl.glLoadIdentity(); // reset
-            }
-        });
-        rendererPanel.addKeyListener(new KeyAdapter() {
-            @Override
-            public void keyPressed(@NotNull KeyEvent e) {
-                int keyCode = e.getKeyCode();
-                switch (keyCode) {
-                    case KeyEvent.VK_UP -> {
-                        if (schematic != null) {
-                            int[] size = schematic.getSize();
-                            if (renderedHeight < size[1]) {
-                                renderedHeight++;
-                            } else {
-                                rendererPanel.getToolkit().beep();
-                            }
-                            if (renderedHeight > size[1]) {
-                                renderedHeight = size[1];
-                            }
-                        }
-                    }
-                    case KeyEvent.VK_DOWN -> {
-                        if (renderedHeight > 0) {
-                            renderedHeight--;
-                        } else {
-                            rendererPanel.getToolkit().beep();
-                        }
-                        if (renderedHeight < 0) {
-                            renderedHeight = 0;
-                        }
-                    }
-                }
-            }
-        });
-
-        MouseAdapter mouseAdapter = new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                rendererPanel.requestFocus();
-            }
-
-            @Override
-            public void mouseWheelMoved(@NotNull MouseWheelEvent e) {
-                cameraZ -= e.getPreciseWheelRotation();
-            }
-
-            @Override
-            public void mouseDragged(@NotNull MouseEvent e) {
-                rendererPanel.requestFocus();
-                if (SwingUtilities.isLeftMouseButton(e)) {
-                    // Rotate the camera
-                    if (e.getX() < mouseX || e.getX() > mouseX) {
-                        yaw += (e.getX() - mouseX) * ROTATION_SENSITIVITY;
-                    }
-                    if (pitch + e.getY() - mouseY > 90) {
-                        pitch = 90;
-                    } else if (pitch + e.getY() - mouseY < -90) {
-                        pitch = -90;
-                    } else {
-                        if (e.getY() < mouseY || e.getY() > mouseY) {
-                            pitch += (e.getY() - mouseY) * ROTATION_SENSITIVITY;
-                        }
-                    }
-                } else if (SwingUtilities.isRightMouseButton(e)) {
-                    // TODO Make the camera drag translation more accurate.
-                    // Translate the camera
-                    if (e.getX() < mouseX || e.getX() > mouseX) {
-                        cameraX += (e.getX() - mouseX) * MOTION_SENSITIVITY;
-                    }
-                    if (e.getY() < mouseY || e.getY() > mouseY) {
-                        cameraY -= (e.getY() - mouseY) * MOTION_SENSITIVITY;
-                    }
-                }
-                mouseX = e.getX();
-                mouseY = e.getY();
-            }
-
-            @Override
-            public void mouseMoved(@NotNull MouseEvent e) {
-                mouseX = e.getX();
-                mouseY = e.getY();
-            }
-        };
-
-        rendererPanel.addMouseListener(mouseAdapter);
-        rendererPanel.addMouseMotionListener(mouseAdapter);
-        rendererPanel.addMouseWheelListener(mouseAdapter);
+        SchematicRenderer renderer = new SchematicRenderer();
+        ((GLJPanel) rendererPanel).addGLEventListener(renderer);
+        rendererPanel.addKeyListener(renderer);
+        rendererPanel.addMouseListener(renderer);
+        rendererPanel.addMouseMotionListener(renderer);
+        rendererPanel.addMouseWheelListener(renderer);
 
         gridPanel.addComponentListener(new ComponentAdapter() {
             @Override
@@ -801,4 +581,265 @@ public class UserInterface {
         return panel;
     }
 
+    private class SchematicRenderer extends MouseAdapter implements GLEventListener, KeyListener {
+
+        private static final float ROTATION_SENSITIVITY = 1.0f;
+        private static final float MOTION_SENSITIVITY = 0.1f;
+        /**
+         * Rotational angle for x-axis in degrees.
+         **/
+        private float pitch = 45.0f;
+        /**
+         * Rotational angle for y-axis in degrees.
+         **/
+        private float yaw = 45.0f;
+        /**
+         * X location.
+         */
+        private float cameraX;
+        /**
+         * Y location.
+         */
+        private float cameraY;
+        /**
+         * Z location.
+         */
+        private float cameraZ = -30.0f;
+        private int mouseX;
+        private int mouseY;
+
+        public void drawAxes(@NotNull GL4bc gl, float sizeX, float sizeY, float sizeZ) {
+            gl.glLineWidth(2.0f);
+
+            int[] indices = { //
+                    0, 1, // X axis (red)
+                    2, 3, // Y axis (green)
+                    4, 5 // Z axis (blue)
+            };
+            IntBuffer indexBuffer = GLBuffers.newDirectIntBuffer(indices);
+            indexBuffer.rewind();
+
+            float[] vertices = { //
+                    0.0f, 0.0f, 0.0f, sizeX, 0.0f, 0.0f, // X-axis (red)
+                    0.0f, 0.0f, 0.0f, 0.0f, sizeY, 0.0f, // Y-axis (green)
+                    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, sizeZ // Z-axis (blue)
+            };
+            FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertices);
+            vertexBuffer.rewind();
+            gl.glGenBuffers(1, indexBuffer);
+
+            gl.glBindBuffer(GL_ARRAY_BUFFER, indexBuffer.get(0));
+            gl.glBufferData(GL_ARRAY_BUFFER, (long) vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
+            gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+            float[] colors = { //
+                    1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, // X axis (red)
+                    0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, // Y axis (green)
+                    0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f // Z axis (blue)
+            };
+            FloatBuffer colorBuffer = GLBuffers.newDirectFloatBuffer(colors);
+            colorBuffer.rewind();
+
+            /*gl.glBindBuffer(GL_ARRAY_BUFFER, indexBuffer.get(0));
+            gl.glEnableVertexAttribArray(0); // Position
+            gl.glEnableVertexAttribArray(1); // Color
+            gl.glVertexAttribPointer(0, 0, GL_FLOAT, false, 0, 0);
+            gl.glVertexAttribPointer(0, 0, GL_FLOAT, false, 0, 0);
+
+            gl.glDrawArrays(GL_LINES, 0, 3);
+
+            gl.glDisableVertexAttribArray(0); // Position
+            gl.glDisableVertexAttribArray(1); // Color*/
+
+            gl.glEnableClientState(GL_COLOR_ARRAY);
+            gl.glEnableClientState(GL_VERTEX_ARRAY);
+
+            gl.glVertexPointer(3, GL_FLOAT, 0, vertexBuffer);
+            gl.glColorPointer(4, GL_FLOAT, 0, colorBuffer);
+
+            gl.glDrawArrays(GL_LINES, 0, indices.length);
+
+            gl.glDisableClientState(GL_COLOR_ARRAY);
+            gl.glDisableClientState(GL_VERTEX_ARRAY);
+        }
+
+        @Override
+        public void init(@NotNull GLAutoDrawable drawable) {
+            GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
+            gl.glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // set background color to gray
+            gl.glClearDepth(1.0f); // set clear depth value to farthest
+            gl.glEnable(GL_DEPTH_TEST); // enables depth testing
+            gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
+            gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
+            gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
+            gl.setSwapInterval(1);
+            // Set up the lighting for Light-1
+            // Ambient light does not come from a particular direction. Need some ambient
+            // light to light up the scene. Ambient's value in RGBA
+            float[] lightAmbientValue = {0.2f, 0.2f, 0.2f, 1.0f};
+            // Diffuse light comes from a particular location. Diffuse's value in RGBA
+            float[] lightDiffuseValue = {0.75f, 0.75f, 0.75f, 1.0f};
+            // Diffuse light location xyz (in front of the screen).
+            float[] lightDiffusePosition = {8.0f, 0.0f, 8.0f, 1.0f};
+            gl.glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbientValue, 0);
+            gl.glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuseValue, 0);
+            gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
+            gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
+            gl.glEnable(GL_CULL_FACE);
+
+            animator = new Animator(drawable);
+            animator.setRunAsFastAsPossible(true);
+
+            animator.start();
+        }
+
+        @Override
+        public void dispose(GLAutoDrawable drawable) {
+            animator.stop();
+        }
+
+        @Override
+        public void display(GLAutoDrawable drawable) {
+            GL4bc gl = drawable.getGL().getGL4bc();
+            gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            gl.glLoadIdentity(); // reset the model-view matrix
+            gl.glTranslatef(cameraX, cameraY, cameraZ); // translate into the screen
+            gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
+            gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
+            if (schematic != null) {
+                int[] size = schematic.getSize();
+                // bottom-left-front corner of schematic is (0,0,0) so we need to center it at the origin
+                gl.glTranslatef(-size[0] / 2.0f, -size[1] / 2.0f, -size[2] / 2.0f);
+                // draw schematic border
+                drawAxes(gl, size[0], size[1], size[2]);
+                // draw a cube
+                for (int x = 0; x < size[0]; x++) {
+                    for (int y = 0; y < renderedHeight; y++) {
+                        for (int z = 0; z < size[2]; z++) {
+                            Schematic.Block block = schematic.getBlock(x, y, z);
+                            if (block != null) {
+                                long seed = x + ((long) y * size[2] * size[0]) + ((long) z * size[0]);
+                                Random random = new Random(seed);
+                                List<JSONObject> modelList = ModelRenderer.getModelsFromBlockState(block, random);
+                                Color tint = ModelRenderer.getTint(block);
+
+                                gl.glPushMatrix();
+                                gl.glTranslatef(x * SCALE, y * SCALE, z * SCALE);
+                                for (JSONObject model : modelList) {
+                                    ModelRenderer.drawModel(gl, model, tint);
+                                }
+                                gl.glPopMatrix();
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void reshape(@NotNull GLAutoDrawable drawable, int x, int y, int width, int height) {
+            GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
+            gl.glViewport(0, 0, width, height);
+            double fovY = 45.0;
+            double aspect = (double) width / height;
+            double zNear = 1.0;
+            double zFar = 1000.0;
+            double frustumHeight = Math.tan(fovY / 360 * Math.PI) * zNear;
+            double frustumWidth = frustumHeight * aspect;
+            // Setup perspective projection, with aspect ratio matches viewport
+            gl.glMatrixMode(GL_PROJECTION); // choose projection matrix
+            gl.glLoadIdentity(); // reset projection matrix
+            gl.glFrustum(-frustumWidth, frustumWidth, -frustumHeight, frustumHeight, zNear, zFar);
+            // Enable the model-view transform
+            gl.glMatrixMode(GL_MODELVIEW);
+            gl.glLoadIdentity(); // reset
+        }
+
+        @Override
+        public void keyTyped(KeyEvent e) {
+
+        }
+
+        @Override
+        public void keyPressed(@NotNull KeyEvent e) {
+            int keyCode = e.getKeyCode();
+            switch (keyCode) {
+                case KeyEvent.VK_UP -> {
+                    if (schematic != null) {
+                        int[] size = schematic.getSize();
+                        if (renderedHeight < size[1]) {
+                            renderedHeight++;
+                        } else {
+                            rendererPanel.getToolkit().beep();
+                        }
+                        if (renderedHeight > size[1]) {
+                            renderedHeight = size[1];
+                        }
+                    }
+                }
+                case KeyEvent.VK_DOWN -> {
+                    if (renderedHeight > 0) {
+                        renderedHeight--;
+                    } else {
+                        rendererPanel.getToolkit().beep();
+                    }
+                    if (renderedHeight < 0) {
+                        renderedHeight = 0;
+                    }
+                }
+            }
+        }
+
+        @Override
+        public void keyReleased(KeyEvent e) {
+
+        }
+
+        @Override
+        public void mouseClicked(MouseEvent e) {
+            rendererPanel.requestFocus();
+        }
+
+        @Override
+        public void mouseWheelMoved(@NotNull MouseWheelEvent e) {
+            cameraZ -= e.getPreciseWheelRotation();
+        }
+
+        @Override
+        public void mouseDragged(@NotNull MouseEvent e) {
+            rendererPanel.requestFocus();
+            if (SwingUtilities.isLeftMouseButton(e)) {
+                // Rotate the camera
+                if (e.getX() < mouseX || e.getX() > mouseX) {
+                    yaw += (e.getX() - mouseX) * ROTATION_SENSITIVITY;
+                }
+                if (pitch + e.getY() - mouseY > 90) {
+                    pitch = 90;
+                } else if (pitch + e.getY() - mouseY < -90) {
+                    pitch = -90;
+                } else {
+                    if (e.getY() < mouseY || e.getY() > mouseY) {
+                        pitch += (e.getY() - mouseY) * ROTATION_SENSITIVITY;
+                    }
+                }
+            } else if (SwingUtilities.isRightMouseButton(e)) {
+                // TODO Make the camera drag translation more accurate.
+                // Translate the camera
+                if (e.getX() < mouseX || e.getX() > mouseX) {
+                    cameraX += (e.getX() - mouseX) * MOTION_SENSITIVITY;
+                }
+                if (e.getY() < mouseY || e.getY() > mouseY) {
+                    cameraY -= (e.getY() - mouseY) * MOTION_SENSITIVITY;
+                }
+            }
+            mouseX = e.getX();
+            mouseY = e.getY();
+        }
+
+        @Override
+        public void mouseMoved(@NotNull MouseEvent e) {
+            mouseX = e.getX();
+            mouseY = e.getY();
+        }
+    }
 }
