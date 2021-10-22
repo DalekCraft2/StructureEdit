@@ -21,6 +21,8 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
@@ -34,18 +36,33 @@ public final class GzipUtils {
         throw new UnsupportedOperationException();
     }
 
-    public static void zip(@NotNull Object o, File file) throws IOException {
-        try (FileOutputStream fileOutputStream = new FileOutputStream(file); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream); OutputStreamWriter outputStreamWriter = new OutputStreamWriter(gzipOutputStream, StandardCharsets.UTF_8); BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter)) {
-            bufferedWriter.write(o.toString());
-        }
-    }
-
-    public static String unzip(File file) throws IOException {
+    public static String read(File file) throws IOException {
         try (FileInputStream fileInputStream = new FileInputStream(file); GZIPInputStream gzipInputStream = new GZIPInputStream(fileInputStream); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); BufferedReader bufferedReader = new BufferedReader(inputStreamReader); StringWriter stringWriter = new StringWriter()) {
             while (bufferedReader.ready()) {
                 stringWriter.write(bufferedReader.read());
             }
             return stringWriter.toString();
+        }
+    }
+
+    public static String read(Path path) throws IOException {
+        try (InputStream pathInputStream = Files.newInputStream(path); GZIPInputStream gzipInputStream = new GZIPInputStream(pathInputStream); InputStreamReader inputStreamReader = new InputStreamReader(gzipInputStream, StandardCharsets.UTF_8); BufferedReader bufferedReader = new BufferedReader(inputStreamReader); StringWriter stringWriter = new StringWriter()) {
+            while (bufferedReader.ready()) {
+                stringWriter.write(bufferedReader.read());
+            }
+            return stringWriter.toString();
+        }
+    }
+
+    public static void write(@NotNull Object o, File file) throws IOException {
+        try (FileOutputStream fileOutputStream = new FileOutputStream(file); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(fileOutputStream); OutputStreamWriter outputStreamWriter = new OutputStreamWriter(gzipOutputStream, StandardCharsets.UTF_8); BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter)) {
+            bufferedWriter.write(o.toString());
+        }
+    }
+
+    public static void write(@NotNull Object o, Path path) throws IOException {
+        try (OutputStream pathOutputStream = Files.newOutputStream(path); GZIPOutputStream gzipOutputStream = new GZIPOutputStream(pathOutputStream); OutputStreamWriter outputStreamWriter = new OutputStreamWriter(gzipOutputStream, StandardCharsets.UTF_8); BufferedWriter bufferedWriter = new BufferedWriter(outputStreamWriter)) {
+            bufferedWriter.write(o.toString());
         }
     }
 }

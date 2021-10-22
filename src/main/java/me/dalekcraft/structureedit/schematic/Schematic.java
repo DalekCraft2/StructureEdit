@@ -31,7 +31,7 @@ public interface Schematic {
     static Schematic openFrom(@NotNull File file) throws IOException, JSONException, ValidationException {
         String path = file.getAbsolutePath();
         return switch (path.substring(path.lastIndexOf('.') + 1)) {
-            case TardisSchematic.EXTENSION -> new TardisSchematic(new JSONObject(GzipUtils.unzip(file)));
+            case TardisSchematic.EXTENSION -> new TardisSchematic(new JSONObject(GzipUtils.read(file)));
             case NbtStructure.EXTENSION -> new NbtStructure(NBTUtil.read(file));
             case McEditSchematic.EXTENSION -> new McEditSchematic(NBTUtil.read(file));
             case SpongeSchematic.EXTENSION -> SpongeSchematic.getInstance(NBTUtil.read(file));

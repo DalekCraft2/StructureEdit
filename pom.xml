@@ -52,22 +52,6 @@
     <!-- TODO Add JUnit tests. -->
     <dependencies>
         <dependency>
-            <!-- JSON in Java -->
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20210307</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- everit-org/json-schema -->
-            <groupId>com.github.everit-org.json-schema</groupId>
-            <artifactId>org.everit.json.schema</artifactId>
-            <version>1.14.0</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
             <!-- GlueGen Runtime -->
             <groupId>org.jogamp.gluegen</groupId>
             <artifactId>gluegen-rt-main</artifactId>
@@ -84,10 +68,18 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <!-- JetBrains uiDesigner -->
-            <groupId>com.intellij</groupId>
-            <artifactId>forms_rt</artifactId>
-            <version>7.0.3</version>
+            <!-- JSON in Java -->
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20210307</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- everit-org/json-schema -->
+            <groupId>com.github.everit-org.json-schema</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>1.14.0</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -119,7 +111,15 @@
             <!-- Jansi -->
             <groupId>org.fusesource.jansi</groupId>
             <artifactId>jansi</artifactId>
-            <version>2.3.4</version>
+            <version>2.4.0</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- JetBrains GUI Forms Runtime -->
+            <groupId>com.jetbrains.intellij.java</groupId>
+            <artifactId>java-gui-forms-rt</artifactId>
+            <version>212.5457.59</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -132,6 +132,12 @@
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
+        <repository>
+            <!-- JetBrains GUI Forms Runtime -->
+            <name>IntelliJ Releases</name>
+            <id>intellij-repository</id>
+            <url>https://www.jetbrains.com/intellij-repository/releases</url>
+        </repository>
     </repositories>
     <pluginRepositories>
         <pluginRepository>
@@ -139,6 +145,18 @@
             <name>Apache Snapshots</name>
             <id>apache-snapshots</id>
             <url>https://repository.apache.org/snapshots/</url>
+        </pluginRepository>
+        <pluginRepository>
+            <!-- JetBrains GUI Forms Compiler -->
+            <name>IntelliJ Releases</name>
+            <id>intellij-repository</id>
+            <url>https://www.jetbrains.com/intellij-repository/releases</url>
+        </pluginRepository>
+        <pluginRepository>
+            <!-- JetBrains GUI Forms Compiler dependencies -->
+            <name>IntelliJ Third-Party</name>
+            <id>intellij-third-party</id>
+            <url>https://cache-redirector.jetbrains.com/intellij-dependencies</url>
         </pluginRepository>
     </pluginRepositories>
 
@@ -193,14 +211,30 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+            <plugin>
+                <!-- Generate Swing GUI -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>ideauidesigner-maven-plugin</artifactId>
+                <version>1.0-beta-1</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.jetbrains.intellij.java</groupId>
+                        <artifactId>java-compiler-ant-tasks</artifactId>
+                        <version>212.5457.59</version>
+                    </dependency>
+                </dependencies>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>javac2</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
-                    <tags>
-                        <tag>
-                            <name>noinspection</name>
-                            <placement>a</placement>
-                            <head>No inspection:</head>
-                        </tag>
-                    </tags>
+                    <fork>true</fork>
+                    <debug>true</debug>
+                    <failOnError>true</failOnError>
                 </configuration>
             </plugin>
             <plugin>

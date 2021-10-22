@@ -81,7 +81,7 @@ public final class Main {
 
             frame = new JFrame(Configuration.LANGUAGE.getProperty("ui.window.title"));
             UserInterface userInterface = new UserInterface();
-            frame.add(userInterface.$$$getRootComponent$$$());
+            frame.add(userInterface.getRootComponent());
             try {
                 frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")).getScaledInstance(128, 128, Image.SCALE_SMOOTH));
             } catch (IOException e) {

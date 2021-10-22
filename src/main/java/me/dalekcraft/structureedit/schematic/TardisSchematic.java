@@ -41,7 +41,7 @@ public class TardisSchematic implements Schematic {
 
     @Override
     public void saveTo(File file) throws IOException {
-        GzipUtils.zip(schematic, file);
+        GzipUtils.write(schematic, file);
     }
 
     @Contract(pure = true)
