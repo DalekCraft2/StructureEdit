@@ -25,6 +25,9 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
 
     public NbtStructure(@NotNull NamedTag schematic) throws ValidationException {
         this.schematic = schematic;
+        if (!schematic.getName().equals("")) {
+            throw new ValidationException("Root tag name is not empty");
+        }
         if (!(schematic.getTag() instanceof CompoundTag compoundTag)) {
             throw new ValidationException("Root tag is not an instance of " + CompoundTag.class.getSimpleName());
         }
@@ -57,12 +60,15 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
             throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
         }
         ListTag<? extends Tag<?>> size = root.getListTag("size");
-        expectedType = IntTag.class;
-        if (!expectedType.equals(size.getTypeClass())) {
-            throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
-        }
         if (size.size() != 3) {
             throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " has size " + size.size() + "; should be 3");
+        }
+        for (int i = 0; i < size.size(); i++) {
+            currentKey = "size[" + i + "]";
+            expectedType = IntTag.class;
+            if (!expectedType.isInstance(size.get(i))) {
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+            }
         }
 
         if (root.containsKey("palette")) {
@@ -71,14 +77,14 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
             if (!expectedType.isInstance(root.get("palette"))) {
                 throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
-            ListTag<? extends Tag<?>> rawPalette = root.getListTag("palette");
-            expectedType = CompoundTag.class;
-            if (!expectedType.equals(rawPalette.getTypeClass())) {
-                throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
-            }
-            ListTag<CompoundTag> palette = rawPalette.asCompoundTagList();
+            ListTag<? extends Tag<?>> palette = root.getListTag("palette");
             for (int i = 0; i < palette.size(); i++) {
-                CompoundTag state = palette.get(i);
+                currentKey = "palette[" + i + "]";
+                expectedType = CompoundTag.class;
+                if (!expectedType.isInstance(palette.get(i))) {
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                }
+                CompoundTag state = palette.asCompoundTagList().get(i);
                 currentKey = "palette[" + i + "].Name";
                 expectedType = StringTag.class;
                 if (!state.containsKey("Name")) {
@@ -100,21 +106,21 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
             if (!expectedType.isInstance(root.get("palettes"))) {
                 throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
-            ListTag<? extends Tag<?>> rawPaletteList = root.getListTag("palettes");
-            if (!expectedType.equals(rawPaletteList.getTypeClass())) {
-                throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
-            }
-            ListTag<ListTag<?>> paletteList = rawPaletteList.asListTagList();
+            ListTag<? extends Tag<?>> paletteList = root.getListTag("palettes");
             for (int i = 0; i < paletteList.size(); i++) {
                 currentKey = "palettes[" + i + "]";
-                ListTag<? extends Tag<?>> rawPalette = paletteList.get(i);
-                expectedType = CompoundTag.class;
-                if (!expectedType.equals(rawPalette.getTypeClass())) {
-                    throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+                expectedType = ListTag.class;
+                if (!expectedType.isInstance(paletteList.get(i))) {
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                 }
-                ListTag<CompoundTag> palette = rawPalette.asCompoundTagList();
+                ListTag<? extends Tag<?>> palette = paletteList.asListTagList().get(i);
                 for (int j = 0; j < palette.size(); j++) {
-                    CompoundTag state = palette.get(j);
+                    currentKey = "palettes[" + i + "][" + j + "]";
+                    expectedType = CompoundTag.class;
+                    if (!expectedType.isInstance(palette.get(i))) {
+                        throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                    }
+                    CompoundTag state = palette.asCompoundTagList().get(j);
                     currentKey = "palettes[" + i + "][" + j + "].Name";
                     expectedType = StringTag.class;
                     if (!state.containsKey("Name")) {
@@ -143,14 +149,14 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
         if (!expectedType.isInstance(root.get("blocks"))) {
             throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
         }
-        ListTag<? extends Tag<?>> rawBlockList = root.getListTag("blocks");
-        expectedType = CompoundTag.class;
-        if (!expectedType.equals(rawBlockList.getTypeClass())) {
-            throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
-        }
-        ListTag<CompoundTag> blockList = rawBlockList.asCompoundTagList();
+        ListTag<? extends Tag<?>> blockList = root.getListTag("blocks");
         for (int i = 0; i < blockList.size(); i++) {
-            CompoundTag block = blockList.get(i);
+            currentKey = "blocks[" + i + "]";
+            expectedType = CompoundTag.class;
+            if (!expectedType.isInstance(blockList.get(i))) {
+                throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+            }
+            CompoundTag block = blockList.asCompoundTagList().get(i);
             currentKey = "blocks[" + i + "].state";
             expectedType = IntTag.class;
             if (!block.containsKey("state")) {
@@ -169,12 +175,15 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
                 throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
             }
             ListTag<? extends Tag<?>> position = block.getListTag("pos");
-            expectedType = IntTag.class;
-            if (!expectedType.equals(position.getTypeClass())) {
-                throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
-            }
             if (position.size() != 3) {
                 throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " has size " + position.size() + "; should be 3");
+            }
+            for (int j = 0; j < position.size(); j++) {
+                currentKey = "blocks[" + i + "].pos[" + j + "]";
+                expectedType = IntTag.class;
+                if (!expectedType.isInstance(position.get(j))) {
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+                }
             }
 
             currentKey = "blocks[" + i + "].nbt";
@@ -192,9 +201,10 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
             }
             ListTag<? extends Tag<?>> entityList = root.getListTag("entities");
             for (int i = 0; i < entityList.size(); i++) {
+                currentKey = "entities[" + i + "]";
                 expectedType = CompoundTag.class;
                 if (!expectedType.isInstance(entityList.get(i))) {
-                    throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                 }
                 CompoundTag entity = entityList.asCompoundTagList().get(i);
                 currentKey = "entities[" + i + "].pos";

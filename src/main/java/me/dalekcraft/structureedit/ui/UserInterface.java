@@ -71,7 +71,6 @@ public class UserInterface {
     private static final FileNameExtensionFilter FILTER_MCEDIT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.mcedit"), McEditSchematic.EXTENSION);
     private static final FileNameExtensionFilter FILTER_SPONGE = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.sponge"), SpongeSchematic.EXTENSION);
     private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.tardis"), TardisSchematic.EXTENSION);
-    private static Method $$$cachedGetBundleMethod$$$ = null;
     public final JFileChooser schematicChooser = new JFileChooser();
     public final JFileChooser assetsChooser = new JFileChooser();
     public JComboBox<String> blockIdComboBox;
@@ -288,6 +287,8 @@ public class UserInterface {
             messages.forEach(message -> LOGGER.log(Level.ERROR, message));
             Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
             schematic = null;
+        } catch (UnsupportedOperationException e) {
+            LOGGER.log(Level.ERROR, e.getMessage());
         }
         SwingUtilities.invokeLater(() -> {
             sizeTextField.setText(null);
@@ -528,6 +529,8 @@ public class UserInterface {
         sizeLabel.setLabelFor(sizeTextField);
         blockPaletteLabel.setLabelFor(blockPaletteSpinner);
     }
+
+    private static Method $$$cachedGetBundleMethod$$$ = null;
 
     private String $$$getMessageFromBundle$$$(String path, String key) {
         ResourceBundle bundle;
@@ -1475,7 +1478,7 @@ public class UserInterface {
                     return Color.decode("#208030");
                 }
                 default -> {
-                    return new Color(255, 255, 255, 255);
+                    return Color.WHITE;
                 }
             }
         }

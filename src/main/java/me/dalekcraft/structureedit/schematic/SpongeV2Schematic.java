@@ -13,6 +13,10 @@ public class SpongeV2Schematic extends SpongeSchematic implements VersionedSchem
 
     @Override
     public void validate() throws ValidationException {
+        if (!schematic.getName().equals("Schematic")) {
+            throw new ValidationException("Root tag name is not \"Schematic\"");
+        }
+
         String currentKey = "Version";
         Class<?> expectedType = IntTag.class;
         if (!root.containsKey("Version")) {
@@ -50,18 +54,18 @@ public class SpongeV2Schematic extends SpongeSchematic implements VersionedSchem
         if (!expectedType.isInstance(root.get("Width"))) {
             throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
         }
-        currentKey = "Length";
-        if (!root.containsKey("Length")) {
-            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
-        }
-        if (!expectedType.isInstance(root.get("Length"))) {
-            throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
-        }
         currentKey = "Height";
         if (!root.containsKey("Height")) {
             throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
         }
         if (!expectedType.isInstance(root.get("Height"))) {
+            throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
+        }
+        currentKey = "Length";
+        if (!root.containsKey("Length")) {
+            throw new ValidationException(expectedType.getSimpleName() + " " + currentKey + " is missing");
+        }
+        if (!expectedType.isInstance(root.get("Length"))) {
             throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
         }
 
@@ -132,9 +136,10 @@ public class SpongeV2Schematic extends SpongeSchematic implements VersionedSchem
             }
             ListTag<? extends Tag<?>> tileEntityList = root.getListTag("BlockEntities");
             for (int i = 0; i < tileEntityList.size(); i++) {
+                currentKey = "BlockEntities[" + i + "]";
                 expectedType = CompoundTag.class;
                 if (!expectedType.isInstance(tileEntityList.get(i))) {
-                    throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                 }
                 CompoundTag tileEntity = tileEntityList.asCompoundTagList().get(i);
                 currentKey = "BlockEntities[" + i + "].Pos";
@@ -169,9 +174,10 @@ public class SpongeV2Schematic extends SpongeSchematic implements VersionedSchem
             }
             ListTag<? extends Tag<?>> entityList = root.getListTag("Entities");
             for (int i = 0; i < entityList.size(); i++) {
+                currentKey = "Entities[" + i + "]";
                 expectedType = CompoundTag.class;
                 if (!expectedType.isInstance(entityList.get(i))) {
-                    throw new ValidationException(ListTag.class.getSimpleName() + " " + currentKey + " does not have type " + expectedType.getSimpleName());
+                    throw new ValidationException("Key " + currentKey + " is not an instance of " + expectedType.getSimpleName());
                 }
                 CompoundTag entity = entityList.asCompoundTagList().get(i);
                 currentKey = "Entities[" + i + "].Pos";
