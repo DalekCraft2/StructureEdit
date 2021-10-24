@@ -95,6 +95,9 @@ public class UserInterface {
     private JSpinner blockPaletteSpinner;
     private JLabel sizeLabel;
     private JTextField sizeTextField;
+    private JTabbedPane tabbedPane;
+    private JTextPane logPane;
+    private JPanel logTab;
 
     {
         schematicChooser.addChoosableFileFilter(FILTER_NBT);
@@ -207,6 +210,8 @@ public class UserInterface {
                 }
             }
         });
+
+        JTextPaneAppender.addLog4j2TextPaneAppender(logPane);
     }
 
     public void showControlsDialog() {

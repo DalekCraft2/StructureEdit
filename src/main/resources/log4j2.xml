@@ -11,17 +11,23 @@
         </Console>
         <RollingRandomAccessFile name="File" fileName="logs/StructureEdit-latest.log"
                                  filePattern="logs/StructureEdit-%d{yyyy-MM-dd}-%i.log.gz" ignoreExceptions="false">
-            <PatternLayout pattern="%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n"/>
+            <PatternLayout pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n}"
+                           disableAnsi="false"/>
             <Policies>
                 <TimeBasedTriggeringPolicy/>
                 <OnStartupTriggeringPolicy/>
             </Policies>
         </RollingRandomAccessFile>
+        <JTextPaneAppender name="TextPane" maxLines="100">
+            <PatternLayout pattern="%highlight{%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n}"
+                           disableAnsi="true"/>
+        </JTextPaneAppender>
     </Appenders>
     <Loggers>
-        <Root level="info">
+        <Root level="info" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="File"/>
+            <AppenderRef ref="TextPane"/>
         </Root>
     </Loggers>
 </Configuration>
