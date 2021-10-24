@@ -16,20 +16,20 @@
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.build.outputDirectory}</directory>
-            <outputDirectory>/</outputDirectory>
+            <directory>${project.build.directory}/lib</directory>
+            <outputDirectory>lib</outputDirectory>
             <includes>
-                <include>config.properties</include>
+                <include>**</include>
             </includes>
         </fileSet>
     </fileSets>
-    <dependencySets>
+    <!--<dependencySets>
         <dependencySet>
-            <outputDirectory>lib/</outputDirectory>
+            <outputDirectory>lib</outputDirectory>
             <scope>runtime</scope>
             <excludes>
                 <exclude>${project.groupId}:${project.artifactId}</exclude>
             </excludes>
         </dependencySet>
-    </dependencySets>
+    </dependencySets>-->
 </assembly>

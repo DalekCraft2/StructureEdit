@@ -47,6 +47,8 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <mainClass>me.dalekcraft.structureedit.Main</mainClass>
+
+        <jogl.version>2.3.2</jogl.version>
     </properties>
 
     <!-- TODO Add JUnit tests. -->
@@ -54,16 +56,34 @@
         <dependency>
             <!-- GlueGen Runtime -->
             <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt-main</artifactId>
-            <version>2.3.2</version>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- GlueGen Runtime Natives -->
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>${jogl.natives}</classifier>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
             <!-- JOGL -->
             <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all-main</artifactId>
-            <version>2.3.2</version>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- JOGL Natives -->
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>${jogl.natives}</classifier>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -120,8 +140,7 @@
             <groupId>com.jetbrains.intellij.java</groupId>
             <artifactId>java-gui-forms-rt</artifactId>
             <version>212.5457.59</version>
-            <scope>compile</scope>
-            <optional>true</optional>
+            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
@@ -163,7 +182,6 @@
     <build>
         <finalName>${project.name}</finalName>
         <defaultGoal>clean package</defaultGoal>
-        <sourceDirectory>${project.basedir}/src/main/java</sourceDirectory>
         <resources>
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
@@ -251,6 +269,26 @@
                         </manifest>
                     </archive>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <!-- Parse version components and create properties for them -->
@@ -344,4 +382,93 @@
             </plugin>
         </plugins>
     </build>
+
+    <profiles>
+        <!-- Determine which OS is being used, and download the correct natives for JOGL -->
+        <!-- TODO Ensure that these all work and are not mismatched. Difficult, because I only have a Windows computer. -->
+        <profile>
+            <id>jogl-natives-linux-amd64</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <jogl.natives>natives-linux-amd64</jogl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>jogl-natives-linux-aarch64</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <arch>aarch64</arch>
+                </os>
+            </activation>
+            <properties>
+                <jogl.natives>natives-linux-arm64</jogl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>jogl-natives-linux-arm</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <arch>arm</arch>
+                </os>
+            </activation>
+            <properties>
+                <jogl.natives>natives-linux-armv6</jogl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>jogl-natives-linux-arm32</id>
+            <activation>
+                <os>
+                    <family>unix</family>
+                    <arch>arm32</arch>
+                </os>
+            </activation>
+            <properties>
+                <jogl.natives>natives-linux-armv6</jogl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>jogl-natives-macosx-universal</id>
+            <activation>
+                <os>
+                    <family>mac</family>
+                </os>
+            </activation>
+            <properties>
+                <jogl.natives>natives-macosx-universal</jogl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>jogl-natives-windows-amd64</id>
+            <activation>
+                <os>
+                    <family>windows</family>
+                    <arch>amd64</arch>
+                </os>
+            </activation>
+            <properties>
+                <jogl.natives>natives-windows-amd64</jogl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>jogl-natives-windows-x86</id>
+            <activation>
+                <os>
+                    <name>linux</name>
+                    <family>windows</family>
+                    <arch>x86</arch>
+                </os>
+            </activation>
+            <properties>
+                <jogl.natives>natives-windows-i586</jogl.natives>
+            </properties>
+        </profile>
+    </profiles>
 </project>
