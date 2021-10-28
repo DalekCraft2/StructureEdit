@@ -39,6 +39,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public final class Main {
 
@@ -83,7 +84,7 @@ public final class Main {
             UserInterface userInterface = new UserInterface();
             frame.add(userInterface.getRootComponent());
             try {
-                frame.setIconImage(ImageIO.read(Main.class.getClassLoader().getResourceAsStream("icon.png")).getScaledInstance(128, 128, Image.SCALE_SMOOTH));
+                frame.setIconImage(ImageIO.read(Objects.requireNonNull(Main.class.getClassLoader().getResourceAsStream("icon.png"))).getScaledInstance(128, 128, Image.SCALE_SMOOTH)); // Use Objects.requireNonNull() because it should never be null
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
@@ -104,7 +105,7 @@ public final class Main {
             frame.setVisible(true);
 
             String assetsArg;
-            String protocol = Main.class.getResource("").getProtocol();
+            String protocol = Main.class.getClassLoader().getResource("").getProtocol();
             if (protocol.equals("jar")) {
                 assetsArg = Configuration.CONFIG.getProperty("assets_path");
             } else {

@@ -23,7 +23,7 @@ public final class Configuration {
         @Override
         public synchronized Object setProperty(String key, String value) {
             Object o = super.setProperty(key, value);
-            String protocol = Main.class.getResource("").getProtocol();
+            String protocol = Configuration.class.getClassLoader().getResource("").getProtocol();
             if (protocol.equals("jar")) {
                 try (FileOutputStream fileOutputStream = new FileOutputStream("config.properties")) {
                     store(fileOutputStream, null);
@@ -37,7 +37,7 @@ public final class Configuration {
 
     static {
         try {
-            String protocol = Main.class.getResource("").getProtocol();
+            String protocol = Configuration.class.getClassLoader().getResource("").getProtocol();
             if (protocol.equals("jar")) {
                 Path configPath = Path.of("config.properties");
                 if (!Files.exists(configPath)) {

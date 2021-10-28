@@ -55,7 +55,7 @@ public final class Assets {
             MODELS.clear();
             TEXTURES.clear();
             ANIMATIONS.clear();
-            String protocol = Assets.class.getResource("").getProtocol();
+            String protocol = Assets.class.getClassLoader().getResource("").getProtocol();
             if (Objects.equals(protocol, "jar")) {
                 // run in jar
                 try (FileSystem fileSystem = FileSystems.newFileSystem(Path.of(Assets.class.getProtectionDomain().getCodeSource().getLocation().toURI()))) {

@@ -27,6 +27,7 @@ import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.schematic.*;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
+import me.dalekcraft.structureedit.util.InternalUtils;
 import me.dalekcraft.structureedit.util.PropertyUtils;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
@@ -447,6 +448,20 @@ public class UserInterface {
         private static final float ROTATION_SENSITIVITY = 1.0f;
         private static final float MOTION_SENSITIVITY = 0.1f;
         private final Random random = new Random();
+        private final IntBuffer vertexBufferObject = GLBuffers.newDirectIntBuffer(3);
+        private final IntBuffer vertexArrayObject = GLBuffers.newDirectIntBuffer(1);
+        private int vertexShader;
+        private int fragmentShader;
+        private int program;
+        private int positionLocation;
+        private int colorLocation;
+        private int rotationLocation;
+        private int projectionMatrixLocation;
+        private int modelViewMatrixLocation;
+        private float fovY = 45.0f;
+        private float aspect;
+        private float zNear = 1.0f;
+        private float zFar = 1000.0f;
         /**
          * Rotational angle for x-axis in degrees.
          **/
@@ -471,25 +486,52 @@ public class UserInterface {
         private int mouseY;
 
         public void drawAxes(@NotNull GL4bc gl, float sizeX, float sizeY, float sizeZ) {
-            gl.glLineWidth(2.0f);
+            // gl.glUseProgram(program);
 
-            int[] indices = { //
-                    0, 1, // X axis (red)
-                    2, 3, // Y axis (green)
-                    4, 5 // Z axis (blue)
-            };
-            IntBuffer indexBuffer = GLBuffers.newDirectIntBuffer(indices);
-            indexBuffer.rewind();
-            // IntBuffer vertexBufferObject = GLBuffers.newDirectIntBuffer(1);
-            // IntBuffer vertexArrayObject = GLBuffers.newDirectIntBuffer(1);
+            // gl.glBindVertexArray(vertexArrayObject.get(0));
 
-            float[] vertices = { //
-                    0.0f, 0.0f, 0.0f, sizeX, 0.0f, 0.0f, // X-axis (red)
-                    0.0f, 0.0f, 0.0f, 0.0f, sizeY, 0.0f, // Y-axis (green)
-                    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, sizeZ // Z-axis (blue)
+            /*float[] projectionMatrix = new float[16];
+            FloatUtil.makeIdentity(projectionMatrix);
+            // FloatUtil.makeTranslation(projectionMatrix, false, cameraX - sizeX / 2.0f, cameraY - sizeY / 2.0f, cameraZ - sizeZ / 2.0f);
+            gl.glUniformMatrix4fv(projectionMatrixLocation, 1, false, projectionMatrix, 0);
+
+            float[] modelViewMatrix = new float[16];
+            FloatUtil.makeIdentity(modelViewMatrix);
+            FloatUtil.makeRotationEuler(modelViewMatrix, 0, (float) Math.toRadians(-pitch), (float) Math.toRadians(-yaw), 0.0f);
+            // FloatUtil.makeRotationAxis(modelViewMatrix, 0, (float) Math.toRadians(-pitch), 1.0f, 0.0f, 0.0f, new float[3]);
+            // FloatUtil.makeRotationAxis(modelViewMatrix, 0, (float) Math.toRadians(-yaw), 0.0f, 1.0f, 0.0f, new float[3]);
+            gl.glUniformMatrix4fv(modelViewMatrixLocation, 1, false, modelViewMatrix, 0);*/
+
+            /*Matrix4 projectionMatrix = new Matrix4();
+            // projectionMatrix.translate(cameraX - sizeX / 2.0f, cameraY - sizeY / 2.0f, cameraZ - sizeZ / 2.0f);
+            gl.glUniformMatrix4fv(projectionMatrixLocation, 1, false, projectionMatrix.getMatrix(), 0);
+
+            Matrix4 modelViewMatrix = new Matrix4();
+            modelViewMatrix.rotate((float) Math.toRadians(-pitch), 1.0f, 0.0f, 0.0f);
+            modelViewMatrix.rotate((float) Math.toRadians(-yaw), 0.0f, 1.0f, 0.0f);
+            gl.glUniformMatrix4fv(modelViewMatrixLocation, 1, false, modelViewMatrix.getMatrix(), 0);*/
+
+            /*short[] indices = { //
+                    0, 1, // X-axis (red)
+                    2, 3, // Y-axis (green)
+                    4, 5 // Z-axis (blue)
             };
-            FloatBuffer vertexBuffer = GLBuffers.newDirectFloatBuffer(vertices);
-            vertexBuffer.rewind();
+            ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indices);
+            gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBufferObject.get(0));
+            gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_DYNAMIC_DRAW);*/
+
+            float[] positions = { //
+                    0.0f, 0.0f, 0.0f, 1.0f, sizeX, 0.0f, 0.0f, 1.0f, // X-axis (red)
+                    0.0f, 0.0f, 0.0f, 1.0f, 0.0f, sizeY, 0.0f, 1.0f, // Y-axis (green)
+                    0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, sizeZ, 1.0f // Z-axis (blue)
+            };
+            FloatBuffer positionBuffer = GLBuffers.newDirectFloatBuffer(positions);
+            /*gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(1));
+            gl.glBufferData(GL_ARRAY_BUFFER, (long) positionBuffer.capacity() * Float.BYTES, positionBuffer, GL_DYNAMIC_DRAW);
+            gl.glVertexAttribPointer(positionLocation, 4, GL_FLOAT, false, 0, 0);
+            gl.glEnableVertexAttribArray(positionLocation);*/
+            gl.glVertexPointer(4, GL_FLOAT, 0, positionBuffer);
+            gl.glEnableClientState(GL_VERTEX_ARRAY);
 
             float[] colors = { //
                     1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, // X axis (red)
@@ -497,49 +539,38 @@ public class UserInterface {
                     0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f // Z axis (blue)
             };
             FloatBuffer colorBuffer = GLBuffers.newDirectFloatBuffer(colors);
-            colorBuffer.rewind();
-
-            /*gl.glGenBuffers(1, indexBuffer);
-
-            gl.glBindBuffer(GL_ARRAY_BUFFER, indexBuffer.get(0));
-            gl.glBufferData(GL_ARRAY_BUFFER, (long) vertexBuffer.capacity() * Float.BYTES, vertexBuffer, GL_STATIC_DRAW);
-            gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-            gl.glGenVertexArrays(1, indexBuffer);
-            gl.glBindVertexArray(indexBuffer.get(0));
-
-            gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(0));
-            gl.glEnableVertexAttribArray(0); // Position
-            gl.glEnableVertexAttribArray(1); // Color
-            gl.glVertexAttribPointer(0, 3, GL_FLOAT, false, 0, 0);
-            gl.glVertexAttribPointer(1, 4, GL_FLOAT, false, 0, 0);
-
-            gl.glDrawArrays(GL_LINES, 0, 6);
-
-            gl.glDisableVertexAttribArray(0); // Position
-            gl.glDisableVertexAttribArray(1); // Color*/
-
-            gl.glEnableClientState(GL_VERTEX_ARRAY);
+            /*gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(2));
+            gl.glBufferData(GL_ARRAY_BUFFER, (long) colorBuffer.capacity() * Float.BYTES, colorBuffer, GL_DYNAMIC_DRAW);
+            gl.glVertexAttribPointer(colorLocation, 4, GL_FLOAT, false, 0, 0);
+            gl.glEnableVertexAttribArray(colorLocation);*/
+            gl.glColorPointer(4, GL_FLOAT, 0, colorBuffer);
             gl.glEnableClientState(GL_COLOR_ARRAY);
 
-            gl.glVertexPointer(3, GL_FLOAT, 0, vertexBuffer);
-            gl.glColorPointer(4, GL_FLOAT, 0, colorBuffer);
+            gl.glDrawArrays(GL_LINES, 0, positions.length / 4);
+            // gl.glDrawElements(GL_LINES, indices.length, GL_UNSIGNED_SHORT, 0);
 
-            gl.glDrawArrays(GL_LINES, 0, indices.length);
-
+            gl.glDisableClientState(GL_INDEX_ARRAY);
             gl.glDisableClientState(GL_VERTEX_ARRAY);
             gl.glDisableClientState(GL_COLOR_ARRAY);
+
+            /*gl.glDisableVertexAttribArray(positionLocation);
+            gl.glDisableVertexAttribArray(colorLocation);
+
+            gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
+            gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            gl.glBindVertexArray(0);
+
+            gl.glUseProgram(0);*/
         }
 
         @Override
         public void init(@NotNull GLAutoDrawable drawable) {
             GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
-            gl.glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // set background color to gray
-            gl.glClearDepth(1.0f); // set clear depth value to farthest
             gl.glEnable(GL_DEPTH_TEST); // enables depth testing
             gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
             gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
             gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
+            gl.glLineWidth(2.0f);
             gl.setSwapInterval(1);
             // Set up the lighting for Light-1
             // Ambient light does not come from a particular direction. Need some ambient
@@ -555,6 +586,74 @@ public class UserInterface {
             gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
             gl.glEnable(GL_CULL_FACE);
 
+            vertexShader = gl.glCreateShader(GL_VERTEX_SHADER);
+            fragmentShader = gl.glCreateShader(GL_FRAGMENT_SHADER);
+
+            String vertexShaderSource = null;
+            String fragmentShaderSource = null;
+            try {
+                vertexShaderSource = InternalUtils.read("shader.vert");
+                fragmentShaderSource = InternalUtils.read("shader.frag");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+            String[] vertexLines = {vertexShaderSource};
+            // int[] vertexLengths = {vertexLines.length};
+            gl.glShaderSource(vertexShader, 1, vertexLines, null, 0);
+            gl.glCompileShader(vertexShader);
+
+            //Check compile status.
+            int[] compiled = new int[1];
+            gl.glGetShaderiv(vertexShader, GL_COMPILE_STATUS, compiled, 0);
+            if (compiled[0] != 0) {
+                LOGGER.log(Level.DEBUG, "Compiled vertex shader");
+            } else {
+                int[] logLength = new int[1];
+                gl.glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, logLength, 0);
+
+                byte[] log = new byte[logLength[0]];
+                gl.glGetShaderInfoLog(vertexShader, logLength[0], null, 0, log, 0);
+
+                LOGGER.log(Level.ERROR, "Error compiling the vertex shader: " + new String(log));
+                System.exit(1);
+            }
+
+            String[] fragmentLines = {fragmentShaderSource};
+            // int[] fragmentLengths = {fragmentLines.length};
+            gl.glShaderSource(fragmentShader, 1, fragmentLines, null, 0);
+            gl.glCompileShader(fragmentShader);
+
+            //Check compile status.
+            gl.glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, compiled, 0);
+            if (compiled[0] != 0) {
+                LOGGER.log(Level.DEBUG, "Compiled fragment shader");
+            } else {
+                int[] logLength = new int[1];
+                gl.glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, logLength, 0);
+
+                byte[] log = new byte[logLength[0]];
+                gl.glGetShaderInfoLog(fragmentShader, logLength[0], null, 0, log, 0);
+
+                LOGGER.log(Level.ERROR, "Error compiling the fragment shader: " + new String(log));
+                System.exit(1);
+            }
+
+            program = gl.glCreateProgram();
+            gl.glAttachShader(program, vertexShader);
+            gl.glAttachShader(program, fragmentShader);
+            gl.glLinkProgram(program);
+            gl.glValidateProgram(program);
+
+            positionLocation = gl.glGetAttribLocation(program, "position");
+            colorLocation = gl.glGetAttribLocation(program, "color");
+            rotationLocation = gl.glGetUniformLocation(program, "rotation");
+            projectionMatrixLocation = gl.glGetUniformLocation(program, "projectionMatrix");
+            modelViewMatrixLocation = gl.glGetUniformLocation(program, "modelViewMatrix");
+
+            gl.glGenBuffers(3, vertexBufferObject);
+            gl.glGenVertexArrays(1, vertexArrayObject);
+
             animator = new Animator(drawable);
             animator.setRunAsFastAsPossible(true);
 
@@ -562,14 +661,26 @@ public class UserInterface {
         }
 
         @Override
-        public void dispose(GLAutoDrawable drawable) {
+        public void dispose(@NotNull GLAutoDrawable drawable) {
+            GL3 gl = drawable.getGL().getGL3();
             animator.stop();
+            gl.glUseProgram(0);
+            gl.glDeleteBuffers(3, vertexBufferObject);
+            gl.glDeleteVertexArrays(1, vertexArrayObject);
+            gl.glDetachShader(program, vertexShader);
+            gl.glDeleteShader(vertexShader);
+            gl.glDetachShader(program, fragmentShader);
+            gl.glDeleteShader(fragmentShader);
+            gl.glDeleteProgram(program);
         }
 
         @Override
         public void display(@NotNull GLAutoDrawable drawable) {
             GL4bc gl = drawable.getGL().getGL4bc();
+            gl.glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // set background color to gray
+            gl.glClearDepth(1.0f); // set clear depth value to farthest
             gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+            gl.glMatrixMode(GL_MODELVIEW);
             gl.glLoadIdentity(); // reset the model-view matrix
             gl.glTranslatef(cameraX, cameraY, cameraZ); // translate into the screen
             gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
@@ -607,20 +718,16 @@ public class UserInterface {
         @Override
         public void reshape(@NotNull GLAutoDrawable drawable, int x, int y, int width, int height) {
             GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
-            gl.glViewport(0, 0, width, height);
-            double fovY = 45.0;
-            double aspect = (double) width / height;
-            double zNear = 1.0;
-            double zFar = 1000.0;
-            double frustumHeight = Math.tan(fovY / 360 * Math.PI) * zNear;
-            double frustumWidth = frustumHeight * aspect;
+            gl.glViewport(x, y, width, height);
+            aspect = (float) width / height;
+            float frustumHeight = (float) (Math.tan(fovY / 360 * Math.PI) * zNear);
+            float frustumWidth = frustumHeight * aspect;
             // Setup perspective projection, with aspect ratio matches viewport
             gl.glMatrixMode(GL_PROJECTION); // choose projection matrix
             gl.glLoadIdentity(); // reset projection matrix
-            gl.glFrustum(-frustumWidth, frustumWidth, -frustumHeight, frustumHeight, zNear, zFar);
+            gl.glFrustumf(-frustumWidth, frustumWidth, -frustumHeight, frustumHeight, zNear, zFar);
             // Enable the model-view transform
             gl.glMatrixMode(GL_MODELVIEW);
-            gl.glLoadIdentity(); // reset
         }
 
         @Override
@@ -849,10 +956,10 @@ public class UserInterface {
 
             gl.glPushMatrix();
 
-            gl.glTranslated(0.5, 0.5, 0.5);
+            gl.glTranslatef(0.5f, 0.5f, 0.5f);
             gl.glRotatef(-y, 0.0f, 1.0f, 0.0f);
             gl.glRotatef(-x, 1.0f, 0.0f, 0.0f);
-            gl.glTranslated(-0.5, -0.5, -0.5);
+            gl.glTranslatef(-0.5f, -0.5f, -0.5f);
 
             Map<String, String> textures = getTextures(model, new HashMap<>());
 
@@ -885,32 +992,32 @@ public class UserInterface {
                     double toZ = to.getDouble(2) / MODEL_SIZE;
 
                     if (axis != null && origin != null) {
-                        double originX = origin.getDouble(0) / MODEL_SIZE;
-                        double originY = origin.getDouble(1) / MODEL_SIZE;
-                        double originZ = origin.getDouble(2) / MODEL_SIZE;
-                        gl.glTranslated(originX, originY, originZ);
-                        double rescaleFactor = Math.hypot(MODEL_SIZE, MODEL_SIZE) / MODEL_SIZE; // TODO Do not assume that the angle is 45.0 degrees, nor that the cube is centered.
+                        float originX = (float) (origin.getDouble(0) / MODEL_SIZE);
+                        float originY = (float) (origin.getDouble(1) / MODEL_SIZE);
+                        float originZ = (float) (origin.getDouble(2) / MODEL_SIZE);
+                        gl.glTranslatef(originX, originY, originZ);
+                        float rescaleFactor = (float) (Math.hypot(MODEL_SIZE, MODEL_SIZE) / MODEL_SIZE); // TODO Do not assume that the angle is 45.0 degrees, nor that the cube is centered.
                         switch (axis) {
                             case "x" -> {
                                 gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
                                 if (rescale) {
-                                    gl.glScaled(1.0, rescaleFactor, rescaleFactor);
+                                    gl.glScalef(1.0f, rescaleFactor, rescaleFactor);
                                 }
                             }
                             case "y" -> {
                                 gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
                                 if (rescale) {
-                                    gl.glScaled(rescaleFactor, 1.0, rescaleFactor);
+                                    gl.glScalef(rescaleFactor, 1.0f, rescaleFactor);
                                 }
                             }
                             case "z" -> {
                                 gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
                                 if (rescale) {
-                                    gl.glScaled(rescaleFactor, rescaleFactor, 1.0);
+                                    gl.glScalef(rescaleFactor, rescaleFactor, 1.0f);
                                 }
                             }
                         }
-                        gl.glTranslated(-originX, -originY, -originZ);
+                        gl.glTranslatef(-originX, -originY, -originZ);
                     }
 
                     if (shade) {
@@ -1014,29 +1121,29 @@ public class UserInterface {
 
                         gl.glMatrixMode(GL_TEXTURE);
                         gl.glLoadIdentity();
-                        gl.glTranslated(0.5, 0.5, 0.0);
-                        gl.glRotated(faceRotation, 0.0, 0.0, 1.0);
+                        gl.glTranslatef(0.5f, 0.5f, 0.0f);
+                        gl.glRotatef(faceRotation, 0.0f, 0.0f, 1.0f);
                         if (uvlock) {
                             switch (faceName) {
                                 case "up" -> {
                                     if (x == 180) {
-                                        gl.glRotated(y, 0.0, 0.0, 1.0);
+                                        gl.glRotatef(y, 0.0f, 0.0f, 1.0f);
                                     } else {
-                                        gl.glRotated(-y, 0.0, 0.0, 1.0);
+                                        gl.glRotatef(-y, 0.0f, 0.0f, 1.0f);
                                     }
                                 }
                                 case "down" -> {
                                     if (x == 180) {
-                                        gl.glRotated(-y, 0.0, 0.0, 1.0);
+                                        gl.glRotatef(-y, 0.0f, 0.0f, 1.0f);
                                     } else {
-                                        gl.glRotated(y, 0.0, 0.0, 1.0);
+                                        gl.glRotatef(y, 0.0f, 0.0f, 1.0f);
                                     }
                                 }
-                                default -> gl.glRotated(-x, 0.0, 0.0, 1.0);
+                                default -> gl.glRotatef(-x, 0.0f, 0.0f, 1.0f);
                             }
                         }
-                        gl.glScaled(1.0, -1.0, 1.0);
-                        gl.glTranslated(-0.5, -0.5, 0.0);
+                        gl.glScalef(1.0f, -1.0f, 1.0f);
+                        gl.glTranslatef(-0.5f, -0.5f, 0.0f);
                         gl.glMatrixMode(GL_MODELVIEW);
 
                         gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -1051,65 +1158,6 @@ public class UserInterface {
 
                         gl.glAlphaFunc(GL_GREATER, 0.0f);
                         gl.glEnable(GL_ALPHA_TEST);
-
-                        /*int[] indices = { //
-                                0, 1, // Bottom
-                                1, 2, // Right
-                                2, 3, // Top
-                                3, 4 // Left
-                        };
-                        IntBuffer indexBuffer = GLBuffers.newDirectIntBuffer(indices);
-                        indexBuffer.rewind();
-
-                        double[] vertices = { //
-                                fromX, fromY, toZ, // Bottom-left
-                                toX, fromY, toZ, // Bottom-right
-                                toX, toY, toZ, // Top-right
-                                fromX, toY, toZ // Top-left
-                        };
-                        DoubleBuffer vertexBuffer = GLBuffers.newDirectDoubleBuffer(vertices);
-                        vertexBuffer.rewind();
-
-                        float[] colors = { //
-                                components[0], components[1], components[2], components[3], //
-                                components[0], components[1], components[2], components[3], //
-                                components[0], components[1], components[2], components[3], //
-                                components[0], components[1], components[2], components[3] //
-                        };
-                        FloatBuffer colorBuffer = GLBuffers.newDirectFloatBuffer(colors);
-                        colorBuffer.rewind();
-
-                        double[] textureCoords = { //
-                                textureLeft, textureBottom, // Bottom-left
-                                textureRight, textureBottom, // Bottom-right
-                                textureRight, textureTop, // Top-right
-                                textureLeft, textureTop // Top-left
-                        };
-                        DoubleBuffer textureBuffer = GLBuffers.newDirectDoubleBuffer(textureCoords);
-                        textureBuffer.rewind();
-
-                        gl.glGenBuffers(1, indexBuffer);
-
-                        gl.glBindBuffer(GL_ARRAY_BUFFER, indexBuffer.get(0));
-                        gl.glBufferData(GL_ARRAY_BUFFER, (long) vertexBuffer.capacity() * Double.BYTES, vertexBuffer, GL_STATIC_DRAW);
-                        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-                        gl.glEnableClientState(GL_VERTEX_ARRAY);
-                        gl.glEnableClientState(GL_COLOR_ARRAY);
-                        // gl.glEnableClientState(GL_NORMAL_ARRAY);
-                        gl.glEnableClientState(GL_TEXTURE_COORD_ARRAY);
-
-                        gl.glVertexPointer(3, GL_DOUBLE, 0, vertexBuffer);
-                        gl.glColorPointer(4, GL_FLOAT, 0, colorBuffer);
-                        // gl.glNormalPointer(GL_FLOAT, 0, 0);
-                        gl.glTexCoordPointer(2, GL_DOUBLE, 0, textureBuffer);
-
-                        gl.glDrawArrays(GL_QUADS, 0, indices.length);
-
-                        gl.glDisableClientState(GL_VERTEX_ARRAY);
-                        gl.glDisableClientState(GL_COLOR_ARRAY);
-                        // gl.glDisableClientState(GL_NORMAL_ARRAY);
-                        gl.glDisableClientState(GL_TEXTURE_COORD_ARRAY);*/
 
                         gl.glBegin(GL_QUADS);
                         switch (faceName) {
