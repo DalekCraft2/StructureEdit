@@ -88,6 +88,14 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <!-- JOML -->
+            <groupId>org.joml</groupId>
+            <artifactId>joml</artifactId>
+            <version>1.10.2</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <!-- JSON in Java -->
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>

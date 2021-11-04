@@ -25,10 +25,7 @@ import me.dalekcraft.structureedit.Main;
 import me.dalekcraft.structureedit.drawing.BlockColor;
 import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.schematic.*;
-import me.dalekcraft.structureedit.util.Assets;
-import me.dalekcraft.structureedit.util.Configuration;
-import me.dalekcraft.structureedit.util.InternalUtils;
-import me.dalekcraft.structureedit.util.PropertyUtils;
+import me.dalekcraft.structureedit.util.*;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.IntTag;
@@ -38,6 +35,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3f;
+import org.joml.Matrix4fStack;
+import org.joml.Vector3f;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -53,11 +53,12 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
+import java.nio.ShortBuffer;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.*;
 
-import static com.jogamp.opengl.GL4bc.*;
+import static com.jogamp.opengl.GL4.*;
 import static me.dalekcraft.structureedit.schematic.Schematic.openFrom;
 
 /**
@@ -142,6 +143,7 @@ public class UserInterface {
                 loadLayer();
             }
         });
+        blockPropertiesTextField.setFormatterFactory(new NbtFormatterFactory());
         // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
         blockPropertiesTextField.getDocument().addDocumentListener(new DocumentListener() {
             @Override
@@ -149,7 +151,7 @@ public class UserInterface {
                 if (schematic != null && selected != null) {
                     Schematic.Block block = selected.getBlock();
                     try {
-                        block.setPropertiesAsString(blockPropertiesTextField.getText());
+                        block.setPropertiesAsString(blockPropertiesTextField.getText().trim());
                         blockPropertiesTextField.setForeground(Color.BLACK);
                     } catch (IOException e1) {
                         blockPropertiesTextField.setForeground(Color.RED);
@@ -352,7 +354,7 @@ public class UserInterface {
                         try {
                             color = BlockColor.valueOf(blockName).getColor();
                         } catch (IllegalArgumentException e) {
-                            color = new Color(251, 64, 249);
+                            color = new Color(251, 64, 249); // Color of the missing texture's purple
                         }
                         color = new Color(color.getRed(), color.getGreen(), color.getBlue());
                         BlockButton blockButton = new BlockButton(block);
@@ -443,216 +445,333 @@ public class UserInterface {
     private class SchematicRenderer extends MouseAdapter implements GLEventListener, KeyListener {
 
         private static final float SCALE = 1.0f;
-        private static final double MODEL_SIZE = 16.0;
+        private static final float MODEL_SIZE = 16.0f;
         private static final long TICK_LENGTH = 50L;
         private static final float ROTATION_SENSITIVITY = 1.0f;
-        private static final float MOTION_SENSITIVITY = 0.1f;
+        private static final float TRANSLATION_SENSITIVITY = 0.1f;
         private final Random random = new Random();
-        private final IntBuffer vertexBufferObject = GLBuffers.newDirectIntBuffer(3);
+        private final FloatBuffer tempMatrixBuffer = GLBuffers.newDirectFloatBuffer(new float[16]);
+        private final FloatBuffer tempVectorBuffer = GLBuffers.newDirectFloatBuffer(new float[4]);
+        private final IntBuffer vertexBufferObject = GLBuffers.newDirectIntBuffer(5);
         private final IntBuffer vertexArrayObject = GLBuffers.newDirectIntBuffer(1);
+        private final Matrix4fStack projectionMatrix = new Matrix4fStack(1);
+        private final Matrix4fStack viewMatrix = new Matrix4fStack(1);
+        private final Matrix4fStack modelMatrix = new Matrix4fStack(3);
+        private final Matrix4fStack textureMatrix = new Matrix4fStack(1);
         private int vertexShader;
         private int fragmentShader;
-        private int program;
-        private int positionLocation;
-        private int colorLocation;
-        private int rotationLocation;
-        private int projectionMatrixLocation;
-        private int modelViewMatrixLocation;
-        private float fovY = 45.0f;
-        private float aspect;
-        private float zNear = 1.0f;
-        private float zFar = 1000.0f;
-        /**
-         * Rotational angle for x-axis in degrees.
-         **/
-        private float pitch = 45.0f;
-        /**
-         * Rotational angle for y-axis in degrees.
-         **/
-        private float yaw = 45.0f;
-        /**
-         * X location.
-         */
-        private float cameraX;
-        /**
-         * Y location.
-         */
-        private float cameraY;
-        /**
-         * Z location.
-         */
-        private float cameraZ = -30.0f;
-        private int mouseX;
-        private int mouseY;
+        private int shaderProgram;
+        private int axisVertexShader;
+        private int axisFragmentShader;
+        private int axisShaderProgram;
+        private int lightPositionLocation;
+        private int lightAmbientLocation;
+        private int lightDiffuseLocation;
+        private int lightSpecularLocation;
+        private int materialAmbientLocation;
+        private int materialDiffuseLocation;
+        private int materialSpecularLocation;
+        private int materialShininessLocation;
+        private int textureLocation;
+        private Camera camera;
+        private Point mousePoint;
 
-        public void drawAxes(@NotNull GL4bc gl, float sizeX, float sizeY, float sizeZ) {
-            // gl.glUseProgram(program);
+        @Nullable
+        private static JSONArray getElements(@NotNull JSONObject model) {
+            if (model.has("elements")) {
+                return model.getJSONArray("elements");
+            } else if (model.has("parent")) {
+                return getElements(Assets.getModel(model.getString("parent")));
+            } else {
+                return null;
+            }
+        }
 
-            // gl.glBindVertexArray(vertexArrayObject.get(0));
+        private static Map<String, String> getTextures(@NotNull JSONObject model, Map<String, String> textures) {
+            if (model.has("textures")) {
+                JSONObject json = model.getJSONObject("textures");
+                Set<String> names = json.keySet();
+                for (String name : names) {
+                    getTextureFromId(model, textures, name);
+                }
+            }
+            if (model.has("parent")) {
+                getTextures(Assets.getModel(model.getString("parent")), textures);
+            }
+            return textures;
+        }
 
-            /*float[] projectionMatrix = new float[16];
-            FloatUtil.makeIdentity(projectionMatrix);
-            // FloatUtil.makeTranslation(projectionMatrix, false, cameraX - sizeX / 2.0f, cameraY - sizeY / 2.0f, cameraZ - sizeZ / 2.0f);
-            gl.glUniformMatrix4fv(projectionMatrixLocation, 1, false, projectionMatrix, 0);
+        private static void getTextureFromId(@NotNull JSONObject model, Map<? super String, String> textures, String name) {
+            JSONObject parent = null;
+            if (model.has("parent")) {
+                parent = Assets.getModel(model.getString("parent"));
+            }
+            if (model.has("textures")) {
+                JSONObject texturesJson = model.getJSONObject("textures");
+                if (texturesJson.has(name)) {
+                    String path = texturesJson.getString(name);
+                    if (path.startsWith("#")) {
+                        String substring = path.substring(1);
+                        if (texturesJson.has(substring)) {
+                            getTextureFromId(model, textures, substring);
+                        } else if (textures.containsKey(substring)) {
+                            textures.put(name, textures.get(substring));
+                        } else if (parent != null) {
+                            getTextureFromId(parent, textures, substring);
+                        } else {
+                            textures.put(substring, "minecraft:missing");
+                        }
+                    } else if (!textures.containsKey(name) || textures.get(name).equals("minecraft:missing")) {
+                        textures.put(name, path);
+                    }
+                }
+            }
+            if (parent != null) {
+                getTextureFromId(parent, textures, name);
+            }
+        }
 
-            float[] modelViewMatrix = new float[16];
-            FloatUtil.makeIdentity(modelViewMatrix);
-            FloatUtil.makeRotationEuler(modelViewMatrix, 0, (float) Math.toRadians(-pitch), (float) Math.toRadians(-yaw), 0.0f);
-            // FloatUtil.makeRotationAxis(modelViewMatrix, 0, (float) Math.toRadians(-pitch), 1.0f, 0.0f, 0.0f, new float[3]);
-            // FloatUtil.makeRotationAxis(modelViewMatrix, 0, (float) Math.toRadians(-yaw), 0.0f, 1.0f, 0.0f, new float[3]);
-            gl.glUniformMatrix4fv(modelViewMatrixLocation, 1, false, modelViewMatrix, 0);*/
+        @NotNull
+        public static Color getTint(@NotNull Schematic.Block block) {
+            String namespacedId = block.getId();
+            CompoundTag properties = block.getProperties();
+            switch (namespacedId) {
+                case "minecraft:redstone_wire" -> {
+                    int power = 0;
+                    if (properties.containsKey("power") && properties.get("power") instanceof IntTag intTag) {
+                        power = intTag.asInt();
+                    } else if (properties.containsKey("power") && properties.get("power") instanceof StringTag stringTag) {
+                        try {
+                            power = Integer.parseInt(stringTag.getValue());
+                        } catch (NumberFormatException ignored) {
+                        }
+                    }
+                    switch (power) {
+                        case 1 -> {
+                            return Color.decode("#6F0000");
+                        }
+                        case 2 -> {
+                            return Color.decode("#790000");
+                        }
+                        case 3 -> {
+                            return Color.decode("#820000");
+                        }
+                        case 4 -> {
+                            return Color.decode("#8C0000");
+                        }
+                        case 5 -> {
+                            return Color.decode("#970000");
+                        }
+                        case 6 -> {
+                            return Color.decode("#A10000");
+                        }
+                        case 7 -> {
+                            return Color.decode("#AB0000");
+                        }
+                        case 8 -> {
+                            return Color.decode("#B50000");
+                        }
+                        case 9 -> {
+                            return Color.decode("#BF0000");
+                        }
+                        case 10 -> {
+                            return Color.decode("#CA0000");
+                        }
+                        case 11 -> {
+                            return Color.decode("#D30000");
+                        }
+                        case 12 -> {
+                            return Color.decode("#DD0000");
+                        }
+                        case 13 -> {
+                            return Color.decode("#E70600");
+                        }
+                        case 14 -> {
+                            return Color.decode("#F11B00");
+                        }
+                        case 15 -> {
+                            return Color.decode("#FC3100");
+                        }
+                        default -> { // 0
+                            return Color.decode("#4B0000");
+                        }
+                    }
+                }
+                case "minecraft:grass_block", "minecraft:grass", "minecraft:tall_grass", "minecraft:fern", "minecraft:large_fern", "minecraft:potted_fern", "minecraft:sugar_cane" -> {
+                    return Color.decode("#91BD59");
+                }
+                case "minecraft:oak_leaves", "minecraft:dark_oak_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves", "minecraft:vine" -> {
+                    return Color.decode("#77AB2F");
+                }
+                case "minecraft:water", "minecraft:water_cauldron" -> {
+                    return Color.decode("#3F76E4");
+                }
+                case "minecraft:birch_leaves" -> {
+                    return Color.decode("#80A755");
+                }
+                case "minecraft:spruce_leaves" -> {
+                    return Color.decode("#619961");
+                }
+                case "minecraft:lily_pad" -> {
+                    return Color.decode("#208030");
+                }
+                default -> {
+                    return Color.WHITE;
+                }
+            }
+        }
 
-            /*Matrix4 projectionMatrix = new Matrix4();
-            // projectionMatrix.translate(cameraX - sizeX / 2.0f, cameraY - sizeY / 2.0f, cameraZ - sizeZ / 2.0f);
-            gl.glUniformMatrix4fv(projectionMatrixLocation, 1, false, projectionMatrix.getMatrix(), 0);
+        public static double simplifyAngle(double angle) {
+            return simplifyAngle(angle, Math.PI);
+        }
 
-            Matrix4 modelViewMatrix = new Matrix4();
-            modelViewMatrix.rotate((float) Math.toRadians(-pitch), 1.0f, 0.0f, 0.0f);
-            modelViewMatrix.rotate((float) Math.toRadians(-yaw), 0.0f, 1.0f, 0.0f);
-            gl.glUniformMatrix4fv(modelViewMatrixLocation, 1, false, modelViewMatrix.getMatrix(), 0);*/
-
-            /*short[] indices = { //
-                    0, 1, // X-axis (red)
-                    2, 3, // Y-axis (green)
-                    4, 5 // Z-axis (blue)
-            };
-            ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indices);
-            gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBufferObject.get(0));
-            gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_DYNAMIC_DRAW);*/
-
-            float[] positions = { //
-                    0.0f, 0.0f, 0.0f, 1.0f, sizeX, 0.0f, 0.0f, 1.0f, // X-axis (red)
-                    0.0f, 0.0f, 0.0f, 1.0f, 0.0f, sizeY, 0.0f, 1.0f, // Y-axis (green)
-                    0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, sizeZ, 1.0f // Z-axis (blue)
-            };
-            FloatBuffer positionBuffer = GLBuffers.newDirectFloatBuffer(positions);
-            /*gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(1));
-            gl.glBufferData(GL_ARRAY_BUFFER, (long) positionBuffer.capacity() * Float.BYTES, positionBuffer, GL_DYNAMIC_DRAW);
-            gl.glVertexAttribPointer(positionLocation, 4, GL_FLOAT, false, 0, 0);
-            gl.glEnableVertexAttribArray(positionLocation);*/
-            gl.glVertexPointer(4, GL_FLOAT, 0, positionBuffer);
-            gl.glEnableClientState(GL_VERTEX_ARRAY);
-
-            float[] colors = { //
-                    1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, // X axis (red)
-                    0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, // Y axis (green)
-                    0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f // Z axis (blue)
-            };
-            FloatBuffer colorBuffer = GLBuffers.newDirectFloatBuffer(colors);
-            /*gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(2));
-            gl.glBufferData(GL_ARRAY_BUFFER, (long) colorBuffer.capacity() * Float.BYTES, colorBuffer, GL_DYNAMIC_DRAW);
-            gl.glVertexAttribPointer(colorLocation, 4, GL_FLOAT, false, 0, 0);
-            gl.glEnableVertexAttribArray(colorLocation);*/
-            gl.glColorPointer(4, GL_FLOAT, 0, colorBuffer);
-            gl.glEnableClientState(GL_COLOR_ARRAY);
-
-            gl.glDrawArrays(GL_LINES, 0, positions.length / 4);
-            // gl.glDrawElements(GL_LINES, indices.length, GL_UNSIGNED_SHORT, 0);
-
-            gl.glDisableClientState(GL_INDEX_ARRAY);
-            gl.glDisableClientState(GL_VERTEX_ARRAY);
-            gl.glDisableClientState(GL_COLOR_ARRAY);
-
-            /*gl.glDisableVertexAttribArray(positionLocation);
-            gl.glDisableVertexAttribArray(colorLocation);
-
-            gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
-            gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-            gl.glBindVertexArray(0);
-
-            gl.glUseProgram(0);*/
+        public static double simplifyAngle(double angle, double center) {
+            return angle - (2 * Math.PI) * Math.floor((angle + Math.PI - center) / (2 * Math.PI));
         }
 
         @Override
         public void init(@NotNull GLAutoDrawable drawable) {
-            GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
+            camera = new Camera();
+
+            GL4 gl = drawable.getGL().getGL4(); // get the OpenGL graphics context
             gl.glEnable(GL_DEPTH_TEST); // enables depth testing
             gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
-            gl.glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST); // best perspective correction
-            gl.glShadeModel(GL_SMOOTH); // blends colors nicely, and smooths out lighting
             gl.glLineWidth(2.0f);
             gl.setSwapInterval(1);
-            // Set up the lighting for Light-1
-            // Ambient light does not come from a particular direction. Need some ambient
-            // light to light up the scene. Ambient's value in RGBA
-            float[] lightAmbientValue = {0.2f, 0.2f, 0.2f, 1.0f};
-            // Diffuse light comes from a particular location. Diffuse's value in RGBA
-            float[] lightDiffuseValue = {0.75f, 0.75f, 0.75f, 1.0f};
-            // Diffuse light location xyz (in front of the screen).
-            float[] lightDiffusePosition = {8.0f, 0.0f, 8.0f, 1.0f};
-            gl.glLightfv(GL_LIGHT1, GL_AMBIENT, lightAmbientValue, 0);
-            gl.glLightfv(GL_LIGHT1, GL_DIFFUSE, lightDiffuseValue, 0);
-            gl.glLightfv(GL_LIGHT1, GL_POSITION, lightDiffusePosition, 0);
-            gl.glEnable(GL_COLOR_MATERIAL); // allow color on faces
             gl.glEnable(GL_CULL_FACE);
 
-            vertexShader = gl.glCreateShader(GL_VERTEX_SHADER);
-            fragmentShader = gl.glCreateShader(GL_FRAGMENT_SHADER);
+            // Axis shader
+            {
+                axisVertexShader = gl.glCreateShader(GL_VERTEX_SHADER);
+                axisFragmentShader = gl.glCreateShader(GL_FRAGMENT_SHADER);
 
-            String vertexShaderSource = null;
-            String fragmentShaderSource = null;
-            try {
-                vertexShaderSource = InternalUtils.read("shader.vert");
-                fragmentShaderSource = InternalUtils.read("shader.frag");
-            } catch (IOException e) {
-                e.printStackTrace();
+                String vertexShaderSource = null;
+                String fragmentShaderSource = null;
+                try {
+                    vertexShaderSource = InternalUtils.read("axis_shader.vert");
+                    fragmentShaderSource = InternalUtils.read("axis_shader.frag");
+                } catch (IOException e) {
+                    LOGGER.log(Level.ERROR, e.getMessage());
+                }
+
+                String[] vertexLines = {vertexShaderSource};
+                gl.glShaderSource(axisVertexShader, 1, vertexLines, null, 0);
+                gl.glCompileShader(axisVertexShader);
+
+                //Check compile status.
+                int[] compiled = new int[1];
+                gl.glGetShaderiv(axisVertexShader, GL_COMPILE_STATUS, compiled, 0);
+                if (compiled[0] != 0) {
+                    LOGGER.log(Level.DEBUG, "Compiled axis vertex shader");
+                } else {
+                    int[] logLength = new int[1];
+                    gl.glGetShaderiv(axisVertexShader, GL_INFO_LOG_LENGTH, logLength, 0);
+
+                    byte[] log = new byte[logLength[0]];
+                    gl.glGetShaderInfoLog(axisVertexShader, logLength[0], null, 0, log, 0);
+
+                    LOGGER.log(Level.ERROR, "Error compiling the axis vertex shader: " + new String(log));
+                    System.exit(1);
+                }
+
+                String[] fragmentLines = {fragmentShaderSource};
+                gl.glShaderSource(axisFragmentShader, 1, fragmentLines, null, 0);
+                gl.glCompileShader(axisFragmentShader);
+
+                //Check compile status.
+                gl.glGetShaderiv(axisFragmentShader, GL_COMPILE_STATUS, compiled, 0);
+                if (compiled[0] != 0) {
+                    LOGGER.log(Level.DEBUG, "Compiled axis fragment shader");
+                } else {
+                    int[] logLength = new int[1];
+                    gl.glGetShaderiv(axisFragmentShader, GL_INFO_LOG_LENGTH, logLength, 0);
+
+                    byte[] log = new byte[logLength[0]];
+                    gl.glGetShaderInfoLog(axisFragmentShader, logLength[0], null, 0, log, 0);
+
+                    LOGGER.log(Level.ERROR, "Error compiling the axis fragment shader: " + new String(log));
+                    System.exit(1);
+                }
+
+                axisShaderProgram = gl.glCreateProgram();
+                gl.glAttachShader(axisShaderProgram, axisVertexShader);
+                gl.glAttachShader(axisShaderProgram, axisFragmentShader);
+                gl.glLinkProgram(axisShaderProgram);
+                gl.glValidateProgram(axisShaderProgram);
             }
 
-            String[] vertexLines = {vertexShaderSource};
-            // int[] vertexLengths = {vertexLines.length};
-            gl.glShaderSource(vertexShader, 1, vertexLines, null, 0);
-            gl.glCompileShader(vertexShader);
+            // Lighting shader
+            {
+                vertexShader = gl.glCreateShader(GL_VERTEX_SHADER);
+                fragmentShader = gl.glCreateShader(GL_FRAGMENT_SHADER);
 
-            //Check compile status.
-            int[] compiled = new int[1];
-            gl.glGetShaderiv(vertexShader, GL_COMPILE_STATUS, compiled, 0);
-            if (compiled[0] != 0) {
-                LOGGER.log(Level.DEBUG, "Compiled vertex shader");
-            } else {
-                int[] logLength = new int[1];
-                gl.glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, logLength, 0);
+                String vertexShaderSource = null;
+                String fragmentShaderSource = null;
+                try {
+                    vertexShaderSource = InternalUtils.read("shader.vert");
+                    fragmentShaderSource = InternalUtils.read("shader.frag");
+                } catch (IOException e) {
+                    LOGGER.log(Level.ERROR, e.getMessage());
+                }
 
-                byte[] log = new byte[logLength[0]];
-                gl.glGetShaderInfoLog(vertexShader, logLength[0], null, 0, log, 0);
+                String[] vertexLines = {vertexShaderSource};
+                gl.glShaderSource(vertexShader, 1, vertexLines, null, 0);
+                gl.glCompileShader(vertexShader);
 
-                LOGGER.log(Level.ERROR, "Error compiling the vertex shader: " + new String(log));
-                System.exit(1);
+                //Check compile status.
+                int[] compiled = new int[1];
+                gl.glGetShaderiv(vertexShader, GL_COMPILE_STATUS, compiled, 0);
+                if (compiled[0] != 0) {
+                    LOGGER.log(Level.DEBUG, "Compiled vertex shader");
+                } else {
+                    int[] logLength = new int[1];
+                    gl.glGetShaderiv(vertexShader, GL_INFO_LOG_LENGTH, logLength, 0);
+
+                    byte[] log = new byte[logLength[0]];
+                    gl.glGetShaderInfoLog(vertexShader, logLength[0], null, 0, log, 0);
+
+                    LOGGER.log(Level.ERROR, "Error compiling the vertex shader: " + new String(log));
+                    System.exit(1);
+                }
+
+                String[] fragmentLines = {fragmentShaderSource};
+                gl.glShaderSource(fragmentShader, 1, fragmentLines, null, 0);
+                gl.glCompileShader(fragmentShader);
+
+                //Check compile status.
+                gl.glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, compiled, 0);
+                if (compiled[0] != 0) {
+                    LOGGER.log(Level.DEBUG, "Compiled fragment shader");
+                } else {
+                    int[] logLength = new int[1];
+                    gl.glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, logLength, 0);
+
+                    byte[] log = new byte[logLength[0]];
+                    gl.glGetShaderInfoLog(fragmentShader, logLength[0], null, 0, log, 0);
+
+                    LOGGER.log(Level.ERROR, "Error compiling the fragment shader: " + new String(log));
+                    System.exit(1);
+                }
+
+                shaderProgram = gl.glCreateProgram();
+                gl.glAttachShader(shaderProgram, vertexShader);
+                gl.glAttachShader(shaderProgram, fragmentShader);
+                gl.glLinkProgram(shaderProgram);
+                gl.glValidateProgram(shaderProgram);
+
+                lightPositionLocation = gl.glGetUniformLocation(shaderProgram, "lightPosition");
+                lightAmbientLocation = gl.glGetUniformLocation(shaderProgram, "Ka");
+                lightDiffuseLocation = gl.glGetUniformLocation(shaderProgram, "Kd");
+                lightSpecularLocation = gl.glGetUniformLocation(shaderProgram, "Ks");
+                materialAmbientLocation = gl.glGetUniformLocation(shaderProgram, "ambientColor");
+                materialDiffuseLocation = gl.glGetUniformLocation(shaderProgram, "diffuseColor");
+                materialSpecularLocation = gl.glGetUniformLocation(shaderProgram, "specularColor");
+                materialShininessLocation = gl.glGetUniformLocation(shaderProgram, "shininess");
+                textureLocation = gl.glGetUniformLocation(shaderProgram, "texture");
             }
 
-            String[] fragmentLines = {fragmentShaderSource};
-            // int[] fragmentLengths = {fragmentLines.length};
-            gl.glShaderSource(fragmentShader, 1, fragmentLines, null, 0);
-            gl.glCompileShader(fragmentShader);
-
-            //Check compile status.
-            gl.glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, compiled, 0);
-            if (compiled[0] != 0) {
-                LOGGER.log(Level.DEBUG, "Compiled fragment shader");
-            } else {
-                int[] logLength = new int[1];
-                gl.glGetShaderiv(fragmentShader, GL_INFO_LOG_LENGTH, logLength, 0);
-
-                byte[] log = new byte[logLength[0]];
-                gl.glGetShaderInfoLog(fragmentShader, logLength[0], null, 0, log, 0);
-
-                LOGGER.log(Level.ERROR, "Error compiling the fragment shader: " + new String(log));
-                System.exit(1);
-            }
-
-            program = gl.glCreateProgram();
-            gl.glAttachShader(program, vertexShader);
-            gl.glAttachShader(program, fragmentShader);
-            gl.glLinkProgram(program);
-            gl.glValidateProgram(program);
-
-            positionLocation = gl.glGetAttribLocation(program, "position");
-            colorLocation = gl.glGetAttribLocation(program, "color");
-            rotationLocation = gl.glGetUniformLocation(program, "rotation");
-            projectionMatrixLocation = gl.glGetUniformLocation(program, "projectionMatrix");
-            modelViewMatrixLocation = gl.glGetUniformLocation(program, "modelViewMatrix");
-
-            gl.glGenBuffers(3, vertexBufferObject);
-            gl.glGenVertexArrays(1, vertexArrayObject);
+            gl.glGenBuffers(vertexBufferObject.capacity(), vertexBufferObject);
+            gl.glGenVertexArrays(vertexArrayObject.capacity(), vertexArrayObject);
 
             animator = new Animator(drawable);
             animator.setRunAsFastAsPossible(true);
@@ -662,33 +781,34 @@ public class UserInterface {
 
         @Override
         public void dispose(@NotNull GLAutoDrawable drawable) {
-            GL3 gl = drawable.getGL().getGL3();
+            GL4 gl = drawable.getGL().getGL4();
             animator.stop();
             gl.glUseProgram(0);
             gl.glDeleteBuffers(3, vertexBufferObject);
             gl.glDeleteVertexArrays(1, vertexArrayObject);
-            gl.glDetachShader(program, vertexShader);
+            gl.glDetachShader(shaderProgram, vertexShader);
             gl.glDeleteShader(vertexShader);
-            gl.glDetachShader(program, fragmentShader);
+            gl.glDetachShader(shaderProgram, fragmentShader);
             gl.glDeleteShader(fragmentShader);
-            gl.glDeleteProgram(program);
+            gl.glDeleteProgram(shaderProgram);
+            gl.glDetachShader(axisShaderProgram, axisVertexShader);
+            gl.glDeleteShader(axisVertexShader);
+            gl.glDetachShader(axisShaderProgram, axisFragmentShader);
+            gl.glDeleteShader(axisFragmentShader);
+            gl.glDeleteProgram(axisShaderProgram);
         }
 
         @Override
         public void display(@NotNull GLAutoDrawable drawable) {
-            GL4bc gl = drawable.getGL().getGL4bc();
+            GL4 gl = drawable.getGL().getGL4();
             gl.glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // set background color to gray
             gl.glClearDepth(1.0f); // set clear depth value to farthest
             gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            gl.glMatrixMode(GL_MODELVIEW);
-            gl.glLoadIdentity(); // reset the model-view matrix
-            gl.glTranslatef(cameraX, cameraY, cameraZ); // translate into the screen
-            gl.glRotatef(pitch, 1.0f, 0.0f, 0.0f); // rotate about the x-axis
-            gl.glRotatef(yaw, 0.0f, 1.0f, 0.0f); // rotate about the y-axis
+            modelMatrix.identity();
             if (schematic != null) {
                 int[] size = schematic.getSize();
                 // bottom-left-front corner of schematic is (0,0,0) so we need to center it at the origin
-                gl.glTranslatef(-size[0] / 2.0f, -size[1] / 2.0f, -size[2] / 2.0f);
+                modelMatrix.translate(-size[0] / 2.0f, -size[1] / 2.0f, -size[2] / 2.0f);
                 // draw schematic border
                 drawAxes(gl, size[0], size[1], size[2]);
                 // draw a cube
@@ -702,12 +822,12 @@ public class UserInterface {
                                 List<JSONObject> modelList = getModelsFromBlockState(block);
                                 Color tint = getTint(block);
 
-                                gl.glPushMatrix();
-                                gl.glTranslatef(x * SCALE, y * SCALE, z * SCALE);
                                 for (JSONObject model : modelList) {
+                                    modelMatrix.pushMatrix();
+                                    modelMatrix.translate(x, y, z);
                                     drawModel(gl, model, tint);
+                                    modelMatrix.popMatrix();
                                 }
-                                gl.glPopMatrix();
                             }
                         }
                     }
@@ -717,17 +837,14 @@ public class UserInterface {
 
         @Override
         public void reshape(@NotNull GLAutoDrawable drawable, int x, int y, int width, int height) {
-            GL4bc gl = drawable.getGL().getGL4bc(); // get the OpenGL graphics context
+            GL4 gl = drawable.getGL().getGL4(); // get the OpenGL graphics context
             gl.glViewport(x, y, width, height);
-            aspect = (float) width / height;
-            float frustumHeight = (float) (Math.tan(fovY / 360 * Math.PI) * zNear);
-            float frustumWidth = frustumHeight * aspect;
-            // Setup perspective projection, with aspect ratio matches viewport
-            gl.glMatrixMode(GL_PROJECTION); // choose projection matrix
-            gl.glLoadIdentity(); // reset projection matrix
-            gl.glFrustumf(-frustumWidth, frustumWidth, -frustumHeight, frustumHeight, zNear, zFar);
-            // Enable the model-view transform
-            gl.glMatrixMode(GL_MODELVIEW);
+            float aspect = (float) width / height;
+            float fovY = 45.0f;
+            float zNear = 1.0f;
+            float zFar = 1000.0f;
+            projectionMatrix.identity();
+            projectionMatrix.perspective(fovY, aspect, zNear, zFar);
         }
 
         @Override
@@ -777,7 +894,7 @@ public class UserInterface {
 
         @Override
         public void mouseWheelMoved(@NotNull MouseWheelEvent e) {
-            cameraZ -= e.getPreciseWheelRotation();
+            camera.zoom((float) e.getPreciseWheelRotation());
         }
 
         @Override
@@ -785,36 +902,78 @@ public class UserInterface {
             rendererPanel.requestFocus();
             if (SwingUtilities.isLeftMouseButton(e)) {
                 // Rotate the camera
-                if (e.getX() < mouseX || e.getX() > mouseX) {
-                    yaw += (e.getX() - mouseX) * ROTATION_SENSITIVITY;
-                }
-                if (pitch + e.getY() - mouseY > 90) {
-                    pitch = 90;
-                } else if (pitch + e.getY() - mouseY < -90) {
-                    pitch = -90;
-                } else {
-                    if (e.getY() < mouseY || e.getY() > mouseY) {
-                        pitch += (e.getY() - mouseY) * ROTATION_SENSITIVITY;
-                    }
-                }
+                float dTheta = (float) Math.toRadians(mousePoint.x - e.getX()) * ROTATION_SENSITIVITY;
+                float dPhi = (float) Math.toRadians(mousePoint.y - e.getY()) * ROTATION_SENSITIVITY;
+                camera.rotate(dTheta, dPhi);
             } else if (SwingUtilities.isRightMouseButton(e)) {
                 // TODO Make the camera drag translation more accurate.
                 // Translate the camera
-                if (e.getX() < mouseX || e.getX() > mouseX) {
-                    cameraX += (e.getX() - mouseX) * MOTION_SENSITIVITY;
-                }
-                if (e.getY() < mouseY || e.getY() > mouseY) {
-                    cameraY -= (e.getY() - mouseY) * MOTION_SENSITIVITY;
-                }
+                float dx = -(mousePoint.x - e.getX()) * TRANSLATION_SENSITIVITY;
+                float dy = (mousePoint.y - e.getY()) * TRANSLATION_SENSITIVITY;
+                camera.pan(dx, dy);
             }
-            mouseX = e.getX();
-            mouseY = e.getY();
+            mousePoint = e.getPoint();
         }
 
         @Override
         public void mouseMoved(@NotNull MouseEvent e) {
-            mouseX = e.getX();
-            mouseY = e.getY();
+            mousePoint = e.getPoint();
+        }
+
+        public void drawAxes(@NotNull GL4 gl, float sizeX, float sizeY, float sizeZ) {
+            gl.glUseProgram(axisShaderProgram);
+
+            gl.glBindVertexArray(vertexArrayObject.get(0));
+
+            // FloatBuffer tempMatrixBuffer = GLBuffers.newDirectFloatBuffer(new float[16]);
+            projectionMatrix.get(tempMatrixBuffer);
+            gl.glUniformMatrix4fv(Semantic.Uniform.PROJECTION_MATRIX, 1, false, tempMatrixBuffer);
+            viewMatrix.get(tempMatrixBuffer);
+            gl.glUniformMatrix4fv(Semantic.Uniform.VIEW_MATRIX, 1, false, tempMatrixBuffer);
+            modelMatrix.get(tempMatrixBuffer);
+            gl.glUniformMatrix4fv(Semantic.Uniform.MODEL_MATRIX, 1, false, tempMatrixBuffer);
+
+            short[] indices = { //
+                    0, 1, // X-axis (red)
+                    2, 3, // Y-axis (green)
+                    4, 5 // Z-axis (blue)
+            };
+            ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indices);
+            gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBufferObject.get(0));
+            gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_DYNAMIC_DRAW);
+
+            float[] positions = { //
+                    0.0f, 0.0f, 0.0f, sizeX, 0.0f, 0.0f, // X-axis (red)
+                    0.0f, 0.0f, 0.0f, 0.0f, sizeY, 0.0f, // Y-axis (green)
+                    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, sizeZ // Z-axis (blue)
+            };
+            FloatBuffer positionBuffer = GLBuffers.newDirectFloatBuffer(positions);
+            gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(1));
+            gl.glBufferData(GL_ARRAY_BUFFER, (long) positionBuffer.capacity() * Float.BYTES, positionBuffer, GL_DYNAMIC_DRAW);
+            gl.glVertexAttribPointer(Semantic.Attribute.POSITION, 3, GL_FLOAT, false, 0, 0);
+            gl.glEnableVertexAttribArray(Semantic.Attribute.POSITION);
+
+            float[] colors = { //
+                    1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, // X-axis (red)
+                    0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, // Y-axis (green)
+                    0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f // Z-axis (blue)
+            };
+            FloatBuffer colorBuffer = GLBuffers.newDirectFloatBuffer(colors);
+            gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(2));
+            gl.glBufferData(GL_ARRAY_BUFFER, (long) colorBuffer.capacity() * Float.BYTES, colorBuffer, GL_DYNAMIC_DRAW);
+            gl.glVertexAttribPointer(Semantic.Attribute.COLOR, 4, GL_FLOAT, false, 0, 0);
+            gl.glEnableVertexAttribArray(Semantic.Attribute.COLOR);
+
+            gl.glDrawElements(GL_LINES, indices.length, GL_UNSIGNED_SHORT, 0);
+
+            gl.glDisableVertexAttribArray(Semantic.Attribute.POSITION);
+            gl.glDisableVertexAttribArray(Semantic.Attribute.COLOR);
+
+            gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
+            gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+            gl.glBindVertexArray(0);
+
+            gl.glUseProgram(0);
         }
 
         // TODO Add a water model to this list if the block's "waterlogged" property is "true".
@@ -947,26 +1106,26 @@ public class UserInterface {
             return weightTree.ceilingEntry(value).getValue();
         }
 
-        public void drawModel(@NotNull GL4bc gl, @NotNull JSONObject jsonObject, Color tint) {
+        public void drawModel(@NotNull GL4 gl, @NotNull JSONObject jsonObject, Color tint) {
+            gl.glUseProgram(shaderProgram);
+
             String modelPath = jsonObject.getString("model");
             JSONObject model = Assets.getModel(modelPath);
             int x = jsonObject.optInt("x", 0);
             int y = jsonObject.optInt("y", 0);
             boolean uvlock = jsonObject.optBoolean("uvlock", false);
 
-            gl.glPushMatrix();
-
-            gl.glTranslatef(0.5f, 0.5f, 0.5f);
-            gl.glRotatef(-y, 0.0f, 1.0f, 0.0f);
-            gl.glRotatef(-x, 1.0f, 0.0f, 0.0f);
-            gl.glTranslatef(-0.5f, -0.5f, -0.5f);
+            modelMatrix.translate(0.5f, 0.5f, 0.5f);
+            modelMatrix.rotateY((float) Math.toRadians(-y));
+            modelMatrix.rotateX((float) Math.toRadians(-x));
+            modelMatrix.translate(-0.5f, -0.5f, -0.5f);
 
             Map<String, String> textures = getTextures(model, new HashMap<>());
 
             JSONArray elements = getElements(model);
             if (elements != null) {
                 for (Object elementObject : elements) {
-                    gl.glPushMatrix();
+                    modelMatrix.pushMatrix();
 
                     JSONObject element = (JSONObject) elementObject;
                     JSONArray from = element.getJSONArray("from");
@@ -984,50 +1143,62 @@ public class UserInterface {
                     }
                     boolean shade = element.optBoolean("shade", true);
 
-                    double fromX = from.getDouble(0) / MODEL_SIZE;
-                    double fromY = from.getDouble(1) / MODEL_SIZE;
-                    double fromZ = from.getDouble(2) / MODEL_SIZE;
-                    double toX = to.getDouble(0) / MODEL_SIZE;
-                    double toY = to.getDouble(1) / MODEL_SIZE;
-                    double toZ = to.getDouble(2) / MODEL_SIZE;
+                    float fromX = (float) (from.getDouble(0) / MODEL_SIZE);
+                    float fromY = (float) (from.getDouble(1) / MODEL_SIZE);
+                    float fromZ = (float) (from.getDouble(2) / MODEL_SIZE);
+                    float toX = (float) (to.getDouble(0) / MODEL_SIZE);
+                    float toY = (float) (to.getDouble(1) / MODEL_SIZE);
+                    float toZ = (float) (to.getDouble(2) / MODEL_SIZE);
 
                     if (axis != null && origin != null) {
                         float originX = (float) (origin.getDouble(0) / MODEL_SIZE);
                         float originY = (float) (origin.getDouble(1) / MODEL_SIZE);
                         float originZ = (float) (origin.getDouble(2) / MODEL_SIZE);
-                        gl.glTranslatef(originX, originY, originZ);
+                        modelMatrix.translate(originX, originY, originZ);
                         float rescaleFactor = (float) (Math.hypot(MODEL_SIZE, MODEL_SIZE) / MODEL_SIZE); // TODO Do not assume that the angle is 45.0 degrees, nor that the cube is centered.
                         switch (axis) {
                             case "x" -> {
-                                gl.glRotatef(angle, 1.0f, 0.0f, 0.0f);
+                                modelMatrix.rotateX((float) Math.toRadians(angle));
                                 if (rescale) {
-                                    gl.glScalef(1.0f, rescaleFactor, rescaleFactor);
+                                    modelMatrix.scale(1.0f, rescaleFactor, rescaleFactor);
                                 }
                             }
                             case "y" -> {
-                                gl.glRotatef(angle, 0.0f, 1.0f, 0.0f);
+                                modelMatrix.rotateY((float) Math.toRadians(angle));
                                 if (rescale) {
-                                    gl.glScalef(rescaleFactor, 1.0f, rescaleFactor);
+                                    modelMatrix.scale(rescaleFactor, 1.0f, rescaleFactor);
                                 }
                             }
                             case "z" -> {
-                                gl.glRotatef(angle, 0.0f, 0.0f, 1.0f);
+                                modelMatrix.rotateZ((float) Math.toRadians(angle));
                                 if (rescale) {
-                                    gl.glScalef(rescaleFactor, rescaleFactor, 1.0f);
+                                    modelMatrix.scale(rescaleFactor, rescaleFactor, 1.0f);
                                 }
                             }
                         }
-                        gl.glTranslatef(-originX, -originY, -originZ);
+                        modelMatrix.translate(-originX, -originY, -originZ);
                     }
 
+                    gl.glUniform3fv(lightPositionLocation, 1, camera.eye.get(tempVectorBuffer));
+                    gl.glUniform1f(lightAmbientLocation, 1.0f);
+                    gl.glUniform1f(lightDiffuseLocation, 1.0f);
+                    gl.glUniform1f(lightSpecularLocation, 0.0f);
                     if (shade) {
-                        gl.glEnable(GL_LIGHTING); // enable lighting
-                        gl.glEnable(GL_LIGHT1);
+                        gl.glUniform3f(materialAmbientLocation, 0.2f, 0.2f, 0.2f);
+                    } else {
+                        gl.glUniform3f(materialAmbientLocation, 1.0f, 1.0f, 1.0f);
                     }
+                    gl.glUniform3f(materialDiffuseLocation, 1.0f, 1.0f, 1.0f);
+                    gl.glUniform3f(materialSpecularLocation, 1.0f, 1.0f, 1.0f);
+                    gl.glUniform1f(materialShininessLocation, 1.0f);
 
                     JSONObject faces = element.getJSONObject("faces");
                     Set<String> faceSet = faces.keySet();
                     for (String faceName : faceSet) {
+                        if (!Objects.equals(faceName, "east") && !Objects.equals(faceName, "west") && !Objects.equals(faceName, "up") && !Objects.equals(faceName, "down") && !Objects.equals(faceName, "south") && !Objects.equals(faceName, "north")) {
+                            continue;
+                        }
+
                         JSONObject face = faces.getJSONObject(faceName);
 
                         JSONArray uv = face.optJSONArray("uv");
@@ -1042,24 +1213,23 @@ public class UserInterface {
                         } else {
                             tint.getComponents(components);
                         }
-                        gl.glColor4f(components[0], components[1], components[2], components[3]);
 
                         Texture texture = Assets.getTexture(textures.getOrDefault(faceTexture, "minecraft:missing"));
 
-                        double textureLeft = uv != null ? uv.getDouble(0) / MODEL_SIZE : switch (faceName) {
+                        float textureLeft = uv != null ? (float) (uv.getDouble(0) / MODEL_SIZE) : switch (faceName) {
                             case "up", "down", "north", "south" -> fromX;
                             default -> fromZ;
                         };
-                        double textureTop = uv != null ? uv.getDouble(1) / MODEL_SIZE : switch (faceName) {
+                        float textureTop = uv != null ? (float) (uv.getDouble(1) / MODEL_SIZE) : switch (faceName) {
                             case "up" -> fromZ;
                             case "down" -> SCALE - toZ;
                             default -> SCALE - toY;
                         };
-                        double textureRight = uv != null ? uv.getDouble(2) / MODEL_SIZE : switch (faceName) {
+                        float textureRight = uv != null ? (float) (uv.getDouble(2) / MODEL_SIZE) : switch (faceName) {
                             case "up", "down", "north", "south" -> toX;
                             default -> toZ;
                         };
-                        double textureBottom = uv != null ? uv.getDouble(3) / MODEL_SIZE : switch (faceName) {
+                        float textureBottom = uv != null ? (float) (uv.getDouble(3) / MODEL_SIZE) : switch (faceName) {
                             case "up" -> toZ;
                             case "down" -> SCALE - fromZ;
                             default -> SCALE - fromY;
@@ -1112,278 +1282,227 @@ public class UserInterface {
                         }
 
                         for (int i = 0; i < faceRotation; i += 90) {
-                            double temp = textureLeft;
+                            float temp = textureLeft;
                             textureLeft = SCALE - textureBottom;
                             textureBottom = textureRight;
                             textureRight = SCALE - textureTop;
                             textureTop = temp;
                         }
 
-                        gl.glMatrixMode(GL_TEXTURE);
-                        gl.glLoadIdentity();
-                        gl.glTranslatef(0.5f, 0.5f, 0.0f);
-                        gl.glRotatef(faceRotation, 0.0f, 0.0f, 1.0f);
+                        textureMatrix.identity();
+                        textureMatrix.translate(0.5f, 0.5f, 0.0f);
+                        textureMatrix.rotateZ((float) Math.toRadians(faceRotation));
                         if (uvlock) {
                             switch (faceName) {
                                 case "up" -> {
                                     if (x == 180) {
-                                        gl.glRotatef(y, 0.0f, 0.0f, 1.0f);
+                                        textureMatrix.rotateZ((float) Math.toRadians(y));
                                     } else {
-                                        gl.glRotatef(-y, 0.0f, 0.0f, 1.0f);
+                                        textureMatrix.rotateZ((float) Math.toRadians(-y));
                                     }
                                 }
                                 case "down" -> {
                                     if (x == 180) {
-                                        gl.glRotatef(-y, 0.0f, 0.0f, 1.0f);
+                                        textureMatrix.rotateZ((float) Math.toRadians(-y));
                                     } else {
-                                        gl.glRotatef(y, 0.0f, 0.0f, 1.0f);
+                                        textureMatrix.rotateZ((float) Math.toRadians(y));
                                     }
                                 }
-                                default -> gl.glRotatef(-x, 0.0f, 0.0f, 1.0f);
+                                default -> textureMatrix.rotateZ((float) Math.toRadians(-x));
                             }
                         }
-                        gl.glScalef(1.0f, -1.0f, 1.0f);
-                        gl.glTranslatef(-0.5f, -0.5f, 0.0f);
-                        gl.glMatrixMode(GL_MODELVIEW);
-
-                        gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-                        gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-                        gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-                        gl.glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-                        texture.enable(gl);
-                        texture.bind(gl);
+                        textureMatrix.scale(1.0f, -1.0f, 1.0f);
+                        textureMatrix.translate(-0.5f, -0.5f, 0.0f);
 
                         gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                         gl.glEnable(GL_BLEND);
 
-                        gl.glAlphaFunc(GL_GREATER, 0.0f);
-                        gl.glEnable(GL_ALPHA_TEST);
+                        gl.glBindVertexArray(vertexArrayObject.get(0));
 
-                        gl.glBegin(GL_QUADS);
-                        switch (faceName) {
-                            case "up" -> {
-                                gl.glNormal3d(0.0f, 1.0f, 0.0f);
-                                gl.glTexCoord2d(textureLeft, textureBottom);
-                                gl.glVertex3d(fromX, toY, toZ);
-                                gl.glTexCoord2d(textureRight, textureBottom);
-                                gl.glVertex3d(toX, toY, toZ);
-                                gl.glTexCoord2d(textureRight, textureTop);
-                                gl.glVertex3d(toX, toY, fromZ);
-                                gl.glTexCoord2d(textureLeft, textureTop);
-                                gl.glVertex3d(fromX, toY, fromZ);
-                            }
-                            case "down" -> {
-                                gl.glNormal3d(0.0f, -1.0f, 0.0f);
-                                gl.glTexCoord2d(textureLeft, textureBottom);
-                                gl.glVertex3d(fromX, fromY, fromZ);
-                                gl.glTexCoord2d(textureRight, textureBottom);
-                                gl.glVertex3d(toX, fromY, fromZ);
-                                gl.glTexCoord2d(textureRight, textureTop);
-                                gl.glVertex3d(toX, fromY, toZ);
-                                gl.glTexCoord2d(textureLeft, textureTop);
-                                gl.glVertex3d(fromX, fromY, toZ);
-                            }
-                            case "north" -> {
-                                gl.glNormal3d(0.0f, 0.0f, -1.0f);
-                                gl.glTexCoord2d(textureLeft, textureBottom);
-                                gl.glVertex3d(toX, fromY, fromZ);
-                                gl.glTexCoord2d(textureRight, textureBottom);
-                                gl.glVertex3d(fromX, fromY, fromZ);
-                                gl.glTexCoord2d(textureRight, textureTop);
-                                gl.glVertex3d(fromX, toY, fromZ);
-                                gl.glTexCoord2d(textureLeft, textureTop);
-                                gl.glVertex3d(toX, toY, fromZ);
-                            }
-                            case "south" -> {
-                                gl.glNormal3d(0.0f, 0.0f, 1.0f);
-                                gl.glTexCoord2d(textureLeft, textureBottom);
-                                gl.glVertex3d(fromX, fromY, toZ); // bottom-left of the quad
-                                gl.glTexCoord2d(textureRight, textureBottom);
-                                gl.glVertex3d(toX, fromY, toZ); // bottom-right of the quad
-                                gl.glTexCoord2d(textureRight, textureTop);
-                                gl.glVertex3d(toX, toY, toZ); // top-right of the quad
-                                gl.glTexCoord2d(textureLeft, textureTop);
-                                gl.glVertex3d(fromX, toY, toZ); // top-left of the quad
+                        // FloatBuffer tempMatrixBuffer = GLBuffers.newDirectFloatBuffer(new float[16]);
+                        projectionMatrix.get(tempMatrixBuffer);
+                        gl.glUniformMatrix4fv(Semantic.Uniform.PROJECTION_MATRIX, 1, false, tempMatrixBuffer);
+                        viewMatrix.get(tempMatrixBuffer);
+                        gl.glUniformMatrix4fv(Semantic.Uniform.VIEW_MATRIX, 1, false, tempMatrixBuffer);
+                        modelMatrix.get(tempMatrixBuffer);
+                        gl.glUniformMatrix4fv(Semantic.Uniform.MODEL_MATRIX, 1, false, tempMatrixBuffer);
+                        textureMatrix.get(tempMatrixBuffer);
+                        gl.glUniformMatrix4fv(Semantic.Uniform.TEXTURE_MATRIX, 1, false, tempMatrixBuffer);
 
-                            }
-                            case "west" -> {
-                                gl.glNormal3d(-1.0f, 0.0f, 0.0f);
-                                gl.glTexCoord2d(textureLeft, textureBottom);
-                                gl.glVertex3d(fromX, fromY, fromZ);
-                                gl.glTexCoord2d(textureRight, textureBottom);
-                                gl.glVertex3d(fromX, fromY, toZ);
-                                gl.glTexCoord2d(textureRight, textureTop);
-                                gl.glVertex3d(fromX, toY, toZ);
-                                gl.glTexCoord2d(textureLeft, textureTop);
-                                gl.glVertex3d(fromX, toY, fromZ);
-                            }
-                            case "east" -> {
-                                gl.glNormal3d(1.0f, 0.0f, 0.0f);
-                                gl.glTexCoord2d(textureLeft, textureBottom);
-                                gl.glVertex3d(toX, fromY, toZ);
-                                gl.glTexCoord2d(textureRight, textureBottom);
-                                gl.glVertex3d(toX, fromY, fromZ);
-                                gl.glTexCoord2d(textureRight, textureTop);
-                                gl.glVertex3d(toX, toY, fromZ);
-                                gl.glTexCoord2d(textureLeft, textureTop);
-                                gl.glVertex3d(toX, toY, toZ);
-                            }
-                        }
-                        gl.glEnd();
+                        Matrix3f normalMatrix = new Matrix3f();
+                        modelMatrix.normal(normalMatrix);
+                        normalMatrix.get(tempMatrixBuffer);
+                        gl.glUniformMatrix3fv(Semantic.Uniform.NORMAL_MATRIX, 1, false, tempMatrixBuffer);
+
+                        texture.setTexParameterf(gl, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                        texture.setTexParameterf(gl, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                        texture.setTexParameterf(gl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                        texture.setTexParameterf(gl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+                        texture.setTexParameterf(gl, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+                        texture.enable(gl);
+                        texture.bind(gl);
+                        gl.glBindSampler(0, textureLocation);
+
+                        short[] indices = { //
+                                0, 1, 2, //
+                                2, 3, 0 //
+                        };
+                        ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indices);
+                        gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBufferObject.get(0));
+                        gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_DYNAMIC_DRAW);
+
+                        float[] positions = switch (faceName) { //
+                            case "east" -> new float[]{toX, fromY, toZ, toX, fromY, fromZ, toX, toY, fromZ, toX, toY, toZ,};
+                            case "west" -> new float[]{fromX, fromY, fromZ, fromX, fromY, toZ, fromX, toY, toZ, fromX, toY, fromZ};
+                            case "up" -> new float[]{fromX, toY, toZ, toX, toY, toZ, toX, toY, fromZ, fromX, toY, fromZ};
+                            case "down" -> new float[]{fromX, fromY, fromZ, toX, fromY, fromZ, toX, fromY, toZ, fromX, fromY, toZ};
+                            case "south" -> new float[]{fromX, fromY, toZ, toX, fromY, toZ, toX, toY, toZ, fromX, toY, toZ};
+                            case "north" -> new float[]{toX, fromY, fromZ, fromX, fromY, fromZ, fromX, toY, fromZ, toX, toY, fromZ};
+                            default -> null;
+                        };
+                        assert positions != null;
+                        FloatBuffer positionBuffer = GLBuffers.newDirectFloatBuffer(positions);
+                        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(1));
+                        gl.glBufferData(GL_ARRAY_BUFFER, (long) positionBuffer.capacity() * Float.BYTES, positionBuffer, GL_DYNAMIC_DRAW);
+                        gl.glVertexAttribPointer(Semantic.Attribute.POSITION, 3, GL_FLOAT, false, 0, 0);
+                        gl.glEnableVertexAttribArray(Semantic.Attribute.POSITION);
+
+                        float[] colors = { //
+                                components[0], components[1], components[2], components[3], //
+                                components[0], components[1], components[2], components[3], //
+                                components[0], components[1], components[2], components[3], //
+                                components[0], components[1], components[2], components[3], //
+                        };
+                        FloatBuffer colorBuffer = GLBuffers.newDirectFloatBuffer(colors);
+                        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(2));
+                        gl.glBufferData(GL_ARRAY_BUFFER, (long) colorBuffer.capacity() * Float.BYTES, colorBuffer, GL_DYNAMIC_DRAW);
+                        gl.glVertexAttribPointer(Semantic.Attribute.COLOR, 4, GL_FLOAT, false, 0, 0);
+                        gl.glEnableVertexAttribArray(Semantic.Attribute.COLOR);
+
+                        float[] normals = switch (faceName) { //
+                            case "east" -> new float[]{1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
+                            case "west" -> new float[]{-1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f};
+                            case "up" -> new float[]{0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f};
+                            case "down" -> new float[]{0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f};
+                            case "south" -> new float[]{0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
+                            case "north" -> new float[]{0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f};
+                            default -> null;
+                        };
+                        FloatBuffer normalBuffer = GLBuffers.newDirectFloatBuffer(normals);
+                        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(3));
+                        gl.glBufferData(GL_ARRAY_BUFFER, (long) normalBuffer.capacity() * Float.BYTES, normalBuffer, GL_DYNAMIC_DRAW);
+                        gl.glVertexAttribPointer(Semantic.Attribute.NORMAL, 3, GL_FLOAT, false, 0, 0);
+                        gl.glEnableVertexAttribArray(Semantic.Attribute.NORMAL);
+
+                        float[] texCoords = { //
+                                textureLeft, textureBottom, //
+                                textureRight, textureBottom, //
+                                textureRight, textureTop, //
+                                textureLeft, textureTop //
+                        };
+                        FloatBuffer texCoordBuffer = GLBuffers.newDirectFloatBuffer(texCoords);
+                        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(4));
+                        gl.glBufferData(GL_ARRAY_BUFFER, (long) texCoordBuffer.capacity() * Float.BYTES, texCoordBuffer, GL_DYNAMIC_DRAW);
+                        gl.glVertexAttribPointer(Semantic.Attribute.TEX_COORD, 2, GL_FLOAT, false, 0, 0);
+                        gl.glEnableVertexAttribArray(Semantic.Attribute.TEX_COORD);
+
+                        gl.glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_SHORT, 0);
+
+                        gl.glDisableVertexAttribArray(Semantic.Attribute.POSITION);
+                        gl.glDisableVertexAttribArray(Semantic.Attribute.COLOR);
+                        gl.glDisableVertexAttribArray(Semantic.Attribute.NORMAL);
+                        gl.glDisableVertexAttribArray(Semantic.Attribute.TEX_COORD);
+
+                        gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
+                        gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+                        gl.glBindVertexArray(0);
+                        gl.glBindTexture(GL_TEXTURE_2D, 0);
                         texture.disable(gl);
-                        gl.glDisable(GL_ALPHA_TEST);
+                        gl.glBindSampler(0, 0);
                         gl.glDisable(GL_BLEND);
                     }
-                    gl.glPopMatrix();
-                    gl.glDisable(GL_LIGHTING); // enable lighting
-                    gl.glDisable(GL_LIGHT1);
+                    modelMatrix.popMatrix();
                 }
             }
-            gl.glPopMatrix();
+            gl.glUseProgram(0);
         }
 
-        @Nullable
-        private JSONArray getElements(@NotNull JSONObject model) {
-            if (model.has("elements")) {
-                return model.getJSONArray("elements");
-            } else if (model.has("parent")) {
-                return getElements(Assets.getModel(model.getString("parent")));
-            } else {
-                return null;
-            }
-        }
+        private class Camera {
+            private final Vector3f eye = new Vector3f();
+            private final Vector3f center = new Vector3f();
+            private final Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+            /**
+             * X rotation angle in degrees.
+             **/
+            private float theta = (float) Math.PI / 4.0f;
+            /**
+             * Y rotation angle in degrees.
+             **/
+            private float phi = (float) Math.PI / 4.0f;
+            private float radius = 30.0f;
+            private float panX;
+            private float panY;
 
-        private Map<String, String> getTextures(@NotNull JSONObject model, Map<String, String> textures) {
-            if (model.has("textures")) {
-                JSONObject json = model.getJSONObject("textures");
-                Set<String> names = json.keySet();
-                for (String name : names) {
-                    getTextureFromId(model, textures, name);
-                }
+            {
+                update();
             }
-            if (model.has("parent")) {
-                getTextures(Assets.getModel(model.getString("parent")), textures);
-            }
-            return textures;
-        }
 
-        private void getTextureFromId(@NotNull JSONObject model, Map<String, String> textures, String name) {
-            JSONObject parent = null;
-            if (model.has("parent")) {
-                parent = Assets.getModel(model.getString("parent"));
+            public static Vector3f toCartesian(float radius, float theta, float phi) {
+                float x = (float) (radius * Math.sin(phi) * Math.sin(theta));
+                float y = (float) (radius * Math.cos(phi));
+                float z = (float) (radius * Math.sin(phi) * Math.cos(theta));
+
+                return new Vector3f(x, y, z);
             }
-            if (model.has("textures")) {
-                JSONObject texturesJson = model.getJSONObject("textures");
-                if (texturesJson.has(name)) {
-                    String path = texturesJson.getString(name);
-                    if (path.startsWith("#")) {
-                        String substring = path.substring(1);
-                        if (texturesJson.has(substring)) {
-                            getTextureFromId(model, textures, substring);
-                        } else if (textures.containsKey(substring)) {
-                            textures.put(name, textures.get(substring));
-                        } else if (parent != null) {
-                            getTextureFromId(parent, textures, substring);
-                        } else {
-                            textures.put(substring, "minecraft:missing");
-                        }
-                    } else if (!textures.containsKey(name) || textures.get(name).equals("minecraft:missing")) {
-                        textures.put(name, path);
+
+            public void rotate(float dTheta, float dPhi) {
+                theta = (float) simplifyAngle(theta + dTheta);
+
+                float newPhi = (float) simplifyAngle(phi + dPhi);
+                if (newPhi > (float) Math.PI) {
+                    if (dPhi < 0.0f) {
+                        phi = (float) (2.0f * Math.PI);
+                        dPhi = 0.0f;
+                    } else if (dPhi > 0.0f) {
+                        phi = (float) -Math.PI;
+                        dPhi = 0.0f;
                     }
                 }
-            }
-            if (parent != null) {
-                getTextureFromId(parent, textures, name);
-            }
-        }
+                phi = (float) simplifyAngle(phi + dPhi);
 
-        @NotNull
-        public Color getTint(@NotNull Schematic.Block block) {
-            String namespacedId = block.getId();
-            CompoundTag properties = block.getProperties();
-            switch (namespacedId) {
-                case "minecraft:redstone_wire" -> {
-                    int power = 0;
-                    if (properties.containsKey("power") && properties.get("power") instanceof IntTag intTag) {
-                        power = intTag.asInt();
-                    } else if (properties.containsKey("power") && properties.get("power") instanceof StringTag stringTag) {
-                        try {
-                            power = Integer.parseInt(stringTag.getValue());
-                        } catch (NumberFormatException ignored) {
-                        }
-                    }
-                    switch (power) {
-                        case 1 -> {
-                            return Color.decode("#6F0000");
-                        }
-                        case 2 -> {
-                            return Color.decode("#790000");
-                        }
-                        case 3 -> {
-                            return Color.decode("#820000");
-                        }
-                        case 4 -> {
-                            return Color.decode("#8C0000");
-                        }
-                        case 5 -> {
-                            return Color.decode("#970000");
-                        }
-                        case 6 -> {
-                            return Color.decode("#A10000");
-                        }
-                        case 7 -> {
-                            return Color.decode("#AB0000");
-                        }
-                        case 8 -> {
-                            return Color.decode("#B50000");
-                        }
-                        case 9 -> {
-                            return Color.decode("#BF0000");
-                        }
-                        case 10 -> {
-                            return Color.decode("#CA0000");
-                        }
-                        case 11 -> {
-                            return Color.decode("#D30000");
-                        }
-                        case 12 -> {
-                            return Color.decode("#DD0000");
-                        }
-                        case 13 -> {
-                            return Color.decode("#E70600");
-                        }
-                        case 14 -> {
-                            return Color.decode("#F11B00");
-                        }
-                        case 15 -> {
-                            return Color.decode("#FC3100");
-                        }
-                        default -> { // 0
-                            return Color.decode("#4B0000");
-                        }
-                    }
-                }
-                case "minecraft:grass_block", "minecraft:grass", "minecraft:tall_grass", "minecraft:fern", "minecraft:large_fern", "minecraft:potted_fern", "minecraft:sugar_cane" -> {
-                    return Color.decode("#91BD59");
-                }
-                case "minecraft:oak_leaves", "minecraft:dark_oak_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves", "minecraft:vine" -> {
-                    return Color.decode("#77AB2F");
-                }
-                case "minecraft:water", "minecraft:water_cauldron" -> {
-                    return Color.decode("#3F76E4");
-                }
-                case "minecraft:birch_leaves" -> {
-                    return Color.decode("#80A755");
-                }
-                case "minecraft:spruce_leaves" -> {
-                    return Color.decode("#619961");
-                }
-                case "minecraft:lily_pad" -> {
-                    return Color.decode("#208030");
-                }
-                default -> {
-                    return Color.WHITE;
-                }
+                System.out.println("Theta: " + theta);
+                System.out.println("Phi: " + phi);
+
+                update();
+            }
+
+            public void zoom(float distance) {
+                radius += distance;
+
+                update();
+            }
+
+            public void pan(float dx, float dy) {
+                panX += dx;
+                panY += dy;
+                eye.set(toCartesian(radius, theta, phi));
+                Vector3f direction = new Vector3f();
+                center.sub(eye, direction);
+                Vector3f right = new Vector3f();
+                direction.cross(up, right);
+                Vector3f realUp = new Vector3f();
+                right.cross(direction, realUp);
+                // center.add(right.mul(dx).add(up.mul(dy)));
+
+                update();
+            }
+
+            public void update() {
+                eye.set(toCartesian(radius, theta, phi));
+
+                viewMatrix.identity();
+                viewMatrix.translateLocal(panX, panY, 0.0f);
+                viewMatrix.lookAt(eye, center, up);
             }
         }
     }
