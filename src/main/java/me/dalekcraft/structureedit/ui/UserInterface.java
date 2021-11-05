@@ -35,7 +35,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
@@ -455,9 +454,9 @@ public class UserInterface {
         private final Random random = new Random();
         private final FloatBuffer tempMatrixBuffer = GLBuffers.newDirectFloatBuffer(16);
         private final FloatBuffer tempVectorBuffer = GLBuffers.newDirectFloatBuffer(4);
-        private final FloatBuffer screenDepth = GLBuffers.newDirectFloatBuffer(1);
-        private final IntBuffer vertexBufferObject = GLBuffers.newDirectIntBuffer(5);
-        private final IntBuffer vertexArrayObject = GLBuffers.newDirectIntBuffer(1);
+        // private final FloatBuffer screenDepth = GLBuffers.newDirectFloatBuffer(1);
+        private final IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(5);
+        private final IntBuffer vertexArrayObject = GLBuffers.newDirectIntBuffer(2);
         private final Matrix4f projectionMatrix = new Matrix4f();
         private final Matrix4f viewMatrix = new Matrix4f();
         private final Matrix4fStack modelMatrix = new Matrix4fStack(5);
@@ -772,8 +771,66 @@ public class UserInterface {
                 textureLocation = gl.glGetUniformLocation(shaderProgram, "texture");
             }
 
-            gl.glGenBuffers(vertexBufferObject.capacity(), vertexBufferObject);
+            gl.glGenBuffers(bufferObject.capacity(), bufferObject);
+
             gl.glGenVertexArrays(vertexArrayObject.capacity(), vertexArrayObject);
+
+            {
+                gl.glBindVertexArray(vertexArrayObject.get(0));
+
+                short[] indices = { //
+                        0, 1, //
+                        2, 3, //
+                        4, 5 //
+                };
+                ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indices);
+                gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(0));
+                gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_DYNAMIC_DRAW);
+
+                gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(1));
+                gl.glBufferData(GL_ARRAY_BUFFER, 18L * Float.BYTES, null, GL_DYNAMIC_DRAW);
+                gl.glEnableVertexAttribArray(Semantic.Attribute.POSITION);
+                gl.glVertexAttribPointer(Semantic.Attribute.POSITION, 3, GL_FLOAT, false, 0, 0);
+
+                gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(2));
+                gl.glBufferData(GL_ARRAY_BUFFER, 24L * Float.BYTES, null, GL_DYNAMIC_DRAW);
+                gl.glEnableVertexAttribArray(Semantic.Attribute.COLOR);
+                gl.glVertexAttribPointer(Semantic.Attribute.COLOR, 4, GL_FLOAT, false, 0, 0);
+            }
+
+            {
+                gl.glBindVertexArray(vertexArrayObject.get(1));
+
+                short[] indices = { //
+                        0, 1, 2, //
+                        2, 3, 0 //
+                };
+                ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indices);
+                gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(0));
+                gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_DYNAMIC_DRAW);
+
+                gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(1));
+                gl.glBufferData(GL_ARRAY_BUFFER, 12L * Float.BYTES, null, GL_DYNAMIC_DRAW);
+                gl.glEnableVertexAttribArray(Semantic.Attribute.POSITION);
+                gl.glVertexAttribPointer(Semantic.Attribute.POSITION, 3, GL_FLOAT, false, 0, 0);
+
+                gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(2));
+                gl.glBufferData(GL_ARRAY_BUFFER, 16L * Float.BYTES, null, GL_DYNAMIC_DRAW);
+                gl.glEnableVertexAttribArray(Semantic.Attribute.COLOR);
+                gl.glVertexAttribPointer(Semantic.Attribute.COLOR, 4, GL_FLOAT, false, 0, 0);
+
+                gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(3));
+                gl.glBufferData(GL_ARRAY_BUFFER, 12L * Float.BYTES, null, GL_DYNAMIC_DRAW);
+                gl.glEnableVertexAttribArray(Semantic.Attribute.NORMAL);
+                gl.glVertexAttribPointer(Semantic.Attribute.NORMAL, 3, GL_FLOAT, false, 0, 0);
+
+                gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(4));
+                gl.glBufferData(GL_ARRAY_BUFFER, 8L * Float.BYTES, null, GL_DYNAMIC_DRAW);
+                gl.glEnableVertexAttribArray(Semantic.Attribute.TEX_COORD);
+                gl.glVertexAttribPointer(Semantic.Attribute.TEX_COORD, 2, GL_FLOAT, false, 0, 0);
+            }
+
+            gl.glBindVertexArray(0);
 
             camera = new Camera();
 
@@ -788,8 +845,8 @@ public class UserInterface {
             GL4 gl = drawable.getGL().getGL4();
             animator.stop();
             gl.glUseProgram(0);
-            gl.glDeleteBuffers(3, vertexBufferObject);
-            gl.glDeleteVertexArrays(1, vertexArrayObject);
+            gl.glDeleteBuffers(bufferObject.capacity(), bufferObject);
+            gl.glDeleteVertexArrays(vertexArrayObject.capacity(), vertexArrayObject);
             gl.glDetachShader(shaderProgram, vertexShader);
             gl.glDeleteShader(vertexShader);
             gl.glDetachShader(shaderProgram, fragmentShader);
@@ -939,35 +996,34 @@ public class UserInterface {
                     4, 5 // Z-axis (blue)
             };
             ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indices);
-            gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBufferObject.get(0));
+            gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(0));
             gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_DYNAMIC_DRAW);
 
             float[] positions = { //
-                    0.0f, 0.0f, 0.0f, sizeX, 0.0f, 0.0f, // X-axis (red)
-                    0.0f, 0.0f, 0.0f, 0.0f, sizeY, 0.0f, // Y-axis (green)
-                    0.0f, 0.0f, 0.0f, 0.0f, 0.0f, sizeZ // Z-axis (blue)
+                    0.0f, 0.0f, 0.0f, // X-axis (red)
+                    sizeX, 0.0f, 0.0f, //
+                    0.0f, 0.0f, 0.0f, // Y-axis (green)
+                    0.0f, sizeY, 0.0f, //
+                    0.0f, 0.0f, 0.0f, // Z-axis (blue)
+                    0.0f, 0.0f, sizeZ //
             };
             FloatBuffer positionBuffer = GLBuffers.newDirectFloatBuffer(positions);
-            gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(1));
+            gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(1));
             gl.glBufferData(GL_ARRAY_BUFFER, (long) positionBuffer.capacity() * Float.BYTES, positionBuffer, GL_DYNAMIC_DRAW);
-            gl.glVertexAttribPointer(Semantic.Attribute.POSITION, 3, GL_FLOAT, false, 0, 0);
-            gl.glEnableVertexAttribArray(Semantic.Attribute.POSITION);
 
             float[] colors = { //
-                    1.0f, 0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, // X-axis (red)
-                    0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f, // Y-axis (green)
-                    0.0f, 0.0f, 1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f // Z-axis (blue)
+                    1.0f, 0.0f, 0.0f, 1.0f, // X-axis (red)
+                    1.0f, 0.0f, 0.0f, 1.0f, //
+                    0.0f, 1.0f, 0.0f, 1.0f, // Y-axis (green)
+                    0.0f, 1.0f, 0.0f, 1.0f, //
+                    0.0f, 0.0f, 1.0f, 1.0f, // Z-axis (blue)
+                    0.0f, 0.0f, 1.0f, 1.0f //
             };
             FloatBuffer colorBuffer = GLBuffers.newDirectFloatBuffer(colors);
-            gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(2));
+            gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(2));
             gl.glBufferData(GL_ARRAY_BUFFER, (long) colorBuffer.capacity() * Float.BYTES, colorBuffer, GL_DYNAMIC_DRAW);
-            gl.glVertexAttribPointer(Semantic.Attribute.COLOR, 4, GL_FLOAT, false, 0, 0);
-            gl.glEnableVertexAttribArray(Semantic.Attribute.COLOR);
 
             gl.glDrawElements(GL_LINES, indices.length, GL_UNSIGNED_SHORT, 0);
-
-            gl.glDisableVertexAttribArray(Semantic.Attribute.POSITION);
-            gl.glDisableVertexAttribArray(Semantic.Attribute.COLOR);
 
             gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
             gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
@@ -1317,7 +1373,7 @@ public class UserInterface {
                         gl.glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                         gl.glEnable(GL_BLEND);
 
-                        gl.glBindVertexArray(vertexArrayObject.get(0));
+                        gl.glBindVertexArray(vertexArrayObject.get(1));
 
                         gl.glUniformMatrix4fv(Semantic.Uniform.PROJECTION_MATRIX, 1, false, projectionMatrix.get(tempMatrixBuffer));
                         gl.glUniformMatrix4fv(Semantic.Uniform.VIEW_MATRIX, 1, false, viewMatrix.get(tempMatrixBuffer));
@@ -1337,24 +1393,52 @@ public class UserInterface {
                                 2, 3, 0 //
                         };
                         ShortBuffer indexBuffer = GLBuffers.newDirectShortBuffer(indices);
-                        gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vertexBufferObject.get(0));
+                        gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bufferObject.get(0));
                         gl.glBufferData(GL_ELEMENT_ARRAY_BUFFER, (long) indexBuffer.capacity() * Short.BYTES, indexBuffer, GL_DYNAMIC_DRAW);
 
                         float[] positions = switch (faceName) { //
-                            case "east" -> new float[]{toX, fromY, toZ, toX, fromY, fromZ, toX, toY, fromZ, toX, toY, toZ,};
-                            case "west" -> new float[]{fromX, fromY, fromZ, fromX, fromY, toZ, fromX, toY, toZ, fromX, toY, fromZ};
-                            case "up" -> new float[]{fromX, toY, toZ, toX, toY, toZ, toX, toY, fromZ, fromX, toY, fromZ};
-                            case "down" -> new float[]{fromX, fromY, fromZ, toX, fromY, fromZ, toX, fromY, toZ, fromX, fromY, toZ};
-                            case "south" -> new float[]{fromX, fromY, toZ, toX, fromY, toZ, toX, toY, toZ, fromX, toY, toZ};
-                            case "north" -> new float[]{toX, fromY, fromZ, fromX, fromY, fromZ, fromX, toY, fromZ, toX, toY, fromZ};
+                            case "east" -> new float[]{ //
+                                    toX, fromY, toZ, //
+                                    toX, fromY, fromZ, //
+                                    toX, toY, fromZ, //
+                                    toX, toY, toZ //
+                            };
+                            case "west" -> new float[]{ //
+                                    fromX, fromY, fromZ, //
+                                    fromX, fromY, toZ, //
+                                    fromX, toY, toZ, //
+                                    fromX, toY, fromZ //
+                            };
+                            case "up" -> new float[]{ //
+                                    fromX, toY, toZ,//
+                                    toX, toY, toZ, //
+                                    toX, toY, fromZ, //
+                                    fromX, toY, fromZ //
+                            };
+                            case "down" -> new float[]{ //
+                                    fromX, fromY, fromZ, //
+                                    toX, fromY, fromZ, //
+                                    toX, fromY, toZ, //
+                                    fromX, fromY, toZ //
+                            };
+                            case "south" -> new float[]{ //
+                                    fromX, fromY, toZ, //
+                                    toX, fromY, toZ, //
+                                    toX, toY, toZ, //
+                                    fromX, toY, toZ //
+                            };
+                            case "north" -> new float[]{ //
+                                    toX, fromY, fromZ, //
+                                    fromX, fromY, fromZ, //
+                                    fromX, toY, fromZ, //
+                                    toX, toY, fromZ //
+                            };
                             default -> null;
                         };
                         assert positions != null;
                         FloatBuffer positionBuffer = GLBuffers.newDirectFloatBuffer(positions);
-                        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(1));
+                        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(1));
                         gl.glBufferData(GL_ARRAY_BUFFER, (long) positionBuffer.capacity() * Float.BYTES, positionBuffer, GL_DYNAMIC_DRAW);
-                        gl.glVertexAttribPointer(Semantic.Attribute.POSITION, 3, GL_FLOAT, false, 0, 0);
-                        gl.glEnableVertexAttribArray(Semantic.Attribute.POSITION);
 
                         float[] colors = { //
                                 components[0], components[1], components[2], components[3], //
@@ -1363,25 +1447,51 @@ public class UserInterface {
                                 components[0], components[1], components[2], components[3], //
                         };
                         FloatBuffer colorBuffer = GLBuffers.newDirectFloatBuffer(colors);
-                        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(2));
+                        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(2));
                         gl.glBufferData(GL_ARRAY_BUFFER, (long) colorBuffer.capacity() * Float.BYTES, colorBuffer, GL_DYNAMIC_DRAW);
-                        gl.glVertexAttribPointer(Semantic.Attribute.COLOR, 4, GL_FLOAT, false, 0, 0);
-                        gl.glEnableVertexAttribArray(Semantic.Attribute.COLOR);
 
                         float[] normals = switch (faceName) { //
-                            case "east" -> new float[]{1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f};
-                            case "west" -> new float[]{-1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f};
-                            case "up" -> new float[]{0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f};
-                            case "down" -> new float[]{0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f};
-                            case "south" -> new float[]{0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f};
-                            case "north" -> new float[]{0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f, -1.0f};
+                            case "east" -> new float[]{ //
+                                    1.0f, 0.0f, 0.0f, //
+                                    1.0f, 0.0f, 0.0f, //
+                                    1.0f, 0.0f, 0.0f, //
+                                    1.0f, 0.0f, 0.0f //
+                            };
+                            case "west" -> new float[]{ //
+                                    -1.0f, 0.0f, 0.0f, //
+                                    -1.0f, 0.0f, 0.0f, //
+                                    -1.0f, 0.0f, 0.0f, //
+                                    -1.0f, 0.0f, 0.0f //
+                            };
+                            case "up" -> new float[]{ //
+                                    0.0f, 1.0f, 0.0f, //
+                                    0.0f, 1.0f, 0.0f, //
+                                    0.0f, 1.0f, 0.0f, //
+                                    0.0f, 1.0f, 0.0f //
+                            };
+                            case "down" -> new float[]{ //
+                                    0.0f, -1.0f, 0.0f, //
+                                    0.0f, -1.0f, 0.0f, //
+                                    0.0f, -1.0f, 0.0f, //
+                                    0.0f, -1.0f, 0.0f //
+                            };
+                            case "south" -> new float[]{ //
+                                    0.0f, 0.0f, 1.0f, //
+                                    0.0f, 0.0f, 1.0f, //
+                                    0.0f, 0.0f, 1.0f, //
+                                    0.0f, 0.0f, 1.0f //
+                            };
+                            case "north" -> new float[]{ //
+                                    0.0f, 0.0f, -1.0f, //
+                                    0.0f, 0.0f, -1.0f, //
+                                    0.0f, 0.0f, -1.0f, //
+                                    0.0f, 0.0f, -1.0f //
+                            };
                             default -> null;
                         };
                         FloatBuffer normalBuffer = GLBuffers.newDirectFloatBuffer(normals);
-                        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(3));
+                        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(3));
                         gl.glBufferData(GL_ARRAY_BUFFER, (long) normalBuffer.capacity() * Float.BYTES, normalBuffer, GL_DYNAMIC_DRAW);
-                        gl.glVertexAttribPointer(Semantic.Attribute.NORMAL, 3, GL_FLOAT, false, 0, 0);
-                        gl.glEnableVertexAttribArray(Semantic.Attribute.NORMAL);
 
                         float[] texCoords = { //
                                 textureLeft, textureBottom, //
@@ -1390,17 +1500,10 @@ public class UserInterface {
                                 textureLeft, textureTop //
                         };
                         FloatBuffer texCoordBuffer = GLBuffers.newDirectFloatBuffer(texCoords);
-                        gl.glBindBuffer(GL_ARRAY_BUFFER, vertexBufferObject.get(4));
+                        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(4));
                         gl.glBufferData(GL_ARRAY_BUFFER, (long) texCoordBuffer.capacity() * Float.BYTES, texCoordBuffer, GL_DYNAMIC_DRAW);
-                        gl.glVertexAttribPointer(Semantic.Attribute.TEX_COORD, 2, GL_FLOAT, false, 0, 0);
-                        gl.glEnableVertexAttribArray(Semantic.Attribute.TEX_COORD);
 
                         gl.glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_SHORT, 0);
-
-                        gl.glDisableVertexAttribArray(Semantic.Attribute.POSITION);
-                        gl.glDisableVertexAttribArray(Semantic.Attribute.COLOR);
-                        gl.glDisableVertexAttribArray(Semantic.Attribute.NORMAL);
-                        gl.glDisableVertexAttribArray(Semantic.Attribute.TEX_COORD);
 
                         gl.glBindBuffer(GL_ARRAY_BUFFER, 0);
                         gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
