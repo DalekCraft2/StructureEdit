@@ -36,6 +36,7 @@ import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3f;
+import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.json.JSONArray;
@@ -450,14 +451,15 @@ public class UserInterface {
         private static final float ROTATION_SENSITIVITY = 1.0f;
         private static final float TRANSLATION_SENSITIVITY = 0.1f;
         private final Random random = new Random();
-        private final FloatBuffer tempMatrixBuffer = GLBuffers.newDirectFloatBuffer(new float[16]);
-        private final FloatBuffer tempVectorBuffer = GLBuffers.newDirectFloatBuffer(new float[4]);
+        private final FloatBuffer tempMatrixBuffer = GLBuffers.newDirectFloatBuffer(16);
+        private final FloatBuffer tempVectorBuffer = GLBuffers.newDirectFloatBuffer(4);
+        private final FloatBuffer screenDepth = GLBuffers.newDirectFloatBuffer(1);
         private final IntBuffer vertexBufferObject = GLBuffers.newDirectIntBuffer(5);
         private final IntBuffer vertexArrayObject = GLBuffers.newDirectIntBuffer(1);
-        private final Matrix4fStack projectionMatrix = new Matrix4fStack(1);
-        private final Matrix4fStack viewMatrix = new Matrix4fStack(1);
-        private final Matrix4fStack modelMatrix = new Matrix4fStack(3);
-        private final Matrix4fStack textureMatrix = new Matrix4fStack(1);
+        private final Matrix4f projectionMatrix = new Matrix4f();
+        private final Matrix4f viewMatrix = new Matrix4f();
+        private final Matrix4fStack modelMatrix = new Matrix4fStack(5);
+        private final Matrix4f textureMatrix = new Matrix4f();
         private int vertexShader;
         private int fragmentShader;
         private int shaderProgram;
@@ -631,8 +633,6 @@ public class UserInterface {
 
         @Override
         public void init(@NotNull GLAutoDrawable drawable) {
-            camera = new Camera();
-
             GL4 gl = drawable.getGL().getGL4(); // get the OpenGL graphics context
             gl.glEnable(GL_DEPTH_TEST); // enables depth testing
             gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
@@ -773,6 +773,8 @@ public class UserInterface {
             gl.glGenBuffers(vertexBufferObject.capacity(), vertexBufferObject);
             gl.glGenVertexArrays(vertexArrayObject.capacity(), vertexArrayObject);
 
+            camera = new Camera();
+
             animator = new Animator(drawable);
             animator.setRunAsFastAsPossible(true);
 
@@ -839,12 +841,7 @@ public class UserInterface {
         public void reshape(@NotNull GLAutoDrawable drawable, int x, int y, int width, int height) {
             GL4 gl = drawable.getGL().getGL4(); // get the OpenGL graphics context
             gl.glViewport(x, y, width, height);
-            float aspect = (float) width / height;
-            float fovY = 45.0f;
-            float zNear = 1.0f;
-            float zFar = 1000.0f;
-            projectionMatrix.identity();
-            projectionMatrix.perspective(fovY, aspect, zNear, zFar);
+            camera.perspective(x, y, width, height);
         }
 
         @Override
@@ -910,6 +907,7 @@ public class UserInterface {
                 // Translate the camera
                 float dx = -(mousePoint.x - e.getX()) * TRANSLATION_SENSITIVITY;
                 float dy = (mousePoint.y - e.getY()) * TRANSLATION_SENSITIVITY;
+                // camera.pan(mousePoint.x, mousePoint.y, e.getX(), e.getY());
                 camera.pan(dx, dy);
             }
             mousePoint = e.getPoint();
@@ -925,7 +923,6 @@ public class UserInterface {
 
             gl.glBindVertexArray(vertexArrayObject.get(0));
 
-            // FloatBuffer tempMatrixBuffer = GLBuffers.newDirectFloatBuffer(new float[16]);
             projectionMatrix.get(tempMatrixBuffer);
             gl.glUniformMatrix4fv(Semantic.Uniform.PROJECTION_MATRIX, 1, false, tempMatrixBuffer);
             viewMatrix.get(tempMatrixBuffer);
@@ -1188,7 +1185,7 @@ public class UserInterface {
                     } else {
                         gl.glUniform3f(materialAmbientLocation, 1.0f, 1.0f, 1.0f);
                     }
-                    gl.glUniform3f(materialDiffuseLocation, 1.0f, 1.0f, 1.0f);
+                    gl.glUniform3f(materialDiffuseLocation, 0.8f, 0.8f, 0.8f);
                     gl.glUniform3f(materialSpecularLocation, 1.0f, 1.0f, 1.0f);
                     gl.glUniform1f(materialShininessLocation, 1.0f);
 
@@ -1319,20 +1316,10 @@ public class UserInterface {
 
                         gl.glBindVertexArray(vertexArrayObject.get(0));
 
-                        // FloatBuffer tempMatrixBuffer = GLBuffers.newDirectFloatBuffer(new float[16]);
-                        projectionMatrix.get(tempMatrixBuffer);
-                        gl.glUniformMatrix4fv(Semantic.Uniform.PROJECTION_MATRIX, 1, false, tempMatrixBuffer);
-                        viewMatrix.get(tempMatrixBuffer);
-                        gl.glUniformMatrix4fv(Semantic.Uniform.VIEW_MATRIX, 1, false, tempMatrixBuffer);
-                        modelMatrix.get(tempMatrixBuffer);
-                        gl.glUniformMatrix4fv(Semantic.Uniform.MODEL_MATRIX, 1, false, tempMatrixBuffer);
-                        textureMatrix.get(tempMatrixBuffer);
-                        gl.glUniformMatrix4fv(Semantic.Uniform.TEXTURE_MATRIX, 1, false, tempMatrixBuffer);
-
-                        Matrix3f normalMatrix = new Matrix3f();
-                        modelMatrix.normal(normalMatrix);
-                        normalMatrix.get(tempMatrixBuffer);
-                        gl.glUniformMatrix3fv(Semantic.Uniform.NORMAL_MATRIX, 1, false, tempMatrixBuffer);
+                        gl.glUniformMatrix4fv(Semantic.Uniform.PROJECTION_MATRIX, 1, false, projectionMatrix.get(tempMatrixBuffer));
+                        gl.glUniformMatrix4fv(Semantic.Uniform.VIEW_MATRIX, 1, false, viewMatrix.get(tempMatrixBuffer));
+                        gl.glUniformMatrix4fv(Semantic.Uniform.MODEL_MATRIX, 1, false, modelMatrix.get(tempMatrixBuffer));
+                        gl.glUniformMatrix4fv(Semantic.Uniform.TEXTURE_MATRIX, 1, false, textureMatrix.get(tempMatrixBuffer));
 
                         texture.setTexParameterf(gl, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                         texture.setTexParameterf(gl, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
@@ -1442,17 +1429,22 @@ public class UserInterface {
             private float radius = 30.0f;
             private float panX;
             private float panY;
+            private int[] viewport = new int[4];
 
             {
                 update();
             }
 
             public static Vector3f toCartesian(float radius, float theta, float phi) {
+                return toCartesian(radius, theta, phi, new Vector3f());
+            }
+
+            public static Vector3f toCartesian(float radius, float theta, float phi, @NotNull Vector3f dest) {
                 float x = (float) (radius * Math.sin(phi) * Math.sin(theta));
                 float y = (float) (radius * Math.cos(phi));
                 float z = (float) (radius * Math.sin(phi) * Math.cos(theta));
 
-                return new Vector3f(x, y, z);
+                return dest.set(x, y, z);
             }
 
             public void rotate(float dTheta, float dPhi) {
@@ -1470,9 +1462,6 @@ public class UserInterface {
                 }
                 phi = (float) simplifyAngle(phi + dPhi);
 
-                System.out.println("Theta: " + theta);
-                System.out.println("Phi: " + phi);
-
                 update();
             }
 
@@ -1482,27 +1471,55 @@ public class UserInterface {
                 update();
             }
 
-            public void pan(float dx, float dy) {
+            public void pan(/*float mouseX, float mouseY, float newMouseX, float newMouseY*/ float dx, float dy) {
                 panX += dx;
                 panY += dy;
-                eye.set(toCartesian(radius, theta, phi));
+                /*toCartesian(radius, theta, phi, eye);
                 Vector3f direction = new Vector3f();
                 center.sub(eye, direction);
                 Vector3f right = new Vector3f();
                 direction.cross(up, right);
                 Vector3f realUp = new Vector3f();
                 right.cross(direction, realUp);
-                // center.add(right.mul(dx).add(up.mul(dy)));
+                // center.add(right.mul(dx).add(up.mul(dy)));*/
+
+                /*Vector3f originScreenCoords = projectionMatrix.project(0.0f, 0.0f, 0.0f, viewport, new Vector3f());
+                System.out.println("Origin: " + originScreenCoords);
+                Vector3f mouseWorldCoords = projectionMatrix.unproject(mouseX, mouseY, originScreenCoords.z, viewport, new Vector3f());
+                System.out.println("Mouse: " + mouseWorldCoords);
+                Vector3f newMouseWorldCoords = projectionMatrix.unproject(newMouseX, newMouseY, originScreenCoords.z, viewport, new Vector3f());
+                System.out.println("New Mouse: " + newMouseWorldCoords);
+                Vector3f offset = mouseWorldCoords.sub(newMouseWorldCoords, new Vector3f());
+                System.out.println("Offset: " + offset);
+
+                projectionMatrix.invert();
+                Vector3f worldCoords = projectionMatrix.unproject(offset, viewport, new Vector3f());
+                projectionMatrix.invert();
+
+                viewMatrix.translate(worldCoords);*/
 
                 update();
             }
 
             public void update() {
-                eye.set(toCartesian(radius, theta, phi));
+                toCartesian(radius, theta, phi, eye);
 
                 viewMatrix.identity();
-                viewMatrix.translateLocal(panX, panY, 0.0f);
+                viewMatrix.translate(panX, panY, 0.0f);
                 viewMatrix.lookAt(eye, center, up);
+            }
+
+            public void perspective(int x, int y, int width, int height) {
+                viewport[0] = x;
+                viewport[1] = y;
+                viewport[2] = width;
+                viewport[3] = height;
+
+                float aspect = (float) width / height;
+                float fovY = 45.0f;
+                float zNear = 0.5f;
+                float zFar = 1000.0f;
+                projectionMatrix.setPerspective(fovY, aspect, zNear, zFar);
             }
         }
     }

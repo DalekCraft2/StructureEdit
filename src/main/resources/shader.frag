@@ -1,9 +1,9 @@
 #version 460
 
+// Adapted from http://www.cs.toronto.edu/~jacobson/phong-demo/
+
 uniform sampler2D texture;
 
-layout(location = 3) uniform mat3 normalMatrix;
-layout(location = 4) uniform mat4 textureMatrix;
 uniform float Ka;// Ambient reflection coefficient
 uniform float Kd;// Diffuse reflection coefficient
 uniform float Ks;// Specular reflection coefficient
@@ -12,34 +12,36 @@ uniform float shininess;// Shininess
 uniform vec3 ambientColor;
 uniform vec3 diffuseColor;
 uniform vec3 specularColor;
-uniform vec3 lightPosition;// Light position
 
 varying Data {
     vec3 position;
     vec4 color;
     vec3 normal;
     vec2 texCoord;
+    vec3 lightPosition;
 } Input;
 
 void main() {
-    vec3 normalInterp = normalMatrix * Input.normal;
-    vec3 N = normalize(normalInterp);
-    vec3 L = normalize(lightPosition - Input.position);
-    // Lambert's cosine law
-    float lambertian = max(dot(N, L), 0.0);
-    float specular = 0.0;
-    if (lambertian > 0.0) {
-        vec3 R = reflect(-L, N);// Reflected light vector
-        vec3 V = normalize(-Input.position);// Vector to viewer
-        // Compute the specular term
-        float specAngle = max(dot(R, V), 0.0);
-        specular = pow(specAngle, shininess);
-    }
-    vec4 lightingColor = vec4(Ka * ambientColor + Kd * lambertian * diffuseColor + Ks * specular * specularColor, 1.0) * Input.color;
+    // Ambient
+    vec3 ambient = Ka * ambientColor;
 
-    vec2 texCoordTranslated = (textureMatrix * vec4(Input.texCoord, 0.0, 1.0)).st;
-    vec4 textureColor = texture(texture, texCoordTranslated);
-    vec4 finalColor = textureColor * lightingColor;
+    // Diffuse
+    vec3 normal = normalize(Input.normal);
+    vec3 lightDirection = normalize(Input.lightPosition - Input.position);
+    // Lambert's cosine law
+    float lambertian = max(dot(normal, lightDirection), 0.0);
+    vec3 diffuse = Kd * lambertian * diffuseColor;
+
+    // Specular
+    vec3 viewDirection = normalize(-Input.position);// Vector to viewer
+    vec3 reflectDirection = reflect(-lightDirection, normal);// Reflected light vector
+    float specAngle = max(dot(viewDirection, reflectDirection), 0.0);
+    float spec = pow(specAngle, shininess);
+    vec3 specular = Ks * spec * specularColor;
+
+    vec4 lightColor = vec4(ambient + diffuse + specular, 1.0);
+    vec4 textureColor = texture(texture, Input.texCoord);
+    vec4 finalColor = lightColor * Input.color * textureColor;
 
     if (finalColor[3] > 0.0) {
         gl_FragColor = finalColor;
