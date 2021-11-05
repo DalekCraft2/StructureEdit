@@ -1036,12 +1036,16 @@ public class UserInterface {
             gl.glUseProgram(0);
         }
 
-        // TODO Add a water model to this list if the block's "waterlogged" property is "true".
         @NotNull
         public List<JSONObject> getModelsFromBlockState(@NotNull Schematic.Block block) {
             List<JSONObject> modelList = new ArrayList<>();
             String namespacedId = block.getId();
             CompoundTag properties = block.getProperties().clone();
+            if (properties.containsKey("waterlogged") && properties.get("waterlogged") instanceof StringTag && properties.getString("waterlogged").equals("true")) {
+                JSONObject waterModel = new JSONObject();
+                waterModel.put("model", "minecraft:block/water");
+                modelList.add(waterModel);
+            }
             JSONObject blockState = Assets.getBlockState(namespacedId);
             String propertiesString = "";
             try {
