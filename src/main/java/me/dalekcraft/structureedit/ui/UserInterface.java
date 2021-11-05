@@ -35,6 +35,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
@@ -461,6 +462,7 @@ public class UserInterface {
         private final Matrix4f viewMatrix = new Matrix4f();
         private final Matrix4fStack modelMatrix = new Matrix4fStack(5);
         private final Matrix4f textureMatrix = new Matrix4f();
+        private final Matrix3f normalMatrix = new Matrix3f();
         private int vertexShader;
         private int fragmentShader;
         private int shaderProgram;
@@ -1379,6 +1381,9 @@ public class UserInterface {
                         gl.glUniformMatrix4fv(Semantic.Uniform.VIEW_MATRIX, 1, false, viewMatrix.get(tempMatrixBuffer));
                         gl.glUniformMatrix4fv(Semantic.Uniform.MODEL_MATRIX, 1, false, modelMatrix.get(tempMatrixBuffer));
                         gl.glUniformMatrix4fv(Semantic.Uniform.TEXTURE_MATRIX, 1, false, textureMatrix.get(tempMatrixBuffer));
+
+                        viewMatrix.mul(modelMatrix, new Matrix4f()).normal(normalMatrix);
+                        gl.glUniformMatrix3fv(Semantic.Uniform.NORMAL_MATRIX, 1, false, normalMatrix.get(tempMatrixBuffer));
 
                         texture.setTexParameterf(gl, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                         texture.setTexParameterf(gl, GL_TEXTURE_MAG_FILTER, GL_NEAREST);

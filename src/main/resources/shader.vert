@@ -11,6 +11,7 @@ layout(location = 0) uniform mat4 projectionMatrix;
 layout(location = 1) uniform mat4 viewMatrix;
 layout(location = 2) uniform mat4 modelMatrix;
 layout(location = 3) uniform mat4 textureMatrix;
+layout(location = 4) uniform mat3 normalMatrix;
 uniform vec3 lightPosition;// Light position
 
 
@@ -26,7 +27,6 @@ void main() {
     gl_Position = projectionMatrix * viewMatrix * modelMatrix * vec4(position, 1.0);
     Output.position = vec3(viewMatrix * modelMatrix * vec4(position, 1.0));
     Output.color = color;
-    mat3 normalMatrix = mat3(transpose(inverse(viewMatrix * modelMatrix)));
     Output.normal = normalMatrix * normal;
     Output.texCoord = (textureMatrix * vec4(texCoord, 0.0, 1.0)).st;
     Output.lightPosition = vec3(viewMatrix * vec4(lightPosition, 1.0));
