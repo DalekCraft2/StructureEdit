@@ -297,6 +297,8 @@ public class UserInterface {
         }
         SwingUtilities.invokeLater(() -> {
             sizeTextField.setText(null);
+            layerSpinner.setValue(0);
+            layerSpinner.setEnabled(false);
             paletteSpinner.setValue(0);
             paletteSpinner.setEnabled(false);
             blockPositionTextField.setText(null);
@@ -800,6 +802,7 @@ public class UserInterface {
             gl.glDeleteProgram(axisShaderProgram);
         }
 
+        // TODO Implement order-independent transparency to fix the issues with rendering translucent colors/textures.
         @Override
         public void display(@NotNull GLAutoDrawable drawable) {
             GL4 gl = drawable.getGL().getGL4();
@@ -1179,7 +1182,7 @@ public class UserInterface {
                     gl.glUniform3fv(lightPositionLocation, 1, camera.eye.get(tempVectorBuffer));
                     gl.glUniform1f(lightAmbientLocation, 1.0f);
                     gl.glUniform1f(lightDiffuseLocation, 1.0f);
-                    gl.glUniform1f(lightSpecularLocation, 0.0f);
+                    gl.glUniform1f(lightSpecularLocation, 0.1f);
                     if (shade) {
                         gl.glUniform3f(materialAmbientLocation, 0.2f, 0.2f, 0.2f);
                     } else {
@@ -1326,7 +1329,6 @@ public class UserInterface {
                         texture.setTexParameterf(gl, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                         texture.setTexParameterf(gl, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                         texture.setTexParameterf(gl, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-                        texture.enable(gl);
                         texture.bind(gl);
                         gl.glBindSampler(0, textureLocation);
 
@@ -1404,7 +1406,6 @@ public class UserInterface {
                         gl.glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
                         gl.glBindVertexArray(0);
                         gl.glBindTexture(GL_TEXTURE_2D, 0);
-                        texture.disable(gl);
                         gl.glBindSampler(0, 0);
                         gl.glDisable(GL_BLEND);
                     }
@@ -1471,6 +1472,7 @@ public class UserInterface {
                 update();
             }
 
+            // TODO Use Matrix4f.unproject() to convert mouse coordinates to world coordinates, for accurate panning.
             public void pan(/*float mouseX, float mouseY, float newMouseX, float newMouseY*/ float dx, float dy) {
                 panX += dx;
                 panY += dy;
