@@ -448,6 +448,8 @@ public class UserInterface {
     private class SchematicRenderer extends MouseAdapter implements GLEventListener, KeyListener {
 
         private static final float SCALE = 1.0f;
+        private static final float RESCALE_22_5 = 1.0f / (float) Math.cos(Math.toRadians(22.5f));
+        private static final float RESCALE_45 = 1.0f / (float) Math.cos(Math.toRadians(45.0f));
         private static final float MODEL_SIZE = 16.0f;
         private static final long TICK_LENGTH = 50L;
         private static final float ROTATION_SENSITIVITY = 1.0f;
@@ -637,6 +639,8 @@ public class UserInterface {
         @Override
         public void init(@NotNull GLAutoDrawable drawable) {
             GL4 gl = drawable.getGL().getGL4(); // get the OpenGL graphics context
+            gl.glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // set the clear color to gray
+            gl.glClearDepth(1.0f); // set clear depth value to farthest
             gl.glEnable(GL_DEPTH_TEST); // enables depth testing
             gl.glDepthFunc(GL_LEQUAL); // the type of depth test to do
             gl.glLineWidth(2.0f);
@@ -865,8 +869,6 @@ public class UserInterface {
         @Override
         public void display(@NotNull GLAutoDrawable drawable) {
             GL4 gl = drawable.getGL().getGL4();
-            gl.glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // set background color to gray
-            gl.glClearDepth(1.0f); // set clear depth value to farthest
             gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             modelMatrix.identity();
             if (schematic != null) {
@@ -1208,33 +1210,54 @@ public class UserInterface {
                     float toY = (float) (to.getDouble(1) / MODEL_SIZE);
                     float toZ = (float) (to.getDouble(2) / MODEL_SIZE);
 
+                    Vector3f fromVec = new Vector3f(fromX, fromY, fromZ);
+                    Vector3f toVec = new Vector3f(toX, toY, toZ);
+
                     if (axis != null && origin != null) {
                         float originX = (float) (origin.getDouble(0) / MODEL_SIZE);
                         float originY = (float) (origin.getDouble(1) / MODEL_SIZE);
                         float originZ = (float) (origin.getDouble(2) / MODEL_SIZE);
                         modelMatrix.translate(originX, originY, originZ);
-                        float rescaleFactor = (float) (Math.hypot(MODEL_SIZE, MODEL_SIZE) / MODEL_SIZE); // TODO Do not assume that the angle is 45.0 degrees, nor that the cube is centered.
+                        float rescaleFactor = 1.0f;
+                        if (Math.abs(angle) == 22.5f) {
+                            rescaleFactor = RESCALE_22_5;
+                        } else if (Math.abs(angle) == 45.0f) {
+                            rescaleFactor = RESCALE_45;
+                        }
                         switch (axis) {
                             case "x" -> {
                                 modelMatrix.rotateX((float) Math.toRadians(angle));
                                 if (rescale) {
-                                    modelMatrix.scale(1.0f, rescaleFactor, rescaleFactor);
+                                    fromVec.mul(1.0f, rescaleFactor, rescaleFactor);
+                                    toVec.mul(1.0f, rescaleFactor, rescaleFactor);
                                 }
                             }
                             case "y" -> {
                                 modelMatrix.rotateY((float) Math.toRadians(angle));
                                 if (rescale) {
-                                    modelMatrix.scale(rescaleFactor, 1.0f, rescaleFactor);
+                                    fromVec.mul(rescaleFactor, 1.0f, rescaleFactor);
+                                    toVec.mul(rescaleFactor, 1.0f, rescaleFactor);
                                 }
                             }
                             case "z" -> {
                                 modelMatrix.rotateZ((float) Math.toRadians(angle));
                                 if (rescale) {
-                                    modelMatrix.scale(rescaleFactor, rescaleFactor, 1.0f);
+                                    fromVec.mul(rescaleFactor, rescaleFactor, 1.0f);
+                                    toVec.mul(rescaleFactor, rescaleFactor, 1.0f);
                                 }
                             }
                         }
-                        modelMatrix.translate(-originX, -originY, -originZ);
+                        fromX = fromVec.x;
+                        fromY = fromVec.y;
+                        fromZ = fromVec.z;
+                        toX = toVec.x;
+                        toY = toVec.y;
+                        toZ = toVec.z;
+                        switch (axis) {
+                            case "x" -> modelMatrix.translate(-originX, -originY * rescaleFactor, -originZ * rescaleFactor);
+                            case "y" -> modelMatrix.translate(-originX * rescaleFactor, -originY, -originZ * rescaleFactor);
+                            case "z" -> modelMatrix.translate(-originX * rescaleFactor, -originY * rescaleFactor, -originZ);
+                        }
                     }
 
                     gl.glUniform3fv(lightPositionLocation, 1, camera.eye.get(tempVectorBuffer));
