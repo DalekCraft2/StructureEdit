@@ -11,6 +11,7 @@ public final class Semantic {
         public static final int COLOR = 1;
         public static final int NORMAL = 2;
         public static final int TEX_COORD = 3;
+        public static final int TEX_COORD_2 = 4;
     }
 
     public static final class Uniform {

@@ -458,7 +458,7 @@ public class UserInterface {
         private final FloatBuffer tempMatrixBuffer = GLBuffers.newDirectFloatBuffer(16);
         private final FloatBuffer tempVectorBuffer = GLBuffers.newDirectFloatBuffer(4);
         // private final FloatBuffer screenDepth = GLBuffers.newDirectFloatBuffer(1);
-        private final IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(5);
+        private final IntBuffer bufferObject = GLBuffers.newDirectIntBuffer(6);
         private final IntBuffer vertexArrayObject = GLBuffers.newDirectIntBuffer(2);
         private final Matrix4f projectionMatrix = new Matrix4f();
         private final Matrix4f viewMatrix = new Matrix4f();
@@ -480,6 +480,7 @@ public class UserInterface {
         private int materialSpecularLocation;
         private int materialShininessLocation;
         private int textureLocation;
+        private int mixFactorLocation;
         private Camera camera;
         private Point mousePoint;
 
@@ -775,6 +776,7 @@ public class UserInterface {
                 materialSpecularLocation = gl.glGetUniformLocation(shaderProgram, "specularColor");
                 materialShininessLocation = gl.glGetUniformLocation(shaderProgram, "shininess");
                 textureLocation = gl.glGetUniformLocation(shaderProgram, "texture");
+                mixFactorLocation = gl.glGetUniformLocation(shaderProgram, "mixFactor");
             }
 
             gl.glGenBuffers(bufferObject.capacity(), bufferObject);
@@ -834,6 +836,11 @@ public class UserInterface {
                 gl.glBufferData(GL_ARRAY_BUFFER, 8L * Float.BYTES, null, GL_DYNAMIC_DRAW);
                 gl.glEnableVertexAttribArray(Semantic.Attribute.TEX_COORD);
                 gl.glVertexAttribPointer(Semantic.Attribute.TEX_COORD, 2, GL_FLOAT, false, 0, 0);
+
+                gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(5));
+                gl.glBufferData(GL_ARRAY_BUFFER, 8L * Float.BYTES, null, GL_DYNAMIC_DRAW);
+                gl.glEnableVertexAttribArray(Semantic.Attribute.TEX_COORD_2);
+                gl.glVertexAttribPointer(Semantic.Attribute.TEX_COORD_2, 2, GL_FLOAT, false, 0, 0);
             }
 
             gl.glBindVertexArray(0);
@@ -1320,6 +1327,11 @@ public class UserInterface {
                             default -> SCALE - fromY;
                         };
 
+                        float textureLeft2 = textureLeft;
+                        float textureTop2 = textureTop;
+                        float textureRight2 = textureRight;
+                        float textureBottom2 = textureBottom;
+                        gl.glUniform1f(mixFactorLocation, 0.0f);
                         JSONObject fullAnimation = Assets.getAnimation(textures.getOrDefault(faceTexture, "minecraft:missing"));
                         if (fullAnimation != null) {
                             JSONObject animation = fullAnimation.getJSONObject("animation");
@@ -1347,9 +1359,20 @@ public class UserInterface {
                             textureRight /= widthFactor;
                             textureBottom /= heightFactor;
 
-                            long currentTick = System.currentTimeMillis() / (TICK_LENGTH * frametime);
-                            long index = (currentTick % (frames.length()));
-                            Object frame = frames.get((int) index);
+                            textureLeft2 /= widthFactor;
+                            textureTop2 /= heightFactor;
+                            textureRight2 /= widthFactor;
+                            textureBottom2 /= heightFactor;
+
+                            long currentTime = System.currentTimeMillis();
+                            long currentTick = currentTime / (TICK_LENGTH * frametime);
+                            int index = (int) (currentTick % frames.length());
+                            /*The mix factor should be a value between 0.0f and 1.0f, representing the passage of time from the current frame to the next. 0.0f is the current frame, and 1.0f is the next frame.*/
+                            float mixFactor = interpolate ? 0.0f /* TODO how the heck do i get this */ : 0.0f;
+
+                            gl.glUniform1f(mixFactorLocation, mixFactor);
+
+                            Object frame = frames.get(index);
                             double frameDouble = 0.0;
                             if (frame instanceof Integer frameInt) {
                                 frameDouble = (double) frameInt;
@@ -1359,9 +1382,21 @@ public class UserInterface {
                                 int time = frameObject.optInt("time", frametime);
                             }
 
+                            int index2 = frames.length() > index + 1 ? index + 1 : 0;
+                            Object frame2 = frames.get(index2);
+                            double frameDouble2 = 0.0;
+                            if (frame2 instanceof Integer frameInt) {
+                                frameDouble2 = (double) frameInt;
+                            } else if (frame2 instanceof JSONObject frameObject) {
+                                frameDouble2 = frameObject.getInt("index");
+                            }
+
                             // Change to the current frame in the animation
                             textureTop += frameDouble / heightFactor;
                             textureBottom += frameDouble / heightFactor;
+
+                            textureTop2 += frameDouble2 / heightFactor;
+                            textureBottom2 += frameDouble2 / heightFactor;
                         } else if (texture.getWidth() != texture.getHeight()) {
                             texture = Assets.getTexture("minecraft:missing");
                         }
@@ -1372,6 +1407,12 @@ public class UserInterface {
                             textureBottom = textureRight;
                             textureRight = SCALE - textureTop;
                             textureTop = temp;
+
+                            float temp2 = textureLeft2;
+                            textureLeft2 = SCALE - textureBottom2;
+                            textureBottom2 = textureRight2;
+                            textureRight2 = SCALE - textureTop2;
+                            textureTop2 = temp2;
                         }
 
                         textureMatrix.identity();
@@ -1534,6 +1575,16 @@ public class UserInterface {
                         FloatBuffer texCoordBuffer = GLBuffers.newDirectFloatBuffer(texCoords);
                         gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(4));
                         gl.glBufferData(GL_ARRAY_BUFFER, (long) texCoordBuffer.capacity() * Float.BYTES, texCoordBuffer, GL_DYNAMIC_DRAW);
+
+                        float[] texCoords2 = { //
+                                textureLeft2, textureBottom2, //
+                                textureRight2, textureBottom2, //
+                                textureRight2, textureTop2, //
+                                textureLeft2, textureTop2 //
+                        };
+                        FloatBuffer texCoordBuffer2 = GLBuffers.newDirectFloatBuffer(texCoords2);
+                        gl.glBindBuffer(GL_ARRAY_BUFFER, bufferObject.get(5));
+                        gl.glBufferData(GL_ARRAY_BUFFER, (long) texCoordBuffer2.capacity() * Float.BYTES, texCoordBuffer2, GL_DYNAMIC_DRAW);
 
                         gl.glDrawElements(GL_TRIANGLES, indices.length, GL_UNSIGNED_SHORT, 0);
 

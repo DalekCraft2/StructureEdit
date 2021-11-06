@@ -3,6 +3,7 @@
 // Adapted from http://www.cs.toronto.edu/~jacobson/phong-demo/
 
 uniform sampler2D texture;
+uniform float mixFactor;
 
 uniform float Ka;// Ambient reflection coefficient
 uniform float Kd;// Diffuse reflection coefficient
@@ -18,6 +19,7 @@ varying Data {
     vec4 color;
     vec3 normal;
     vec2 texCoord;
+    vec2 texCoord2;
     vec3 lightPosition;
 } Input;
 
@@ -41,6 +43,15 @@ void main() {
 
     vec4 lightColor = vec4(ambient + diffuse + specular, 1.0);
     vec4 textureColor = texture(texture, Input.texCoord);
+    vec4 textureColor2 = texture(texture, Input.texCoord2);
+    vec4 textureColorMix;
+    if (mixFactor == 0.0) {
+        textureColorMix = textureColor;
+    } else if (mixFactor == 1.0) {
+        textureColorMix = textureColor2;
+    } else {
+        textureColorMix = mix(textureColor, textureColor2, mixFactor);
+    }
     vec4 finalColor = lightColor * Input.color * textureColor;
 
     if (finalColor[3] > 0.0) {

@@ -227,10 +227,14 @@ public final class Assets {
         Texture texture = null;
         try (InputStream inputStream = getAsset(namespacedId, "textures", "png")) {
             texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
+            // BufferedImage bufferedImage = ImageIO.read(inputStream);
+            // texture = AWTTextureIO.newTexture(GLProfile.getDefault(), bufferedImage, false);
         } catch (IOException e) {
             LOGGER.log(Level.TRACE, e.getMessage());
             try (InputStream inputStream = LOADER.getResourceAsStream("assets/minecraft/textures/missing.png")) {
                 texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
+                // BufferedImage bufferedImage = ImageIO.read(inputStream);
+                // texture = AWTTextureIO.newTexture(GLProfile.getDefault(), bufferedImage, false);
             } catch (IOException e1) {
                 LOGGER.log(Level.TRACE, e.getMessage());
             }
