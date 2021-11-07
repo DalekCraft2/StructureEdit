@@ -911,8 +911,8 @@ public class UserInterface {
         @Override
         public void reshape(@NotNull GLAutoDrawable drawable, int x, int y, int width, int height) {
             GL4 gl = drawable.getGL().getGL4(); // get the OpenGL graphics context
-            gl.glViewport(x, y, width, height);
             camera.perspective(x, y, width, height);
+            gl.glViewport(x, y, width, height);
         }
 
         @Override
@@ -1602,6 +1602,7 @@ public class UserInterface {
         }
 
         private class Camera {
+            private static final float MINIMUM_ZOOM = 0.001f;
             private final Vector3f eye = new Vector3f();
             private final Vector3f center = new Vector3f();
             private final Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
@@ -1616,7 +1617,11 @@ public class UserInterface {
             private float radius = 30.0f;
             private float panX;
             private float panY;
+            private float fovY = (float) Math.toRadians(45.0f);
+            private float zNear = 0.5f;
+            private float zFar = 1000.0f;
             private int[] viewport = new int[4];
+            private boolean orthographic = false;
 
             {
                 update();
@@ -1653,7 +1658,11 @@ public class UserInterface {
             }
 
             public void zoom(float distance) {
-                radius += distance;
+                if (radius + distance < MINIMUM_ZOOM) {
+                    radius = MINIMUM_ZOOM;
+                } else {
+                    radius += distance;
+                }
 
                 update();
             }
@@ -1693,8 +1702,12 @@ public class UserInterface {
                 toCartesian(radius, theta, phi, eye);
 
                 viewMatrix.identity();
+                if (orthographic) {
+                    viewMatrix.scale(1 / radius);
+                }
                 viewMatrix.translate(panX, panY, 0.0f);
                 viewMatrix.lookAt(eye, center, up);
+
             }
 
             public void perspective(int x, int y, int width, int height) {
@@ -1704,10 +1717,14 @@ public class UserInterface {
                 viewport[3] = height;
 
                 float aspect = (float) width / height;
-                float fovY = 45.0f;
-                float zNear = 0.5f;
-                float zFar = 1000.0f;
-                projectionMatrix.setPerspective(fovY, aspect, zNear, zFar);
+
+                if (orthographic) {
+                    float orthoHeight = zNear * (float) Math.tan(fovY / 2);
+                    float orthoWidth = aspect * orthoHeight;
+                    projectionMatrix.setOrtho(-orthoWidth, orthoWidth, -orthoHeight, orthoHeight, zNear, zFar);
+                } else {
+                    projectionMatrix.setPerspective(fovY, aspect, zNear, zFar);
+                }
             }
         }
     }
