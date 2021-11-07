@@ -69,7 +69,7 @@ public final class Main {
                 // TODO Figure out why this only works in the IDE.
                 Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level);
             } catch (IllegalArgumentException e) {
-                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.invalid"), levelName);
+                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.log_level.invalid"), levelName);
             }
         }
 
