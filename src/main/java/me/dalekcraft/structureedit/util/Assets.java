@@ -24,7 +24,6 @@ public final class Assets {
     private static final Map<String, JSONObject> MODELS = new HashMap<>();
     private static final Map<String, Texture> TEXTURES = new HashMap<>(); // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
     private static final Map<String, JSONObject> ANIMATIONS = new HashMap<>();
-    private static final ClassLoader LOADER = Assets.class.getClassLoader();
     private static Path assets;
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
@@ -55,8 +54,8 @@ public final class Assets {
             MODELS.clear();
             TEXTURES.clear();
             ANIMATIONS.clear();
-            String protocol = Assets.class.getClassLoader().getResource("").getProtocol();
-            if (Objects.equals(protocol, "jar")) {
+            String protocol = Objects.requireNonNull(Assets.class.getResource("")).getProtocol();
+            if (protocol.equals("jar")) {
                 // run in jar
                 try (FileSystem fileSystem = FileSystems.newFileSystem(Path.of(Assets.class.getProtectionDomain().getCodeSource().getLocation().toURI()))) {
                     Path internalAssets = fileSystem.getPath("assets");
@@ -66,10 +65,10 @@ public final class Assets {
                 } catch (URISyntaxException | IOException e) {
                     LOGGER.log(Level.ERROR, e.getMessage());
                 }
-            } else if (Objects.equals(protocol, "file")) {
+            } else if (protocol.equals("file")) {
                 // run in ide
                 try {
-                    Path internalAssets = Path.of(LOADER.getResource("assets").toURI());
+                    Path internalAssets = Path.of(Assets.class.getResource("/assets").toURI());
                     try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {
                         directoryStream.forEach(Assets::loadNamespace);
                     }
@@ -160,8 +159,8 @@ public final class Assets {
         String[] split = namespacedId.split(":");
         String namespace = split.length > 1 ? split[0] : "minecraft";
         String id = split.length > 1 ? split[1] : split[0];
-        String internalPath = "assets/" + namespace + "/" + folder + "/" + id + "." + extension;
-        InputStream internalStream = LOADER.getResourceAsStream(internalPath);
+        String internalPath = "/assets/" + namespace + "/" + folder + "/" + id + "." + extension;
+        InputStream internalStream = Assets.class.getResourceAsStream(internalPath);
         if (internalStream != null) {
             LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getProperty("log.assets.getting_internal"), internalPath);
             return internalStream;
@@ -229,7 +228,7 @@ public final class Assets {
             texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
         } catch (IOException e) {
             LOGGER.log(Level.TRACE, e.getMessage());
-            try (InputStream inputStream = LOADER.getResourceAsStream("assets/minecraft/textures/missing.png")) {
+            try (InputStream inputStream = Assets.class.getResourceAsStream("/assets/minecraft/textures/missing.png")) {
                 texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
             } catch (IOException e1) {
                 LOGGER.log(Level.TRACE, e.getMessage());

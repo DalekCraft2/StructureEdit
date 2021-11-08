@@ -32,7 +32,8 @@ public class TardisSchematic implements Schematic {
 
     @Override
     public void validate() throws ValidationException, IOException {
-        try (InputStream inputStream = getClass().getClassLoader().getResourceAsStream("schemas/tardis_schematic.json")) {
+        try (InputStream inputStream = getClass().getResourceAsStream("/schemas/tardis_schematic.json")) {
+            assert inputStream != null;
             JSONObject rawSchema = new JSONObject(new JSONTokener(inputStream));
             Schema schema = SchemaLoader.load(rawSchema);
             schema.validate(schematic); // throws a ValidationException if this object is invalid

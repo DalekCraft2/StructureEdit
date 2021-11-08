@@ -17,7 +17,7 @@ public final class InternalUtils {
     }
 
     public static String read(String s) throws IOException {
-        try (InputStream inputStream = InternalUtils.class.getClassLoader().getResourceAsStream(s); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); BufferedReader bufferedReader = new BufferedReader(inputStreamReader); StringWriter stringWriter = new StringWriter()) {
+        try (InputStream inputStream = InternalUtils.class.getResourceAsStream(s); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); BufferedReader bufferedReader = new BufferedReader(inputStreamReader); StringWriter stringWriter = new StringWriter()) {
             while (bufferedReader.ready()) {
                 stringWriter.write(bufferedReader.read());
             }

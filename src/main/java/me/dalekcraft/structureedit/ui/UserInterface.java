@@ -21,7 +21,7 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.Texture;
-import me.dalekcraft.structureedit.Main;
+import me.dalekcraft.structureedit.StructureEditApplication;
 import me.dalekcraft.structureedit.drawing.BlockColor;
 import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.schematic.*;
@@ -220,7 +220,7 @@ public class UserInterface {
 
     public void showControlsDialog() {
         animator.pause();
-        JOptionPane.showMessageDialog(Main.frame, Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.dialog"), Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.title"), JOptionPane.INFORMATION_MESSAGE);
+        JOptionPane.showMessageDialog(StructureEditApplication.frame, Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.dialog"), Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.title"), JOptionPane.INFORMATION_MESSAGE);
         animator.resume();
     }
 
@@ -243,14 +243,14 @@ public class UserInterface {
         if (schematic != null) {
             animator.pause();
             schematicChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            int result = schematicChooser.showSaveDialog(Main.frame);
+            int result = schematicChooser.showSaveDialog(StructureEditApplication.frame);
             if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
                 try {
                     File file = schematicChooser.getSelectedFile();
                     LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saving"), file);
                     schematic.saveTo(file);
                     LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saved"), file);
-                    Main.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
+                    StructureEditApplication.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
                 } catch (IOException e1) {
                     LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_saving"), e1.getMessage());
                 }
@@ -263,7 +263,7 @@ public class UserInterface {
 
     public void openSchematic() {
         animator.pause();
-        int result = schematicChooser.showOpenDialog(Main.frame);
+        int result = schematicChooser.showOpenDialog(StructureEditApplication.frame);
         if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
             File file = schematicChooser.getSelectedFile();
             open(file);
@@ -278,11 +278,11 @@ public class UserInterface {
             selected = null;
         } catch (IOException | JSONException e) {
             LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
-            Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            StructureEditApplication.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
             schematic = null;
         } catch (ValidationException e) {
             LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.invalid"), e.getMessage());
-            Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            StructureEditApplication.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
             schematic = null;
         } catch (org.everit.json.schema.ValidationException e) {
             List<String> messages = e.getAllMessages();
@@ -290,7 +290,7 @@ public class UserInterface {
                 LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.invalid"), e.getViolationCount());
             }
             messages.forEach(message -> LOGGER.log(Level.ERROR, message));
-            Main.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            StructureEditApplication.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
             schematic = null;
         } catch (UnsupportedOperationException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
@@ -331,7 +331,7 @@ public class UserInterface {
                     blockPaletteSpinner.setModel(blockPaletteModel);
                 }
                 LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loaded"), file);
-                Main.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
+                StructureEditApplication.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
             }
             loadLayer();
         });
@@ -656,8 +656,8 @@ public class UserInterface {
                 String vertexShaderSource = null;
                 String fragmentShaderSource = null;
                 try {
-                    vertexShaderSource = InternalUtils.read("axis_shader.vert");
-                    fragmentShaderSource = InternalUtils.read("axis_shader.frag");
+                    vertexShaderSource = InternalUtils.read("/axis_shader.vert");
+                    fragmentShaderSource = InternalUtils.read("/axis_shader.frag");
                 } catch (IOException e) {
                     LOGGER.log(Level.ERROR, e.getMessage());
                 }
@@ -716,8 +716,8 @@ public class UserInterface {
                 String vertexShaderSource = null;
                 String fragmentShaderSource = null;
                 try {
-                    vertexShaderSource = InternalUtils.read("shader.vert");
-                    fragmentShaderSource = InternalUtils.read("shader.frag");
+                    vertexShaderSource = InternalUtils.read("/shader.vert");
+                    fragmentShaderSource = InternalUtils.read("/shader.frag");
                 } catch (IOException e) {
                     LOGGER.log(Level.ERROR, e.getMessage());
                 }

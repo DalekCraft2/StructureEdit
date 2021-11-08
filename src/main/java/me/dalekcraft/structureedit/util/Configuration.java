@@ -1,6 +1,5 @@
 package me.dalekcraft.structureedit.util;
 
-import me.dalekcraft.structureedit.Main;
 import me.dalekcraft.structureedit.ui.UserInterface;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -23,7 +22,7 @@ public final class Configuration {
         @Override
         public synchronized Object setProperty(String key, String value) {
             Object o = super.setProperty(key, value);
-            String protocol = Configuration.class.getClassLoader().getResource("").getProtocol();
+            String protocol = Configuration.class.getResource("").getProtocol();
             if (protocol.equals("jar")) {
                 try (FileOutputStream fileOutputStream = new FileOutputStream("config.properties")) {
                     store(fileOutputStream, null);
@@ -37,11 +36,11 @@ public final class Configuration {
 
     static {
         try {
-            String protocol = Configuration.class.getClassLoader().getResource("").getProtocol();
+            String protocol = Configuration.class.getResource("").getProtocol();
             if (protocol.equals("jar")) {
                 Path configPath = Path.of("config.properties");
                 if (!Files.exists(configPath)) {
-                    InputStream configStream = Configuration.class.getClassLoader().getResourceAsStream("config.properties");
+                    InputStream configStream = Configuration.class.getResourceAsStream("config.properties");
                     try {
                         Files.copy(configStream, configPath);
                     } catch (IOException e) {
@@ -50,13 +49,13 @@ public final class Configuration {
                 }
                 CONFIG.load(Files.newInputStream(configPath));
             } else {
-                CONFIG.load(Configuration.class.getClassLoader().getResourceAsStream("config.properties"));
+                CONFIG.load(Configuration.class.getResourceAsStream("/config.properties"));
             }
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
         try {
-            LANGUAGE.load(Configuration.class.getClassLoader().getResourceAsStream("language.properties"));
+            LANGUAGE.load(Configuration.class.getResourceAsStream("/language.properties"));
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
