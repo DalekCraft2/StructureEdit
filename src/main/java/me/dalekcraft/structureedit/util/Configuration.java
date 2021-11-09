@@ -39,8 +39,9 @@ public final class Configuration {
             if (protocol.equals("jar")) {
                 Path configPath = Path.of("config.properties");
                 if (!Files.exists(configPath)) {
-                    InputStream configStream = Configuration.class.getResourceAsStream("config.properties");
+                    InputStream configStream = Configuration.class.getResourceAsStream("/config.properties");
                     try {
+                        assert configStream != null;
                         Files.copy(configStream, configPath);
                     } catch (IOException e) {
                         LOGGER.log(Level.ERROR, e.getMessage());

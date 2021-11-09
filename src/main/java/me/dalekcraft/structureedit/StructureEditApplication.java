@@ -45,13 +45,6 @@ public class StructureEditApplication extends Application {
     private static final Logger LOGGER = LogManager.getLogger(StructureEditApplication.class);
     public static Stage stage;
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) {
-        launch(StructureEditApplication.class, args);
-    }
-
     @Nullable
     public static String getArgument(@NotNull List<String> argList, String argumentName) {
         if (argList.contains(argumentName)) {
@@ -85,7 +78,10 @@ public class StructureEditApplication extends Application {
             }
         }
 
-        FXMLLoader fxmlLoader = new FXMLLoader(StructureEditApplication.class.getResource("/scene.fxml"));
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png")))); // Use Objects.requireNonNull() because it should never be null
+        stage.setOnCloseRequest(event -> LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.stopping")));
+
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/scene.fxml"));
         Scene scene = new Scene(fxmlLoader.load());
         primaryStage.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
         primaryStage.setScene(scene);
@@ -93,17 +89,15 @@ public class StructureEditApplication extends Application {
 
         Controller controller = fxmlLoader.getController();
 
-        stage.getIcons().add(new Image(Objects.requireNonNull(StructureEditApplication.class.getResourceAsStream("/icon.png")))); // Use Objects.requireNonNull() because it should never be null
-
         String assetsArg;
-        String protocol = Objects.requireNonNull(StructureEditApplication.class.getResource("")).getProtocol();
+        String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
         if (protocol.equals("jar")) {
             assetsArg = Configuration.CONFIG.getProperty("assets_path");
         } else {
             assetsArg = getArgument(argList, "-assets");
         }
         Path assets = null;
-        if (assetsArg != null) {
+        if (assetsArg != null && !assetsArg.equals("")) {
             try {
                 assets = Path.of(assetsArg).toRealPath();
                 if (!Files.exists(assets)) {
