@@ -21,6 +21,18 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.Texture;
+import javafx.collections.FXCollections;
+import javafx.embed.swing.SwingNode;
+import javafx.event.Event;
+import javafx.fxml.FXML;
+import javafx.geometry.Insets;
+import javafx.scene.control.TextArea;
+import javafx.scene.control.TextField;
+import javafx.scene.control.*;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.FileChooser;
 import me.dalekcraft.structureedit.StructureEditApplication;
 import me.dalekcraft.structureedit.drawing.BlockColor;
 import me.dalekcraft.structureedit.exception.ValidationException;
@@ -33,6 +45,7 @@ import net.querz.nbt.tag.StringTag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.core.config.Configurator;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3f;
@@ -44,14 +57,11 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.swing.*;
-import javax.swing.border.LineBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
-import javax.swing.filechooser.FileNameExtensionFilter;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
@@ -65,224 +75,101 @@ import static me.dalekcraft.structureedit.schematic.Schematic.openFrom;
 /**
  * @author eccentric_nz
  */
-public class UserInterface {
-    private static final Logger LOGGER = LogManager.getLogger(UserInterface.class);
-    private static final FileNameExtensionFilter FILTER_NBT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.nbt"), NbtStructure.EXTENSION);
-    private static final FileNameExtensionFilter FILTER_MCEDIT = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.mcedit"), McEditSchematic.EXTENSION);
-    private static final FileNameExtensionFilter FILTER_SPONGE = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.sponge"), SpongeSchematic.EXTENSION);
-    private static final FileNameExtensionFilter FILTER_TARDIS = new FileNameExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.tardis"), TardisSchematic.EXTENSION);
-    public final JFileChooser schematicChooser = new JFileChooser();
-    public final JFileChooser assetsChooser = new JFileChooser();
-    public JComboBox<String> blockIdComboBox;
-    private JSplitPane splitPane;
+public class Controller {
+    private static final Logger LOGGER = LogManager.getLogger(Controller.class);
+    private static final FileChooser.ExtensionFilter FILTER_NBT = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.nbt"), "*." + NbtStructure.EXTENSION);
+    private static final FileChooser.ExtensionFilter FILTER_MCEDIT = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.mcedit"), "*." + McEditSchematic.EXTENSION);
+    private static final FileChooser.ExtensionFilter FILTER_SPONGE = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.sponge"), "*." + SpongeSchematic.EXTENSION);
+    private static final FileChooser.ExtensionFilter FILTER_TARDIS = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.tardis"), "*." + TardisSchematic.EXTENSION);
+    public final FileChooser schematicChooser = new FileChooser();
+    public final DirectoryChooser assetsChooser = new DirectoryChooser();
+    @FXML
+    public ComboBox<String> blockIdComboBox;
     private int renderedHeight;
-    private Animator animator;
     private BlockButton selected;
     private Schematic schematic;
-    private JPanel panel;
-    private JPanel rendererPanel;
-    private JPanel editorPanel;
-    private JPanel gridPanel;
-    private JLabel blockIdLabel;
-    private JLabel blockPropertiesLabel;
-    private JFormattedTextField blockPropertiesTextField;
-    private JLabel layerLabel;
-    private JSpinner layerSpinner;
-    private JLabel blockPositionLabel;
-    private JTextField blockPositionTextField;
-    private JLabel blockNbtLabel;
-    private JFormattedTextField blockNbtTextField;
-    private JLabel paletteLabel;
-    private JSpinner paletteSpinner;
-    private JLabel blockPaletteLabel;
-    private JSpinner blockPaletteSpinner;
-    private JLabel sizeLabel;
-    private JTextField sizeTextField;
-    private JTabbedPane tabbedPane;
-    private JTextPane logPane;
-    private JPanel logTab;
+    private SchematicRenderer renderer;
+    private GLJPanel rendererPanel;
+    @FXML
+    private SwingNode rendererNode;
+    @FXML
+    private TextField sizeTextField;
+    @FXML
+    private Spinner<Integer> layerSpinner;
+    private SpinnerValueFactory.IntegerSpinnerValueFactory layerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
+    @FXML
+    private Spinner<Integer> paletteSpinner;
+    private SpinnerValueFactory.IntegerSpinnerValueFactory paletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
+    @FXML
+    private Spinner<Integer> blockPaletteSpinner;
+    private SpinnerValueFactory.IntegerSpinnerValueFactory blockPaletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
+    @FXML
+    private TextField blockPositionTextField;
+    @FXML
+    private TextField blockPropertiesTextField;
+    @FXML
+    private TextField blockNbtTextField;
+    @FXML
+    private GridPane gridPanel;
+    @FXML
+    private TextArea logPane;
 
     {
-        schematicChooser.addChoosableFileFilter(FILTER_NBT);
-        schematicChooser.addChoosableFileFilter(FILTER_MCEDIT);
-        schematicChooser.addChoosableFileFilter(FILTER_SPONGE);
-        schematicChooser.addChoosableFileFilter(FILTER_TARDIS);
-        assetsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+        schematicChooser.getExtensionFilters().addAll(FILTER_NBT, FILTER_MCEDIT, FILTER_SPONGE, FILTER_TARDIS);
     }
 
-    public UserInterface() {
-        new AutoCompletion(blockIdComboBox);
-        SchematicRenderer renderer = new SchematicRenderer();
-        ((GLJPanel) rendererPanel).addGLEventListener(renderer);
-        rendererPanel.addKeyListener(renderer);
-        rendererPanel.addMouseListener(renderer);
-        rendererPanel.addMouseMotionListener(renderer);
-        rendererPanel.addMouseWheelListener(renderer);
+    @FXML
+    public void initialize() throws InterruptedException, InvocationTargetException {
+        layerSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onLayerUpdate());
+        layerSpinner.setValueFactory(layerValueFactory);
+        paletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onPaletteUpdate());
+        paletteSpinner.setValueFactory(paletteValueFactory);
+        blockPaletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onBlockPaletteUpdate());
+        blockPaletteSpinner.setValueFactory(blockPaletteValueFactory);
 
-        gridPanel.addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                if (schematic != null) {
-                    loadLayer();
-                }
-            }
+        blockPropertiesTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockPropertiesUpdate());
+        blockNbtTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockNbtUpdate());
+
+        blockIdComboBox.setItems(FXCollections.observableArrayList(Assets.getBlockStateArray()));
+        new AutoCompleteComboBoxListener<>(blockIdComboBox);
+
+        TextAreaAppender.addLog4j2TextAreaAppender(logPane);
+
+        // FIXME The GLEventListener only initializes when the window is resized or moved.
+        SwingUtilities.invokeAndWait(() -> {
+            rendererPanel = new GLJPanel(new GLCapabilities(GLProfile.getDefault()));
+            renderer = new SchematicRenderer();
+            rendererPanel.addGLEventListener(renderer);
+            rendererPanel.addKeyListener(renderer);
+            rendererPanel.addMouseListener(renderer);
+            rendererPanel.addMouseMotionListener(renderer);
+            rendererPanel.addMouseWheelListener(renderer);
+            rendererNode.setContent(rendererPanel);
         });
-
-        layerSpinner.addChangeListener(e -> {
-            if (schematic != null) {
-                loadLayer();
-            }
-        });
-
-        blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
-        blockIdComboBox.setSelectedItem(null);
-        blockIdComboBox.addItemListener(e -> {
-            if (schematic != null && selected != null && blockIdComboBox.getSelectedItem() != null) {
-                Schematic.Block block = selected.getBlock();
-                String blockId = blockIdComboBox.getSelectedItem().toString();
-                block.setId(blockId);
-                loadLayer();
-            }
-        });
-        blockPropertiesTextField.setFormatterFactory(new NbtFormatterFactory());
-        // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
-        blockPropertiesTextField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                if (schematic != null && selected != null) {
-                    Schematic.Block block = selected.getBlock();
-                    try {
-                        block.setPropertiesAsString(blockPropertiesTextField.getText().trim());
-                        blockPropertiesTextField.setForeground(Color.BLACK);
-                    } catch (IOException e1) {
-                        blockPropertiesTextField.setForeground(Color.RED);
-                    }
-                    loadLayer();
-                }
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                insertUpdate(e);
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-            }
-        });
-        blockNbtTextField.getDocument().addDocumentListener(new DocumentListener() {
-            @Override
-            public void insertUpdate(DocumentEvent e) {
-                if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
-                    Schematic.Block block = selected.getBlock();
-                    try {
-                        block.setSnbt(blockNbtTextField.getText());
-                        blockNbtTextField.setForeground(Color.BLACK);
-                    } catch (IOException e1) {
-                        blockNbtTextField.setForeground(Color.RED);
-                    }
-                    loadLayer();
-                }
-            }
-
-            @Override
-            public void removeUpdate(DocumentEvent e) {
-                insertUpdate(e);
-            }
-
-            @Override
-            public void changedUpdate(DocumentEvent e) {
-            }
-        });
-        paletteSpinner.addChangeListener(e -> {
-            if (schematic != null) {
-                if (schematic instanceof MultiPaletteSchematic multiPaletteSchematic && multiPaletteSchematic.hasPaletteList()) {
-                    multiPaletteSchematic.setActivePalette((Integer) paletteSpinner.getValue());
-                    loadLayer();
-                    updateSelected();
-                }
-            }
-        });
-        // TODO Blockbench-style palette editor, with a list of palettes and palette IDs (This will also involve separating palette editing and block editing).
-        blockPaletteSpinner.addChangeListener(e -> {
-            if (schematic != null && schematic instanceof PaletteSchematic && selected != null) {
-                Schematic.Block block = selected.getBlock();
-                if (block instanceof PaletteSchematic.PaletteBlock paletteBlock) {
-                    paletteBlock.setStateIndex((Integer) blockPaletteSpinner.getValue());
-                    loadLayer();
-                    updateSelected();
-                }
-            }
-        });
-
-        JTextPaneAppender.addLog4j2TextPaneAppender(logPane);
     }
 
-    public void showControlsDialog() {
-        animator.pause();
-        JOptionPane.showMessageDialog(StructureEditApplication.frame, Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.dialog"), Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.title"), JOptionPane.INFORMATION_MESSAGE);
-        animator.resume();
-    }
-
-    public void selectAssets() {
-        animator.pause();
-        assetsChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
-        int result = assetsChooser.showOpenDialog(panel);
-        if (result == JFileChooser.APPROVE_OPTION && assetsChooser.getSelectedFile() != null) {
-            Path assets = assetsChooser.getSelectedFile().toPath();
-            Assets.setAssets(assets);
-            Object selectedItem = blockIdComboBox.getSelectedItem();
-            blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
-            blockIdComboBox.setSelectedItem(selectedItem);
+    @FXML
+    public void showOpenDialog() {
+        renderer.animator.pause();
+        File file = schematicChooser.showOpenDialog(StructureEditApplication.stage);
+        if (file != null) {
+            openSchematic(file);
         }
-        updateSelected();
-        animator.resume();
+        renderer.animator.resume();
     }
 
-    public void saveSchematic() {
-        if (schematic != null) {
-            animator.pause();
-            schematicChooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
-            int result = schematicChooser.showSaveDialog(StructureEditApplication.frame);
-            if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
-                try {
-                    File file = schematicChooser.getSelectedFile();
-                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saving"), file);
-                    schematic.saveTo(file);
-                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saved"), file);
-                    StructureEditApplication.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
-                } catch (IOException e1) {
-                    LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_saving"), e1.getMessage());
-                }
-            }
-            animator.resume();
-        } else {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.null"));
-        }
-    }
-
-    public void openSchematic() {
-        animator.pause();
-        int result = schematicChooser.showOpenDialog(StructureEditApplication.frame);
-        if (result == JFileChooser.APPROVE_OPTION && schematicChooser.getSelectedFile() != null) {
-            File file = schematicChooser.getSelectedFile();
-            open(file);
-        }
-        animator.resume();
-    }
-
-    public void open(@NotNull File file) {
+    public void openSchematic(@NotNull File file) {
         LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loading"), file);
         try {
             schematic = openFrom(file);
             selected = null;
         } catch (IOException | JSONException e) {
             LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
-            StructureEditApplication.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
             schematic = null;
         } catch (ValidationException e) {
             LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.invalid"), e.getMessage());
-            StructureEditApplication.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
             schematic = null;
         } catch (org.everit.json.schema.ValidationException e) {
             List<String> messages = e.getAllMessages();
@@ -290,63 +177,187 @@ public class UserInterface {
                 LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.invalid"), e.getViolationCount());
             }
             messages.forEach(message -> LOGGER.log(Level.ERROR, message));
-            StructureEditApplication.frame.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
             schematic = null;
         } catch (UnsupportedOperationException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
-        SwingUtilities.invokeLater(() -> {
-            sizeTextField.setText(null);
-            layerSpinner.setValue(0);
-            layerSpinner.setEnabled(false);
-            paletteSpinner.setValue(0);
-            paletteSpinner.setEnabled(false);
-            blockPositionTextField.setText(null);
-            blockPositionTextField.setEnabled(false);
-            blockIdComboBox.setSelectedItem(null);
-            blockIdComboBox.setEnabled(false);
-            blockPropertiesTextField.setValue(null);
-            blockPropertiesTextField.setEnabled(false);
-            blockNbtTextField.setValue(null);
-            blockNbtTextField.setEnabled(false);
-            blockPaletteSpinner.setValue(0);
-            blockPaletteSpinner.setEnabled(false);
-            if (schematic != null) {
-                sizeTextField.setEnabled(true);
-                layerSpinner.setEnabled(true);
-                int[] size = schematic.getSize();
-                renderedHeight = size[1];
-                SpinnerModel layerModel = new SpinnerNumberModel(0, 0, size[1] - 1, 1);
-                layerSpinner.setModel(layerModel);
-                if (schematic instanceof PaletteSchematic paletteSchematic) {
-                    if (paletteSchematic instanceof MultiPaletteSchematic multiPaletteSchematic && multiPaletteSchematic.hasPaletteList()) {
-                        int palettesSize = multiPaletteSchematic.getPaletteList().size();
-                        SpinnerModel paletteModel = new SpinnerNumberModel(0, 0, palettesSize - 1, 1);
-                        paletteSpinner.setEnabled(true);
-                        paletteSpinner.setModel(paletteModel);
-                        multiPaletteSchematic.setActivePalette(0);
-                    }
-                    int paletteSize = paletteSchematic.getPalette().size();
-                    SpinnerModel blockPaletteModel = new SpinnerNumberModel(0, 0, paletteSize - 1, 1);
-                    blockPaletteSpinner.setModel(blockPaletteModel);
+        sizeTextField.setText(null);
+        layerValueFactory.setValue(0);
+        layerSpinner.setDisable(true);
+        paletteValueFactory.setValue(0);
+        paletteSpinner.setDisable(true);
+        blockPositionTextField.setText(null);
+        blockPositionTextField.setDisable(true);
+        blockIdComboBox.getSelectionModel().select(null);
+        blockIdComboBox.setDisable(true);
+        blockPropertiesTextField.setText(null);
+        blockPropertiesTextField.setDisable(true);
+        blockNbtTextField.setText(null);
+        blockNbtTextField.setDisable(true);
+        blockPaletteValueFactory.setValue(0);
+        blockPaletteSpinner.setDisable(true);
+        if (schematic != null) {
+            sizeTextField.setDisable(false);
+            layerSpinner.setDisable(false);
+            int[] size = schematic.getSize();
+            renderedHeight = size[1];
+            layerValueFactory.setMax(size[1] - 1);
+            if (schematic instanceof PaletteSchematic paletteSchematic) {
+                if (paletteSchematic instanceof MultiPaletteSchematic multiPaletteSchematic && multiPaletteSchematic.hasPaletteList()) {
+                    int palettesSize = multiPaletteSchematic.getPaletteList().size();
+                    paletteSpinner.setDisable(false);
+                    paletteValueFactory.setMax(palettesSize - 1);
+                    multiPaletteSchematic.setActivePalette(0);
                 }
-                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loaded"), file);
-                StructureEditApplication.frame.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
+                int paletteSize = paletteSchematic.getPalette().size();
+                blockPaletteValueFactory.setMax(paletteSize - 1);
+            }
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loaded"), file);
+            StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
+        }
+        loadLayer();
+    }
+
+    @FXML
+    public void showSaveDialog() {
+        if (schematic != null) {
+            renderer.animator.pause();
+            File file = schematicChooser.showSaveDialog(StructureEditApplication.stage);
+            if (file != null) {
+                saveSchematic(file);
+            }
+            renderer.animator.resume();
+        } else {
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.null"));
+        }
+    }
+
+    public void saveSchematic(File file) {
+        try {
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saving"), file);
+            schematic.saveTo(file);
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saved"), file);
+            StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
+        } catch (IOException e1) {
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_saving"), e1.getMessage());
+        }
+    }
+
+    @FXML
+    public void selectAssets() {
+        renderer.animator.pause();
+        File file = assetsChooser.showDialog(StructureEditApplication.stage);
+        if (file != null) {
+            Path assets = file.toPath();
+            Assets.setAssets(assets);
+            String selectedItem = blockIdComboBox.getSelectionModel().getSelectedItem();
+            blockIdComboBox.setItems(FXCollections.observableArrayList(Assets.getBlockStateArray()));
+            blockIdComboBox.getSelectionModel().select(selectedItem);
+        }
+        updateSelected();
+        renderer.animator.resume();
+    }
+
+    @FXML
+    public void selectLogLevel() {
+        ChoiceDialog<Level> dialog = new ChoiceDialog<>(LogManager.getRootLogger().getLevel(), Level.values());
+        dialog.setTitle(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.title"));
+        dialog.setContentText(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.label"));
+        dialog.getDialogPane().getScene().getWindow().setOnCloseRequest((event -> dialog.close()));
+        Optional<Level> level = dialog.showAndWait();
+        if (level.isPresent()) {
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.setting"), level.get());
+            Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level.get());
+        }
+    }
+
+    @FXML
+    public void showControlsDialog() {
+        renderer.animator.pause();
+        javafx.scene.control.Dialog<?> dialog = new javafx.scene.control.Dialog<>();
+        dialog.setTitle(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.title"));
+        dialog.setContentText(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.dialog"));
+        dialog.getDialogPane().getScene().getWindow().setOnCloseRequest((event -> dialog.close()));
+        dialog.show();
+        renderer.animator.resume();
+    }
+
+    @FXML
+    public void onLayerUpdate() {
+        if (schematic != null) {
+            loadLayer();
+        }
+    }
+
+    @FXML
+    public void onBlockIdUpdate() {
+        if (schematic != null && selected != null && blockIdComboBox.getSelectionModel().getSelectedItem() != null) {
+            Schematic.Block block = selected.getBlock();
+            String blockId = blockIdComboBox.getSelectionModel().getSelectedItem();
+            block.setId(blockId);
+            loadLayer();
+        }
+    }
+
+    @FXML
+    public void onBlockPropertiesUpdate() {
+        if (schematic != null && selected != null) {
+            Schematic.Block block = selected.getBlock();
+            try {
+                block.setPropertiesAsString(blockPropertiesTextField.getText().trim());
+                blockPropertiesTextField.setStyle("-fx-text-inner-color: #000000");
+            } catch (IOException e1) {
+                blockPropertiesTextField.setStyle("-fx-text-inner-color: #FF0000");
             }
             loadLayer();
-        });
+        }
+    }
+
+    @FXML
+    public void onBlockNbtUpdate() {
+        if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
+            Schematic.Block block = selected.getBlock();
+            try {
+                block.setSnbt(blockNbtTextField.getText());
+                blockNbtTextField.setStyle("-fx-text-inner-color: #000000");
+            } catch (IOException e1) {
+                blockNbtTextField.setStyle("-fx-text-inner-color: #FF0000");
+            }
+            loadLayer();
+        }
+    }
+
+    @FXML
+    public void onPaletteUpdate() {
+        if (schematic != null) {
+            if (schematic instanceof MultiPaletteSchematic multiPaletteSchematic && multiPaletteSchematic.hasPaletteList()) {
+                multiPaletteSchematic.setActivePalette(paletteSpinner.getValue());
+                loadLayer();
+                updateSelected();
+            }
+        }
+    }
+
+    @FXML
+    public void onBlockPaletteUpdate() {
+        if (schematic != null && schematic instanceof PaletteSchematic && selected != null) {
+            Schematic.Block block = selected.getBlock();
+            if (block instanceof PaletteSchematic.PaletteBlock paletteBlock) {
+                paletteBlock.setStateIndex(blockPaletteSpinner.getValue());
+                loadLayer();
+                updateSelected();
+            }
+        }
     }
 
     // TODO Make the editor built into the 3D view instead of being a layer-by-layer editor.
     public void loadLayer() {
-        gridPanel.removeAll();
-        gridPanel.setLayout(null);
-        gridPanel.updateUI();
+        gridPanel.getChildren().clear();
         if (schematic != null) {
             int[] size = schematic.getSize();
             sizeTextField.setText(Arrays.toString(size));
-            int currentLayer = (int) layerSpinner.getValue();
-            int buttonSideLength = Math.min(gridPanel.getWidth() / size[0], gridPanel.getHeight() / size[2]);
+            int currentLayer = layerSpinner.getValue();
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {
                     Schematic.Block block = schematic.getBlock(x, currentLayer, z);
@@ -357,65 +368,79 @@ public class UserInterface {
                         try {
                             color = BlockColor.valueOf(blockName).getColor();
                         } catch (IllegalArgumentException e) {
-                            color = new Color(251, 64, 249); // Color of the missing texture's purple
+                            color = Color.rgb(251, 64, 249); // Color of the missing texture's purple
                         }
-                        color = new Color(color.getRed(), color.getGreen(), color.getBlue());
+                        color = Color.color(color.getRed(), color.getGreen(), color.getBlue());
                         BlockButton blockButton = new BlockButton(block);
-                        blockButton.setBackground(color);
-                        blockButton.setContentAreaFilled(false);
-                        blockButton.setOpaque(true);
                         blockButton.setText(blockName.substring(0, 1));
-                        blockButton.setToolTipText(blockId);
-                        blockButton.setBorder(new LineBorder(Color.BLACK));
-                        blockButton.setBounds(x * buttonSideLength, z * buttonSideLength, buttonSideLength, buttonSideLength);
-                        Font font = blockButton.getFont();
-                        blockButton.setFont(new Font(font.getFontName(), font.getStyle(), buttonSideLength));
-                        blockButton.addActionListener(this::blockButtonPressed);
-                        gridPanel.add(blockButton);
+                        blockButton.setTooltip(new Tooltip(blockId));
+                        blockButton.setTextOverrun(OverrunStyle.CLIP);
+                        blockButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
+                        blockButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+                        blockButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+                        blockButton.setPrefSize(30.0, 30.0);
+                        blockButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::blockButtonPressed);
+                        gridPanel.add(blockButton, x, z);
                         if (selected != null) {
                             int[] position = selected.getBlock().getPosition();
                             if (Arrays.equals(position, new int[]{x, currentLayer, z})) {
                                 selected = blockButton;
                                 // Set selected tile's border color to red
-                                blockButton.setBorder(new LineBorder(Color.RED));
+                                blockButton.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
                             }
                         }
+                    } else {
+                        Color color = Color.WHITE;
+                        BlockButton blockButton = new BlockButton(null);
+                        blockButton.setText(" ");
+                        blockButton.setTextOverrun(OverrunStyle.CLIP);
+                        blockButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
+                        blockButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+                        blockButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+                        blockButton.setPrefSize(30.0, 30.0);
+                        blockButton.setDisable(true);
+                        gridPanel.add(blockButton, x, z);
                     }
                 }
             }
         }
     }
 
-    private void blockButtonPressed(@NotNull ActionEvent e) {
+    private void blockButtonPressed(@NotNull Event e) {
+        if (selected != null) {
+            selected.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+        }
         selected = (BlockButton) e.getSource();
         Schematic.Block block = selected.getBlock();
 
         if (block != null) {
-            blockIdComboBox.setSelectedItem(block.getId());
-            blockIdComboBox.setEnabled(true);
+            selected.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
 
-            blockPropertiesTextField.setValue(block.getPropertiesAsString());
-            blockPropertiesTextField.setForeground(Color.BLACK);
-            blockPropertiesTextField.setEnabled(true);
+            blockIdComboBox.getSelectionModel().select(block.getId());
+            blockIdComboBox.setDisable(false);
+
+            blockPropertiesTextField.setText(block.getPropertiesAsString());
+            blockPropertiesTextField.setStyle("-fx-text-inner-color: #000000");
+            blockPropertiesTextField.setDisable(false);
 
             try {
-                blockNbtTextField.setValue(block.getSnbt());
-                blockNbtTextField.setEnabled(true);
+                blockNbtTextField.setText(block.getSnbt());
+                blockNbtTextField.setDisable(false);
             } catch (UnsupportedOperationException e1) {
-                blockNbtTextField.setValue(null);
-                blockNbtTextField.setEnabled(false);
+                blockNbtTextField.setText(null);
+                blockNbtTextField.setDisable(true);
             }
-            blockNbtTextField.setForeground(Color.BLACK);
+            blockNbtTextField.setStyle("-fx-text-inner-color: #000000");
 
             blockPositionTextField.setText(Arrays.toString(block.getPosition()));
-            blockPositionTextField.setEnabled(true);
+            blockPositionTextField.setDisable(false);
 
             if (block instanceof PaletteSchematic.PaletteBlock paletteBlock) {
-                blockPaletteSpinner.setValue(paletteBlock.getStateIndex());
-                blockPaletteSpinner.setEnabled(true);
+                blockPaletteValueFactory.setValue(paletteBlock.getStateIndex());
+                blockPaletteSpinner.setDisable(false);
             } else {
-                blockPaletteSpinner.setValue(0);
-                blockPaletteSpinner.setEnabled(false);
+                blockPaletteValueFactory.setValue(0);
+                blockPaletteSpinner.setDisable(true);
             }
         }
     }
@@ -424,25 +449,17 @@ public class UserInterface {
         if (selected != null) {
             Schematic.Block block = selected.getBlock();
 
-            blockIdComboBox.setSelectedItem(block.getId());
-            blockPropertiesTextField.setValue(block.getPropertiesAsString());
+            blockIdComboBox.getSelectionModel().select(block.getId());
+            blockPropertiesTextField.setText(block.getPropertiesAsString());
 
             try {
-                blockNbtTextField.setValue(block.getSnbt());
-                blockNbtTextField.setEnabled(true);
+                blockNbtTextField.setText(block.getSnbt());
+                blockNbtTextField.setDisable(false);
             } catch (UnsupportedOperationException e) {
-                blockNbtTextField.setValue(null);
-                blockNbtTextField.setEnabled(false);
+                blockNbtTextField.setText(null);
+                blockNbtTextField.setDisable(true);
             }
         }
-    }
-
-    private void createUIComponents() {
-        rendererPanel = new GLJPanel(new GLCapabilities(GLProfile.getDefault()));
-    }
-
-    public JPanel getRootComponent() {
-        return panel;
     }
 
     private class SchematicRenderer extends MouseAdapter implements GLEventListener, KeyListener {
@@ -465,6 +482,7 @@ public class UserInterface {
         private final Matrix4fStack modelMatrix = new Matrix4fStack(5);
         private final Matrix4f textureMatrix = new Matrix4f();
         private final Matrix3f normalMatrix = new Matrix3f();
+        private Animator animator;
         private int vertexShader;
         private int fragmentShader;
         private int shaderProgram;
@@ -556,72 +574,72 @@ public class UserInterface {
                     }
                     switch (power) {
                         case 1 -> {
-                            return Color.decode("#6F0000");
+                            return Color.valueOf("#6F0000");
                         }
                         case 2 -> {
-                            return Color.decode("#790000");
+                            return Color.valueOf("#790000");
                         }
                         case 3 -> {
-                            return Color.decode("#820000");
+                            return Color.valueOf("#820000");
                         }
                         case 4 -> {
-                            return Color.decode("#8C0000");
+                            return Color.valueOf("#8C0000");
                         }
                         case 5 -> {
-                            return Color.decode("#970000");
+                            return Color.valueOf("#970000");
                         }
                         case 6 -> {
-                            return Color.decode("#A10000");
+                            return Color.valueOf("#A10000");
                         }
                         case 7 -> {
-                            return Color.decode("#AB0000");
+                            return Color.valueOf("#AB0000");
                         }
                         case 8 -> {
-                            return Color.decode("#B50000");
+                            return Color.valueOf("#B50000");
                         }
                         case 9 -> {
-                            return Color.decode("#BF0000");
+                            return Color.valueOf("#BF0000");
                         }
                         case 10 -> {
-                            return Color.decode("#CA0000");
+                            return Color.valueOf("#CA0000");
                         }
                         case 11 -> {
-                            return Color.decode("#D30000");
+                            return Color.valueOf("#D30000");
                         }
                         case 12 -> {
-                            return Color.decode("#DD0000");
+                            return Color.valueOf("#DD0000");
                         }
                         case 13 -> {
-                            return Color.decode("#E70600");
+                            return Color.valueOf("#E70600");
                         }
                         case 14 -> {
-                            return Color.decode("#F11B00");
+                            return Color.valueOf("#F11B00");
                         }
                         case 15 -> {
-                            return Color.decode("#FC3100");
+                            return Color.valueOf("#FC3100");
                         }
                         default -> { // 0
-                            return Color.decode("#4B0000");
+                            return Color.valueOf("#4B0000");
                         }
                     }
                 }
                 case "minecraft:grass_block", "minecraft:grass", "minecraft:tall_grass", "minecraft:fern", "minecraft:large_fern", "minecraft:potted_fern", "minecraft:sugar_cane" -> {
-                    return Color.decode("#91BD59");
+                    return Color.valueOf("#91BD59");
                 }
                 case "minecraft:oak_leaves", "minecraft:dark_oak_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves", "minecraft:vine" -> {
-                    return Color.decode("#77AB2F");
+                    return Color.valueOf("#77AB2F");
                 }
                 case "minecraft:water", "minecraft:water_cauldron" -> {
-                    return Color.decode("#3F76E4");
+                    return Color.valueOf("#3F76E4");
                 }
                 case "minecraft:birch_leaves" -> {
-                    return Color.decode("#80A755");
+                    return Color.valueOf("#80A755");
                 }
                 case "minecraft:spruce_leaves" -> {
-                    return Color.decode("#619961");
+                    return Color.valueOf("#619961");
                 }
                 case "minecraft:lily_pad" -> {
-                    return Color.decode("#208030");
+                    return Color.valueOf("#208030");
                 }
                 default -> {
                     return Color.WHITE;
@@ -639,6 +657,7 @@ public class UserInterface {
 
         @Override
         public void init(@NotNull GLAutoDrawable drawable) {
+            System.out.println("init");
             GL4 gl = drawable.getGL().getGL4(); // get the OpenGL graphics context
             gl.glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // set the clear color to gray
             gl.glClearDepth(1.0f); // set clear depth value to farthest
@@ -855,8 +874,10 @@ public class UserInterface {
 
         @Override
         public void dispose(@NotNull GLAutoDrawable drawable) {
+            System.out.println("dispose");
             GL4 gl = drawable.getGL().getGL4();
             animator.stop();
+            animator.remove(drawable);
             gl.glUseProgram(0);
             gl.glDeleteBuffers(bufferObject.capacity(), bufferObject);
             gl.glDeleteVertexArrays(vertexArrayObject.capacity(), vertexArrayObject);
@@ -910,6 +931,7 @@ public class UserInterface {
 
         @Override
         public void reshape(@NotNull GLAutoDrawable drawable, int x, int y, int width, int height) {
+            System.out.println("reshape");
             GL4 gl = drawable.getGL().getGL4(); // get the OpenGL graphics context
             camera.perspective(x, y, width, height);
             gl.glViewport(x, y, width, height);
@@ -1301,9 +1323,15 @@ public class UserInterface {
 
                         float[] components = new float[4];
                         if (tintIndex == -1) {
-                            Color.WHITE.getComponents(components);
+                            components[0] = (float) Color.WHITE.getRed();
+                            components[1] = (float) Color.WHITE.getGreen();
+                            components[2] = (float) Color.WHITE.getBlue();
+                            components[3] = (float) Color.WHITE.getOpacity();
                         } else {
-                            tint.getComponents(components);
+                            components[0] = (float) tint.getRed();
+                            components[1] = (float) tint.getGreen();
+                            components[2] = (float) tint.getBlue();
+                            components[3] = (float) tint.getOpacity();
                         }
 
                         Texture texture = Assets.getTexture(textures.getOrDefault(faceTexture, "minecraft:missing"));

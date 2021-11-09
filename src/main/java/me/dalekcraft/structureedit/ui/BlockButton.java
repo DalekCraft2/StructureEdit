@@ -16,6 +16,7 @@
  */
 package me.dalekcraft.structureedit.ui;
 
+import javafx.scene.control.Button;
 import me.dalekcraft.structureedit.schematic.Schematic;
 import org.jetbrains.annotations.Contract;
 
@@ -24,7 +25,7 @@ import javax.swing.*;
 /**
  * @author eccentric_nz
  */
-public class BlockButton extends JButton {
+public class BlockButton extends Button {
 
     private final Schematic.Block block;
 

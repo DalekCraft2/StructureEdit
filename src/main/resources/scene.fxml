@@ -1,14 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import java.util.*?>
-<?import javafx.scene.*?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.embed.swing.SwingNode?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
 
-<AnchorPane xmlns="http://javafx.com/javafx"
-            xmlns:fx="http://javafx.com/fxml"
-            fx:controller="Scene"
-            prefHeight="400.0" prefWidth="600.0">
-
-</AnchorPane>
+<GridPane prefHeight="600.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.dalekcraft.structureedit.ui.Controller">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <MenuBar>
+        <menus>
+          <Menu mnemonicParsing="false" text="File">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#showOpenDialog" text="Open" />
+                  <MenuItem mnemonicParsing="false" onAction="#showSaveDialog" text="Save" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Settings">
+               <items>
+                  <MenuItem mnemonicParsing="false" onAction="#selectAssets" text="Assets Path" />
+                  <MenuItem mnemonicParsing="false" onAction="#selectLogLevel" text="Log Level" />
+               </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="Help">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#showControlsDialog" text="Controls" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <SplitPane dividerPositions="0.7" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" orientation="VERTICAL" GridPane.rowIndex="1">
+        <items>
+            <SplitPane dividerPositions="0.75">
+              <items>
+                  <GridPane>
+                     <columnConstraints>
+                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                     </columnConstraints>
+                     <rowConstraints>
+                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                     </rowConstraints>
+                     <children>
+                        <SwingNode fx:id="rendererNode" />
+                     </children>
+                  </GridPane>
+                  <TabPane side="RIGHT" SplitPane.resizableWithParent="false">
+                     <tabs>
+                        <Tab closable="false" text="Editor">
+                           <content>
+                              <GridPane>
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints vgrow="ALWAYS" />
+                                 </rowConstraints>
+                                 <children>
+                                    <Label text="Schematic Size:" />
+                                    <TextField fx:id="sizeTextField" editable="false" GridPane.columnIndex="1" />
+                                    <Label text="Layer:" GridPane.rowIndex="1" />
+                                    <Spinner fx:id="layerSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+                                    <Label text="Palette:" GridPane.rowIndex="2" />
+                                    <Spinner fx:id="paletteSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+                                    <Label text="Block Palette:" GridPane.rowIndex="3" />
+                                    <Spinner fx:id="blockPaletteSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
+                                    <Label text="Block Position:" GridPane.rowIndex="4" />
+                                    <TextField fx:id="blockPositionTextField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+                                    <Label text="Block ID:" GridPane.rowIndex="5" />
+                                    <ComboBox fx:id="blockIdComboBox" editable="true" onAction="#onBlockIdUpdate" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
+                                    <Label text="Block Properties:" GridPane.rowIndex="6" />
+                                    <TextField fx:id="blockPropertiesTextField" onAction="#onBlockPropertiesUpdate" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+                                    <TextField fx:id="blockNbtTextField" onAction="#onBlockNbtUpdate" GridPane.columnIndex="1" GridPane.rowIndex="7" />
+                                    <Label text="Block NBT:" GridPane.rowIndex="7" />
+                                    <ScrollPane pannable="true" GridPane.columnSpan="2" GridPane.rowIndex="8">
+                                       <content>
+                                          <GridPane fx:id="gridPanel" alignment="CENTER" gridLinesVisible="true">
+                                             <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="0.0" />
+                                             </columnConstraints>
+                                             <rowConstraints>
+                                                <RowConstraints minHeight="0.0" vgrow="SOMETIMES" />
+                                             </rowConstraints>
+                                          </GridPane>
+                                       </content>
+                                    </ScrollPane>
+                                 </children>
+                              </GridPane>
+                           </content>
+                        </Tab>
+                     </tabs>
+                  </TabPane>
+              </items>
+            </SplitPane>
+            <TabPane side="BOTTOM" SplitPane.resizableWithParent="false">
+              <tabs>
+                <Tab closable="false" text="Log">
+                     <content>
+                        <ScrollPane fitToHeight="true" fitToWidth="true">
+                           <content>
+                              <TextArea fx:id="logPane" editable="false" />
+                           </content>
+                        </ScrollPane>
+                     </content>
+                  </Tab>
+              </tabs>
+            </TabPane>
+        </items>
+      </SplitPane>
+   </children>
+</GridPane>

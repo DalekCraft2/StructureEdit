@@ -16,9 +16,9 @@
  */
 package me.dalekcraft.structureedit.drawing;
 
+import javafx.scene.paint.Color;
 import org.jetbrains.annotations.Contract;
 
-import java.awt.*;
 
 /**
  * An enum of all materials accepted by the official server and client

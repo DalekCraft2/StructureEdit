@@ -1,6 +1,5 @@
 package me.dalekcraft.structureedit.util;
 
-import me.dalekcraft.structureedit.ui.UserInterface;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -17,7 +16,7 @@ import java.util.Properties;
 public final class Configuration {
 
     public static final Properties LANGUAGE = new Properties();
-    private static final Logger LOGGER = LogManager.getLogger(UserInterface.class);
+    private static final Logger LOGGER = LogManager.getLogger(Configuration.class);
     public static final Properties CONFIG = new Properties() {
         @Override
         public synchronized Object setProperty(String key, String value) {

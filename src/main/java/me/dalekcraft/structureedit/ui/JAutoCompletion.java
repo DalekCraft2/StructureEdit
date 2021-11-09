@@ -15,7 +15,7 @@ import java.util.Locale;
  * To view a copy of the public domain dedication, visit
  * http://creativecommons.org/licenses/publicdomain/
  */
-public class AutoCompletion extends PlainDocument {
+public class JAutoCompletion extends PlainDocument {
 
     private final boolean hidePopupOnFocusLoss;
     private final KeyListener editorKeyListener;
@@ -29,7 +29,7 @@ public class AutoCompletion extends PlainDocument {
     private boolean hitBackspace;
     private boolean hitBackspaceOnSelection;
 
-    public AutoCompletion(final @NotNull JComboBox<?> comboBox) {
+    public JAutoCompletion(final @NotNull JComboBox<?> comboBox) {
         this.comboBox = comboBox;
         model = comboBox.getModel();
         comboBox.addActionListener(e -> {

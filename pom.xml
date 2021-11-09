@@ -49,13 +49,13 @@
         <mainClass>me.dalekcraft.structureedit.StructureEditApplication</mainClass>
 
         <javafx.version>17.0.1</javafx.version>
-        <jogl.version>2.3.2</jogl.version>
+        <jogl.version>2.4.0-rc-20200202</jogl.version>
     </properties>
 
     <!-- TODO Add JUnit tests. -->
     <dependencies>
-        <dependency>
-            <!-- GlueGen Runtime -->
+        <!--<dependency>
+            &lt;!&ndash; GlueGen Runtime &ndash;&gt;
             <groupId>org.jogamp.gluegen</groupId>
             <artifactId>gluegen-rt</artifactId>
             <version>${jogl.version}</version>
@@ -63,7 +63,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <!-- GlueGen Runtime Natives -->
+            &lt;!&ndash; GlueGen Runtime Natives &ndash;&gt;
             <groupId>org.jogamp.gluegen</groupId>
             <artifactId>gluegen-rt</artifactId>
             <version>${jogl.version}</version>
@@ -72,7 +72,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <!-- JOGL -->
+            &lt;!&ndash; JOGL &ndash;&gt;
             <groupId>org.jogamp.jogl</groupId>
             <artifactId>jogl-all</artifactId>
             <version>${jogl.version}</version>
@@ -80,8 +80,42 @@
             <optional>true</optional>
         </dependency>
         <dependency>
-            <!-- JOGL Natives -->
+            &lt;!&ndash; JOGL Natives &ndash;&gt;
             <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>${jogl.natives}</classifier>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>-->
+        <dependency>
+            <!-- GlueGen Runtime -->
+            <groupId>com.metsci.ext.org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- GlueGen Runtime Natives -->
+            <groupId>com.metsci.ext.org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>${jogl.natives}</classifier>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- JOGL -->
+            <groupId>com.metsci.ext.org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- JOGL Natives -->
+            <groupId>com.metsci.ext.org.jogamp.jogl</groupId>
             <artifactId>jogl-all</artifactId>
             <version>${jogl.version}</version>
             <classifier>${jogl.natives}</classifier>
@@ -158,50 +192,40 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-
         <dependency>
-            <!-- JetBrains GUI Forms Runtime -->
-            <groupId>com.jetbrains.intellij.java</groupId>
-            <artifactId>java-gui-forms-rt</artifactId>
-            <version>212.5457.59</version>
-            <scope>runtime</scope>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-swing</artifactId>
+            <version>${javafx.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>org.jzy3d</groupId>
+            <artifactId>jzy3d-javafx</artifactId>
+            <version>1.0.3</version>
+            <scope>compile</scope>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
     <repositories>
+        <repository>
+            <name>Jzy3d Releases</name>
+            <id>jzy3d-releases</id>
+            <url>https://maven.jzy3d.org/releases/</url>
+        </repository>
+        <repository>
+            <name>Jzy3d Snapshots</name>
+            <id>jzy3d-snapshots</id>
+            <url>https://maven.jzy3d.org/snapshots</url>
+        </repository>
         <repository>
             <!-- Querz/NBT, everit-org/json-schema -->
             <name>Jitpack</name>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
         </repository>
-        <repository>
-            <!-- JetBrains GUI Forms Runtime -->
-            <name>IntelliJ Releases</name>
-            <id>intellij-repository</id>
-            <url>https://www.jetbrains.com/intellij-repository/releases</url>
-        </repository>
     </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <!-- Apache Maven Shade Plugin -->
-            <name>Apache Snapshots</name>
-            <id>apache-snapshots</id>
-            <url>https://repository.apache.org/snapshots/</url>
-        </pluginRepository>
-        <pluginRepository>
-            <!-- JetBrains GUI Forms Compiler -->
-            <name>IntelliJ Releases</name>
-            <id>intellij-repository</id>
-            <url>https://www.jetbrains.com/intellij-repository/releases</url>
-        </pluginRepository>
-        <pluginRepository>
-            <!-- JetBrains GUI Forms Compiler dependencies -->
-            <name>IntelliJ Third-Party</name>
-            <id>intellij-third-party</id>
-            <url>https://cache-redirector.jetbrains.com/intellij-dependencies</url>
-        </pluginRepository>
-    </pluginRepositories>
 
     <build>
         <finalName>${project.name}</finalName>
@@ -260,31 +284,6 @@
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>wit.comp1050.picasso/${mainClass}</mainClass>
-                </configuration>
-            </plugin>
-            <plugin>
-                <!-- Generate Swing GUI -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>ideauidesigner-maven-plugin</artifactId>
-                <version>1.0-beta-1</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.jetbrains.intellij.java</groupId>
-                        <artifactId>java-compiler-ant-tasks</artifactId>
-                        <version>212.5457.59</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>javac2</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <fork>true</fork>
-                    <debug>true</debug>
-                    <failOnError>true</failOnError>
                 </configuration>
             </plugin>
             <plugin>

@@ -17,8 +17,12 @@
 package me.dalekcraft.structureedit;
 
 import javafx.application.Application;
+import javafx.collections.FXCollections;
+import javafx.fxml.FXMLLoader;
+import javafx.scene.Scene;
+import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import me.dalekcraft.structureedit.ui.UserInterface;
+import me.dalekcraft.structureedit.ui.Controller;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
 import org.apache.logging.log4j.Level;
@@ -29,11 +33,6 @@ import org.fusesource.jansi.AnsiConsole;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.imageio.ImageIO;
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -44,54 +43,13 @@ import java.util.Objects;
 public class StructureEditApplication extends Application {
 
     private static final Logger LOGGER = LogManager.getLogger(StructureEditApplication.class);
-    public static JFrame frame;
+    public static Stage stage;
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) {
         launch(StructureEditApplication.class, args);
-    }
-
-    @NotNull
-    public static JMenuBar createMenuBar(UserInterface userInterface) {
-        JMenuBar menuBar = new JMenuBar();
-
-        JMenu fileMenu = new JMenu(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.text"));
-        JPopupMenu filePopup = fileMenu.getPopupMenu();
-        JMenuItem openButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.open"));
-        openButton.setIcon(UIManager.getIcon("FileView.directoryIcon"));
-        openButton.addActionListener(e -> userInterface.openSchematic());
-        filePopup.add(openButton);
-        JMenuItem saveButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.file_menu.save"));
-        saveButton.setIcon(UIManager.getIcon("FileView.floppyDriveIcon"));
-        saveButton.addActionListener(e -> userInterface.saveSchematic());
-        filePopup.add(saveButton);
-        menuBar.add(fileMenu);
-
-        JMenu settingsMenu = new JMenu(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.text"));
-        JPopupMenu settingsPopup = settingsMenu.getPopupMenu();
-        JMenuItem assetsPathButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.assets_path"));
-        assetsPathButton.addActionListener(e -> userInterface.selectAssets());
-        settingsPopup.add(assetsPathButton);
-        JMenuItem logLevelButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level"));
-        logLevelButton.addActionListener(e -> {
-            Level level = (Level) JOptionPane.showInputDialog(frame, Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.label"), Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.title"), JOptionPane.PLAIN_MESSAGE, null, Level.values(), LogManager.getRootLogger().getLevel());
-            if (level != null) {
-                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.setting"), level);
-                Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level);
-            }
-        });
-        settingsPopup.add(logLevelButton);
-        menuBar.add(settingsMenu);
-
-        JMenu helpMenu = new JMenu(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.text"));
-        JPopupMenu helpPopup = helpMenu.getPopupMenu();
-        JMenuItem controlsButton = new JMenuItem(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls"));
-        controlsButton.addActionListener(e -> userInterface.showControlsDialog());
-        helpPopup.add(controlsButton);
-        menuBar.add(helpMenu);
-        return menuBar;
     }
 
     @Nullable
@@ -106,6 +64,8 @@ public class StructureEditApplication extends Application {
 
     @Override
     public void start(Stage primaryStage) throws IOException {
+        stage = primaryStage;
+
         if (!AnsiConsole.isInstalled()) {
             AnsiConsole.systemInstall();
         }
@@ -125,81 +85,53 @@ public class StructureEditApplication extends Application {
             }
         }
 
-        SwingUtilities.invokeLater(() -> {
-            try {
-                // Set the look and feel to be similar to the user's OS, if possible
-                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-            } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | UnsupportedLookAndFeelException ignored) {
-            }
+        FXMLLoader fxmlLoader = new FXMLLoader(StructureEditApplication.class.getResource("/scene.fxml"));
+        Scene scene = new Scene(fxmlLoader.load());
+        primaryStage.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+        primaryStage.setScene(scene);
+        primaryStage.show();
 
-            /*FXMLLoader fxmlLoader = new FXMLLoader(StructureEditApplication.class.getResource("/scene.fxml"));
-            Scene scene = new Scene(fxmlLoader.load());
-            primaryStage.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
-            primaryStage.setScene(scene);
-            primaryStage.show();*/
+        Controller controller = fxmlLoader.getController();
 
-            frame = new JFrame(Configuration.LANGUAGE.getProperty("ui.window.title"));
-            UserInterface userInterface = new UserInterface();
-            frame.add(userInterface.getRootComponent());
+        stage.getIcons().add(new Image(Objects.requireNonNull(StructureEditApplication.class.getResourceAsStream("/icon.png")))); // Use Objects.requireNonNull() because it should never be null
+
+        String assetsArg;
+        String protocol = Objects.requireNonNull(StructureEditApplication.class.getResource("")).getProtocol();
+        if (protocol.equals("jar")) {
+            assetsArg = Configuration.CONFIG.getProperty("assets_path");
+        } else {
+            assetsArg = getArgument(argList, "-assets");
+        }
+        Path assets = null;
+        if (assetsArg != null) {
             try {
-                frame.setIconImage(ImageIO.read(Objects.requireNonNull(StructureEditApplication.class.getResourceAsStream("/icon.png"))).getScaledInstance(128, 128, Image.SCALE_SMOOTH)); // Use Objects.requireNonNull() because it should never be null
+                assets = Path.of(assetsArg).toRealPath();
+                if (!Files.exists(assets)) {
+                    LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.invalid"), assets);
+                }
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
+        } else {
+            LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.not_set"));
+        }
+        Assets.setAssets(assets);
+        if (assets != null) {
+            controller.assetsChooser.setInitialDirectory(assets.toFile());
+        }
+        controller.blockIdComboBox.setItems(FXCollections.observableArrayList(Assets.getBlockStateArray()));
 
-            JMenuBar menuBar = createMenuBar(userInterface);
-
-            frame.setJMenuBar(menuBar);
-
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-            frame.addWindowListener(new WindowAdapter() {
-                @Override
-                public void windowClosing(WindowEvent e) {
-                    LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.stopping"));
-                }
-            });
-            frame.setLocationByPlatform(true);
-            frame.pack();
-            frame.setVisible(true);
-
-            String assetsArg;
-            String protocol = Objects.requireNonNull(StructureEditApplication.class.getResource("")).getProtocol();
-            if (protocol.equals("jar")) {
-                assetsArg = Configuration.CONFIG.getProperty("assets_path");
-            } else {
-                assetsArg = getArgument(argList, "-assets");
-            }
-            Path assets = null;
-            if (assetsArg != null) {
-                try {
-                    assets = Path.of(assetsArg).toRealPath();
-                    if (!Files.exists(assets)) {
-                        LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.invalid"), assets);
-                    }
-                } catch (IOException e) {
-                    LOGGER.log(Level.ERROR, e.getMessage());
-                }
-            } else {
-                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.not_set"));
-            }
-            Assets.setAssets(assets);
-            if (assets != null) {
-                userInterface.assetsChooser.setSelectedFile(assets.toFile());
-            }
-            userInterface.blockIdComboBox.setModel(new DefaultComboBoxModel<>(Assets.getBlockStateArray()));
-            frame.pack();
-
-            String path = null;
-            if (protocol.equals("jar") && !argList.isEmpty()) {
-                path = argList.get(argList.size() - 1);
-            } else if (protocol.equals("file")) {
-                path = getArgument(argList, "-path");
-            }
-            if (path != null) {
-                File file = new File(path);
-                userInterface.open(file);
-                userInterface.schematicChooser.setSelectedFile(file);
-            }
-        });
+        String path = null;
+        if (protocol.equals("jar") && !argList.isEmpty()) {
+            path = argList.get(argList.size() - 1);
+        } else if (protocol.equals("file")) {
+            path = getArgument(argList, "-path");
+        }
+        if (path != null) {
+            File file = new File(path);
+            controller.openSchematic(file);
+            controller.schematicChooser.setInitialDirectory(file.getParentFile());
+            controller.schematicChooser.setInitialFileName(file.getName());
+        }
     }
 }

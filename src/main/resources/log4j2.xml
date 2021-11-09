@@ -18,16 +18,16 @@
                 <OnStartupTriggeringPolicy/>
             </Policies>
         </RollingRandomAccessFile>
-        <JTextPaneAppender name="TextPane" maxLines="100">
+        <TextAreaAppender name="TextArea" maxLines="100">
             <PatternLayout pattern="%highlight{%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n}"
                            disableAnsi="true"/>
-        </JTextPaneAppender>
+        </TextAreaAppender>
     </Appenders>
     <Loggers>
         <Root level="info" additivity="false">
             <AppenderRef ref="Console"/>
             <AppenderRef ref="File"/>
-            <AppenderRef ref="TextPane"/>
+            <AppenderRef ref="TextArea"/>
         </Root>
     </Loggers>
 </Configuration>
