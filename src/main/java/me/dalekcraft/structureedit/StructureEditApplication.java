@@ -62,7 +62,7 @@ public class StructureEditApplication extends Application {
         if (!AnsiConsole.isInstalled()) {
             AnsiConsole.systemInstall();
         }
-        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.starting"));
+        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.starting"));
 
         List<String> argList = getParameters().getRaw();
 
@@ -70,20 +70,21 @@ public class StructureEditApplication extends Application {
         if (levelName != null) {
             try {
                 Level level = Level.valueOf(levelName);
-                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.setting"), level);
+                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.log_level.setting"), level);
                 // TODO Figure out why this only works in the IDE.
                 Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level);
             } catch (IllegalArgumentException e) {
-                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.log_level.invalid"), levelName);
+                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.log_level.invalid"), levelName);
             }
         }
 
         stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png")))); // Use Objects.requireNonNull() because it should never be null
-        stage.setOnCloseRequest(event -> LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.stopping")));
+        stage.setOnCloseRequest(event -> LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.stopping")));
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/scene.fxml"));
+        fxmlLoader.setResources(Configuration.LANGUAGE);
         Scene scene = new Scene(fxmlLoader.load());
-        primaryStage.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+        primaryStage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
         primaryStage.setScene(scene);
         primaryStage.show();
 
@@ -101,13 +102,13 @@ public class StructureEditApplication extends Application {
             try {
                 assets = Path.of(assetsArg).toRealPath();
                 if (!Files.exists(assets)) {
-                    LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.invalid"), assets);
+                    LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.invalid"), assets);
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
         } else {
-            LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.not_set"));
+            LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.not_set"));
         }
         Assets.setAssets(assets);
         if (assets != null) {

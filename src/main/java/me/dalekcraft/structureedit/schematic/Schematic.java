@@ -35,7 +35,7 @@ public interface Schematic {
             case NbtStructure.EXTENSION -> new NbtStructure(NBTUtil.read(file));
             case McEditSchematic.EXTENSION -> new McEditSchematic(NBTUtil.read(file));
             case SpongeSchematic.EXTENSION -> SpongeSchematic.getInstance(NBTUtil.read(file));
-            default -> throw new IOException(Configuration.LANGUAGE.getProperty("log.schematic.not_schematic"));
+            default -> throw new IOException(Configuration.LANGUAGE.getString("log.schematic.not_schematic"));
         };
     }
 

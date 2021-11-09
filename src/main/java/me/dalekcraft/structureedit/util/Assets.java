@@ -46,9 +46,9 @@ public final class Assets {
 
     public static void load() {
         CompletableFuture.runAsync(() -> {
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.loading"), assets);
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loading"), assets);
             if (assets == null || !Files.exists(assets)) {
-                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getProperty("log.assets.invalid"), assets);
+                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.invalid"), assets);
             }
             BLOCK_STATES.clear();
             MODELS.clear();
@@ -85,7 +85,7 @@ public final class Assets {
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.assets.loaded"));
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loaded"));
         }).join();
     }
 
@@ -162,12 +162,12 @@ public final class Assets {
         String internalPath = "/assets/" + namespace + "/" + folder + "/" + id + "." + extension;
         InputStream internalStream = Assets.class.getResourceAsStream(internalPath);
         if (internalStream != null) {
-            LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getProperty("log.assets.getting_internal"), internalPath);
+            LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getString("log.assets.getting_internal"), internalPath);
             return internalStream;
         }
         Path path = Path.of(assets.toString(), namespace + File.separator + folder + File.separator + id + "." + extension);
         if (Files.exists(path)) {
-            LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getProperty("log.assets.getting"), path);
+            LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getString("log.assets.getting"), path);
         }
         return Files.newInputStream(path);
     }

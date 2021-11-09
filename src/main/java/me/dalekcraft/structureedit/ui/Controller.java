@@ -77,12 +77,15 @@ import static me.dalekcraft.structureedit.schematic.Schematic.openFrom;
  */
 public class Controller {
     private static final Logger LOGGER = LogManager.getLogger(Controller.class);
-    private static final FileChooser.ExtensionFilter FILTER_NBT = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.nbt"), "*." + NbtStructure.EXTENSION);
-    private static final FileChooser.ExtensionFilter FILTER_MCEDIT = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.mcedit"), "*." + McEditSchematic.EXTENSION);
-    private static final FileChooser.ExtensionFilter FILTER_SPONGE = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.sponge"), "*." + SpongeSchematic.EXTENSION);
-    private static final FileChooser.ExtensionFilter FILTER_TARDIS = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getProperty("ui.file_chooser.extension.tardis"), "*." + TardisSchematic.EXTENSION);
+    private static final FileChooser.ExtensionFilter FILTER_NBT = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.nbt"), "*." + NbtStructure.EXTENSION);
+    private static final FileChooser.ExtensionFilter FILTER_MCEDIT = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.mcedit"), "*." + McEditSchematic.EXTENSION);
+    private static final FileChooser.ExtensionFilter FILTER_SPONGE = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.sponge"), "*." + SpongeSchematic.EXTENSION);
+    private static final FileChooser.ExtensionFilter FILTER_TARDIS = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.tardis"), "*." + TardisSchematic.EXTENSION);
     public final FileChooser schematicChooser = new FileChooser();
     public final DirectoryChooser assetsChooser = new DirectoryChooser();
+    private final SpinnerValueFactory.IntegerSpinnerValueFactory layerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
+    private final SpinnerValueFactory.IntegerSpinnerValueFactory paletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
+    private final SpinnerValueFactory.IntegerSpinnerValueFactory blockPaletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     @FXML
     public ComboBox<String> blockIdComboBox;
     private int renderedHeight;
@@ -90,19 +93,17 @@ public class Controller {
     private Schematic schematic;
     private SchematicRenderer renderer;
     private GLJPanel rendererPanel;
-    @FXML
     private SwingNode rendererNode;
+    @FXML
+    private GridPane rendererContainer;
     @FXML
     private TextField sizeTextField;
     @FXML
     private Spinner<Integer> layerSpinner;
-    private SpinnerValueFactory.IntegerSpinnerValueFactory layerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     @FXML
     private Spinner<Integer> paletteSpinner;
-    private SpinnerValueFactory.IntegerSpinnerValueFactory paletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     @FXML
     private Spinner<Integer> blockPaletteSpinner;
-    private SpinnerValueFactory.IntegerSpinnerValueFactory blockPaletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     @FXML
     private TextField blockPositionTextField;
     @FXML
@@ -110,7 +111,7 @@ public class Controller {
     @FXML
     private TextField blockNbtTextField;
     @FXML
-    private GridPane gridPanel;
+    private GridPane blockGrid;
     @FXML
     private TextArea logPane;
 
@@ -118,8 +119,23 @@ public class Controller {
         schematicChooser.getExtensionFilters().addAll(FILTER_NBT, FILTER_MCEDIT, FILTER_SPONGE, FILTER_TARDIS);
     }
 
+    public Controller() throws InterruptedException, InvocationTargetException {
+        // FIXME The GLEventListener only initializes when the window is resized or moved.
+        SwingUtilities.invokeAndWait(() -> {
+            rendererPanel = new GLJPanel(new GLCapabilities(GLProfile.getDefault()));
+            renderer = new SchematicRenderer();
+            rendererPanel.addGLEventListener(renderer);
+            rendererPanel.addKeyListener(renderer);
+            rendererPanel.addMouseListener(renderer);
+            rendererPanel.addMouseMotionListener(renderer);
+            rendererPanel.addMouseWheelListener(renderer);
+            rendererNode = new SwingNode();
+            rendererNode.setContent(rendererPanel);
+        });
+    }
+
     @FXML
-    public void initialize() throws InterruptedException, InvocationTargetException {
+    public void initialize() {
         layerSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onLayerUpdate());
         layerSpinner.setValueFactory(layerValueFactory);
         paletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onPaletteUpdate());
@@ -135,17 +151,7 @@ public class Controller {
 
         TextAreaAppender.addLog4j2TextAreaAppender(logPane);
 
-        // FIXME The GLEventListener only initializes when the window is resized or moved.
-        SwingUtilities.invokeAndWait(() -> {
-            rendererPanel = new GLJPanel(new GLCapabilities(GLProfile.getDefault()));
-            renderer = new SchematicRenderer();
-            rendererPanel.addGLEventListener(renderer);
-            rendererPanel.addKeyListener(renderer);
-            rendererPanel.addMouseListener(renderer);
-            rendererPanel.addMouseMotionListener(renderer);
-            rendererPanel.addMouseWheelListener(renderer);
-            rendererNode.setContent(rendererPanel);
-        });
+        rendererContainer.add(rendererNode, 0, 0);
     }
 
     @FXML
@@ -159,25 +165,25 @@ public class Controller {
     }
 
     public void openSchematic(@NotNull File file) {
-        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loading"), file);
+        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loading"), file);
         try {
             schematic = openFrom(file);
             selected = null;
         } catch (IOException | JSONException e) {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_reading"), e.getMessage());
-            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.error_reading"), e.getMessage());
+            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
             schematic = null;
         } catch (ValidationException e) {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.invalid"), e.getMessage());
-            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.invalid"), e.getMessage());
+            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
             schematic = null;
         } catch (org.everit.json.schema.ValidationException e) {
             List<String> messages = e.getAllMessages();
             if (messages.size() > 1) {
-                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.invalid"), e.getViolationCount());
+                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.invalid"), e.getViolationCount());
             }
             messages.forEach(message -> LOGGER.log(Level.ERROR, message));
-            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getProperty("ui.window.title"));
+            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
             schematic = null;
         } catch (UnsupportedOperationException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
@@ -213,8 +219,8 @@ public class Controller {
                 int paletteSize = paletteSchematic.getPalette().size();
                 blockPaletteValueFactory.setMax(paletteSize - 1);
             }
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.loaded"), file);
-            StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loaded"), file);
+            StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         }
         loadLayer();
     }
@@ -229,18 +235,18 @@ public class Controller {
             }
             renderer.animator.resume();
         } else {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.null"));
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.null"));
         }
     }
 
     public void saveSchematic(File file) {
         try {
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saving"), file);
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.saving"), file);
             schematic.saveTo(file);
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.schematic.saved"), file);
-            StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getProperty("ui.window.title_with_file"), file.getName()));
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.saved"), file);
+            StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         } catch (IOException e1) {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getProperty("log.schematic.error_saving"), e1.getMessage());
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.error_saving"), e1.getMessage());
         }
     }
 
@@ -262,12 +268,12 @@ public class Controller {
     @FXML
     public void selectLogLevel() {
         ChoiceDialog<Level> dialog = new ChoiceDialog<>(LogManager.getRootLogger().getLevel(), Level.values());
-        dialog.setTitle(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.title"));
-        dialog.setContentText(Configuration.LANGUAGE.getProperty("ui.menu_bar.settings_menu.log_level.label"));
+        dialog.setTitle(Configuration.LANGUAGE.getString("ui.menu_bar.settings_menu.log_level.title"));
+        dialog.setContentText(Configuration.LANGUAGE.getString("ui.menu_bar.settings_menu.log_level.label"));
         dialog.getDialogPane().getScene().getWindow().setOnCloseRequest((event -> dialog.close()));
         Optional<Level> level = dialog.showAndWait();
         if (level.isPresent()) {
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getProperty("log.log_level.setting"), level.get());
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.log_level.setting"), level.get());
             Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level.get());
         }
     }
@@ -276,8 +282,8 @@ public class Controller {
     public void showControlsDialog() {
         renderer.animator.pause();
         javafx.scene.control.Dialog<?> dialog = new javafx.scene.control.Dialog<>();
-        dialog.setTitle(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.title"));
-        dialog.setContentText(Configuration.LANGUAGE.getProperty("ui.menu_bar.help_menu.controls.dialog"));
+        dialog.setTitle(Configuration.LANGUAGE.getString("ui.menu_bar.help_menu.controls.title"));
+        dialog.setContentText(Configuration.LANGUAGE.getString("ui.menu_bar.help_menu.controls.dialog"));
         dialog.getDialogPane().getScene().getWindow().setOnCloseRequest((event -> dialog.close()));
         dialog.show();
         renderer.animator.resume();
@@ -353,7 +359,7 @@ public class Controller {
 
     // TODO Make the editor built into the 3D view instead of being a layer-by-layer editor.
     public void loadLayer() {
-        gridPanel.getChildren().clear();
+        blockGrid.getChildren().clear();
         if (schematic != null) {
             int[] size = schematic.getSize();
             sizeTextField.setText(Arrays.toString(size));
@@ -380,7 +386,7 @@ public class Controller {
                         blockButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                         blockButton.setPrefSize(30.0, 30.0);
                         blockButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::blockButtonPressed);
-                        gridPanel.add(blockButton, x, z);
+                        blockGrid.add(blockButton, x, z);
                         if (selected != null) {
                             int[] position = selected.getBlock().getPosition();
                             if (Arrays.equals(position, new int[]{x, currentLayer, z})) {
@@ -399,7 +405,7 @@ public class Controller {
                         blockButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                         blockButton.setPrefSize(30.0, 30.0);
                         blockButton.setDisable(true);
-                        gridPanel.add(blockButton, x, z);
+                        blockGrid.add(blockButton, x, z);
                     }
                 }
             }
@@ -657,7 +663,6 @@ public class Controller {
 
         @Override
         public void init(@NotNull GLAutoDrawable drawable) {
-            System.out.println("init");
             GL4 gl = drawable.getGL().getGL4(); // get the OpenGL graphics context
             gl.glClearColor(0.8f, 0.8f, 0.8f, 1.0f); // set the clear color to gray
             gl.glClearDepth(1.0f); // set clear depth value to farthest
@@ -874,7 +879,6 @@ public class Controller {
 
         @Override
         public void dispose(@NotNull GLAutoDrawable drawable) {
-            System.out.println("dispose");
             GL4 gl = drawable.getGL().getGL4();
             animator.stop();
             animator.remove(drawable);
@@ -931,7 +935,6 @@ public class Controller {
 
         @Override
         public void reshape(@NotNull GLAutoDrawable drawable, int x, int y, int width, int height) {
-            System.out.println("reshape");
             GL4 gl = drawable.getGL().getGL4(); // get the OpenGL graphics context
             camera.perspective(x, y, width, height);
             gl.glViewport(x, y, width, height);

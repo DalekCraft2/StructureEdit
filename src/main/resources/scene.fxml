@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.embed.swing.SwingNode?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
@@ -13,6 +12,7 @@
 <?import javafx.scene.control.TabPane?>
 <?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
@@ -28,21 +28,21 @@
    <children>
       <MenuBar>
         <menus>
-          <Menu mnemonicParsing="false" text="File">
+          <Menu mnemonicParsing="false" text="%ui.menu_bar.file_menu.text">
             <items>
-              <MenuItem mnemonicParsing="false" onAction="#showOpenDialog" text="Open" />
-                  <MenuItem mnemonicParsing="false" onAction="#showSaveDialog" text="Save" />
+              <MenuItem mnemonicParsing="false" onAction="#showOpenDialog" text="%ui.menu_bar.file_menu.open" />
+                  <MenuItem mnemonicParsing="false" onAction="#showSaveDialog" text="%ui.menu_bar.file_menu.save" />
             </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="Settings">
+          <Menu mnemonicParsing="false" text="%ui.menu_bar.settings_menu.text">
                <items>
-                  <MenuItem mnemonicParsing="false" onAction="#selectAssets" text="Assets Path" />
-                  <MenuItem mnemonicParsing="false" onAction="#selectLogLevel" text="Log Level" />
+                  <MenuItem mnemonicParsing="false" onAction="#selectAssets" text="%ui.menu_bar.settings_menu.assets_path" />
+                  <MenuItem mnemonicParsing="false" onAction="#selectLogLevel" text="%ui.menu_bar.settings_menu.log_level" />
                </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="Help">
+          <Menu mnemonicParsing="false" text="%ui.menu_bar.help_menu.text">
             <items>
-              <MenuItem mnemonicParsing="false" onAction="#showControlsDialog" text="Controls" />
+              <MenuItem mnemonicParsing="false" onAction="#showControlsDialog" text="%ui.menu_bar.help_menu.controls" />
             </items>
           </Menu>
         </menus>
@@ -51,20 +51,17 @@
         <items>
             <SplitPane dividerPositions="0.75">
               <items>
-                  <GridPane>
+                  <GridPane fx:id="rendererContainer">
                      <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                      </columnConstraints>
                      <rowConstraints>
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                      </rowConstraints>
-                     <children>
-                        <SwingNode fx:id="rendererNode" />
-                     </children>
                   </GridPane>
                   <TabPane side="RIGHT" SplitPane.resizableWithParent="false">
                      <tabs>
-                        <Tab closable="false" text="Editor">
+                        <Tab closable="false" text="%ui.editor.text">
                            <content>
                               <GridPane>
                                  <columnConstraints>
@@ -83,25 +80,57 @@
                                     <RowConstraints vgrow="ALWAYS" />
                                  </rowConstraints>
                                  <children>
-                                    <Label text="Schematic Size:" />
-                                    <TextField fx:id="sizeTextField" editable="false" GridPane.columnIndex="1" />
-                                    <Label text="Layer:" GridPane.rowIndex="1" />
-                                    <Spinner fx:id="layerSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1" />
-                                    <Label text="Palette:" GridPane.rowIndex="2" />
-                                    <Spinner fx:id="paletteSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="2" />
-                                    <Label text="Block Palette:" GridPane.rowIndex="3" />
-                                    <Spinner fx:id="blockPaletteSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="3" />
-                                    <Label text="Block Position:" GridPane.rowIndex="4" />
-                                    <TextField fx:id="blockPositionTextField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4" />
-                                    <Label text="Block ID:" GridPane.rowIndex="5" />
-                                    <ComboBox fx:id="blockIdComboBox" editable="true" onAction="#onBlockIdUpdate" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5" />
-                                    <Label text="Block Properties:" GridPane.rowIndex="6" />
-                                    <TextField fx:id="blockPropertiesTextField" onAction="#onBlockPropertiesUpdate" GridPane.columnIndex="1" GridPane.rowIndex="6" />
-                                    <TextField fx:id="blockNbtTextField" onAction="#onBlockNbtUpdate" GridPane.columnIndex="1" GridPane.rowIndex="7" />
-                                    <Label text="Block NBT:" GridPane.rowIndex="7" />
+                                    <Label text="%ui.editor.schematic_size.text" />
+                                    <TextField fx:id="sizeTextField" editable="false" GridPane.columnIndex="1">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.schematic_size.tooltip" />
+                                       </tooltip>
+                                    </TextField>
+                                    <Label text="%ui.editor.layer.text" GridPane.rowIndex="1" />
+                                    <Spinner fx:id="layerSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.layer.tooltip" />
+                                       </tooltip>
+                                    </Spinner>
+                                    <Label text="%ui.editor.palette.text" GridPane.rowIndex="2" />
+                                    <Spinner fx:id="paletteSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.palette.tooltip" />
+                                       </tooltip>
+                                    </Spinner>
+                                    <Label text="%ui.editor.block_palette.text" GridPane.rowIndex="3" />
+                                    <Spinner fx:id="blockPaletteSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.block_palette.tooltip" />
+                                       </tooltip>
+                                    </Spinner>
+                                    <Label text="%ui.editor.block_position.text" GridPane.rowIndex="4" />
+                                    <TextField fx:id="blockPositionTextField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.block_position.tooltip" />
+                                       </tooltip>
+                                    </TextField>
+                                    <Label text="%ui.editor.block_id.text" GridPane.rowIndex="5" />
+                                    <ComboBox fx:id="blockIdComboBox" editable="true" onAction="#onBlockIdUpdate" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.block_id.tooltip" />
+                                       </tooltip>
+                                    </ComboBox>
+                                    <Label text="%ui.editor.block_properties.text" GridPane.rowIndex="6" />
+                                    <TextField fx:id="blockPropertiesTextField" onAction="#onBlockPropertiesUpdate" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.block_properties.tooltip" />
+                                       </tooltip>
+                                    </TextField>
+                                    <Label text="%ui.editor.block_nbt.text" GridPane.rowIndex="7" />
+                                    <TextField fx:id="blockNbtTextField" onAction="#onBlockNbtUpdate" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.block_nbt.tooltip" />
+                                       </tooltip>
+                                    </TextField>
                                     <ScrollPane pannable="true" GridPane.columnSpan="2" GridPane.rowIndex="8">
                                        <content>
-                                          <GridPane fx:id="gridPanel" alignment="CENTER" gridLinesVisible="true">
+                                          <GridPane fx:id="blockGrid" alignment="CENTER" gridLinesVisible="true">
                                              <columnConstraints>
                                                 <ColumnConstraints hgrow="SOMETIMES" minWidth="0.0" />
                                              </columnConstraints>
@@ -121,7 +150,7 @@
             </SplitPane>
             <TabPane side="BOTTOM" SplitPane.resizableWithParent="false">
               <tabs>
-                <Tab closable="false" text="Log">
+                <Tab closable="false" text="%ui.tabbed_pane.log.text">
                      <content>
                         <ScrollPane fitToHeight="true" fitToWidth="true">
                            <content>

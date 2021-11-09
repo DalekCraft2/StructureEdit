@@ -10,12 +10,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Objects;
 import java.util.Properties;
+import java.util.PropertyResourceBundle;
 
 // TODO Add more configuration.
 public final class Configuration {
 
-    public static final Properties LANGUAGE = new Properties();
+    public static final PropertyResourceBundle LANGUAGE;
     private static final Logger LOGGER = LogManager.getLogger(Configuration.class);
     public static final Properties CONFIG = new Properties() {
         @Override
@@ -34,6 +36,7 @@ public final class Configuration {
     };
 
     static {
+        PropertyResourceBundle languageBundle;
         try {
             String protocol = Configuration.class.getResource("").getProtocol();
             if (protocol.equals("jar")) {
@@ -55,10 +58,12 @@ public final class Configuration {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
         try {
-            LANGUAGE.load(Configuration.class.getResourceAsStream("/language.properties"));
+            languageBundle = new PropertyResourceBundle(Objects.requireNonNull(Configuration.class.getResourceAsStream("/language.properties")));
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
+            languageBundle = null;
         }
+        LANGUAGE = languageBundle;
     }
 
     @Contract(value = " -> fail", pure = true)
