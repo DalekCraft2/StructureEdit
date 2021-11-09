@@ -30,30 +30,19 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 import org.fusesource.jansi.AnsiConsole;
-import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 public class StructureEditApplication extends Application {
 
     private static final Logger LOGGER = LogManager.getLogger(StructureEditApplication.class);
     public static Stage stage;
-
-    @Nullable
-    public static String getArgument(@NotNull List<String> argList, String argumentName) {
-        if (argList.contains(argumentName)) {
-            if (argList.size() > argList.indexOf(argumentName) + 1) {
-                return argList.get(argList.indexOf(argumentName) + 1);
-            }
-        }
-        return null;
-    }
 
     @Override
     public void start(Stage primaryStage) throws IOException {
@@ -64,9 +53,11 @@ public class StructureEditApplication extends Application {
         }
         LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.starting"));
 
-        List<String> argList = getParameters().getRaw();
+        Parameters parameters = getParameters();
+        Map<String, String> named = parameters.getNamed();
+        List<String> raw = parameters.getRaw();
 
-        String levelName = getArgument(argList, "-log_level");
+        String levelName = named.get("log_level");
         if (levelName != null) {
             try {
                 Level level = Level.valueOf(levelName);
@@ -90,12 +81,13 @@ public class StructureEditApplication extends Application {
 
         Controller controller = fxmlLoader.getController();
 
-        String assetsArg;
         String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
+
+        String assetsArg;
         if (protocol.equals("jar")) {
             assetsArg = Configuration.CONFIG.getProperty("assets_path");
         } else {
-            assetsArg = getArgument(argList, "-assets");
+            assetsArg = named.get("assets");
         }
         Path assets = null;
         if (assetsArg != null && !assetsArg.equals("")) {
@@ -117,10 +109,10 @@ public class StructureEditApplication extends Application {
         controller.blockIdComboBox.setItems(FXCollections.observableArrayList(Assets.getBlockStateArray()));
 
         String path = null;
-        if (protocol.equals("jar") && !argList.isEmpty()) {
-            path = argList.get(argList.size() - 1);
+        if (protocol.equals("jar") && !raw.isEmpty()) {
+            path = raw.get(raw.size() - 1);
         } else if (protocol.equals("file")) {
-            path = getArgument(argList, "-path");
+            path = named.get("path");
         }
         if (path != null) {
             File file = new File(path);
