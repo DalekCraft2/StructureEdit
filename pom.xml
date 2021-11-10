@@ -50,6 +50,7 @@
 
         <javafx.version>17.0.1</javafx.version>
         <jogl.version>2.3.2</jogl.version>
+        <!--<jogl.version>2.4.0-rc-20200202</jogl.version>-->
     </properties>
 
     <!-- TODO Add JUnit tests. -->
@@ -88,6 +89,40 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
+        <!--<dependency>
+            &lt;!&ndash; GlueGen Runtime &ndash;&gt;
+            <groupId>com.metsci.ext.org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; GlueGen Runtime Natives &ndash;&gt;
+            <groupId>com.metsci.ext.org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>${jogl.natives}</classifier>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; JOGL &ndash;&gt;
+            <groupId>com.metsci.ext.org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; JOGL Natives &ndash;&gt;
+            <groupId>com.metsci.ext.org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>${jogl.natives}</classifier>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>-->
         <dependency>
             <!-- JOML -->
             <groupId>org.joml</groupId>
@@ -145,6 +180,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <!-- JavaFX Controls -->
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
             <version>${javafx.version}</version>
@@ -152,6 +188,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <!-- JavaFX FXML -->
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
             <version>${javafx.version}</version>
@@ -159,6 +196,7 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <!-- JavaFX Swing -->
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-swing</artifactId>
             <version>${javafx.version}</version>

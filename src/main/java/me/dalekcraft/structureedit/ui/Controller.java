@@ -22,6 +22,7 @@ import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.Texture;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingNode;
 import javafx.event.Event;
 import javafx.fxml.FXML;
@@ -85,8 +86,6 @@ public class Controller {
     private final SpinnerValueFactory.IntegerSpinnerValueFactory layerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     private final SpinnerValueFactory.IntegerSpinnerValueFactory paletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     private final SpinnerValueFactory.IntegerSpinnerValueFactory blockPaletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
-    @FXML
-    public ComboBox<String> blockIdComboBox;
     private int renderedHeight;
     private BlockButton selected;
     private Schematic schematic;
@@ -105,6 +104,9 @@ public class Controller {
     @FXML
     private TextField blockPositionTextField;
     @FXML
+    private ComboBox<String> blockIdComboBox;
+    private AutoCompleteComboBoxListener<String> blockIdAutoComplete;
+    @FXML
     private TextField blockPropertiesTextField;
     @FXML
     private TextField blockNbtTextField;
@@ -115,6 +117,10 @@ public class Controller {
 
     {
         schematicChooser.getExtensionFilters().addAll(FILTER_NBT, FILTER_MCEDIT, FILTER_SPONGE, FILTER_TARDIS);
+        Path assets = Assets.getAssets();
+        if (assets != null && !assets.toString().equals("")) {
+            assetsChooser.setInitialDirectory(assets.toFile());
+        }
     }
 
     @FXML
@@ -139,12 +145,12 @@ public class Controller {
         blockPaletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onBlockPaletteUpdate());
         blockPaletteSpinner.setValueFactory(blockPaletteValueFactory);
 
+        blockIdComboBox.setItems(FXCollections.observableArrayList(Assets.getBlockStateArray()));
+        blockIdAutoComplete = new AutoCompleteComboBoxListener<>(blockIdComboBox);
+
         // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
         blockPropertiesTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockPropertiesUpdate());
         blockNbtTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockNbtUpdate());
-
-        blockIdComboBox.setItems(FXCollections.observableArrayList(Assets.getBlockStateArray()));
-        new AutoCompleteComboBoxListener<>(blockIdComboBox);
 
         TextAreaAppender.addLog4j2TextAreaAppender(logPane);
     }
@@ -258,7 +264,9 @@ public class Controller {
             Path assets = file.toPath();
             Assets.setAssets(assets);
             String selectedItem = blockIdComboBox.getSelectionModel().getSelectedItem();
-            blockIdComboBox.setItems(FXCollections.observableArrayList(Assets.getBlockStateArray()));
+            ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateArray());
+            blockIdComboBox.setItems(items);
+            blockIdAutoComplete.setItems(items);
             blockIdComboBox.getSelectionModel().select(selectedItem);
         }
         updateSelected();

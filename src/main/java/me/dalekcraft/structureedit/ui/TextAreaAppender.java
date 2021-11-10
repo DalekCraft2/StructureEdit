@@ -1,6 +1,6 @@
 /*
  * Created by vshiro (https://stackoverflow.com/users/4544015/vshiro)
- * https://stackoverflow.com/questions/24005748/how-to-output-logs-to-a-jtextarea-using-log4j2
+ * https://stackoverflow.com/a/29736246
  */
 package me.dalekcraft.structureedit.ui;
 

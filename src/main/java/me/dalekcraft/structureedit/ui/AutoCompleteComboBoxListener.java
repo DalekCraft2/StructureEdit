@@ -1,24 +1,29 @@
+/*
+ * Created by JulianG (https://stackoverflow.com/users/2039619/juliang)
+ * https://stackoverflow.com/a/20282301
+ */
 package me.dalekcraft.structureedit.ui;
 
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.event.EventHandler;
 import javafx.scene.control.ComboBox;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 
 public class AutoCompleteComboBoxListener<T> implements EventHandler<KeyEvent> {
 
     private final ComboBox<T> comboBox;
-    private final ObservableList<T> data;
+    private ObservableList<T> items;
     private boolean moveCaretToPos;
     private int caretPos;
 
-    public AutoCompleteComboBoxListener(final ComboBox<T> comboBox) {
+    public AutoCompleteComboBoxListener(final @NotNull ComboBox<T> comboBox) {
         this.comboBox = comboBox;
-        data = comboBox.getItems();
+        items = comboBox.getItems();
 
         this.comboBox.setEditable(true);
         this.comboBox.setOnKeyPressed(t -> comboBox.hide());
@@ -26,8 +31,7 @@ public class AutoCompleteComboBoxListener<T> implements EventHandler<KeyEvent> {
     }
 
     @Override
-    public void handle(KeyEvent event) {
-
+    public void handle(@NotNull KeyEvent event) {
         if (event.getCode() == KeyCode.UP) {
             caretPos = -1;
             moveCaret(comboBox.getEditor().getText().length());
@@ -51,12 +55,7 @@ public class AutoCompleteComboBoxListener<T> implements EventHandler<KeyEvent> {
             return;
         }
 
-        ObservableList<T> list = FXCollections.observableArrayList();
-        for (T datum : data) {
-            if (datum.toString().toLowerCase(Locale.ROOT).startsWith(comboBox.getEditor().getText().toLowerCase(Locale.ROOT))) {
-                list.add(datum);
-            }
-        }
+        FilteredList<T> list = new FilteredList<>(items, t -> t.toString().toLowerCase(Locale.ROOT).contains(comboBox.getEditor().getText().toLowerCase(Locale.ROOT)));
         String t = comboBox.getEditor().getText();
 
         comboBox.setItems(list);
@@ -79,4 +78,7 @@ public class AutoCompleteComboBoxListener<T> implements EventHandler<KeyEvent> {
         moveCaretToPos = false;
     }
 
+    public void setItems(ObservableList<T> items) {
+        this.items = items;
+    }
 }

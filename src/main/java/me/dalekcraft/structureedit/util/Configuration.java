@@ -10,14 +10,15 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.Objects;
+import java.util.Locale;
+import java.util.MissingResourceException;
 import java.util.Properties;
-import java.util.PropertyResourceBundle;
+import java.util.ResourceBundle;
 
 // TODO Add more configuration.
 public final class Configuration {
 
-    public static final PropertyResourceBundle LANGUAGE;
+    public static final ResourceBundle LANGUAGE;
     private static final Logger LOGGER = LogManager.getLogger(Configuration.class);
     public static final Properties CONFIG = new Properties() {
         @Override
@@ -36,7 +37,6 @@ public final class Configuration {
     };
 
     static {
-        PropertyResourceBundle languageBundle;
         try {
             String protocol = Configuration.class.getResource("").getProtocol();
             if (protocol.equals("jar")) {
@@ -57,11 +57,11 @@ public final class Configuration {
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
+        ResourceBundle languageBundle;
         try {
-            languageBundle = new PropertyResourceBundle(Objects.requireNonNull(Configuration.class.getResourceAsStream("/language.properties")));
-        } catch (IOException e) {
-            LOGGER.log(Level.ERROR, e.getMessage());
-            languageBundle = null;
+            languageBundle = ResourceBundle.getBundle("language.language", Locale.getDefault());
+        } catch (MissingResourceException e) {
+            languageBundle = ResourceBundle.getBundle("language.language", Locale.US);
         }
         LANGUAGE = languageBundle;
     }

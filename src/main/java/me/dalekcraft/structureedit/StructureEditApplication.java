@@ -69,18 +69,6 @@ public class StructureEditApplication extends Application {
             }
         }
 
-        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png")))); // Use Objects.requireNonNull() because it should never be null
-        stage.setOnCloseRequest(event -> LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.stopping")));
-
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/scene.fxml"));
-        fxmlLoader.setResources(Configuration.LANGUAGE);
-        Scene scene = new Scene(fxmlLoader.load());
-        primaryStage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
-        Controller controller = fxmlLoader.getController();
-
         String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
 
         String assetsArg;
@@ -103,10 +91,18 @@ public class StructureEditApplication extends Application {
             LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.not_set"));
         }
         Assets.setAssets(assets);
-        if (assets != null) {
-            controller.assetsChooser.setInitialDirectory(assets.toFile());
-        }
-        controller.blockIdComboBox.setItems(FXCollections.observableArrayList(Assets.getBlockStateArray()));
+
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png")))); // Use Objects.requireNonNull() because it should never be null
+        stage.setOnCloseRequest(event -> LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.stopping")));
+
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/scene.fxml"));
+        fxmlLoader.setResources(Configuration.LANGUAGE);
+        Scene scene = new Scene(fxmlLoader.load());
+        primaryStage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
+        primaryStage.setScene(scene);
+        primaryStage.show();
+
+        Controller controller = fxmlLoader.getController();
 
         String path = null;
         if (protocol.equals("jar") && !raw.isEmpty()) {
