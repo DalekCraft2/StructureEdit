@@ -135,9 +135,11 @@ public class Controller {
         layerSpinner.setValueFactory(layerValueFactory);
         paletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onPaletteUpdate());
         paletteSpinner.setValueFactory(paletteValueFactory);
+        // TODO Blockbench-style palette editor, with a list of palettes and palette IDs (This will also involve separating palette editing and block editing).
         blockPaletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onBlockPaletteUpdate());
         blockPaletteSpinner.setValueFactory(blockPaletteValueFactory);
 
+        // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
         blockPropertiesTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockPropertiesUpdate());
         blockNbtTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockNbtUpdate());
 
