@@ -17,7 +17,6 @@
 package me.dalekcraft.structureedit;
 
 import javafx.application.Application;
-import javafx.collections.FXCollections;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
@@ -48,9 +47,7 @@ public class StructureEditApplication extends Application {
     public void start(Stage primaryStage) throws IOException {
         stage = primaryStage;
 
-        if (!AnsiConsole.isInstalled()) {
-            AnsiConsole.systemInstall();
-        }
+        AnsiConsole.systemInstall();
         LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.starting"));
 
         Parameters parameters = getParameters();
@@ -93,7 +90,12 @@ public class StructureEditApplication extends Application {
         Assets.setAssets(assets);
 
         stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png")))); // Use Objects.requireNonNull() because it should never be null
-        stage.setOnCloseRequest(event -> LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.stopping")));
+        stage.setOnCloseRequest(event -> {
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.stopping"));
+            while (AnsiConsole.isInstalled()) {
+                AnsiConsole.systemUninstall();
+            }
+        });
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/scene.fxml"));
         fxmlLoader.setResources(Configuration.LANGUAGE);

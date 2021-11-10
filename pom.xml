@@ -51,134 +51,13 @@
         <javafx.version>17.0.1</javafx.version>
         <jogl.version>2.3.2</jogl.version>
         <!--<jogl.version>2.4.0-rc-20200202</jogl.version>-->
+        <!--<johnzon.version>1.2.15</johnzon.version>-->
+        <!--<json.spec.version>1.5</json.spec.version>-->
     </properties>
 
     <!-- TODO Add JUnit tests. -->
     <dependencies>
-        <dependency>
-            <!-- GlueGen Runtime -->
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
-            <version>${jogl.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- GlueGen Runtime Natives -->
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>${jogl.natives}</classifier>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- JOGL -->
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
-            <version>${jogl.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- JOGL Natives -->
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>${jogl.natives}</classifier>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <!--<dependency>
-            &lt;!&ndash; GlueGen Runtime &ndash;&gt;
-            <groupId>com.metsci.ext.org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
-            <version>${jogl.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            &lt;!&ndash; GlueGen Runtime Natives &ndash;&gt;
-            <groupId>com.metsci.ext.org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>${jogl.natives}</classifier>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            &lt;!&ndash; JOGL &ndash;&gt;
-            <groupId>com.metsci.ext.org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
-            <version>${jogl.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            &lt;!&ndash; JOGL Natives &ndash;&gt;
-            <groupId>com.metsci.ext.org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>${jogl.natives}</classifier>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>-->
-        <dependency>
-            <!-- JOML -->
-            <groupId>org.joml</groupId>
-            <artifactId>joml</artifactId>
-            <version>1.10.2</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- JSON in Java -->
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20210307</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- everit-org/json-schema -->
-            <groupId>com.github.everit-org.json-schema</groupId>
-            <artifactId>org.everit.json.schema</artifactId>
-            <version>1.14.0</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- Querz/NBT -->
-            <groupId>com.github.Querz</groupId>
-            <artifactId>NBT</artifactId>
-            <version>6.1</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- JetBrains Java Annotations -->
-            <groupId>org.jetbrains</groupId>
-            <artifactId>annotations</artifactId>
-            <version>22.0.0</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- Apache Log4j Core -->
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.14.1</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- Jansi -->
-            <groupId>org.fusesource.jansi</groupId>
-            <artifactId>jansi</artifactId>
-            <version>2.4.0</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
+        <!-- JavaFX -->
         <dependency>
             <!-- JavaFX Controls -->
             <groupId>org.openjfx</groupId>
@@ -200,6 +79,197 @@
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-swing</artifactId>
             <version>${javafx.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <!-- GlueGen Runtime -->
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- GlueGen Runtime Natives -->
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>${jogl.natives}</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <!-- JOGL -->
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- JOGL Natives -->
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>${jogl.natives}</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        <!--<dependency>
+            &lt;!&ndash; GlueGen Runtime &ndash;&gt;
+            <groupId>com.metsci.ext.org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; GlueGen Runtime Natives &ndash;&gt;
+            <groupId>com.metsci.ext.org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>${jogl.natives}</classifier>
+            <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; JOGL &ndash;&gt;
+            <groupId>com.metsci.ext.org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; JOGL Natives &ndash;&gt;
+            <groupId>com.metsci.ext.org.jogamp.jogl</groupId>
+            <artifactId>jogl-all</artifactId>
+            <version>${jogl.version}</version>
+            <classifier>${jogl.natives}</classifier>
+            <scope>runtime</scope>
+        </dependency>-->
+        <dependency>
+            <!-- JOML -->
+            <groupId>org.joml</groupId>
+            <artifactId>joml</artifactId>
+            <version>1.10.2</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- JSON -->
+        <dependency>
+            <!-- JSON in Java -->
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20210307</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- everit-org/json-schema -->
+            <groupId>com.github.everit-org.json-schema</groupId>
+            <artifactId>org.everit.json.schema</artifactId>
+            <version>1.14.0</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <!--<dependency>
+            &lt;!&ndash; Apache Johnzon Core &ndash;&gt;
+            <groupId>org.apache.johnzon</groupId>
+            <artifactId>johnzon-core</artifactId>
+            <version>${johnzon.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; Apache Geronimo JSON Spec &ndash;&gt;
+            <groupId>org.apache.geronimo.specs</groupId>
+            <artifactId>geronimo-json_1.1_spec</artifactId>
+            <version>${json.spec.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; Apache Johnzon JSON-P Strict &ndash;&gt;
+            <groupId>org.apache.johnzon</groupId>
+            <artifactId>johnzon-jsonp-strict</artifactId>
+            <version>${johnzon.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; Apache Johnzon Mapper &ndash;&gt;
+            <groupId>org.apache.johnzon</groupId>
+            <artifactId>johnzon-mapper</artifactId>
+            <version>${johnzon.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; Apache Johnzon JSON-B &ndash;&gt;
+            <groupId>org.apache.johnzon</groupId>
+            <artifactId>johnzon-jsonb</artifactId>
+            <version>${johnzon.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; Apache Johnzon JSON-B Extras &ndash;&gt;
+            <groupId>org.apache.johnzon</groupId>
+            <artifactId>johnzon-jsonb-extras</artifactId>
+            <version>${johnzon.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            &lt;!&ndash; Apache Johnzon JSON Schema &ndash;&gt;
+            <groupId>org.apache.johnzon</groupId>
+            <artifactId>johnzon-jsonschema</artifactId>
+            <version>${johnzon.version}</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>-->
+
+        <!-- Logging -->
+        <dependency>
+            <!-- Apache Log4j Core -->
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.14.1</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- Jansi -->
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>2.4.0</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Other -->
+        <!--<dependency>
+            &lt;!&ndash; Apache Commons Configuration &ndash;&gt;
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-configuration2</artifactId>
+            <version>2.7</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>-->
+        <dependency>
+            <!-- Querz/NBT -->
+            <groupId>com.github.Querz</groupId>
+            <artifactId>NBT</artifactId>
+            <version>6.1</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- JetBrains Java Annotations -->
+            <groupId>org.jetbrains</groupId>
+            <artifactId>annotations</artifactId>
+            <version>22.0.0</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -270,8 +340,8 @@
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
-                    <jlinkImageName>me.dalekcraft.structureedit</jlinkImageName>
                     <mainClass>me.dalekcraft.structureedit/${mainClass}</mainClass>
+                    <includePathExceptionsInClasspath>true</includePathExceptionsInClasspath>
                 </configuration>
             </plugin>
             <plugin>
@@ -284,7 +354,10 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>lib/</classpathPrefix>
+                            <classpathLayoutType>repository</classpathLayoutType>
                             <mainClass>${mainClass}</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
                 </configuration>
@@ -301,6 +374,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
+                            <useRepositoryLayout>true</useRepositoryLayout>
                             <outputDirectory>${project.build.directory}/lib</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>

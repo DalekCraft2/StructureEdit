@@ -1017,6 +1017,7 @@ public class Controller {
             mousePoint = e.getPoint();
         }
 
+        // FIXME "mousePoint" does not update if the mouse is moved whilst a file chooser is open.
         @Override
         public void mouseMoved(@NotNull MouseEvent e) {
             mousePoint = e.getPoint();
