@@ -61,7 +61,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import java.nio.ShortBuffer;
@@ -93,9 +92,8 @@ public class Controller {
     private Schematic schematic;
     private SchematicRenderer renderer;
     private GLJPanel rendererPanel;
-    private SwingNode rendererNode;
     @FXML
-    private GridPane rendererContainer;
+    private SwingNode rendererNode;
     @FXML
     private TextField sizeTextField;
     @FXML
@@ -119,9 +117,10 @@ public class Controller {
         schematicChooser.getExtensionFilters().addAll(FILTER_NBT, FILTER_MCEDIT, FILTER_SPONGE, FILTER_TARDIS);
     }
 
-    public Controller() throws InterruptedException, InvocationTargetException {
+    @FXML
+    public void initialize() {
         // FIXME The GLEventListener only initializes when the window is resized or moved.
-        SwingUtilities.invokeAndWait(() -> {
+        SwingUtilities.invokeLater(() -> {
             rendererPanel = new GLJPanel(new GLCapabilities(GLProfile.getDefault()));
             renderer = new SchematicRenderer();
             rendererPanel.addGLEventListener(renderer);
@@ -129,13 +128,9 @@ public class Controller {
             rendererPanel.addMouseListener(renderer);
             rendererPanel.addMouseMotionListener(renderer);
             rendererPanel.addMouseWheelListener(renderer);
-            rendererNode = new SwingNode();
             rendererNode.setContent(rendererPanel);
         });
-    }
 
-    @FXML
-    public void initialize() {
         layerSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onLayerUpdate());
         layerSpinner.setValueFactory(layerValueFactory);
         paletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onPaletteUpdate());
@@ -150,8 +145,6 @@ public class Controller {
         new AutoCompleteComboBoxListener<>(blockIdComboBox);
 
         TextAreaAppender.addLog4j2TextAreaAppender(logPane);
-
-        rendererContainer.add(rendererNode, 0, 0);
     }
 
     @FXML
@@ -159,6 +152,8 @@ public class Controller {
         renderer.animator.pause();
         File file = schematicChooser.showOpenDialog(StructureEditApplication.stage);
         if (file != null) {
+            schematicChooser.setInitialDirectory(file.getParentFile());
+            schematicChooser.setInitialFileName(file.getName());
             openSchematic(file);
         }
         renderer.animator.resume();
@@ -231,6 +226,8 @@ public class Controller {
             renderer.animator.pause();
             File file = schematicChooser.showSaveDialog(StructureEditApplication.stage);
             if (file != null) {
+                schematicChooser.setInitialDirectory(file.getParentFile());
+                schematicChooser.setInitialFileName(file.getName());
                 saveSchematic(file);
             }
             renderer.animator.resume();
@@ -255,6 +252,7 @@ public class Controller {
         renderer.animator.pause();
         File file = assetsChooser.showDialog(StructureEditApplication.stage);
         if (file != null) {
+            assetsChooser.setInitialDirectory(file.getParentFile());
             Path assets = file.toPath();
             Assets.setAssets(assets);
             String selectedItem = blockIdComboBox.getSelectionModel().getSelectedItem();

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.embed.swing.SwingNode?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.Menu?>
@@ -51,13 +52,16 @@
         <items>
             <SplitPane dividerPositions="0.75">
               <items>
-                  <GridPane fx:id="rendererContainer">
+                  <GridPane>
                      <columnConstraints>
                         <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
                      </columnConstraints>
                      <rowConstraints>
                         <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
                      </rowConstraints>
+                     <children>
+                        <SwingNode fx:id="rendererNode" />
+                     </children>
                   </GridPane>
                   <TabPane side="RIGHT" SplitPane.resizableWithParent="false">
                      <tabs>

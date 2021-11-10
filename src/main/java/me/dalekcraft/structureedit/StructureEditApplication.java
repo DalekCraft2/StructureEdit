@@ -116,9 +116,9 @@ public class StructureEditApplication extends Application {
         }
         if (path != null) {
             File file = new File(path);
-            controller.openSchematic(file);
             controller.schematicChooser.setInitialDirectory(file.getParentFile());
             controller.schematicChooser.setInitialFileName(file.getName());
+            controller.openSchematic(file);
         }
     }
 }
