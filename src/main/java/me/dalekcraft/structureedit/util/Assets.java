@@ -2,6 +2,8 @@ package me.dalekcraft.structureedit.util;
 
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableMap;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -20,10 +22,10 @@ import java.util.concurrent.CompletableFuture;
 public final class Assets {
 
     private static final Logger LOGGER = LogManager.getLogger(Assets.class);
-    private static final Map<String, JSONObject> BLOCK_STATES = new HashMap<>();
-    private static final Map<String, JSONObject> MODELS = new HashMap<>();
-    private static final Map<String, Texture> TEXTURES = new HashMap<>(); // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
-    private static final Map<String, JSONObject> ANIMATIONS = new HashMap<>();
+    private static final ObservableMap<String, JSONObject> BLOCK_STATES = FXCollections.observableHashMap();
+    private static final ObservableMap<String, JSONObject> MODELS = FXCollections.observableHashMap();
+    private static final ObservableMap<String, Texture> TEXTURES = FXCollections.observableHashMap(); // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
+    private static final ObservableMap<String, JSONObject> ANIMATIONS = FXCollections.observableHashMap();
     private static Path assets;
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
@@ -190,12 +192,8 @@ public final class Assets {
         return blockState;
     }
 
-    public static String @NotNull [] getBlockStateArray() {
-        Set<String> keySet = new HashSet<>(BLOCK_STATES.keySet());
-        keySet.remove("minecraft:missing");
-        String[] array = keySet.toArray(new String[0]);
-        Arrays.sort(array);
-        return array;
+    public static ObservableMap<String, JSONObject> getBlockStateMap() {
+        return BLOCK_STATES;
     }
 
     public static JSONObject getModel(@NotNull String namespacedId) {

@@ -46,6 +46,21 @@ public class StructureEditApplication extends Application {
     @Override
     public void start(Stage primaryStage) throws IOException {
         stage = primaryStage;
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png")))); // Use Objects.requireNonNull() because it should never be null
+        stage.setOnCloseRequest(event -> {
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.stopping"));
+            while (AnsiConsole.isInstalled()) {
+                AnsiConsole.systemUninstall();
+            }
+        });
+
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/scene.fxml"));
+        fxmlLoader.setResources(Configuration.LANGUAGE);
+        Scene scene = new Scene(fxmlLoader.load());
+        primaryStage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
+        primaryStage.setScene(scene);
+
+        Controller controller = fxmlLoader.getController();
 
         AnsiConsole.systemInstall();
         LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.starting"));
@@ -89,23 +104,6 @@ public class StructureEditApplication extends Application {
         }
         Assets.setAssets(assets);
 
-        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png")))); // Use Objects.requireNonNull() because it should never be null
-        stage.setOnCloseRequest(event -> {
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.stopping"));
-            while (AnsiConsole.isInstalled()) {
-                AnsiConsole.systemUninstall();
-            }
-        });
-
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/scene.fxml"));
-        fxmlLoader.setResources(Configuration.LANGUAGE);
-        Scene scene = new Scene(fxmlLoader.load());
-        primaryStage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
-        Controller controller = fxmlLoader.getController();
-
         String path = null;
         if (protocol.equals("jar") && !raw.isEmpty()) {
             path = raw.get(raw.size() - 1);
@@ -118,5 +116,8 @@ public class StructureEditApplication extends Application {
             controller.schematicChooser.setInitialFileName(file.getName());
             controller.openSchematic(file);
         }
+
+        primaryStage.show();
+
     }
 }

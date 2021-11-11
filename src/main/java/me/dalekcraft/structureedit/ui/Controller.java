@@ -22,6 +22,7 @@ import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.Texture;
 import javafx.collections.FXCollections;
+import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
 import javafx.embed.swing.SwingNode;
 import javafx.event.Event;
@@ -145,12 +146,43 @@ public class Controller {
         blockPaletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onBlockPaletteUpdate());
         blockPaletteSpinner.setValueFactory(blockPaletteValueFactory);
 
-        blockIdComboBox.setItems(FXCollections.observableArrayList(Assets.getBlockStateArray()));
         blockIdAutoComplete = new AutoCompleteComboBoxListener<>(blockIdComboBox);
+        blockIdComboBox.selectionModelProperty().addListener((observable, oldValue, newValue) -> onBlockIdUpdate());
+        Assets.getBlockStateMap().addListener((MapChangeListener<String, JSONObject>) change -> {
+            ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
+            items.remove("minecraft:missing");
+            Collections.sort(items);
+            blockIdComboBox.setItems(items);
+            blockIdAutoComplete.setItems(items);
+        });
 
         // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
         blockPropertiesTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockPropertiesUpdate());
         blockNbtTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockNbtUpdate());
+        /*blockNbtTextField.setTextFormatter(new TextFormatter<CompoundTag>(new StringConverter<>() {
+            @Override
+            public String toString(CompoundTag tag) {
+                System.out.println("toString");
+                if (tag != null) {
+                    try {
+                        return SNBTUtil.toSNBT(tag);
+                    } catch (IOException e) {
+                        return null;
+                    }
+                }
+                return null;
+            }
+
+            @Override
+            public CompoundTag fromString(String string) {
+                System.out.println("fromString");
+                try {
+                    return (CompoundTag) SNBTUtil.fromSNBT(string);
+                } catch (IOException | StringIndexOutOfBoundsException e) {
+                    return null;
+                }
+            }
+        }));*/
 
         TextAreaAppender.addLog4j2TextAreaAppender(logPane);
     }
@@ -263,11 +295,6 @@ public class Controller {
             assetsChooser.setInitialDirectory(file.getParentFile());
             Path assets = file.toPath();
             Assets.setAssets(assets);
-            String selectedItem = blockIdComboBox.getSelectionModel().getSelectedItem();
-            ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateArray());
-            blockIdComboBox.setItems(items);
-            blockIdAutoComplete.setItems(items);
-            blockIdComboBox.getSelectionModel().select(selectedItem);
         }
         updateSelected();
         renderer.animator.resume();
@@ -297,14 +324,6 @@ public class Controller {
         renderer.animator.resume();
     }
 
-    @FXML
-    public void onLayerUpdate() {
-        if (schematic != null) {
-            loadLayer();
-        }
-    }
-
-    @FXML
     public void onBlockIdUpdate() {
         if (schematic != null && selected != null && blockIdComboBox.getSelectionModel().getSelectedItem() != null) {
             Schematic.Block block = selected.getBlock();
@@ -314,7 +333,6 @@ public class Controller {
         }
     }
 
-    @FXML
     public void onBlockPropertiesUpdate() {
         if (schematic != null && selected != null) {
             Schematic.Block block = selected.getBlock();
@@ -328,7 +346,6 @@ public class Controller {
         }
     }
 
-    @FXML
     public void onBlockNbtUpdate() {
         if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
             Schematic.Block block = selected.getBlock();
@@ -362,6 +379,13 @@ public class Controller {
                 loadLayer();
                 updateSelected();
             }
+        }
+    }
+
+    @FXML
+    public void onLayerUpdate() {
+        if (schematic != null) {
+            loadLayer();
         }
     }
 
