@@ -138,13 +138,39 @@ public class Controller {
             rendererNode.setContent(rendererPanel);
         });
 
-        layerSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onLayerUpdate());
         layerSpinner.setValueFactory(layerValueFactory);
-        paletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onPaletteUpdate());
+        layerSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onLayerUpdate());
+        layerSpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
+            try {
+                Integer.valueOf(change.getControlNewText());
+                return change;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }));
+
         paletteSpinner.setValueFactory(paletteValueFactory);
+        paletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onPaletteUpdate());
+        paletteSpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
+            try {
+                Integer.valueOf(change.getControlNewText());
+                return change;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }));
+
         // TODO Blockbench-style palette editor, with a list of palettes and palette IDs (This will also involve separating palette editing and block editing).
-        blockPaletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onBlockPaletteUpdate());
         blockPaletteSpinner.setValueFactory(blockPaletteValueFactory);
+        blockPaletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onBlockPaletteUpdate());
+        blockPaletteSpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
+            try {
+                Integer.valueOf(change.getControlNewText());
+                return change;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }));
 
         blockIdAutoComplete = new AutoCompleteComboBoxListener<>(blockIdComboBox);
         blockIdComboBox.selectionModelProperty().addListener((observable, oldValue, newValue) -> onBlockIdUpdate());
@@ -158,6 +184,7 @@ public class Controller {
 
         // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
         blockPropertiesTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockPropertiesUpdate());
+
         blockNbtTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockNbtUpdate());
         /*blockNbtTextField.setTextFormatter(new TextFormatter<CompoundTag>(new StringConverter<>() {
             @Override
@@ -1249,6 +1276,7 @@ public class Controller {
             return weightTree.ceilingEntry(value).getValue();
         }
 
+        // TODO use object to contain these ten million model attributes
         public void drawModel(@NotNull GL4 gl, @NotNull JSONObject jsonObject, Color tint) {
             gl.glUseProgram(shaderProgram);
 

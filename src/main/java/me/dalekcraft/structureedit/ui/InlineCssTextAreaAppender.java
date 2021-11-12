@@ -59,25 +59,6 @@ public class InlineCssTextAreaAppender extends AbstractAppender {
         for (InlineCssTextArea textArea : TEXT_AREAS) {
             if (textArea != null) {
                 Level level = event.getLevel();
-                /*String style = "-fx-font-family: monospace; -fx-fill: ";
-                if (level.equals(Level.FATAL)) {
-                    style = style.concat(LogColors.colorToHex(LogColors.FATAL));
-                } else if (level.equals(Level.ERROR)) {
-                    style = style.concat(LogColors.colorToHex(LogColors.ERROR));
-                } else if (level.equals(Level.WARN)) {
-                    style = style.concat(LogColors.colorToHex(LogColors.WARN));
-                } else if (level.equals(Level.INFO)) {
-                    style = style.concat(LogColors.colorToHex(LogColors.INFO));
-                } else if (level.equals(Level.DEBUG)) {
-                    style = style.concat(LogColors.colorToHex(LogColors.DEBUG));
-                } else if (level.equals(Level.TRACE)) {
-                    style = style.concat(LogColors.colorToHex(LogColors.TRACE));
-                } else {
-                    style = style.concat(LogColors.colorToHex(Color.WHITE));
-                }
-                style = style.concat(";");
-
-                String finalStyle = style;*/
                 StringBuilder style = new StringBuilder("-fx-font-family: monospace; -fx-fill: ");
                 if (level.equals(Level.FATAL)) {
                     style.append(LogColors.colorToHex(LogColors.FATAL));
