@@ -22,7 +22,6 @@ import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import me.dalekcraft.structureedit.ui.Controller;
-import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -102,7 +101,7 @@ public class StructureEditApplication extends Application {
         } else {
             LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.not_set"));
         }
-        Assets.setAssets(assets);
+        controller.setAssets(assets);
 
         String path = null;
         if (protocol.equals("jar") && !raw.isEmpty()) {

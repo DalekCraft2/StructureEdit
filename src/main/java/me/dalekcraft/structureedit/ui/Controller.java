@@ -28,7 +28,6 @@ import javafx.embed.swing.SwingNode;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
-import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -48,6 +47,7 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
+import org.fxmisc.richtext.InlineCssTextArea;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix3f;
@@ -114,7 +114,7 @@ public class Controller {
     @FXML
     private GridPane blockGrid;
     @FXML
-    private TextArea logPane;
+    private InlineCssTextArea logArea;
 
     {
         schematicChooser.getExtensionFilters().addAll(FILTER_NBT, FILTER_MCEDIT, FILTER_SPONGE, FILTER_TARDIS);
@@ -184,7 +184,7 @@ public class Controller {
             }
         }));*/
 
-        TextAreaAppender.addLog4j2TextAreaAppender(logPane);
+        InlineCssTextAreaAppender.addLog4j2TextAreaAppender(logArea);
     }
 
     @FXML
@@ -288,16 +288,30 @@ public class Controller {
     }
 
     @FXML
-    public void selectAssets() {
+    public void showAssetsChooser() {
         renderer.animator.pause();
         File file = assetsChooser.showDialog(StructureEditApplication.stage);
+        if (file != null) {
+            setAssets(file);
+        }
+        updateSelected();
+        renderer.animator.resume();
+    }
+
+    public void setAssets(File file) {
         if (file != null) {
             assetsChooser.setInitialDirectory(file.getParentFile());
             Path assets = file.toPath();
             Assets.setAssets(assets);
         }
-        updateSelected();
-        renderer.animator.resume();
+    }
+
+    public void setAssets(Path path) {
+        if (path != null) {
+            File file = path.toFile();
+            assetsChooser.setInitialDirectory(file.getParentFile());
+            Assets.setAssets(path);
+        }
     }
 
     @FXML

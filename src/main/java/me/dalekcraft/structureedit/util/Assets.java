@@ -16,7 +16,7 @@ import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.*;
-import java.util.*;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 
 public final class Assets {

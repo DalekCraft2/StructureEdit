@@ -14,6 +14,7 @@ module me.dalekcraft.structureedit {
     requires org.apache.logging.log4j.core;
     requires org.everit.json.schema;
     requires org.fusesource.jansi;
+    requires org.fxmisc.richtext;
 
     exports me.dalekcraft.structureedit;
     opens me.dalekcraft.structureedit to javafx.controls, javafx.fxml;

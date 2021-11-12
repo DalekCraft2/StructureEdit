@@ -11,12 +11,12 @@
 <?import javafx.scene.control.SplitPane?>
 <?import javafx.scene.control.Tab?>
 <?import javafx.scene.control.TabPane?>
-<?import javafx.scene.control.TextArea?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.RowConstraints?>
+<?import org.fxmisc.richtext.InlineCssTextArea?>
 
 <GridPane prefHeight="600.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.dalekcraft.structureedit.ui.Controller">
   <columnConstraints>
@@ -37,7 +37,7 @@
           </Menu>
           <Menu mnemonicParsing="false" text="%ui.menu_bar.settings_menu.text">
                <items>
-                  <MenuItem mnemonicParsing="false" onAction="#selectAssets" text="%ui.menu_bar.settings_menu.assets_path" />
+                  <MenuItem mnemonicParsing="false" onAction="#showAssetsChooser" text="%ui.menu_bar.settings_menu.assets_path" />
                   <MenuItem mnemonicParsing="false" onAction="#selectLogLevel" text="%ui.menu_bar.settings_menu.log_level" />
                </items>
           </Menu>
@@ -156,11 +156,10 @@
               <tabs>
                 <Tab closable="false" text="%ui.tabbed_pane.log.text">
                      <content>
-                        <ScrollPane fitToHeight="true" fitToWidth="true">
-                           <content>
-                              <TextArea fx:id="logPane" editable="false" />
-                           </content>
-                        </ScrollPane>
+                        <InlineCssTextArea />
+                     </content>
+                     <content>
+                        <InlineCssTextArea fx:id="logArea" editable="false" style="-fx-background-color: BLACK;" wrapText="true" />
                      </content>
                   </Tab>
               </tabs>
