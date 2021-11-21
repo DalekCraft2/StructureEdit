@@ -91,6 +91,7 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- JOGL -->
         <dependency>
             <!-- GlueGen Runtime -->
             <groupId>org.jogamp.gluegen</groupId>
@@ -270,6 +271,14 @@
             <groupId>com.github.Querz</groupId>
             <artifactId>NBT</artifactId>
             <version>6.1</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <!-- Google Guava -->
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>31.0.1-jre</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>

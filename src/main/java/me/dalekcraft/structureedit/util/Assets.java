@@ -17,11 +17,10 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.FileSystem;
 import java.nio.file.*;
 import java.util.Objects;
-import java.util.concurrent.CompletableFuture;
 
 public final class Assets {
 
-    private static final Logger LOGGER = LogManager.getLogger(Assets.class);
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final ObservableMap<String, JSONObject> BLOCK_STATES = FXCollections.observableHashMap();
     private static final ObservableMap<String, JSONObject> MODELS = FXCollections.observableHashMap();
     private static final ObservableMap<String, Texture> TEXTURES = FXCollections.observableHashMap(); // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
@@ -46,8 +45,9 @@ public final class Assets {
         load();
     }
 
+    // TODO Delete all of the textures in the TEXTURES map before clearing it.
     public static void load() {
-        CompletableFuture.runAsync(() -> {
+        synchronized (assets) {
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loading"), assets);
             if (assets == null || !Files.exists(assets)) {
                 LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.invalid"), assets);
@@ -88,7 +88,7 @@ public final class Assets {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loaded"));
-        }).join();
+        }
     }
 
     public static void loadNamespace(Path namespace) {
@@ -103,7 +103,7 @@ public final class Assets {
     public static void loadBlockStates(@NotNull Path directory, String currentNamespace) {
         if (Files.exists(directory)) {
             try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
-                directoryStream.forEach((path) -> {
+                directoryStream.forEach(path -> {
                     if (Files.isDirectory(path)) {
                         loadBlockStates(path, currentNamespace + path.getFileName() + "/");
                     } else if (Files.isRegularFile(path) && path.toString().endsWith(".json")) {
@@ -120,7 +120,7 @@ public final class Assets {
     public static void loadModels(@NotNull Path directory, String currentNamespace) {
         if (Files.exists(directory)) {
             try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
-                directoryStream.forEach((path) -> {
+                directoryStream.forEach(path -> {
                     if (Files.isDirectory(path)) {
                         loadModels(path, currentNamespace + path.getFileName() + "/");
                     } else if (Files.isRegularFile(path) && path.toString().endsWith(".json")) {
@@ -137,7 +137,7 @@ public final class Assets {
     public static void loadTextures(@NotNull Path directory, String currentNamespace) {
         if (Files.exists(directory)) {
             try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
-                directoryStream.forEach((path) -> {
+                directoryStream.forEach(path -> {
                     if (Files.isDirectory(path)) {
                         loadTextures(path, currentNamespace + path.getFileName() + "/");
                     } else if (Files.isRegularFile(path)) {

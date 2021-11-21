@@ -21,6 +21,7 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.Texture;
+import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
@@ -77,7 +78,7 @@ import static me.dalekcraft.structureedit.schematic.Schematic.openFrom;
  * @author eccentric_nz
  */
 public class Controller {
-    private static final Logger LOGGER = LogManager.getLogger(Controller.class);
+    private static final Logger LOGGER = LogManager.getLogger();
     private static final FileChooser.ExtensionFilter FILTER_NBT = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.nbt"), "*." + NbtStructure.EXTENSION);
     private static final FileChooser.ExtensionFilter FILTER_MCEDIT = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.mcedit"), "*." + McEditSchematic.EXTENSION);
     private static final FileChooser.ExtensionFilter FILTER_SPONGE = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.sponge"), "*." + SpongeSchematic.EXTENSION);
@@ -173,14 +174,16 @@ public class Controller {
         }));
 
         blockIdAutoComplete = new AutoCompleteComboBoxListener<>(blockIdComboBox);
-        blockIdComboBox.selectionModelProperty().addListener((observable, oldValue, newValue) -> onBlockIdUpdate());
-        Assets.getBlockStateMap().addListener((MapChangeListener<String, JSONObject>) change -> {
-            ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
-            items.remove("minecraft:missing");
-            Collections.sort(items);
-            blockIdComboBox.setItems(items);
-            blockIdAutoComplete.setItems(items);
-        });
+        blockIdComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> onBlockIdUpdate());
+        Assets.getBlockStateMap().addListener((MapChangeListener<String, JSONObject>) change -> Platform.runLater(() -> {
+            synchronized (Assets.getAssets()) {
+                ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
+                items.remove("minecraft:missing");
+                Collections.sort(items);
+                blockIdComboBox.setItems(items);
+                blockIdAutoComplete.setItems(items);
+            }
+        }));
 
         // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
         blockPropertiesTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockPropertiesUpdate());
@@ -329,7 +332,7 @@ public class Controller {
         if (file != null) {
             assetsChooser.setInitialDirectory(file.getParentFile());
             Path assets = file.toPath();
-            Assets.setAssets(assets);
+            Threading.invokeOnOpenGLThread(false, () -> Assets.setAssets(assets));
         }
     }
 
@@ -346,7 +349,7 @@ public class Controller {
         ChoiceDialog<Level> dialog = new ChoiceDialog<>(LogManager.getRootLogger().getLevel(), Level.values());
         dialog.setTitle(Configuration.LANGUAGE.getString("ui.menu_bar.settings_menu.log_level.title"));
         dialog.setContentText(Configuration.LANGUAGE.getString("ui.menu_bar.settings_menu.log_level.label"));
-        dialog.getDialogPane().getScene().getWindow().setOnCloseRequest((event -> dialog.close()));
+        dialog.getDialogPane().getScene().getWindow().setOnCloseRequest(event -> dialog.close());
         Optional<Level> level = dialog.showAndWait();
         if (level.isPresent()) {
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.log_level.setting"), level.get());
@@ -360,7 +363,7 @@ public class Controller {
         javafx.scene.control.Dialog<?> dialog = new javafx.scene.control.Dialog<>();
         dialog.setTitle(Configuration.LANGUAGE.getString("ui.menu_bar.help_menu.controls.title"));
         dialog.setContentText(Configuration.LANGUAGE.getString("ui.menu_bar.help_menu.controls.dialog"));
-        dialog.getDialogPane().getScene().getWindow().setOnCloseRequest((event -> dialog.close()));
+        dialog.getDialogPane().getScene().getWindow().setOnCloseRequest(event -> dialog.close());
         dialog.show();
         renderer.animator.resume();
     }
@@ -543,6 +546,7 @@ public class Controller {
 
     private class SchematicRenderer extends MouseAdapter implements GLEventListener, KeyListener {
 
+        private static final Logger LOGGER = LogManager.getLogger();
         private static final float SCALE = 1.0f;
         private static final float RESCALE_22_5 = 1.0f / (float) Math.cos(Math.toRadians(22.5f));
         private static final float RESCALE_45 = 1.0f / (float) Math.cos(Math.toRadians(45.0f));
@@ -731,7 +735,7 @@ public class Controller {
         }
 
         public static double simplifyAngle(double angle, double center) {
-            return angle - (2 * Math.PI) * Math.floor((angle + Math.PI - center) / (2 * Math.PI));
+            return angle - 2 * Math.PI * Math.floor((angle + Math.PI - center) / (2 * Math.PI));
         }
 
         @Override
@@ -988,7 +992,7 @@ public class Controller {
                         for (int z = 0; z < size[2]; z++) {
                             Schematic.Block block = schematic.getBlock(x, y, z);
                             if (block != null) {
-                                long seed = x + ((long) y * size[2] * size[0]) + ((long) z * size[0]);
+                                long seed = x + (long) y * size[2] * size[0] + (long) z * size[0];
                                 random.setSeed(seed);
                                 List<JSONObject> modelList = getModelsFromBlockState(block);
                                 Color tint = getTint(block);
@@ -1474,7 +1478,8 @@ public class Controller {
                             long currentTick = currentTime / (TICK_LENGTH * frametime);
                             int index = (int) (currentTick % frames.length());
                             /*The mix factor should be a value between 0.0f and 1.0f, representing the passage of time from the current frame to the next. 0.0f is the current frame, and 1.0f is the next frame.*/
-                            float mixFactor = interpolate ? 0.0f /* TODO how the heck do i get this */ : 0.0f;
+                            /* TODO how the heck do i get this */
+                            float mixFactor = 0.0f;
 
                             gl.glUniform1f(mixFactorLocation, mixFactor);
 
@@ -1712,6 +1717,11 @@ public class Controller {
             private final Vector3f eye = new Vector3f();
             private final Vector3f center = new Vector3f();
             private final Vector3f up = new Vector3f(0.0f, 1.0f, 0.0f);
+            private final float fovY = (float) Math.toRadians(45.0f);
+            private final float zNear = 0.5f;
+            private final float zFar = 1000.0f;
+            private final int[] viewport = new int[4];
+            private final boolean orthographic = false;
             /**
              * X rotation angle in degrees.
              **/
@@ -1723,11 +1733,6 @@ public class Controller {
             private float radius = 30.0f;
             private float panX;
             private float panY;
-            private float fovY = (float) Math.toRadians(45.0f);
-            private float zNear = 0.5f;
-            private float zFar = 1000.0f;
-            private int[] viewport = new int[4];
-            private boolean orthographic = false;
 
             {
                 update();

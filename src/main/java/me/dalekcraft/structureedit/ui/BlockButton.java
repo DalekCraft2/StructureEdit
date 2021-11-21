@@ -20,8 +20,6 @@ import javafx.scene.control.Button;
 import me.dalekcraft.structureedit.schematic.Schematic;
 import org.jetbrains.annotations.Contract;
 
-import javax.swing.*;
-
 /**
  * @author eccentric_nz
  */

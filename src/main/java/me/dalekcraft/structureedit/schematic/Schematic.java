@@ -16,7 +16,7 @@ import java.io.IOException;
 
 public interface Schematic {
 
-    Logger LOGGER = LogManager.getLogger(Schematic.class);
+    Logger LOGGER = LogManager.getLogger();
 
     /**
      * Extracts a {@link Schematic} from a {@link File}.

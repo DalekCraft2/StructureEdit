@@ -1,6 +1,5 @@
 module me.dalekcraft.structureedit {
     // requires com.jogamp.opengl;
-    requires gluegen.rt;
     requires java.desktop;
     requires javafx.controls;
     requires javafx.fxml;

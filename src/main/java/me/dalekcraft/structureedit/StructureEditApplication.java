@@ -39,7 +39,7 @@ import java.util.Objects;
 
 public class StructureEditApplication extends Application {
 
-    private static final Logger LOGGER = LogManager.getLogger(StructureEditApplication.class);
+    private static final Logger LOGGER = LogManager.getLogger();
     public static Stage stage;
 
     @Override

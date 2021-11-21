@@ -92,10 +92,10 @@ public class TardisSchematic implements Schematic {
 
     public static class TardisBlock implements Block {
 
-        private static final Logger LOGGER = LogManager.getLogger(TardisBlock.class);
+        private static final Logger LOGGER = LogManager.getLogger();
 
         private final JSONObject blockObject;
-        private int[] position;
+        private final int[] position;
 
         @Contract(pure = true)
         public TardisBlock(JSONObject blockObject, int[] position) {

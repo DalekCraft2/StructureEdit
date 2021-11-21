@@ -7,6 +7,8 @@ import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.*;
 import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
@@ -164,7 +166,7 @@ public class McEditSchematic implements Schematic {
     public Block getBlock(int x, int y, int z) {
         int[] size = getSize();
         // index = x + (y * length * width) + (z * width)
-        int index = x + (y * size[2] * size[0]) + (z * size[0]);
+        int index = x + y * size[2] * size[0] + z * size[0];
         int blockId = getBlockList().getValue()[index];
         CompoundTag blockEntityTag = null;
         for (CompoundTag blockEntity : getBlockEntityList()) {
@@ -202,8 +204,10 @@ public class McEditSchematic implements Schematic {
 
     public class McEditBlock implements Block {
 
-        private CompoundTag blockEntityTag;
-        private int[] position;
+        private static final Logger LOGGER = LogManager.getLogger();
+
+        private final CompoundTag blockEntityTag;
+        private final int[] position;
 
         public McEditBlock(CompoundTag blockEntityTag, int[] position) {
             this.blockEntityTag = blockEntityTag;

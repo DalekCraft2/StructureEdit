@@ -19,7 +19,7 @@ import java.util.ResourceBundle;
 public final class Configuration {
 
     public static final ResourceBundle LANGUAGE;
-    private static final Logger LOGGER = LogManager.getLogger(Configuration.class);
+    private static final Logger LOGGER = LogManager.getLogger();
     public static final Properties CONFIG = new Properties() {
         @Override
         public synchronized Object setProperty(String key, String value) {

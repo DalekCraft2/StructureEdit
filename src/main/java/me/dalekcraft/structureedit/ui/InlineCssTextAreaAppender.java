@@ -59,28 +59,55 @@ public class InlineCssTextAreaAppender extends AbstractAppender {
         for (InlineCssTextArea textArea : TEXT_AREAS) {
             if (textArea != null) {
                 Level level = event.getLevel();
-                StringBuilder style = new StringBuilder("-fx-font-family: monospace; -fx-fill: ");
+
+                String fill;
                 if (level.equals(Level.FATAL)) {
-                    style.append(LogColors.colorToHex(LogColors.FATAL));
+                    fill = LogColors.colorToHex(LogColors.FATAL);
                 } else if (level.equals(Level.ERROR)) {
-                    style.append(LogColors.colorToHex(LogColors.ERROR));
+                    fill = LogColors.colorToHex(LogColors.ERROR);
                 } else if (level.equals(Level.WARN)) {
-                    style.append(LogColors.colorToHex(LogColors.WARN));
+                    fill = LogColors.colorToHex(LogColors.WARN);
                 } else if (level.equals(Level.INFO)) {
-                    style.append(LogColors.colorToHex(LogColors.INFO));
+                    fill = LogColors.colorToHex(LogColors.INFO);
                 } else if (level.equals(Level.DEBUG)) {
-                    style.append(LogColors.colorToHex(LogColors.DEBUG));
+                    fill = LogColors.colorToHex(LogColors.DEBUG);
                 } else if (level.equals(Level.TRACE)) {
-                    style.append(LogColors.colorToHex(LogColors.TRACE));
+                    fill = LogColors.colorToHex(LogColors.TRACE);
                 } else {
-                    style.append(LogColors.colorToHex(Color.WHITE));
+                    fill = LogColors.colorToHex(Color.WHITE);
                 }
-                style.append(";");
+
+                /*String highlightTextFill; // TODO Make this work.
+                if (level.equals(Level.FATAL)) {
+                    highlightTextFill = LogColors.colorToHex(LogColors.FATAL);
+                } else if (level.equals(Level.ERROR)) {
+                    highlightTextFill = LogColors.colorToHex(LogColors.ERROR);
+                } else if (level.equals(Level.WARN)) {
+                    highlightTextFill = LogColors.colorToHex(LogColors.WARN);
+                } else if (level.equals(Level.INFO)) {
+                    highlightTextFill = LogColors.colorToHex(LogColors.INFO);
+                } else if (level.equals(Level.DEBUG)) {
+                    highlightTextFill = LogColors.colorToHex(LogColors.DEBUG);
+                } else if (level.equals(Level.TRACE)) {
+                    highlightTextFill = LogColors.colorToHex(LogColors.TRACE);
+                } else {
+                    highlightTextFill = LogColors.colorToHex(Color.WHITE);
+                }*/
+
+                /*String style = """
+                        -fx-font-family: monospace;
+                        -fx-fill: %s;
+                        -fx-highlight-text-fill: %s;""".formatted(fill, highlightTextFill);*/
+
+                String style = """
+                        -fx-font-family: monospace;
+                        -fx-fill: %s;""".formatted(fill);
+
                 Platform.runLater(() -> {
                     int index1 = textArea.getLength();
                     textArea.appendText(message);
                     int index2 = textArea.getLength();
-                    textArea.setStyle(index1, index2 - 1, style.toString());
+                    textArea.setStyle(index1, index2 - 1, style);
                 });
             }
         }

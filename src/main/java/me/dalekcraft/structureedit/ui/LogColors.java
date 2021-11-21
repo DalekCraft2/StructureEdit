@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.Locale;
 
-public class LogColors {
+public final class LogColors {
 
     public static final Color FATAL = Color.RED;
     public static final Color ERROR = Color.RED;
@@ -15,6 +15,7 @@ public class LogColors {
     public static final Color TRACE = Color.BLACK;
 
     private LogColors() {
+        throw new UnsupportedOperationException();
     }
 
     public static String colorToHex(@NotNull Color color) {

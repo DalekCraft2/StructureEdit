@@ -368,7 +368,7 @@ public class NbtStructure implements VersionedSchematic, MultiPaletteSchematic {
 
     public static class NbtBlock implements PaletteBlock {
 
-        private static final Logger LOGGER = LogManager.getLogger(NbtBlock.class);
+        private static final Logger LOGGER = LogManager.getLogger();
 
         private final CompoundTag blockTag;
         private final CompoundTag stateTag;

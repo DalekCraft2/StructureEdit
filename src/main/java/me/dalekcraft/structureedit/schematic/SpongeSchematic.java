@@ -244,7 +244,7 @@ public class SpongeSchematic implements PaletteSchematic {
     public SpongeBlock getBlock(int x, int y, int z) {
         int[] size = getSize();
         // index = x + (y * length * width) + (z * width)
-        int index = x + (y * size[2] * size[0]) + (z * size[0]);
+        int index = x + y * size[2] * size[0] + z * size[0];
         int stateIndex = getBlockList().getValue()[index];
         String state = getPalette().getState(stateIndex);
         CompoundTag blockEntityTag = null;
@@ -342,10 +342,10 @@ public class SpongeSchematic implements PaletteSchematic {
 
     public class SpongeBlock implements PaletteBlock {
 
-        private static final Logger LOGGER = LogManager.getLogger(SpongeBlock.class);
+        private static final Logger LOGGER = LogManager.getLogger();
         private CompoundTag blockEntityTag;
         private String state;
-        private int[] position;
+        private final int[] position;
 
         @Contract(pure = true)
         public SpongeBlock(String state, CompoundTag blockEntityTag, int[] position) {
@@ -512,7 +512,7 @@ public class SpongeSchematic implements PaletteSchematic {
             int[] size = getSize();
             int[] position = getPosition();
             // index = x + (y * length * width) + (z * width)
-            int index = position[0] + (position[1] * size[2] * size[0]) + (position[2] * size[0]);
+            int index = position[0] + position[1] * size[2] * size[0] + position[2] * size[0];
             return getBlockList().getValue()[index];
         }
 
@@ -521,7 +521,7 @@ public class SpongeSchematic implements PaletteSchematic {
             int[] size = getSize();
             int[] position = getPosition();
             // index = x + (y * length * width) + (z * width)
-            int index = position[0] + (position[1] * size[2] * size[0]) + (position[2] * size[0]);
+            int index = position[0] + position[1] * size[2] * size[0] + position[2] * size[0];
             getBlockList().getValue()[index] = (byte) state;
         }
     }
