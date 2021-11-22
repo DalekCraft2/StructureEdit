@@ -21,6 +21,7 @@ import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.util.texture.TextureIO;
 import javafx.application.Platform;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
@@ -91,6 +92,7 @@ public class Controller {
     private int renderedHeight;
     private BlockButton selected;
     private Schematic schematic;
+    private boolean shouldReloadTextures = true;
     private SchematicRenderer renderer;
     private GLJPanel rendererPanel;
     @FXML
@@ -329,19 +331,27 @@ public class Controller {
     }
 
     public void setAssets(File file) {
+        if (file == null) {
+            file = new File("");
+        }
         if (file != null) {
             assetsChooser.setInitialDirectory(file.getParentFile());
             Path assets = file.toPath();
-            Threading.invokeOnOpenGLThread(false, () -> Assets.setAssets(assets));
+            Assets.setAssets(assets);
         }
+        shouldReloadTextures = true;
     }
 
     public void setAssets(Path path) {
+        if (path == null) {
+            path = Path.of("");
+        }
         if (path != null) {
             File file = path.toFile();
             assetsChooser.setInitialDirectory(file.getParentFile());
             Assets.setAssets(path);
         }
+        shouldReloadTextures = true;
     }
 
     @FXML
@@ -565,6 +575,7 @@ public class Controller {
         private final Matrix4fStack modelMatrix = new Matrix4fStack(5);
         private final Matrix4f textureMatrix = new Matrix4f();
         private final Matrix3f normalMatrix = new Matrix3f();
+        private final Map<String, Texture> textures = new HashMap<>();
         private Animator animator;
         private int vertexShader;
         private int fragmentShader;
@@ -978,6 +989,14 @@ public class Controller {
         @Override
         public void display(@NotNull GLAutoDrawable drawable) {
             GL4 gl = drawable.getGL().getGL4();
+            if (shouldReloadTextures) {
+                synchronized (Assets.getAssets()) {
+                    textures.forEach((s, texture) -> texture.destroy(gl));
+                    textures.clear();
+                    Assets.getTextureMap().forEach((s, textureData) -> textures.put(s, TextureIO.newTexture(textureData)));
+                    shouldReloadTextures = false;
+                }
+            }
             gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             modelMatrix.identity();
             if (schematic != null) {
@@ -997,11 +1016,15 @@ public class Controller {
                                 List<JSONObject> modelList = getModelsFromBlockState(block);
                                 Color tint = getTint(block);
 
-                                for (JSONObject model : modelList) {
-                                    modelMatrix.pushMatrix();
-                                    modelMatrix.translate(x, y, z);
-                                    drawModel(gl, model, tint);
-                                    modelMatrix.popMatrix();
+                                try {
+                                    for (JSONObject model : modelList) {
+                                        modelMatrix.pushMatrix();
+                                        modelMatrix.translate(x, y, z);
+                                        drawModel(gl, model, tint);
+                                        modelMatrix.popMatrix();
+                                    }
+                                } catch (IllegalStateException e) {
+                                    System.exit(1);
                                 }
                             }
                         }
@@ -1090,6 +1113,18 @@ public class Controller {
         @Override
         public void mouseMoved(@NotNull MouseEvent e) {
             mousePoint = e.getPoint();
+        }
+
+        public Texture getTexture(@NotNull String namespacedId) {
+            if (!namespacedId.contains(":")) {
+                namespacedId = "minecraft:" + namespacedId;
+            }
+            if (textures.containsKey(namespacedId)) {
+                return textures.get(namespacedId);
+            }
+            Texture texture = textures.getOrDefault(namespacedId, textures.get("minecraft:missing"));
+            textures.put(namespacedId, texture);
+            return texture;
         }
 
         public void drawAxes(@NotNull GL4 gl, float sizeX, float sizeY, float sizeZ) {
@@ -1416,7 +1451,11 @@ public class Controller {
                             components[3] = (float) tint.getOpacity();
                         }
 
-                        Texture texture = Assets.getTexture(textures.getOrDefault(faceTexture, "minecraft:missing"));
+                        // System.out.println(faceTexture);
+                        // System.out.println(textures);
+                        // System.out.println(textures.getOrDefault(faceTexture, "minecraft:missing"));
+
+                        Texture texture = getTexture(textures.getOrDefault(faceTexture, "minecraft:missing"));
 
                         float textureLeft = uv != null ? (float) (uv.getDouble(0) / MODEL_SIZE) : switch (faceName) {
                             case "up", "down", "north", "south" -> fromX;
@@ -1509,7 +1548,7 @@ public class Controller {
                             textureTop2 += frameDouble2 / heightFactor;
                             textureBottom2 += frameDouble2 / heightFactor;
                         } else if (texture.getWidth() != texture.getHeight()) {
-                            texture = Assets.getTexture("minecraft:missing");
+                            texture = getTexture("minecraft:missing");
                         }
 
                         for (int i = 0; i < faceRotation; i += 90) {

@@ -1,7 +1,7 @@
 {
     "textures": {
-        "missing": "minecraft:block/missing",
-        "particle": "minecraft:block/missing"
+        "missing": "minecraft:missing",
+        "particle": "minecraft:missing"
     },
     "elements": [
         {   "from": [0, 0, 0],

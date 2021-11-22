@@ -1,6 +1,7 @@
 package me.dalekcraft.structureedit.util;
 
-import com.jogamp.opengl.util.texture.Texture;
+import com.jogamp.opengl.GLProfile;
+import com.jogamp.opengl.util.texture.TextureData;
 import com.jogamp.opengl.util.texture.TextureIO;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableMap;
@@ -23,9 +24,9 @@ public final class Assets {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final ObservableMap<String, JSONObject> BLOCK_STATES = FXCollections.observableHashMap();
     private static final ObservableMap<String, JSONObject> MODELS = FXCollections.observableHashMap();
-    private static final ObservableMap<String, Texture> TEXTURES = FXCollections.observableHashMap(); // TODO Make this not use the JOGL Texture class, because it makes things difficult due to threads.
+    private static final ObservableMap<String, TextureData> TEXTURES = FXCollections.observableHashMap();
     private static final ObservableMap<String, JSONObject> ANIMATIONS = FXCollections.observableHashMap();
-    private static Path assets;
+    private static Path assets = Path.of("");
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
 
@@ -45,7 +46,6 @@ public final class Assets {
         load();
     }
 
-    // TODO Delete all of the textures in the TEXTURES map before clearing it.
     public static void load() {
         synchronized (assets) {
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loading"), assets);
@@ -54,6 +54,7 @@ public final class Assets {
             }
             BLOCK_STATES.clear();
             MODELS.clear();
+            TEXTURES.forEach((s, textureData) -> textureData.destroy());
             TEXTURES.clear();
             ANIMATIONS.clear();
             String protocol = Objects.requireNonNull(Assets.class.getResource("")).getProtocol();
@@ -142,8 +143,8 @@ public final class Assets {
                         loadTextures(path, currentNamespace + path.getFileName() + "/");
                     } else if (Files.isRegularFile(path)) {
                         if (path.toString().endsWith(".png")) {
-                            // String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".png"));
-                            // getTexture(namespacedId);
+                            String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".png"));
+                            getTexture(namespacedId);
                         } else if (path.toString().endsWith(".png.mcmeta")) {
                             String namespacedId = currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".png.mcmeta"));
                             getAnimation(namespacedId);
@@ -208,32 +209,41 @@ public final class Assets {
             model = toJson(namespacedId, "models", "json");
         } catch (IOException e) {
             LOGGER.log(Level.TRACE, e.getMessage());
-            model = MODELS.get("minecraft:block/missing");
+            model = MODELS.get("minecraft:missing");
         }
         MODELS.put(namespacedId, model);
         return model;
     }
 
-    public static Texture getTexture(@NotNull String namespacedId) {
+    public static ObservableMap<String, JSONObject> getModelMap() {
+        return MODELS;
+    }
+
+    public static TextureData getTexture(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
         if (TEXTURES.containsKey(namespacedId)) {
             return TEXTURES.get(namespacedId);
         }
-        Texture texture = null;
+        TextureData texture = null;
         try (InputStream inputStream = getAsset(namespacedId, "textures", "png")) {
-            texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
+            texture = TextureIO.newTextureData(GLProfile.getDefault(), inputStream, false, TextureIO.PNG);
         } catch (IOException e) {
             LOGGER.log(Level.TRACE, e.getMessage());
             try (InputStream inputStream = Assets.class.getResourceAsStream("/assets/minecraft/textures/missing.png")) {
-                texture = TextureIO.newTexture(inputStream, false, TextureIO.PNG);
+                assert inputStream != null;
+                texture = TextureIO.newTextureData(GLProfile.getDefault(), inputStream, false, TextureIO.PNG);
             } catch (IOException e1) {
                 LOGGER.log(Level.TRACE, e.getMessage());
             }
         }
         TEXTURES.put(namespacedId, texture);
         return texture;
+    }
+
+    public static ObservableMap<String, TextureData> getTextureMap() {
+        return TEXTURES;
     }
 
     public static JSONObject getAnimation(@NotNull String namespacedId) {
@@ -250,6 +260,10 @@ public final class Assets {
         }
         ANIMATIONS.put(namespacedId, animation);
         return animation;
+    }
+
+    public static ObservableMap<String, JSONObject> getAnimationMap() {
+        return ANIMATIONS;
     }
 
     @Contract("_, _, _ -> new")
