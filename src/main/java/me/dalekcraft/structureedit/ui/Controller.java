@@ -1451,10 +1451,6 @@ public class Controller {
                             components[3] = (float) tint.getOpacity();
                         }
 
-                        // System.out.println(faceTexture);
-                        // System.out.println(textures);
-                        // System.out.println(textures.getOrDefault(faceTexture, "minecraft:missing"));
-
                         Texture texture = getTexture(textures.getOrDefault(faceTexture, "minecraft:missing"));
 
                         float textureLeft = uv != null ? (float) (uv.getDouble(0) / MODEL_SIZE) : switch (faceName) {
