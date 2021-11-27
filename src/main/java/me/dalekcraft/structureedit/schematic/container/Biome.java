@@ -1,8 +1,14 @@
 package me.dalekcraft.structureedit.schematic.container;
 
+import java.util.Objects;
+
 public class Biome {
 
     private BiomeState biomeState;
+
+    public Biome(BiomeState biomeState) {
+        this.biomeState = Objects.requireNonNull(biomeState);
+    }
 
     /**
      * Returns the namespaced ID of this {@link Biome}.
@@ -38,6 +44,6 @@ public class Biome {
      * @param biomeState the new {@link BiomeState} for this {@link Biome}
      */
     public void setBiomeState(BiomeState biomeState) {
-        this.biomeState = biomeState;
+        this.biomeState = Objects.requireNonNull(biomeState);
     }
 }

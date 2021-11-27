@@ -64,9 +64,14 @@ public class TardisSchematicReader extends JsonSchematicReader {
                                 String propertyString = data.substring(nameEndIndex).replace("[", "").replace("]", "");
                                 Map<String, String> propertyMap = BlockState.SPLITTER.split(propertyString);
 
-                                Block blockObject = new Block();
-                                blockObject.setId(id);
-                                blockObject.setProperties(propertyMap);
+                                BlockState blockState = new BlockState(id, propertyMap);
+                                if (!schematic.getBlockPalette().contains(blockState)) {
+                                    schematic.getBlockPalette().add(blockState);
+                                } else {
+                                    blockState = schematic.getBlockState(schematic.getBlockPalette().indexOf(blockState));
+                                }
+
+                                Block blockObject = new Block(blockState);
                                 schematic.setBlock(x, y, z, blockObject);
                             }
                         }

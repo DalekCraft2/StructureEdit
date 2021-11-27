@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class Entity {
 
-    private double[] position;
+    private double[] position = new double[3];
     private String id;
     private CompoundTag nbt;
 

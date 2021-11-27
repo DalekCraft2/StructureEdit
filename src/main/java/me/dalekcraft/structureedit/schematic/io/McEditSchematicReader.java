@@ -20,7 +20,7 @@ public class McEditSchematicReader extends NbtSchematicReader {
     public Schematic read() throws IOException, ValidationException {
         Schematic schematic = new Schematic();
 
-        CompoundTag root = (CompoundTag) inputStream.readRawTag(Tag.DEFAULT_MAX_DEPTH);
+        CompoundTag root = (CompoundTag) inputStream.readTag(Tag.DEFAULT_MAX_DEPTH).getTag();
 
         short sizeX = requireTag(root, "Width", ShortTag.class).asShort();
         short sizeY = requireTag(root, "Height", ShortTag.class).asShort();
@@ -34,7 +34,10 @@ public class McEditSchematicReader extends NbtSchematicReader {
 
         byte[] blocks = requireTag(root, "Blocks", ByteArrayTag.class).getValue();
 
-        byte[] addBlocks = optTag(root, "AddBlocks", ByteArrayTag.class).getValue();
+        ByteArrayTag addBlocksTag = optTag(root, "AddBlocks", ByteArrayTag.class);
+        if (addBlocksTag != null) {
+            byte[] addBlocks = addBlocksTag.getValue();
+        }
 
         byte[] data = requireTag(root, "Data", ByteArrayTag.class).getValue();
 

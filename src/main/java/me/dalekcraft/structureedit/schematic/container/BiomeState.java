@@ -1,10 +1,7 @@
 package me.dalekcraft.structureedit.schematic.container;
 
-import com.google.common.base.Splitter;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class BiomeState {
@@ -32,6 +29,23 @@ public class BiomeState {
      * @param id the new namespaced ID for this {@link BiomeState}
      */
     public void setId(@NotNull String id) {
-        this.id = id;
+        this.id = Objects.requireNonNull(id);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
+        BiomeState casted = (BiomeState) obj;
+        return id.equals(casted.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(id);
     }
 }

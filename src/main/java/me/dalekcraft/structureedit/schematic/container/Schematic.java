@@ -10,11 +10,11 @@ public class Schematic {
 
     private final int[] size = new int[3];
     private final int[] offset = new int[3];
-    private List<BlockState> blockPalette;
-    private ArrayList<ArrayList<ArrayList<Block>>> blocks;
-    private List<BiomeState> biomePalette;
-    private ArrayList<ArrayList<ArrayList<Biome>>> biomes;
-    private List<Entity> entities;
+    private List<BlockState> blockPalette = new ArrayList<>();
+    private ArrayList<ArrayList<ArrayList<Block>>> blocks = new ArrayList<>();
+    private List<BiomeState> biomePalette = new ArrayList<>();
+    private ArrayList<ArrayList<ArrayList<Biome>>> biomes = new ArrayList<>();
+    private List<Entity> entities = new ArrayList<>();
     private int dataVersion;
     private CompoundTag metadata;
 
@@ -47,31 +47,40 @@ public class Schematic {
         size[0] = sizeX;
         size[1] = sizeY;
         size[2] = sizeZ;
-        blocks.ensureCapacity(sizeX);
-        blocks.forEach(row -> {
-            if (row == null) {
-                row = new ArrayList<>();
+        for (int x = 0; x < sizeX; x++) {
+            if (blocks.size() <= x) {
+                blocks.add(new ArrayList<>());
             }
-            row.ensureCapacity(sizeY);
-            row.forEach(column -> {
-                if (column == null) {
-                    column = new ArrayList<>();
+            List<ArrayList<Block>> row = blocks.get(x);
+            for (int y = 0; y < sizeY; y++) {
+                if (row.size() <= y) {
+                    row.add(new ArrayList<>());
                 }
-                column.ensureCapacity(sizeZ);
-            });
-        });
-        biomes.forEach(row -> {
-            if (row == null) {
-                row = new ArrayList<>();
+                List<Block> column = row.get(y);
+                for (int z = 0; z < sizeZ; z++) {
+                    if (column.size() <= z) {
+                        column.add(null);
+                    }
+                }
             }
-            row.ensureCapacity(sizeY);
-            row.forEach(column -> {
-                if (column == null) {
-                    column = new ArrayList<>();
+        }
+        for (int x = 0; x < sizeX; x++) {
+            if (biomes.size() <= x) {
+                biomes.add(new ArrayList<>());
+            }
+            List<ArrayList<Biome>> row = biomes.get(x);
+            for (int y = 0; y < sizeY; y++) {
+                if (row.size() <= y) {
+                    row.add(new ArrayList<>());
                 }
-                column.ensureCapacity(sizeZ);
-            });
-        });
+                List<Biome> column = row.get(y);
+                for (int z = 0; z < sizeZ; z++) {
+                    if (column.size() <= z) {
+                        column.add(null);
+                    }
+                }
+            }
+        }
     }
 
     /**
@@ -157,6 +166,24 @@ public class Schematic {
         this.blocks = blocks;
     }
 
+    public BlockState getBlockState(int i) {
+        if (i >= blockPalette.size()) {
+            for (int j = blockPalette.size(); j <= i; j++) {
+                blockPalette.add(j, null);
+            }
+        }
+        return blockPalette.get(i);
+    }
+
+    public void setBlockState(int i, BlockState blockState) {
+        if (i >= blockPalette.size()) {
+            for (int j = blockPalette.size(); j <= i; j++) {
+                blockPalette.add(j, null);
+            }
+        }
+        blockPalette.set(i, blockState);
+    }
+
     public List<BlockState> getBlockPalette() {
         return blockPalette;
     }
@@ -215,6 +242,24 @@ public class Schematic {
 
     public void setBiomes(ArrayList<ArrayList<ArrayList<Biome>>> biomes) {
         this.biomes = biomes;
+    }
+
+    public BiomeState getBiomeState(int i) {
+        if (i >= biomePalette.size()) {
+            for (int j = biomePalette.size(); j <= i; j++) {
+                biomePalette.add(j, null);
+            }
+        }
+        return biomePalette.get(i);
+    }
+
+    public void setBiomeState(int i, BiomeState biomeState) {
+        if (i >= biomePalette.size()) {
+            for (int j = biomePalette.size(); j <= i; j++) {
+                biomePalette.add(j, null);
+            }
+        }
+        biomePalette.set(i, biomeState);
     }
 
     public List<BiomeState> getBiomePalette() {

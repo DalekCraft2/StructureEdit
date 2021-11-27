@@ -3,11 +3,21 @@ package me.dalekcraft.structureedit.schematic.container;
 import net.querz.nbt.tag.CompoundTag;
 
 import java.util.Map;
+import java.util.Objects;
 
 public class Block {
 
     private BlockState blockState;
     private CompoundTag nbt;
+
+    public Block(BlockState blockState) {
+        this(blockState, new CompoundTag());
+    }
+
+    public Block(BlockState blockState, CompoundTag nbt) {
+        this.blockState = Objects.requireNonNull(blockState);
+        this.nbt = Objects.requireNonNullElse(nbt, new CompoundTag());
+    }
 
     /**
      * Returns the namespaced ID of this {@link Block}.
@@ -61,7 +71,7 @@ public class Block {
      * @param blockState the new {@link BlockState} for this {@link Block}
      */
     public void setBlockState(BlockState blockState) {
-        this.blockState = blockState;
+        this.blockState = Objects.requireNonNull(blockState);
     }
 
     /**
@@ -79,6 +89,6 @@ public class Block {
      * @param nbt the new NBT for this {@link Block}
      */
     public void setNbt(CompoundTag nbt) {
-        this.nbt = nbt;
+        this.nbt = Objects.requireNonNullElse(nbt, new CompoundTag());
     }
 }

@@ -26,7 +26,7 @@ public class StructureReader extends NbtSchematicReader {
     public Schematic read() throws IOException, ValidationException {
         Schematic schematic = new Schematic();
 
-        CompoundTag root = (CompoundTag) inputStream.readRawTag(Tag.DEFAULT_MAX_DEPTH);
+        CompoundTag root = (CompoundTag) inputStream.readTag(Tag.DEFAULT_MAX_DEPTH).getTag();
 
         int dataVersion = requireTag(root, "DataVersion", IntTag.class).asInt();
         schematic.setDataVersion(dataVersion);
@@ -45,9 +45,16 @@ public class StructureReader extends NbtSchematicReader {
                     CompoundTag state = requireTag(palette, j, CompoundTag.class);
                     String name = requireTag(state, "Name", StringTag.class).getValue();
                     CompoundTag properties = optTag(state, "Properties", CompoundTag.class);
+                    Map<String, String> propertyMap = new HashMap<>();
+                    if (properties != null) {
+                        properties.entrySet().forEach(entry -> {
+                            String value = ((StringTag) entry.getValue()).getValue();
+                            propertyMap.put(entry.getKey(), value);
+                        });
+                    }
 
                     // TODO Multiple palettes.
-
+                    schematic.setBlockState(j, new BlockState(name, propertyMap));
                 }
             }
         } else {
@@ -63,7 +70,7 @@ public class StructureReader extends NbtSchematicReader {
                         propertyMap.put(entry.getKey(), value);
                     });
                 }
-                schematic.getBlockPalette().add(new BlockState(name, propertyMap));
+                schematic.setBlockState(i, new BlockState(name, propertyMap));
             }
         }
 
@@ -79,9 +86,8 @@ public class StructureReader extends NbtSchematicReader {
 
             CompoundTag nbt = optTag(block, "nbt", CompoundTag.class);
 
-            Block blockObject = new Block();
             // TODO Ensure that the palette contains the state.
-            blockObject.setBlockState(schematic.getBlockPalette().get(state));
+            Block blockObject = new Block(schematic.getBlockState(state), nbt);
 
             schematic.setBlock(x, y, z, blockObject);
         }

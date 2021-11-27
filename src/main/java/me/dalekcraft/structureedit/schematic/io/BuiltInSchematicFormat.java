@@ -21,11 +21,13 @@ package me.dalekcraft.structureedit.schematic.io;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import me.dalekcraft.structureedit.exception.ValidationException;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.io.NBTOutputStream;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.Tag;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.*;
 import java.util.Set;
@@ -77,6 +79,126 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
     /**
      * The Schematic format used by Sponge.
      */
+    /*SPONGE_V1_SCHEMATIC("sponge.1") {
+        @Override
+        public String getPrimaryFileExtension() {
+            return "schem";
+        }
+
+        @Override
+        public SchematicReader getReader(InputStream inputStream) throws IOException {
+            NBTInputStream nbtStream = new NBTInputStream(new GZIPInputStream(inputStream));
+            return new SpongeSchematicV1Reader(nbtStream);
+        }
+
+        @Override
+        public SchematicWriter getWriter(OutputStream outputStream) throws IOException {
+            throw new IOException("This format does not support saving");
+        }
+
+        @Override
+        public boolean isFormat(File file) {
+            try (NBTInputStream nbtInputStream = new NBTInputStream(new GZIPInputStream(new FileInputStream(file)))) {
+                NamedTag rootTag = nbtInputStream.readTag(Tag.DEFAULT_MAX_DEPTH);
+                if (!rootTag.getName().equals("Schematic")) {
+                    return false;
+                }
+                CompoundTag schematic = (CompoundTag) rootTag.getTag();
+
+                // Check
+                Tag<?> versionTag = schematic.get("Version");
+                if (!(versionTag instanceof IntTag) || ((IntTag) versionTag).asInt() != 1) {
+                    return false;
+                }
+            } catch (Exception e) {
+                return false;
+            }
+
+            return true;
+        }
+    },
+    SPONGE_V2_SCHEMATIC("sponge.2") {
+        @Override
+        public String getPrimaryFileExtension() {
+            return "schem";
+        }
+
+        @Override
+        public SchematicReader getReader(InputStream inputStream) throws IOException {
+            NBTInputStream nbtInputStream = new NBTInputStream(new GZIPInputStream(inputStream));
+            return new SpongeSchematicV2Reader(nbtInputStream);
+        }
+
+        @Override
+        public SchematicWriter getWriter(OutputStream outputStream) throws IOException {
+            NBTOutputStream nbtOutputStream = new NBTOutputStream(new GZIPOutputStream(outputStream));
+            return new SpongeSchematicV2Writer(nbtOutputStream);
+        }
+
+        @Override
+        public boolean isFormat(File file) {
+            try (NBTInputStream nbtInputStream = new NBTInputStream(new GZIPInputStream(new FileInputStream(file)))) {
+                NamedTag rootTag = nbtInputStream.readTag(Tag.DEFAULT_MAX_DEPTH);
+                if (!rootTag.getName().equals("Schematic")) {
+                    return false;
+                }
+                CompoundTag schematic = (CompoundTag) rootTag.getTag();
+
+                // Check
+                Tag<?> versionTag = schematic.get("Version");
+                if (!(versionTag instanceof IntTag) || ((IntTag) versionTag).asInt() != 2) {
+                    return false;
+                }
+            } catch (Exception e) {
+                return false;
+            }
+
+            return true;
+        }
+    },
+    SPONGE_V3_SCHEMATIC("sponge.3", "sponge", "schem") {
+        @Override
+        public String getPrimaryFileExtension() {
+            return "schem";
+        }
+
+        @Override
+        public SchematicReader getReader(InputStream inputStream) throws IOException {
+            NBTInputStream nbtStream = new NBTInputStream(new GZIPInputStream(inputStream));
+            return new SpongeSchematicV3Reader(nbtStream);
+        }
+
+        @Override
+        public SchematicWriter getWriter(OutputStream outputStream) throws IOException {
+            NBTOutputStream nbtStream = new NBTOutputStream(new GZIPOutputStream(outputStream));
+            return new SpongeSchematicV3Writer(nbtStream);
+        }
+
+        @Override
+        public boolean isFormat(File file) {
+            try (NBTInputStream nbtInputStream = new NBTInputStream(new GZIPInputStream(new FileInputStream(file)))) {
+                NamedTag rootTag = nbtInputStream.readTag(Tag.DEFAULT_MAX_DEPTH);
+                CompoundTag rootCompoundTag = (CompoundTag) rootTag.getTag();
+                if (!rootCompoundTag.containsKey("Schematic")) {
+                    return false;
+                }
+                Tag<?> schematic = rootCompoundTag.get("Schematic");
+                if (!(schematic instanceof CompoundTag)) {
+                    return false;
+                }
+
+                // Check
+                Tag<?> versionTag = ((CompoundTag) schematic).get("Version");
+                if (!(versionTag instanceof IntTag) || ((IntTag) versionTag).asInt() != 3) {
+                    return false;
+                }
+            } catch (Exception e) {
+                return false;
+            }
+
+            return true;
+        }
+    },*/
     SPONGE_SCHEMATIC("sponge", "schem") {
         @Override
         public String getPrimaryFileExtension() {
@@ -99,13 +221,16 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
         public boolean isFormat(File file) {
             try (NBTInputStream nbtInputStream = new NBTInputStream(new GZIPInputStream(new FileInputStream(file)))) {
                 NamedTag rootTag = nbtInputStream.readTag(Tag.DEFAULT_MAX_DEPTH);
-                if (!rootTag.getName().equals("Schematic")) {
-                    return false;
-                }
                 CompoundTag schematic = (CompoundTag) rootTag.getTag();
+                CompoundTag baseTag;
+                if (!rootTag.getName().equals("Schematic")) {
+                    baseTag = getRoot(schematic);
+                } else {
+                    baseTag = schematic;
+                }
 
                 // Check
-                if (!schematic.containsKey("Version")) {
+                if (!baseTag.containsKey("Version")) {
                     return false;
                 }
             } catch (Exception e) {
@@ -113,6 +238,24 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
             }
 
             return true;
+        }
+
+        private CompoundTag getRoot(@NotNull CompoundTag root) throws ValidationException {
+            if (root.containsKey("Schematic")) {
+                String key = "Schematic";
+                Class<CompoundTag> expected = CompoundTag.class;
+                if (!root.containsKey(key)) {
+                    throw new ValidationException("Schematic file is missing a \"" + key + "\" tag of type " + expected.getName());
+                }
+
+                Tag<?> tag = root.get(key);
+                if (!expected.isInstance(tag)) {
+                    throw new ValidationException(key + " tag is not of tag type " + expected.getName() + ", got " + tag.getClass().getName() + " instead");
+                }
+
+                root = expected.cast(tag);
+            }
+            return root;
         }
     },
     /**
@@ -175,8 +318,21 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
 
         @Override
         public boolean isFormat(File file) {
-            // TODO
-            return false;
+            try (NBTInputStream nbtInputStream = new NBTInputStream(new GZIPInputStream(new FileInputStream(file)))) {
+                NamedTag rootTag = nbtInputStream.readTag(Tag.DEFAULT_MAX_DEPTH);
+                if (!rootTag.getName().equals("")) {
+                    return false;
+                }
+                CompoundTag schematic = (CompoundTag) rootTag.getTag();
+
+                // Check
+                if (!schematic.containsKey("DataVersion")) {
+                    return false;
+                }
+            } catch (Exception e) {
+                return false;
+            }
+            return true;
         }
     };
 
