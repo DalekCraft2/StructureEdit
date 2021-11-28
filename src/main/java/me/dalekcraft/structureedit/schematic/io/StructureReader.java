@@ -66,7 +66,12 @@ public class StructureReader extends NbtSchematicReader {
                 Map<String, String> propertyMap = new HashMap<>();
                 if (properties != null) {
                     properties.entrySet().forEach(entry -> {
-                        String value = ((StringTag) entry.getValue()).getValue();
+                        String value = "";
+                        if (entry.getValue() instanceof StringTag stringTag) {
+                            value = stringTag.getValue();
+                        } else if (entry.getValue() instanceof IntTag intTag) {
+                            value = String.valueOf(intTag.asInt());
+                        }
                         propertyMap.put(entry.getKey(), value);
                     });
                 }

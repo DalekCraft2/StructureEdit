@@ -73,13 +73,10 @@ public class SpongeSchematicReader extends NbtSchematicReader {
             int nameEndIndex = key.length();
             if (key.contains("[")) {
                 nameEndIndex = key.indexOf('[');
-            } else if (key.contains("{")) {
-                nameEndIndex = key.indexOf('{');
             }
             String id = key.substring(0, nameEndIndex);
             String propertyString = key.substring(nameEndIndex).replace("[", "").replace("]", "");
             Map<String, String> propertyMap = BlockState.SPLITTER.split(propertyString);
-            // TODO Ensure capacity of palette.
             schematic.setBlockState(value, new BlockState(id, propertyMap));
         }
 
@@ -149,13 +146,10 @@ public class SpongeSchematicReader extends NbtSchematicReader {
             int nameEndIndex = key.length();
             if (key.contains("[")) {
                 nameEndIndex = key.indexOf('[');
-            } else if (key.contains("{")) {
-                nameEndIndex = key.indexOf('{');
             }
             String id = key.substring(0, nameEndIndex);
             String propertyString = key.substring(nameEndIndex).replace("[", "").replace("]", "");
             Map<String, String> propertyMap = BlockState.SPLITTER.split(propertyString);
-            // TODO Ensure capacity of palette.
             schematic.setBlockState(value, new BlockState(id, propertyMap));
         }
 
@@ -276,13 +270,10 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 int nameEndIndex = key.length();
                 if (key.contains("[")) {
                     nameEndIndex = key.indexOf('[');
-                } else if (key.contains("{")) {
-                    nameEndIndex = key.indexOf('{');
                 }
                 String id = key.substring(0, nameEndIndex);
                 String propertyString = key.substring(nameEndIndex).replace("[", "").replace("]", "");
                 Map<String, String> propertyMap = BlockState.SPLITTER.split(propertyString);
-                // TODO Ensure capacity of palette.
                 schematic.setBlockState(value, new BlockState(id, propertyMap));
             }
 

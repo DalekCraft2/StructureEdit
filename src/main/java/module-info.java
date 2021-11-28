@@ -21,4 +21,5 @@ module me.dalekcraft.structureedit {
     opens me.dalekcraft.structureedit to javafx.controls, javafx.fxml;
     exports me.dalekcraft.structureedit.ui;
     opens me.dalekcraft.structureedit.ui to javafx.controls, javafx.fxml;
+    opens me.dalekcraft.structureedit.schematic.io.legacycompat to com.google.gson;
 }

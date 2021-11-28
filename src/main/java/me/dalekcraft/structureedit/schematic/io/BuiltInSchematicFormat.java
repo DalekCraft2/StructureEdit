@@ -290,8 +290,6 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
                 return false;
             }
 
-            // TODO
-
             return true;
         }
     },
@@ -354,6 +352,11 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
 
     @Override
     public Set<String> getFileExtensions() {
+        // TODO Make this more than just an immutable set wrapper for the primary extension, and different from getAliases.
+        /*ImmutableSet.Builder<String> builder = new ImmutableSet.Builder<>();
+        builder.add(getPrimaryFileExtension());
+        builder.addAll(getAliases());
+        return builder.build();*/
         return ImmutableSet.of(getPrimaryFileExtension());
     }
 }

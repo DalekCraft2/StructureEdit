@@ -53,12 +53,9 @@ public class TardisSchematicReader extends JsonSchematicReader {
                             for (int z = 0; z < columns.size(); z++) {
                                 JsonObject block = requireTag(columns, z, JsonObject.class);
                                 String data = requireTag(block, "data", JsonElement.class).getAsString();
-                                // TODO
                                 int nameEndIndex = data.length();
                                 if (data.contains("[")) {
                                     nameEndIndex = data.indexOf('[');
-                                } else if (data.contains("{")) {
-                                    nameEndIndex = data.indexOf('{');
                                 }
                                 String id = data.substring(0, nameEndIndex);
                                 String propertyString = data.substring(nameEndIndex).replace("[", "").replace("]", "");
