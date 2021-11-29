@@ -24,6 +24,34 @@ public class TardisSchematicWriter extends JsonSchematicWriter {
         JsonObject root = new JsonObject();
 
         int[] size = schematic.getSize();
+
+        JsonArray input = new JsonArray();
+        for (int y = 0; y < size[1]; y++) {
+            JsonArray row = new JsonArray();
+            input.add(row);
+            for (int x = 0; x < size[0]; x++) {
+                JsonArray column = new JsonArray();
+                row.add(column);
+                for (int z = 0; z < size[2]; z++) {
+                    JsonObject blockTag = new JsonObject();
+
+                    Block block = schematic.getBlock(x, y, z);
+
+                    BlockState blockState = new BlockState("minecraft:air");
+                    if (block != null) {
+                        blockState = schematic.getBlockState(block.getBlockStateIndex());
+                    }
+
+                    String properties = blockState.getProperties().isEmpty() ? "" : "[" + BlockState.JOINER.join(blockState.getProperties()) + "]";
+
+                    blockTag.add("data", new JsonPrimitive(blockState.getId() + properties));
+
+                    column.add(blockTag);
+                }
+            }
+        }
+        root.add("input", input);
+
         JsonObject dimensions = new JsonObject();
         dimensions.add("width", new JsonPrimitive(size[0]));
         dimensions.add("height", new JsonPrimitive(size[1]));
@@ -38,28 +66,6 @@ public class TardisSchematicWriter extends JsonSchematicWriter {
             relative.add("z", new JsonPrimitive(offset[2]));
             root.add("relative", relative);
         }
-
-        JsonArray input = new JsonArray();
-        for (int y = 0; y < size[1]; y++) {
-            JsonArray row = new JsonArray();
-            input.add(row);
-            for (int x = 0; x < size[0]; x++) {
-                JsonArray column = new JsonArray();
-                row.add(column);
-                for (int z = 0; z < size[2]; z++) {
-                    JsonObject blockObject = new JsonObject();
-                    Block block = schematic.getBlock(x, y, z);
-                    BlockState blockState = new BlockState("minecraft:air");
-                    if (block != null) {
-                        blockState = schematic.getBlockState(block.getBlockStateIndex());
-                    }
-                    String properties = blockState.getProperties().isEmpty() ? "" : "[" + BlockState.JOINER.join(blockState.getProperties()) + "]";
-                    blockObject.add("data", new JsonPrimitive(blockState.getId() + properties));
-                    column.add(blockObject);
-                }
-            }
-        }
-        root.add("input", input);
 
         try (OutputStreamWriter outputStreamWriter = new OutputStreamWriter(outputStream)) {
             outputStreamWriter.write(root.toString());

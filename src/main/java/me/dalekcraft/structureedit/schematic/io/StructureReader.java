@@ -43,7 +43,9 @@ public class StructureReader extends NbtSchematicReader {
                 ListTag<?> palette = requireTag(palettes, paletteIndex, ListTag.class);
                 for (int index = 0; index < palette.size(); index++) {
                     CompoundTag state = requireTag(palette, index, CompoundTag.class);
+
                     String name = requireTag(state, "Name", StringTag.class).getValue();
+
                     CompoundTag properties = optTag(state, "Properties", CompoundTag.class);
                     Map<String, String> propertyMap = new HashMap<>();
                     if (properties != null) {
@@ -57,6 +59,7 @@ public class StructureReader extends NbtSchematicReader {
                             propertyMap.put(entry.getKey(), value);
                         });
                     }
+
                     schematic.setBlockState(index, paletteIndex, new BlockState(name, propertyMap));
                 }
             }
@@ -64,7 +67,9 @@ public class StructureReader extends NbtSchematicReader {
             ListTag<?> palette = requireTag(root, "palette", ListTag.class);
             for (int i = 0; i < palette.size(); i++) {
                 CompoundTag state = requireTag(palette, i, CompoundTag.class);
+
                 String name = requireTag(state, "Name", StringTag.class).getValue();
+
                 CompoundTag properties = optTag(state, "Properties", CompoundTag.class);
                 Map<String, String> propertyMap = new HashMap<>();
                 if (properties != null) {
@@ -78,6 +83,7 @@ public class StructureReader extends NbtSchematicReader {
                         propertyMap.put(entry.getKey(), value);
                     });
                 }
+
                 schematic.setBlockState(i, new BlockState(name, propertyMap));
             }
         }
@@ -85,6 +91,7 @@ public class StructureReader extends NbtSchematicReader {
         ListTag<?> blocks = requireTag(root, "blocks", ListTag.class);
         for (int i = 0; i < blocks.size(); i++) {
             CompoundTag block = requireTag(blocks, i, CompoundTag.class);
+
             int state = requireTag(block, "state", IntTag.class).asInt();
 
             ListTag<?> position = requireTag(block, "pos", ListTag.class);
@@ -123,6 +130,7 @@ public class StructureReader extends NbtSchematicReader {
                 entityObject.setPosition(entityX, entityY, entityZ);
                 entityObject.setId(id);
                 entityObject.setNbt(nbt);
+
                 schematic.getEntities().add(entityObject);
             }
         }
@@ -132,7 +140,16 @@ public class StructureReader extends NbtSchematicReader {
 
     @Override
     public OptionalInt getDataVersion() {
-        return super.getDataVersion();
+        try {
+            CompoundTag root = (CompoundTag) inputStream.readTag(Tag.DEFAULT_MAX_DEPTH).getTag();
+            int dataVersion = requireTag(root, "DataVersion", IntTag.class).asInt();
+            if (dataVersion < 0) {
+                return OptionalInt.empty();
+            }
+            return OptionalInt.of(dataVersion);
+        } catch (Exception e) {
+            return OptionalInt.empty();
+        }
     }
 
     @Override

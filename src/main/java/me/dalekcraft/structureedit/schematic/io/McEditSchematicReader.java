@@ -10,7 +10,6 @@ import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;
 
 import java.io.IOException;
-import java.util.OptionalInt;
 
 public class McEditSchematicReader extends NbtSchematicReader {
 
@@ -79,20 +78,21 @@ public class McEditSchematicReader extends NbtSchematicReader {
         ListTag<?> entities = optTag(root, "Entities", ListTag.class);
         if (entities != null) {
             for (int i = 0; i < entities.size(); i++) {
-                CompoundTag entity = requireTag(entities, i, CompoundTag.class);
-                ListTag<?> position = requireTag(entity, "Pos", ListTag.class);
+                CompoundTag entityTag = requireTag(entities, i, CompoundTag.class);
+
+                ListTag<?> position = requireTag(entityTag, "Pos", ListTag.class);
                 double x = requireTag(position, 0, DoubleTag.class).asDouble();
                 double y = requireTag(position, 1, DoubleTag.class).asDouble();
                 double z = requireTag(position, 2, DoubleTag.class).asDouble();
 
-                String id = requireTag(entity, "id", StringTag.class).getValue();
+                String id = requireTag(entityTag, "id", StringTag.class).getValue();
 
-                Entity entityObject = new Entity();
-                entityObject.setPosition(x, y, z);
-                entityObject.setId(id);
-                entityObject.setNbt(entity);
+                Entity entity = new Entity();
+                entity.setPosition(x, y, z);
+                entity.setId(id);
+                entity.setNbt(entityTag);
 
-                schematic.getEntities().add(entityObject);
+                schematic.getEntities().add(entity);
             }
         }
 
@@ -100,19 +100,17 @@ public class McEditSchematicReader extends NbtSchematicReader {
         if (tileEntities != null) {
             for (int i = 0; i < tileEntities.size(); i++) {
                 CompoundTag tileEntity = requireTag(tileEntities, i, CompoundTag.class);
+
                 int x = requireTag(tileEntity, "x", IntTag.class).asInt();
                 int y = requireTag(tileEntity, "y", IntTag.class).asInt();
                 int z = requireTag(tileEntity, "z", IntTag.class).asInt();
-                schematic.getBlock(x, y, z).setNbt(tileEntity);
+
+                Block block = schematic.getBlock(x, y, z);
+                block.setNbt(tileEntity);
             }
         }
 
         return schematic;
-    }
-
-    @Override
-    public OptionalInt getDataVersion() {
-        return super.getDataVersion();
     }
 
     @Override

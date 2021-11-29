@@ -17,7 +17,7 @@ public class Schematic {
     private List<BiomeState> biomePalette = new ArrayList<>();
     private Table<Integer, Integer, List<Biome>> biomes = HashBasedTable.create();
     private List<Entity> entities = new ArrayList<>();
-    private int dataVersion;
+    private int dataVersion = -1;
     private CompoundTag metadata;
 
     /**
