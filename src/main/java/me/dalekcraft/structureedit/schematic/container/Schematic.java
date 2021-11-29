@@ -1,5 +1,7 @@
 package me.dalekcraft.structureedit.schematic.container;
 
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import net.querz.nbt.tag.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,9 +13,9 @@ public class Schematic {
     private final int[] size = new int[3];
     private final int[] offset = new int[3];
     private List<BlockState> blockPalette = new ArrayList<>();
-    private ArrayList<ArrayList<ArrayList<Block>>> blocks = new ArrayList<>();
+    private Table<Integer, Integer, List<Block>> blocks = HashBasedTable.create();
     private List<BiomeState> biomePalette = new ArrayList<>();
-    private ArrayList<ArrayList<ArrayList<Biome>>> biomes = new ArrayList<>();
+    private Table<Integer, Integer, List<Biome>> biomes = HashBasedTable.create();
     private List<Entity> entities = new ArrayList<>();
     private int dataVersion;
     private CompoundTag metadata;
@@ -48,35 +50,26 @@ public class Schematic {
         size[1] = sizeY;
         size[2] = sizeZ;
         for (int x = 0; x < sizeX; x++) {
-            if (blocks.size() <= x) {
-                blocks.add(new ArrayList<>());
-            }
-            List<ArrayList<Block>> row = blocks.get(x);
-            for (int y = 0; y < sizeY; y++) {
-                if (row.size() <= y) {
-                    row.add(new ArrayList<>());
+            for (int z = 0; z < sizeZ; z++) {
+                if (blocks.size() <= x || blocks.size() <= z || blocks.get(x, z) == null) {
+                    blocks.put(x, z, new ArrayList<>());
                 }
-                List<Block> column = row.get(y);
-                for (int z = 0; z < sizeZ; z++) {
-                    if (column.size() <= z) {
-                        column.add(null);
+                List<Block> blockList = blocks.get(x, z);
+                assert blockList != null;
+
+                if (biomes.size() <= x || biomes.size() <= z || biomes.get(x, z) == null) {
+                    biomes.put(x, z, new ArrayList<>());
+                }
+                List<Biome> biomeList = biomes.get(x, z);
+                assert biomeList != null;
+
+                for (int y = 0; y < sizeY; y++) {
+                    if (blockList.size() <= y) {
+                        blockList.add(null);
                     }
-                }
-            }
-        }
-        for (int x = 0; x < sizeX; x++) {
-            if (biomes.size() <= x) {
-                biomes.add(new ArrayList<>());
-            }
-            List<ArrayList<Biome>> row = biomes.get(x);
-            for (int y = 0; y < sizeY; y++) {
-                if (row.size() <= y) {
-                    row.add(new ArrayList<>());
-                }
-                List<Biome> column = row.get(y);
-                for (int z = 0; z < sizeZ; z++) {
-                    if (column.size() <= z) {
-                        column.add(null);
+
+                    if (biomeList.size() <= y) {
+                        biomeList.add(null);
                     }
                 }
             }
@@ -133,7 +126,7 @@ public class Schematic {
      * @return the block, or {@code null} if no {@link Block} is at the position
      */
     public Block getBlock(int x, int y, int z) {
-        return blocks.get(x).get(y).get(z);
+        return blocks.get(x, z).get(y);
     }
 
     /**
@@ -155,14 +148,14 @@ public class Schematic {
      * @param block the new {@link Block}
      */
     public void setBlock(int x, int y, int z, Block block) {
-        blocks.get(x).get(y).set(z, block);
+        blocks.get(x, z).set(y, block);
     }
 
-    public ArrayList<ArrayList<ArrayList<Block>>> getBlocks() {
+    public Table<Integer, Integer, List<Block>> getBlocks() {
         return blocks;
     }
 
-    public void setBlocks(ArrayList<ArrayList<ArrayList<Block>>> blocks) {
+    public void setBlocks(Table<Integer, Integer, List<Block>> blocks) {
         this.blocks = blocks;
     }
 
@@ -211,7 +204,7 @@ public class Schematic {
      * @return the block, or {@code null} if no {@link Biome} is at the position
      */
     public Biome getBiome(int x, int y, int z) {
-        return biomes.get(x).get(y).get(z);
+        return biomes.get(x, z).get(y);
     }
 
     /**
@@ -233,14 +226,14 @@ public class Schematic {
      * @param biome the new {@link Biome}
      */
     public void setBiome(int x, int y, int z, Biome biome) {
-        biomes.get(x).get(y).set(z, biome);
+        biomes.get(x, z).set(y, biome);
     }
 
-    public ArrayList<ArrayList<ArrayList<Biome>>> getBiomes() {
+    public Table<Integer, Integer, List<Biome>> getBiomes() {
         return biomes;
     }
 
-    public void setBiomes(ArrayList<ArrayList<ArrayList<Biome>>> biomes) {
+    public void setBiomes(Table<Integer, Integer, List<Biome>> biomes) {
         this.biomes = biomes;
     }
 
