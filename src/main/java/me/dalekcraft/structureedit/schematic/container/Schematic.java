@@ -12,7 +12,7 @@ public class Schematic {
 
     private final int[] size = new int[3];
     private final int[] offset = new int[3];
-    private List<BlockState> blockPalette = new ArrayList<>();
+    private List<List<BlockState>> blockPalettes = new ArrayList<>();
     private Table<Integer, Integer, List<Block>> blocks = HashBasedTable.create();
     private List<BiomeState> biomePalette = new ArrayList<>();
     private Table<Integer, Integer, List<Biome>> biomes = HashBasedTable.create();
@@ -51,26 +51,24 @@ public class Schematic {
         size[2] = sizeZ;
         for (int x = 0; x < sizeX; x++) {
             for (int z = 0; z < sizeZ; z++) {
-                if (blocks.size() <= x || blocks.size() <= z || blocks.get(x, z) == null) {
+                if (!blocks.containsRow(x) || !blocks.containsColumn(z) || blocks.get(x, z) == null) {
                     blocks.put(x, z, new ArrayList<>());
                 }
                 List<Block> blockList = blocks.get(x, z);
                 assert blockList != null;
 
-                if (biomes.size() <= x || biomes.size() <= z || biomes.get(x, z) == null) {
+                if (!biomes.containsRow(x) || !biomes.containsColumn(z) || biomes.get(x, z) == null) {
                     biomes.put(x, z, new ArrayList<>());
                 }
                 List<Biome> biomeList = biomes.get(x, z);
                 assert biomeList != null;
 
-                for (int y = 0; y < sizeY; y++) {
-                    if (blockList.size() <= y) {
-                        blockList.add(null);
-                    }
+                while (blockList.size() <= sizeY) {
+                    blockList.add(null);
+                }
 
-                    if (biomeList.size() <= y) {
-                        biomeList.add(null);
-                    }
+                while (biomeList.size() <= sizeY) {
+                    biomeList.add(null);
                 }
             }
         }
@@ -159,30 +157,63 @@ public class Schematic {
         this.blocks = blocks;
     }
 
-    public BlockState getBlockState(int i) {
-        if (i >= blockPalette.size()) {
-            for (int j = blockPalette.size(); j <= i; j++) {
-                blockPalette.add(j, null);
-            }
-        }
-        return blockPalette.get(i);
+    public BlockState getBlockState(int index) {
+        return getBlockState(index, 0);
     }
 
-    public void setBlockState(int i, BlockState blockState) {
-        if (i >= blockPalette.size()) {
-            for (int j = blockPalette.size(); j <= i; j++) {
-                blockPalette.add(j, null);
-            }
+    public BlockState getBlockState(int index, int paletteIndex) {
+        while (blockPalettes.size() <= paletteIndex) {
+            blockPalettes.add(new ArrayList<>());
         }
-        blockPalette.set(i, blockState);
+        blockPalettes.forEach(blockPalette -> {
+            while (blockPalette.size() <= index) {
+                blockPalette.add(null);
+            }
+        });
+        return blockPalettes.get(paletteIndex).get(index);
+    }
+
+    public void setBlockState(int index, BlockState blockState) {
+        setBlockState(index, 0, blockState);
+    }
+
+    public void setBlockState(int index, int paletteIndex, BlockState blockState) {
+        while (blockPalettes.size() <= paletteIndex) {
+            blockPalettes.add(new ArrayList<>());
+        }
+        blockPalettes.forEach(blockPalette -> {
+            while (blockPalette.size() <= index) {
+                blockPalette.add(null);
+            }
+        });
+        blockPalettes.get(paletteIndex).set(index, blockState);
     }
 
     public List<BlockState> getBlockPalette() {
-        return blockPalette;
+        return getBlockPalette(0);
     }
 
     public void setBlockPalette(List<BlockState> blockPalette) {
-        this.blockPalette = blockPalette;
+        setBlockPalette(0, blockPalette);
+    }
+
+    public List<BlockState> getBlockPalette(int paletteIndex) {
+        while (blockPalettes.size() <= paletteIndex) {
+            blockPalettes.add(new ArrayList<>());
+        }
+        return blockPalettes.get(paletteIndex);
+    }
+
+    public void setBlockPalette(int paletteIndex, List<BlockState> blockPalette) {
+        blockPalettes.set(paletteIndex, blockPalette);
+    }
+
+    public List<List<BlockState>> getBlockPalettes() {
+        return blockPalettes;
+    }
+
+    public void setBlockPalettes(List<List<BlockState>> blockPalettes) {
+        this.blockPalettes = blockPalettes;
     }
 
     /**

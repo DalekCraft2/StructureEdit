@@ -39,10 +39,10 @@ public class StructureReader extends NbtSchematicReader {
 
         ListTag<?> palettes = optTag(root, "palettes", ListTag.class);
         if (palettes != null) {
-            for (int i = 0; i < palettes.size(); i++) {
-                ListTag<?> palette = requireTag(palettes, i, ListTag.class);
-                for (int j = 0; j < palette.size(); j++) {
-                    CompoundTag state = requireTag(palette, j, CompoundTag.class);
+            for (int paletteIndex = 0; paletteIndex < palettes.size(); paletteIndex++) {
+                ListTag<?> palette = requireTag(palettes, paletteIndex, ListTag.class);
+                for (int index = 0; index < palette.size(); index++) {
+                    CompoundTag state = requireTag(palette, index, CompoundTag.class);
                     String name = requireTag(state, "Name", StringTag.class).getValue();
                     CompoundTag properties = optTag(state, "Properties", CompoundTag.class);
                     Map<String, String> propertyMap = new HashMap<>();
@@ -54,7 +54,7 @@ public class StructureReader extends NbtSchematicReader {
                     }
 
                     // TODO Multiple palettes.
-                    schematic.setBlockState(j, new BlockState(name, propertyMap));
+                    schematic.setBlockState(index, paletteIndex, new BlockState(name, propertyMap));
                 }
             }
         } else {
