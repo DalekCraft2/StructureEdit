@@ -155,7 +155,7 @@ public final class LegacyMapper {
         }
     }
 
-    @SuppressWarnings({"MismatchedQueryAndUpdateOfCollection"})
+    @SuppressWarnings("MismatchedQueryAndUpdateOfCollection")
     private static class LegacyDataFile {
         private Map<String, String> blocks;
         private Map<String, String> items;

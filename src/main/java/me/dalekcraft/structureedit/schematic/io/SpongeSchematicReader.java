@@ -42,7 +42,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                     return OptionalInt.of(Constants.DATA_VERSION_MC_1_13_2);
                 case 2:
                 case 3:
-                    int dataVersion = requireTag(root, "DataVersion", IntTag.class).asInt();
+                    dataVersion = requireTag(root, "DataVersion", IntTag.class).asInt();
                     if (dataVersion < 0) {
                         return OptionalInt.empty();
                     }

@@ -347,7 +347,7 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
 
     @Override
     public Set<String> getAliases() {
-        return this.aliases;
+        return aliases;
     }
 
     @Override

@@ -23,6 +23,7 @@ import org.jetbrains.annotations.Contract;
 /**
  * An enum of all materials accepted by the official server and client
  */
+@SuppressWarnings("unused")
 public enum BlockColor {
 
     // TODO Possibly use this enum to make default block states for blocks.
