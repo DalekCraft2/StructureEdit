@@ -7,15 +7,16 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public class Schematic {
 
     private final int[] size = new int[3];
     private final int[] offset = new int[3];
     private List<List<BlockState>> blockPalettes = new ArrayList<>();
-    private Table<Integer, Integer, List<Block>> blocks = HashBasedTable.create();
+    private List<Table<Integer, Integer, Optional<Block>>> blocks = new ArrayList<>();
     private List<BiomeState> biomePalette = new ArrayList<>();
-    private Table<Integer, Integer, List<Biome>> biomes = HashBasedTable.create();
+    private List<Table<Integer, Integer, Optional<Biome>>> biomes = new ArrayList<>();
     private List<Entity> entities = new ArrayList<>();
     private int dataVersion = -1;
     private CompoundTag metadata;
@@ -49,26 +50,35 @@ public class Schematic {
         size[0] = sizeX;
         size[1] = sizeY;
         size[2] = sizeZ;
-        for (int x = 0; x < sizeX; x++) {
-            for (int z = 0; z < sizeZ; z++) {
-                if (!blocks.containsRow(x) || !blocks.containsColumn(z) || blocks.get(x, z) == null) {
-                    blocks.put(x, z, new ArrayList<>());
-                }
-                List<Block> blockList = blocks.get(x, z);
-                assert blockList != null;
 
-                if (!biomes.containsRow(x) || !biomes.containsColumn(z) || biomes.get(x, z) == null) {
-                    biomes.put(x, z, new ArrayList<>());
-                }
-                List<Biome> biomeList = biomes.get(x, z);
-                assert biomeList != null;
+        while (blocks.size() <= sizeY) {
+            blocks.add(HashBasedTable.create());
+        }
 
-                while (blockList.size() <= sizeY) {
-                    blockList.add(null);
-                }
+        while (biomes.size() <= sizeY) {
+            biomes.add(HashBasedTable.create());
+        }
 
-                while (biomeList.size() <= sizeY) {
-                    biomeList.add(null);
+        for (int y = 0; y < sizeY; y++) {
+            if (blocks.get(y) == null) {
+                blocks.set(y, HashBasedTable.create());
+            }
+
+            if (biomes.get(y) == null) {
+                biomes.set(y, HashBasedTable.create());
+            }
+
+            Table<Integer, Integer, Optional<Block>> blockLayer = blocks.get(y);
+            Table<Integer, Integer, Optional<Biome>> biomeLayer = biomes.get(y);
+            for (int x = 0; x < sizeX; x++) {
+                for (int z = 0; z < sizeZ; z++) {
+                    if (!blockLayer.containsRow(x) || !blockLayer.containsColumn(z) || blockLayer.get(x, z) == null) {
+                        blockLayer.put(x, z, Optional.empty());
+                    }
+
+                    if (!biomeLayer.containsRow(x) || !biomeLayer.containsColumn(z) || blockLayer.get(x, z) == null) {
+                        biomeLayer.put(x, z, Optional.empty());
+                    }
                 }
             }
         }
@@ -111,7 +121,7 @@ public class Schematic {
      * @param position the position of the {@link Block}
      * @return the {@link Block}, or {@code null} if no {@link Block} is at the position
      */
-    public Block getBlock(int @NotNull [] position) {
+    public Optional<Block> getBlock(int @NotNull [] position) {
         return getBlock(position[0], position[1], position[2]);
     }
 
@@ -123,8 +133,8 @@ public class Schematic {
      * @param z the z coordinate of the {@link Block}
      * @return the block, or {@code null} if no {@link Block} is at the position
      */
-    public Block getBlock(int x, int y, int z) {
-        return blocks.get(x, z).get(y);
+    public Optional<Block> getBlock(int x, int y, int z) {
+        return blocks.get(y).get(x, z);
     }
 
     /**
@@ -146,14 +156,14 @@ public class Schematic {
      * @param block the new {@link Block}
      */
     public void setBlock(int x, int y, int z, Block block) {
-        blocks.get(x, z).set(y, block);
+        blocks.get(y).put(x, z, Optional.ofNullable(block));
     }
 
-    public Table<Integer, Integer, List<Block>> getBlocks() {
+    public List<Table<Integer, Integer, Optional<Block>>> getBlocks() {
         return blocks;
     }
 
-    public void setBlocks(Table<Integer, Integer, List<Block>> blocks) {
+    public void setBlocks(List<Table<Integer, Integer, Optional<Block>>> blocks) {
         this.blocks = blocks;
     }
 
@@ -222,7 +232,7 @@ public class Schematic {
      * @param position the position of the {@link Biome}
      * @return the {@link Biome}, or {@code null} if no {@link Biome} is at the position
      */
-    public Biome getBiome(int @NotNull [] position) {
+    public Optional<Biome> getBiome(int @NotNull [] position) {
         return getBiome(position[0], position[1], position[2]);
     }
 
@@ -234,8 +244,8 @@ public class Schematic {
      * @param z the z coordinate of the {@link Biome}
      * @return the block, or {@code null} if no {@link Biome} is at the position
      */
-    public Biome getBiome(int x, int y, int z) {
-        return biomes.get(x, z).get(y);
+    public Optional<Biome> getBiome(int x, int y, int z) {
+        return biomes.get(y).get(x, z);
     }
 
     /**
@@ -257,14 +267,14 @@ public class Schematic {
      * @param biome the new {@link Biome}
      */
     public void setBiome(int x, int y, int z, Biome biome) {
-        biomes.get(x, z).set(y, biome);
+        biomes.get(y).put(x, z, Optional.ofNullable(biome));
     }
 
-    public Table<Integer, Integer, List<Biome>> getBiomes() {
+    public List<Table<Integer, Integer, Optional<Biome>>> getBiomes() {
         return biomes;
     }
 
-    public void setBiomes(Table<Integer, Integer, List<Biome>> biomes) {
+    public void setBiomes(List<Table<Integer, Integer, Optional<Biome>>> biomes) {
         this.biomes = biomes;
     }
 

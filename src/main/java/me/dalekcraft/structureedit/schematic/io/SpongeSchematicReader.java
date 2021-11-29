@@ -9,6 +9,7 @@ import net.querz.nbt.tag.*;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.OptionalInt;
 
 public class SpongeSchematicReader extends NbtSchematicReader {
@@ -133,8 +134,11 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 // TODO Use this, somehow.
                 String id = requireTag(tileEntity, "Id", StringTag.class).getValue();
 
-                Block block = schematic.getBlock(x, y, z);
-                block.setNbt(tileEntity);
+                Optional<Block> blockOptional = schematic.getBlock(x, y, z);
+                if (blockOptional.isPresent()) {
+                    Block block = blockOptional.get();
+                    block.setNbt(tileEntity);
+                }
             }
         }
 
@@ -211,8 +215,11 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
                 String id = requireTag(blockEntity, "Id", StringTag.class).getValue();
 
-                Block block = schematic.getBlock(x, y, z);
-                block.setNbt(blockEntity);
+                Optional<Block> blockOptional = schematic.getBlock(x, y, z);
+                if (blockOptional.isPresent()) {
+                    Block block = blockOptional.get();
+                    block.setNbt(blockEntity);
+                }
             }
         }
 
@@ -343,8 +350,11 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
                     String id = requireTag(blockEntity, "Id", StringTag.class).getValue();
 
-                    Block block = schematic.getBlock(x, y, z);
-                    block.setNbt(blockEntity);
+                    Optional<Block> blockOptional = schematic.getBlock(x, y, z);
+                    if (blockOptional.isPresent()) {
+                        Block block = blockOptional.get();
+                        block.setNbt(blockEntity);
+                    }
                 }
             }
         }

@@ -10,6 +10,7 @@ import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;
 
 import java.io.IOException;
+import java.util.Optional;
 
 public class McEditSchematicReader extends NbtSchematicReader {
 
@@ -105,8 +106,11 @@ public class McEditSchematicReader extends NbtSchematicReader {
                 int y = requireTag(tileEntity, "y", IntTag.class).asInt();
                 int z = requireTag(tileEntity, "z", IntTag.class).asInt();
 
-                Block block = schematic.getBlock(x, y, z);
-                block.setNbt(tileEntity);
+                Optional<Block> blockOptional = schematic.getBlock(x, y, z);
+                if (blockOptional.isPresent()) {
+                    Block block = blockOptional.get();
+                    block.setNbt(tileEntity);
+                }
             }
         }
 

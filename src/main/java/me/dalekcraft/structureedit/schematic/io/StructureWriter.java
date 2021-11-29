@@ -11,6 +11,7 @@ import net.querz.nbt.tag.*;
 import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 
 public class StructureWriter extends NbtSchematicWriter {
 
@@ -78,8 +79,10 @@ public class StructureWriter extends NbtSchematicWriter {
         for (int x = 0; x < size[0]; x++) {
             for (int y = 0; y < size[1]; y++) {
                 for (int z = 0; z < size[2]; z++) {
-                    Block block = schematic.getBlock(x, y, z);
-                    if (block != null) {
+                    Optional<Block> blockOptional = schematic.getBlock(x, y, z);
+                    if (blockOptional.isPresent()) {
+                        Block block = blockOptional.get();
+
                         CompoundTag blockObject = new CompoundTag();
 
                         blockObject.putInt("state", block.getBlockStateIndex());
