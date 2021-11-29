@@ -91,7 +91,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
             /*if (!palette.containsValue(new IntTag(state))) {
                 throw new ValidationException("Key " + currentKey + " has invalid palette index " + state);
             }*/
-            Block block = new Block(schematic.getBlockState(state));
+            Block block = new Block(state);
             schematic.setBlock(x, y, z, block);
         }
 
@@ -164,7 +164,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
             /*if (!palette.containsValue(new IntTag(state))) {
                 throw new ValidationException("Key " + currentKey + " has invalid palette index " + state);
             }*/
-            Block block = new Block(schematic.getBlockState(state));
+            Block block = new Block(state);
             schematic.setBlock(x, y, z, block);
         }
 
@@ -288,7 +288,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 /*if (!palette.containsValue(new IntTag(state))) {
                     throw new ValidationException("Key " + currentKey + " has invalid palette index " + state);
                 }*/
-                Block block = new Block(schematic.getBlockState(state));
+                Block block = new Block(state);
                 schematic.setBlock(x, y, z, block);
             }
 

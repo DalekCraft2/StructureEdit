@@ -57,8 +57,6 @@ public class StructureReader extends NbtSchematicReader {
                             propertyMap.put(entry.getKey(), value);
                         });
                     }
-
-                    // TODO Multiple palettes.
                     schematic.setBlockState(index, paletteIndex, new BlockState(name, propertyMap));
                 }
             }
@@ -97,7 +95,7 @@ public class StructureReader extends NbtSchematicReader {
             CompoundTag nbt = optTag(block, "nbt", CompoundTag.class);
 
             // TODO Ensure that the palette contains the state.
-            Block blockObject = new Block(schematic.getBlockState(state), nbt);
+            Block blockObject = new Block(state, nbt);
 
             schematic.setBlock(x, y, z, blockObject);
         }

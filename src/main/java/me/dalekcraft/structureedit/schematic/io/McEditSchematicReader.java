@@ -73,7 +73,7 @@ public class McEditSchematicReader extends NbtSchematicReader {
                 blockState = schematic.getBlockState(schematic.getBlockPalette().indexOf(blockState));
             }
 
-            schematic.setBlock(x, y, z, new Block(blockState));
+            schematic.setBlock(x, y, z, new Block(schematic.getBlockPalette().indexOf(blockState)));
         }
 
         ListTag<?> entities = optTag(root, "Entities", ListTag.class);

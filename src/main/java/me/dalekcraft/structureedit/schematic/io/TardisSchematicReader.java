@@ -68,7 +68,7 @@ public class TardisSchematicReader extends JsonSchematicReader {
                                     blockState = schematic.getBlockState(schematic.getBlockPalette().indexOf(blockState));
                                 }
 
-                                Block blockObject = new Block(blockState);
+                                Block blockObject = new Block(schematic.getBlockPalette().indexOf(blockState));
                                 schematic.setBlock(x, y, z, blockObject);
                             }
                         }
