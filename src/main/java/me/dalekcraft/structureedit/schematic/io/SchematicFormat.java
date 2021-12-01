@@ -37,6 +37,13 @@ public interface SchematicFormat {
     String getName();
 
     /**
+     * Returns the description of this format.
+     *
+     * @return The description of the format
+     */
+    String getDescription();
+
+    /**
      * Get a set of aliases.
      *
      * @return a set of aliases

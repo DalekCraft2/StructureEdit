@@ -85,49 +85,49 @@
                                  </rowConstraints>
                                  <children>
                                     <Label text="%ui.editor.schematic_size.text" />
-                                    <TextField fx:id="sizeTextField" editable="false" GridPane.columnIndex="1">
+                                    <TextField fx:id="sizeTextField" disable="true" editable="false" GridPane.columnIndex="1">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.schematic_size.tooltip" />
                                        </tooltip>
                                     </TextField>
                                     <Label text="%ui.editor.layer.text" GridPane.rowIndex="1" />
-                                    <Spinner fx:id="layerSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <Spinner fx:id="layerSpinner" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.layer.tooltip" />
                                        </tooltip>
                                     </Spinner>
                                     <Label text="%ui.editor.palette.text" GridPane.rowIndex="2" />
-                                    <Spinner fx:id="paletteSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <Spinner fx:id="paletteSpinner" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.palette.tooltip" />
                                        </tooltip>
                                     </Spinner>
                                     <Label text="%ui.editor.block_palette.text" GridPane.rowIndex="3" />
-                                    <Spinner fx:id="blockPaletteSpinner" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                    <Spinner fx:id="blockPaletteSpinner" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.block_palette.tooltip" />
                                        </tooltip>
                                     </Spinner>
                                     <Label text="%ui.editor.block_position.text" GridPane.rowIndex="4" />
-                                    <TextField fx:id="blockPositionTextField" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                    <TextField fx:id="blockPositionTextField" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.block_position.tooltip" />
                                        </tooltip>
                                     </TextField>
                                     <Label text="%ui.editor.block_id.text" GridPane.rowIndex="5" />
-                                    <ComboBox fx:id="blockIdComboBox" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                    <ComboBox fx:id="blockIdComboBox" disable="true" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.block_id.tooltip" />
                                        </tooltip>
                                     </ComboBox>
                                     <Label text="%ui.editor.block_properties.text" GridPane.rowIndex="6" />
-                                    <TextField fx:id="blockPropertiesTextField" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                    <TextField fx:id="blockPropertiesTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.block_properties.tooltip" />
                                        </tooltip>
                                     </TextField>
                                     <Label text="%ui.editor.block_nbt.text" GridPane.rowIndex="7" />
-                                    <TextField fx:id="blockNbtTextField" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                    <TextField fx:id="blockNbtTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="7">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.block_nbt.tooltip" />
                                        </tooltip>

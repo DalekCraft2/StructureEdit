@@ -88,10 +88,8 @@ public class McEditSchematicReader extends NbtSchematicReader {
 
                 String id = requireTag(entityTag, "id", StringTag.class).getValue();
 
-                Entity entity = new Entity();
+                Entity entity = new Entity(id, entityTag);
                 entity.setPosition(x, y, z);
-                entity.setId(id);
-                entity.setNbt(entityTag);
 
                 schematic.getEntities().add(entity);
             }
@@ -106,9 +104,14 @@ public class McEditSchematicReader extends NbtSchematicReader {
                 int y = requireTag(tileEntity, "y", IntTag.class).asInt();
                 int z = requireTag(tileEntity, "z", IntTag.class).asInt();
 
-                Optional<Block> blockOptional = schematic.getBlock(x, y, z);
-                if (blockOptional.isPresent()) {
-                    Block block = blockOptional.get();
+                String id = requireTag(tileEntity, "id", StringTag.class).getValue();
+
+                tileEntity.remove("x");
+                tileEntity.remove("y");
+                tileEntity.remove("z");
+
+                Block block = schematic.getBlock(x, y, z);
+                if (block != null) {
                     block.setNbt(tileEntity);
                 }
             }

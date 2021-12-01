@@ -21,6 +21,7 @@ package me.dalekcraft.structureedit.schematic.io;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import javafx.stage.FileChooser;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.Nullable;
@@ -35,6 +36,7 @@ public final class SchematicFormats {
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Map<String, SchematicFormat> ALIAS_MAP = new HashMap<>();
     private static final Multimap<String, SchematicFormat> FILE_EXTENSION_MAP = HashMultimap.create();
+    private static final Map<FileChooser.ExtensionFilter, SchematicFormat> FILE_EXTENSION_FILTER_MAP = new HashMap<>();
     private static final List<SchematicFormat> REGISTERED_FORMATS = new ArrayList<>();
 
     static {
@@ -61,6 +63,7 @@ public final class SchematicFormats {
             String lowExt = ext.toLowerCase(Locale.ROOT);
             FILE_EXTENSION_MAP.put(lowExt, format);
         }
+        FILE_EXTENSION_FILTER_MAP.put(new FileChooser.ExtensionFilter(format.getDescription(), format.getFileExtensions().stream().toList()), format);
         REGISTERED_FORMATS.add(format);
     }
 
@@ -102,6 +105,10 @@ public final class SchematicFormats {
      */
     public static Multimap<String, SchematicFormat> getFileExtensionMap() {
         return Multimaps.unmodifiableMultimap(FILE_EXTENSION_MAP);
+    }
+
+    public static Map<FileChooser.ExtensionFilter, SchematicFormat> getFileExtensionFilterMap() {
+        return Collections.unmodifiableMap(FILE_EXTENSION_FILTER_MAP);
     }
 
     public static Collection<SchematicFormat> getAll() {

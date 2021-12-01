@@ -39,12 +39,19 @@ import javafx.stage.FileChooser;
 import me.dalekcraft.structureedit.StructureEditApplication;
 import me.dalekcraft.structureedit.drawing.BlockColor;
 import me.dalekcraft.structureedit.exception.ValidationException;
-import me.dalekcraft.structureedit.schematic.*;
-import me.dalekcraft.structureedit.util.*;
+import me.dalekcraft.structureedit.schematic.container.Block;
+import me.dalekcraft.structureedit.schematic.container.BlockState;
+import me.dalekcraft.structureedit.schematic.container.Schematic;
+import me.dalekcraft.structureedit.schematic.io.SchematicFormat;
+import me.dalekcraft.structureedit.schematic.io.SchematicFormats;
+import me.dalekcraft.structureedit.schematic.io.SchematicReader;
+import me.dalekcraft.structureedit.schematic.io.SchematicWriter;
+import me.dalekcraft.structureedit.util.Assets;
+import me.dalekcraft.structureedit.util.Configuration;
+import me.dalekcraft.structureedit.util.InternalUtils;
+import me.dalekcraft.structureedit.util.Semantic;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
-import net.querz.nbt.tag.IntTag;
-import net.querz.nbt.tag.StringTag;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -57,13 +64,14 @@ import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.json.JSONArray;
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
@@ -73,17 +81,13 @@ import java.util.List;
 import java.util.*;
 
 import static com.jogamp.opengl.GL4.*;
-import static me.dalekcraft.structureedit.schematic.Schematic.openFrom;
 
 /**
  * @author eccentric_nz
  */
 public class Controller {
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final FileChooser.ExtensionFilter FILTER_NBT = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.nbt"), "*." + NbtStructure.EXTENSION);
-    private static final FileChooser.ExtensionFilter FILTER_MCEDIT = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.mcedit"), "*." + McEditSchematic.EXTENSION);
-    private static final FileChooser.ExtensionFilter FILTER_SPONGE = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.sponge"), "*." + SpongeSchematic.EXTENSION);
-    private static final FileChooser.ExtensionFilter FILTER_TARDIS = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.tardis"), "*." + TardisSchematic.EXTENSION);
+    private static final FileChooser.ExtensionFilter FILTER_ALL = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.all"), "*.*");
     public final FileChooser schematicChooser = new FileChooser();
     public final DirectoryChooser assetsChooser = new DirectoryChooser();
     private final SpinnerValueFactory.IntegerSpinnerValueFactory layerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
@@ -120,11 +124,14 @@ public class Controller {
     private InlineCssTextArea logArea;
 
     {
-        schematicChooser.getExtensionFilters().addAll(FILTER_NBT, FILTER_MCEDIT, FILTER_SPONGE, FILTER_TARDIS);
+        schematicChooser.getExtensionFilters().addAll(SchematicFormats.getFileExtensionFilterMap().keySet());
+        schematicChooser.getExtensionFilters().sort(Comparator.comparing(FileChooser.ExtensionFilter::getDescription));
+        schematicChooser.getExtensionFilters().add(0 , FILTER_ALL);
         Path assets = Assets.getAssets();
         if (assets != null && !assets.toString().equals("")) {
             assetsChooser.setInitialDirectory(assets.toFile());
         }
+
     }
 
     @FXML
@@ -233,28 +240,23 @@ public class Controller {
 
     public void openSchematic(@NotNull File file) {
         LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loading"), file);
-        try {
-            schematic = openFrom(file);
-            selected = null;
-        } catch (IOException | JSONException e) {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.error_reading"), e.getMessage());
-            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
-            schematic = null;
-        } catch (ValidationException e) {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.invalid"), e.getMessage());
-            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
-            schematic = null;
-        } catch (org.everit.json.schema.ValidationException e) {
-            List<String> messages = e.getAllMessages();
-            if (messages.size() > 1) {
-                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.invalid"), e.getViolationCount());
+        schematic = null;
+        SchematicFormat format = SchematicFormats.findByFile(file);
+        if (format != null) {
+            try (SchematicReader reader = format.getReader(new FileInputStream(file))) {
+                schematic = reader.read();
+            } catch (IOException e) {
+                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.error_reading"), e.getMessage());
+                StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
+            } catch (ValidationException e) {
+                // LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.invalid"), e.getMessage());
+                LOGGER.catching(e);
+                StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
             }
-            messages.forEach(message -> LOGGER.log(Level.ERROR, message));
-            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
-            schematic = null;
-        } catch (UnsupportedOperationException e) {
-            LOGGER.log(Level.ERROR, e.getMessage());
+        } else {
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.not_schematic"));
         }
+        selected = null;
         sizeTextField.setText(null);
         layerValueFactory.setValue(0);
         layerSpinner.setDisable(true);
@@ -276,16 +278,13 @@ public class Controller {
             int[] size = schematic.getSize();
             renderedHeight = size[1];
             layerValueFactory.setMax(size[1] - 1);
-            if (schematic instanceof PaletteSchematic paletteSchematic) {
-                if (paletteSchematic instanceof MultiPaletteSchematic multiPaletteSchematic && multiPaletteSchematic.hasPaletteList()) {
-                    int palettesSize = multiPaletteSchematic.getPaletteList().size();
-                    paletteSpinner.setDisable(false);
-                    paletteValueFactory.setMax(palettesSize - 1);
-                    multiPaletteSchematic.setActivePalette(0);
-                }
-                int paletteSize = paletteSchematic.getPalette().size();
-                blockPaletteValueFactory.setMax(paletteSize - 1);
+            if (schematic.getBlockPalettes().size() > 1) {
+                int palettesSize = schematic.getBlockPalettes().size();
+                paletteSpinner.setDisable(false);
+                paletteValueFactory.setMax(palettesSize - 1);
             }
+            int paletteSize = schematic.getBlockPalette(0).size();
+            blockPaletteValueFactory.setMax(paletteSize - 1);
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loaded"), file);
             StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         }
@@ -296,22 +295,30 @@ public class Controller {
     public void showSaveDialog() {
         if (schematic != null) {
             renderer.animator.pause();
+            schematicChooser.getExtensionFilters().remove(FILTER_ALL);
             File file = schematicChooser.showSaveDialog(StructureEditApplication.stage);
             if (file != null) {
                 schematicChooser.setInitialDirectory(file.getParentFile());
                 schematicChooser.setInitialFileName(file.getName());
-                saveSchematic(file);
+                FileChooser.ExtensionFilter filter = schematicChooser.getSelectedExtensionFilter();
+                SchematicFormat format = SchematicFormats.getFileExtensionFilterMap().get(filter);
+                saveSchematic(file, format);
             }
+            schematicChooser.getExtensionFilters().add(0, FILTER_ALL);
             renderer.animator.resume();
         } else {
             LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.null"));
         }
     }
 
-    public void saveSchematic(File file) {
+    public void saveSchematic(File file, SchematicFormat format) {
         try {
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.saving"), file);
-            schematic.saveTo(file);
+            if (format != null) {
+                try (SchematicWriter reader = format.getWriter(new FileOutputStream(file))) {
+                    reader.write(schematic);
+                }
+            }
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.saved"), file);
             StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         } catch (IOException e1) {
@@ -331,26 +338,18 @@ public class Controller {
     }
 
     public void setAssets(File file) {
-        if (file == null) {
-            file = new File("");
-        }
-        if (file != null) {
-            assetsChooser.setInitialDirectory(file.getParentFile());
-            Path assets = file.toPath();
-            Assets.setAssets(assets);
-        }
+        file = Objects.requireNonNullElse(file, new File(""));
+        assetsChooser.setInitialDirectory(file.getParentFile());
+        Path assets = file.toPath();
+        Assets.setAssets(assets);
         shouldReloadTextures = true;
     }
 
     public void setAssets(Path path) {
-        if (path == null) {
-            path = Path.of("");
-        }
-        if (path != null) {
-            File file = path.toFile();
-            assetsChooser.setInitialDirectory(file.getParentFile());
-            Assets.setAssets(path);
-        }
+        path = Objects.requireNonNullElse(path, Path.of(""));
+        File file = path.toFile();
+        assetsChooser.setInitialDirectory(file.getParentFile());
+        Assets.setAssets(path);
         shouldReloadTextures = true;
     }
 
@@ -380,20 +379,23 @@ public class Controller {
 
     public void onBlockIdUpdate() {
         if (schematic != null && selected != null && blockIdComboBox.getSelectionModel().getSelectedItem() != null) {
-            Schematic.Block block = selected.getBlock();
+            Block block = selected.getBlock();
+            BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
             String blockId = blockIdComboBox.getSelectionModel().getSelectedItem();
-            block.setId(blockId);
+            blockState.setId(blockId);
             loadLayer();
         }
     }
 
     public void onBlockPropertiesUpdate() {
         if (schematic != null && selected != null) {
-            Schematic.Block block = selected.getBlock();
+            Block block = selected.getBlock();
+            BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
             try {
-                block.setPropertiesAsString(blockPropertiesTextField.getText().trim());
+                Map<String, String> properties = BlockState.SPLITTER.split(blockPropertiesTextField.getText().trim().replace("[", "").replace("]", ""));
+                blockState.setProperties(properties);
                 blockPropertiesTextField.setStyle("-fx-text-inner-color: #000000");
-            } catch (IOException e1) {
+            } catch (IllegalArgumentException e1) {
                 blockPropertiesTextField.setStyle("-fx-text-inner-color: #FF0000");
             }
             loadLayer();
@@ -401,10 +403,11 @@ public class Controller {
     }
 
     public void onBlockNbtUpdate() {
-        if (schematic != null && !(schematic instanceof TardisSchematic) && selected != null) {
-            Schematic.Block block = selected.getBlock();
+        if (schematic != null && selected != null) {
+            Block block = selected.getBlock();
             try {
-                block.setSnbt(blockNbtTextField.getText());
+                CompoundTag nbt = (CompoundTag) SNBTUtil.fromSNBT(blockNbtTextField.getText().trim());
+                block.setNbt(nbt);
                 blockNbtTextField.setStyle("-fx-text-inner-color: #000000");
             } catch (IOException e1) {
                 blockNbtTextField.setStyle("-fx-text-inner-color: #FF0000");
@@ -416,23 +419,18 @@ public class Controller {
     @FXML
     public void onPaletteUpdate() {
         if (schematic != null) {
-            if (schematic instanceof MultiPaletteSchematic multiPaletteSchematic && multiPaletteSchematic.hasPaletteList()) {
-                multiPaletteSchematic.setActivePalette(paletteSpinner.getValue());
-                loadLayer();
-                updateSelected();
-            }
+            loadLayer();
+            updateSelected();
         }
     }
 
     @FXML
     public void onBlockPaletteUpdate() {
-        if (schematic != null && schematic instanceof PaletteSchematic && selected != null) {
-            Schematic.Block block = selected.getBlock();
-            if (block instanceof PaletteSchematic.PaletteBlock paletteBlock) {
-                paletteBlock.setStateIndex(blockPaletteSpinner.getValue());
-                loadLayer();
-                updateSelected();
-            }
+        if (schematic != null && selected != null) {
+            Block block = selected.getBlock();
+            block.setBlockStateIndex(blockPaletteSpinner.getValue());
+            loadLayer();
+            updateSelected();
         }
     }
 
@@ -452,9 +450,11 @@ public class Controller {
             int currentLayer = layerSpinner.getValue();
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {
-                    Schematic.Block block = schematic.getBlock(x, currentLayer, z);
+                    Block block = schematic.getBlock(x, currentLayer, z);
                     if (block != null) {
-                        String blockId = block.getId();
+                        BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
+
+                        String blockId = blockState.getId();
                         String blockName = blockId.substring(blockId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
                         Color color;
                         try {
@@ -463,7 +463,7 @@ public class Controller {
                             color = Color.rgb(251, 64, 249); // Color of the missing texture's purple
                         }
                         color = Color.color(color.getRed(), color.getGreen(), color.getBlue());
-                        BlockButton blockButton = new BlockButton(block);
+                        BlockButton blockButton = new BlockButton(block, x, currentLayer, z);
                         blockButton.setText(blockName.substring(0, 1));
                         blockButton.setTooltip(new Tooltip(blockId));
                         blockButton.setTextOverrun(OverrunStyle.CLIP);
@@ -474,7 +474,7 @@ public class Controller {
                         blockButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::blockButtonPressed);
                         blockGrid.add(blockButton, x, z);
                         if (selected != null) {
-                            int[] position = selected.getBlock().getPosition();
+                            int[] position = selected.getPosition();
                             if (Arrays.equals(position, new int[]{x, currentLayer, z})) {
                                 selected = blockButton;
                                 // Set selected tile's border color to red
@@ -483,7 +483,7 @@ public class Controller {
                         }
                     } else {
                         Color color = Color.WHITE;
-                        BlockButton blockButton = new BlockButton(null);
+                        BlockButton blockButton = new BlockButton(null, x, currentLayer, z);
                         blockButton.setText(" ");
                         blockButton.setTextOverrun(OverrunStyle.CLIP);
                         blockButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -503,54 +503,50 @@ public class Controller {
             selected.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
         }
         selected = (BlockButton) e.getSource();
-        Schematic.Block block = selected.getBlock();
+        Block block = selected.getBlock();
 
         if (block != null) {
+            BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
+
             selected.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
 
-            blockIdComboBox.getSelectionModel().select(block.getId());
+            blockIdComboBox.getSelectionModel().select(blockState.getId());
             blockIdComboBox.setDisable(false);
 
-            blockPropertiesTextField.setText(block.getPropertiesAsString());
+            String propertyString = "[" + BlockState.JOINER.join(blockState.getProperties()) + "]";
+            blockPropertiesTextField.setText(propertyString);
             blockPropertiesTextField.setStyle("-fx-text-inner-color: #000000");
             blockPropertiesTextField.setDisable(false);
 
             try {
-                blockNbtTextField.setText(block.getSnbt());
-                blockNbtTextField.setDisable(false);
-            } catch (UnsupportedOperationException e1) {
-                blockNbtTextField.setText(null);
-                blockNbtTextField.setDisable(true);
+                blockNbtTextField.setText(SNBTUtil.toSNBT(block.getNbt()));
+            } catch (IOException ignored) {
             }
+            blockNbtTextField.setDisable(false);
             blockNbtTextField.setStyle("-fx-text-inner-color: #000000");
 
-            blockPositionTextField.setText(Arrays.toString(block.getPosition()));
+            blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
             blockPositionTextField.setDisable(false);
 
-            if (block instanceof PaletteSchematic.PaletteBlock paletteBlock) {
-                blockPaletteValueFactory.setValue(paletteBlock.getStateIndex());
-                blockPaletteSpinner.setDisable(false);
-            } else {
-                blockPaletteValueFactory.setValue(0);
-                blockPaletteSpinner.setDisable(true);
-            }
+            blockPaletteValueFactory.setValue(block.getBlockStateIndex());
+            blockPaletteSpinner.setDisable(false);
         }
     }
 
     public void updateSelected() {
         if (selected != null) {
-            Schematic.Block block = selected.getBlock();
+            Block block = selected.getBlock();
+            BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
 
-            blockIdComboBox.getSelectionModel().select(block.getId());
-            blockPropertiesTextField.setText(block.getPropertiesAsString());
+            blockIdComboBox.getSelectionModel().select(blockState.getId());
+            String propertyString = "[" + BlockState.JOINER.join(blockState.getProperties()) + "]";
+            blockPropertiesTextField.setText(propertyString);
 
             try {
-                blockNbtTextField.setText(block.getSnbt());
-                blockNbtTextField.setDisable(false);
-            } catch (UnsupportedOperationException e) {
-                blockNbtTextField.setText(null);
-                blockNbtTextField.setDisable(true);
+                blockNbtTextField.setText(SNBTUtil.toSNBT(block.getNbt()));
+            } catch (IOException ignored) {
             }
+            blockNbtTextField.setDisable(false);
         }
     }
 
@@ -652,17 +648,16 @@ public class Controller {
         }
 
         @NotNull
-        public static Color getTint(@NotNull Schematic.Block block) {
-            String namespacedId = block.getId();
-            CompoundTag properties = block.getProperties();
+        public static Color getTint(@NotNull BlockState blockState) {
+
+            String namespacedId = blockState.getId();
+            Map<String, String> properties = blockState.getProperties();
             switch (namespacedId) {
                 case "minecraft:redstone_wire" -> {
                     int power = 0;
-                    if (properties.containsKey("power") && properties.get("power") instanceof IntTag intTag) {
-                        power = intTag.asInt();
-                    } else if (properties.containsKey("power") && properties.get("power") instanceof StringTag stringTag) {
+                    if (properties.containsKey("power")) {
                         try {
-                            power = Integer.parseInt(stringTag.getValue());
+                            power = Integer.parseInt(properties.get("power"));
                         } catch (NumberFormatException ignored) {
                         }
                     }
@@ -1009,12 +1004,13 @@ public class Controller {
                 for (int x = 0; x < size[0]; x++) {
                     for (int y = 0; y < renderedHeight; y++) {
                         for (int z = 0; z < size[2]; z++) {
-                            Schematic.Block block = schematic.getBlock(x, y, z);
+                            Block block = schematic.getBlock(x, y, z);
                             if (block != null) {
+                                BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
                                 long seed = x + (long) y * size[2] * size[0] + (long) z * size[0];
                                 random.setSeed(seed);
-                                List<JSONObject> modelList = getModelsFromBlockState(block);
-                                Color tint = getTint(block);
+                                List<JSONObject> modelList = getModelsFromBlockState(blockState);
+                                Color tint = getTint(blockState);
 
                                 try {
                                     for (JSONObject model : modelList) {
@@ -1182,30 +1178,24 @@ public class Controller {
         }
 
         @NotNull
-        public List<JSONObject> getModelsFromBlockState(@NotNull Schematic.Block block) {
+        public List<JSONObject> getModelsFromBlockState(@NotNull BlockState block) {
             List<JSONObject> modelList = new ArrayList<>();
             String namespacedId = block.getId();
-            CompoundTag properties = block.getProperties().clone();
-            if (properties.containsKey("waterlogged") && properties.get("waterlogged") instanceof StringTag && properties.getString("waterlogged").equals("true")) {
+            Map<String, String> properties = block.getProperties();
+            if (properties.containsKey("waterlogged") && properties.get("waterlogged").equals("true")) {
                 JSONObject waterModel = new JSONObject();
                 waterModel.put("model", "minecraft:block/water");
                 modelList.add(waterModel);
             }
             JSONObject blockState = Assets.getBlockState(namespacedId);
-            String propertiesString = "";
-            try {
-                propertiesString = SNBTUtil.toSNBT(PropertyUtils.byteToString(properties)).replace('{', '[').replace('}', ']').replace(':', '=').replace("\"", "");
-            } catch (IOException e) {
-                LOGGER.log(Level.ERROR, e.getMessage());
-            }
             if (blockState.has("variants")) {
                 JSONObject variants = blockState.getJSONObject("variants");
                 Set<String> keySet = variants.keySet();
                 for (String variantName : keySet) {
-                    String[] states = variantName.split(",");
+                    Set<Map.Entry<String, String>> states = BlockState.SPLITTER.split(variantName).entrySet();
                     boolean contains = true;
-                    for (String state : states) {
-                        if (!propertiesString.contains(state)) {
+                    for (Map.Entry<String, String> state : states) {
+                        if (!state.getValue().equals(properties.get(state.getKey()))) {
                             contains = false;
                             break;
                         }
@@ -1236,16 +1226,9 @@ public class Controller {
                                 Set<String> keySet = orEntry.keySet();
                                 for (String state : keySet) {
                                     List<String> values = Arrays.asList(orEntry.getString(state).split("\\|"));
-                                    if (properties.get(state) instanceof StringTag) {
-                                        if (!values.contains(properties.getString(state))) {
-                                            contains = false;
-                                            break;
-                                        }
-                                    } else if (properties.get(state) instanceof IntTag) {
-                                        if (!values.contains(String.valueOf(properties.getInt(state)))) {
-                                            contains = false;
-                                            break;
-                                        }
+                                    if (!values.contains(properties.get(state))) {
+                                        contains = false;
+                                        break;
                                     }
                                 }
                                 if (contains) {
@@ -1265,13 +1248,8 @@ public class Controller {
                             boolean contains = true;
                             for (String state : keySet) {
                                 List<String> values = Arrays.asList(when.getString(state).split("\\|"));
-                                if (properties.get(state) instanceof StringTag) {
-                                    if (!values.contains(properties.getString(state))) {
-                                        contains = false;
-                                        break;
-                                    }
-                                } else if (properties.get(state) instanceof IntTag) {
-                                    if (!values.contains(String.valueOf(properties.getInt(state)))) {
+                                if (properties.containsKey(state)) {
+                                    if (!values.contains(properties.get(state))) {
                                         contains = false;
                                         break;
                                     }
@@ -1403,10 +1381,14 @@ public class Controller {
                         toX = toVec.x;
                         toY = toVec.y;
                         toZ = toVec.z;
-                        switch (axis) {
-                            case "x" -> modelMatrix.translate(-originX, -originY * rescaleFactor, -originZ * rescaleFactor);
-                            case "y" -> modelMatrix.translate(-originX * rescaleFactor, -originY, -originZ * rescaleFactor);
-                            case "z" -> modelMatrix.translate(-originX * rescaleFactor, -originY * rescaleFactor, -originZ);
+                        if (rescale) {
+                            switch (axis) {
+                                case "x" -> modelMatrix.translate(-originX, -originY * rescaleFactor, -originZ * rescaleFactor);
+                                case "y" -> modelMatrix.translate(-originX * rescaleFactor, -originY, -originZ * rescaleFactor);
+                                case "z" -> modelMatrix.translate(-originX * rescaleFactor, -originY * rescaleFactor, -originZ);
+                            }
+                        } else {
+                            modelMatrix.translate(-originX, -originY, -originZ);
                         }
                     }
 

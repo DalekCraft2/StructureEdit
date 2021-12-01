@@ -3,11 +3,22 @@ package me.dalekcraft.structureedit.schematic.container;
 import net.querz.nbt.tag.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Objects;
+
 public class Entity {
 
     private final double[] position = new double[3];
     private String id;
     private CompoundTag nbt;
+
+    public Entity(String id) {
+        this(id, new CompoundTag());
+    }
+
+    public Entity(String id, CompoundTag nbt) {
+        this.id = id;
+        this.nbt = Objects.requireNonNullElse(nbt, new CompoundTag());
+    }
 
     /**
      * Returns the position of this {@link Entity}.
@@ -55,7 +66,7 @@ public class Entity {
      * @param id the new namespaced ID for this {@link Entity}
      */
     public void setId(String id) {
-        this.id = id;
+        this.id = Objects.requireNonNull(id);
     }
 
     /**
@@ -73,6 +84,6 @@ public class Entity {
      * @param nbt the new NBT for this {@link Entity}
      */
     public void setNbt(CompoundTag nbt) {
-        this.nbt = nbt;
+        this.nbt = Objects.requireNonNullElse(nbt, new CompoundTag());
     }
 }

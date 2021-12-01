@@ -1,22 +1,20 @@
 package me.dalekcraft.structureedit.schematic.io;
 
+import com.sk89q.worldedit.internal.Constants;
 import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.schematic.container.*;
-import me.dalekcraft.structureedit.util.Constants;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;
 
 import java.io.IOException;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 import java.util.OptionalInt;
 
 public class SpongeSchematicReader extends NbtSchematicReader {
 
     private final NBTInputStream inputStream;
     private int schematicVersion = -1;
-    private int dataVersion = -1;
 
     public SpongeSchematicReader(NBTInputStream inputStream) {
         this.inputStream = Objects.requireNonNull(inputStream);
@@ -43,7 +41,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                     return OptionalInt.of(Constants.DATA_VERSION_MC_1_13_2);
                 case 2:
                 case 3:
-                    dataVersion = requireTag(root, "DataVersion", IntTag.class).asInt();
+                    int dataVersion = requireTag(root, "DataVersion", IntTag.class).asInt();
                     if (dataVersion < 0) {
                         return OptionalInt.empty();
                     }
@@ -59,13 +57,18 @@ public class SpongeSchematicReader extends NbtSchematicReader {
         CompoundTag root = (CompoundTag) inputStream.readTag(Tag.DEFAULT_MAX_DEPTH).getTag();
         if (root.containsKey("Schematic")) {
             root = requireTag(root, "Schematic", CompoundTag.class);
-            schematicVersion = requireTag(root, "Version", IntTag.class).asInt();
         }
+        schematicVersion = requireTag(root, "Version", IntTag.class).asInt();
         return root;
     }
 
     private Schematic readV1(CompoundTag root) throws ValidationException {
         Schematic schematic = new Schematic();
+
+        OptionalInt dataVersion = getDataVersion();
+        if (dataVersion.isPresent()) {
+            schematic.setDataVersion(dataVersion.getAsInt());
+        }
 
         CompoundTag metadata = optTag(root, "Metadata", CompoundTag.class);
         schematic.setMetadata(metadata);
@@ -75,20 +78,25 @@ public class SpongeSchematicReader extends NbtSchematicReader {
         short sizeZ = requireTag(root, "Length", ShortTag.class).asShort();
         schematic.setSize(sizeX, sizeY, sizeZ);
 
-        int[] offset = optTag(root, "Offset", IntArrayTag.class).getValue();
-        if (offset != null) {
+        IntArrayTag offsetTag = optTag(root, "Offset", IntArrayTag.class);
+        if (offsetTag != null) {
+            int[] offset = offsetTag.getValue();
             int offsetX = offset[0];
             int offsetY = offset[1];
             int offsetZ = offset[2];
             schematic.setOffset(offsetX, offsetY, offsetZ);
         }
 
-        int paletteMax = requireTag(root, "PaletteMax", IntTag.class).asInt();
+        int blockPaletteMax = requireTag(root, "PaletteMax", IntTag.class).asInt();
 
-        CompoundTag palette = requireTag(root, "Palette", CompoundTag.class);
+        // TODO The Sponge specification says that palettes are actually optional, so I need to figure out how one would read a schematic without a palette.
+        CompoundTag blockPalette = requireTag(root, "Palette", CompoundTag.class);
+        if (blockPalette.size() != blockPaletteMax) {
+            throw new ValidationException("Palette size does not match expected maximum");
+        }
 
-        for (String key : palette.keySet()) {
-            int value = requireTag(palette, key, IntTag.class).asInt();
+        for (String key : blockPalette.keySet()) {
+            int value = requireTag(blockPalette, key, IntTag.class).asInt();
 
             int nameEndIndex = key.length();
             if (key.contains("[")) {
@@ -111,9 +119,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
             int z = i % (sizeX * sizeZ) / sizeX;
 
             byte state = blockData[i];
-            /*if (!palette.containsValue(new IntTag(state))) {
-                throw new ValidationException("Key " + currentKey + " has invalid palette index " + state);
-            }*/
+            if (!blockPalette.containsValue(new IntTag(state))) {
+                throw new ValidationException("Entry at index " + i + " has invalid palette index " + state);
+            }
 
             Block block = new Block(state);
 
@@ -124,19 +132,22 @@ public class SpongeSchematicReader extends NbtSchematicReader {
         if (tileEntities != null) {
             for (int i = 0; i < tileEntities.size(); i++) {
                 CompoundTag tileEntity = requireTag(tileEntities, i, CompoundTag.class);
-                int contentVersion = requireTag(tileEntity, "ContentVersion", IntTag.class).asInt();
+
+                // int contentVersion = requireTag(tileEntity, "ContentVersion", IntTag.class).asInt();
+                tileEntity.remove("ContentVersion");
 
                 int[] position = requireTag(tileEntity, "Pos", IntArrayTag.class).getValue();
                 int x = position[0];
                 int y = position[1];
                 int z = position[2];
 
-                // TODO Use this, somehow.
                 String id = requireTag(tileEntity, "Id", StringTag.class).getValue();
+                tileEntity.remove("Pos");
+                tileEntity.remove("Id");
+                tileEntity.putString("id", id);
 
-                Optional<Block> blockOptional = schematic.getBlock(x, y, z);
-                if (blockOptional.isPresent()) {
-                    Block block = blockOptional.get();
+                Block block = schematic.getBlock(x, y, z);
+                if (block != null) {
                     block.setNbt(tileEntity);
                 }
             }
@@ -148,8 +159,10 @@ public class SpongeSchematicReader extends NbtSchematicReader {
     private Schematic readV2(CompoundTag root) throws ValidationException {
         Schematic schematic = new Schematic();
 
-        int dataVersion = requireTag(root, "DataVersion", IntTag.class).asInt();
-        schematic.setDataVersion(dataVersion);
+        OptionalInt dataVersion = getDataVersion();
+        if (dataVersion.isPresent()) {
+            schematic.setDataVersion(dataVersion.getAsInt());
+        }
 
         CompoundTag metadata = optTag(root, "Metadata", CompoundTag.class);
         schematic.setMetadata(metadata);
@@ -159,19 +172,24 @@ public class SpongeSchematicReader extends NbtSchematicReader {
         short sizeZ = requireTag(root, "Length", ShortTag.class).asShort();
         schematic.setSize(sizeX, sizeY, sizeZ);
 
-        int[] offset = optTag(root, "Offset", IntArrayTag.class).getValue();
-        if (offset != null) {
+        IntArrayTag offsetTag = optTag(root, "Offset", IntArrayTag.class);
+        if (offsetTag != null) {
+            int[] offset = offsetTag.getValue();
             int offsetX = offset[0];
             int offsetY = offset[1];
             int offsetZ = offset[2];
             schematic.setOffset(offsetX, offsetY, offsetZ);
         }
 
-        int paletteMax = requireTag(root, "PaletteMax", IntTag.class).asInt();
+        int blockPaletteMax = requireTag(root, "PaletteMax", IntTag.class).asInt();
 
-        CompoundTag palette = requireTag(root, "Palette", CompoundTag.class);
-        for (String key : palette.keySet()) {
-            int value = requireTag(palette, key, IntTag.class).asInt();
+        CompoundTag blockPalette = requireTag(root, "Palette", CompoundTag.class);
+        if (blockPalette.size() != blockPaletteMax) {
+            throw new ValidationException("Palette size does not match expected maximum");
+        }
+
+        for (String key : blockPalette.keySet()) {
+            int value = requireTag(blockPalette, key, IntTag.class).asInt();
 
             int nameEndIndex = key.length();
             if (key.contains("[")) {
@@ -194,9 +212,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
             int z = i % (sizeX * sizeZ) / sizeX;
 
             byte state = blockData[i];
-            /*if (!palette.containsValue(new IntTag(state))) {
-                throw new ValidationException("Key " + currentKey + " has invalid palette index " + state);
-            }*/
+            if (!blockPalette.containsValue(new IntTag(state))) {
+                throw new ValidationException("Entry at index " + i + " has invalid palette index " + state);
+            }
 
             Block block = new Block(state);
 
@@ -215,9 +233,12 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
                 String id = requireTag(blockEntity, "Id", StringTag.class).getValue();
 
-                Optional<Block> blockOptional = schematic.getBlock(x, y, z);
-                if (blockOptional.isPresent()) {
-                    Block block = blockOptional.get();
+                blockEntity.remove("Pos");
+                blockEntity.remove("Id");
+                blockEntity.putString("id", id);
+
+                Block block = schematic.getBlock(x, y, z);
+                if (block != null) {
                     block.setNbt(blockEntity);
                 }
             }
@@ -235,21 +256,23 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
                 String id = requireTag(entityTag, "Id", StringTag.class).getValue();
 
-                Entity entity = new Entity();
+                entityTag.remove("Pos");
+                entityTag.remove("Id");
+                // entityTag.putString("id", id);
+
+                Entity entity = new Entity(id, entityTag);
                 entity.setPosition(x, y, z);
-                entity.setId(id);
-                entity.setNbt(entityTag);
 
                 schematic.getEntities().add(entity);
             }
         }
 
         IntTag biomePaletteMaxTag = optTag(root, "BiomePaletteMax", IntTag.class);
-        if (biomePaletteMaxTag != null) {
-            int biomePaletteMax = biomePaletteMaxTag.asInt();
-        }
 
         CompoundTag biomePalette = optTag(root, "BiomePalette", CompoundTag.class);
+        if (biomePaletteMaxTag != null && biomePalette.size() != biomePaletteMaxTag.asInt()) {
+            throw new ValidationException("Palette size does not match expected maximum");
+        }
 
         ByteArrayTag biomeDataTag = optTag(root, "BiomeData", ByteArrayTag.class);
 
@@ -269,9 +292,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 int z = i % (sizeX * sizeZ) / sizeX;
 
                 byte state = biomeData[i];
-                /*if (!biomePalette.containsValue(new IntTag(state))) {
-                    throw new ValidationException("Key " + currentKey + " has invalid palette index " + state);
-                }*/
+                if (!biomePalette.containsValue(new IntTag(state))) {
+                    throw new ValidationException("Entry at index " + i + " has invalid palette index " + state);
+                }
 
                 Biome biome = new Biome(schematic.getBiomeState(state));
                 schematic.setBiome(x, y, z, biome);
@@ -284,8 +307,10 @@ public class SpongeSchematicReader extends NbtSchematicReader {
     private Schematic readV3(CompoundTag root) throws ValidationException {
         Schematic schematic = new Schematic();
 
-        int dataVersion = requireTag(root, "DataVersion", IntTag.class).asInt();
-        schematic.setDataVersion(dataVersion);
+        OptionalInt dataVersion = getDataVersion();
+        if (dataVersion.isPresent()) {
+            schematic.setDataVersion(dataVersion.getAsInt());
+        }
 
         CompoundTag metadata = optTag(root, "Metadata", CompoundTag.class);
         schematic.setMetadata(metadata);
@@ -295,8 +320,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
         short sizeZ = requireTag(root, "Length", ShortTag.class).asShort();
         schematic.setSize(sizeX, sizeY, sizeZ);
 
-        int[] offset = optTag(root, "Offset", IntArrayTag.class).getValue();
-        if (offset != null) {
+        IntArrayTag offsetTag = optTag(root, "Offset", IntArrayTag.class);
+        if (offsetTag != null) {
+            int[] offset = offsetTag.getValue();
             int offsetX = offset[0];
             int offsetY = offset[1];
             int offsetZ = offset[2];
@@ -305,9 +331,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
         CompoundTag blockContainer = optTag(root, "Blocks", CompoundTag.class);
         if (blockContainer != null) {
-            CompoundTag palette = requireTag(blockContainer, "Palette", CompoundTag.class);
-            for (String key : palette.keySet()) {
-                int value = requireTag(palette, key, IntTag.class).asInt();
+            CompoundTag blockPalette = requireTag(blockContainer, "Palette", CompoundTag.class);
+            for (String key : blockPalette.keySet()) {
+                int value = requireTag(blockPalette, key, IntTag.class).asInt();
 
                 int nameEndIndex = key.length();
                 if (key.contains("[")) {
@@ -330,9 +356,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 int z = i % (sizeX * sizeZ) / sizeX;
 
                 byte state = blockData[i];
-                /*if (!palette.containsValue(new IntTag(state))) {
-                    throw new ValidationException("Key " + currentKey + " has invalid palette index " + state);
-                }*/
+                if (!blockPalette.containsValue(new IntTag(state))) {
+                    throw new ValidationException("Entry at index " + i + " has invalid palette index " + state);
+                }
 
                 Block block = new Block(state);
                 schematic.setBlock(x, y, z, block);
@@ -350,10 +376,15 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
                     String id = requireTag(blockEntity, "Id", StringTag.class).getValue();
 
-                    Optional<Block> blockOptional = schematic.getBlock(x, y, z);
-                    if (blockOptional.isPresent()) {
-                        Block block = blockOptional.get();
-                        block.setNbt(blockEntity);
+                    CompoundTag nbt = optTag(blockEntity, "Data", CompoundTag.class);
+                    if (nbt != null) {
+                        // TODO Separate the ID from the rest of the NBT data.
+                        nbt.putString("id", id);
+                    }
+
+                    Block block = schematic.getBlock(x, y, z);
+                    if (block != null) {
+                        block.setNbt(nbt);
                     }
                 }
             }
@@ -361,9 +392,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
         CompoundTag biomeContainer = optTag(root, "Biomes", CompoundTag.class);
         if (biomeContainer != null) {
-            CompoundTag palette = requireTag(biomeContainer, "Palette", CompoundTag.class);
-            for (String key : palette.keySet()) {
-                int value = requireTag(palette, key, IntTag.class).asInt();
+            CompoundTag biomePalette = requireTag(biomeContainer, "Palette", CompoundTag.class);
+            for (String key : biomePalette.keySet()) {
+                int value = requireTag(biomePalette, key, IntTag.class).asInt();
 
                 schematic.setBiomeState(value, new BiomeState(key));
             }
@@ -376,9 +407,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 int z = i % (sizeX * sizeZ) / sizeX;
 
                 byte state = biomeData[i];
-                /*if (!palette.containsValue(new IntTag(state))) {
-                    throw new ValidationException("Key " + currentKey + " has invalid palette index " + state);
-                }*/
+                if (!biomePalette.containsValue(new IntTag(state))) {
+                    throw new ValidationException("Entry at index " + i + " has invalid palette index " + state);
+                }
 
                 Biome biome = new Biome(schematic.getBiomeState(state));
                 schematic.setBiome(x, y, z, biome);
@@ -397,10 +428,15 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
                 String id = requireTag(entityTag, "Id", StringTag.class).getValue();
 
-                Entity entity = new Entity();
+                CompoundTag nbt = optTag(entityTag, "Data", CompoundTag.class);
+                if (nbt != null) {
+                    nbt.remove("Pos");
+                    nbt.remove("id");
+                    // nbt.putString("id", id);
+                }
+
+                Entity entity = new Entity(id, nbt);
                 entity.setPosition(x, y, z);
-                entity.setId(id);
-                entity.setNbt(entityTag);
 
                 schematic.getEntities().add(entity);
             }

@@ -1,25 +1,24 @@
 package me.dalekcraft.structureedit.schematic.container;
 
-import com.google.common.collect.HashBasedTable;
-import com.google.common.collect.Table;
 import net.querz.nbt.tag.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
+import java.util.Vector;
 
 public class Schematic {
 
     private final int[] size = new int[3];
     private final int[] offset = new int[3];
     private List<List<BlockState>> blockPalettes = new ArrayList<>();
-    private List<Table<Integer, Integer, Optional<Block>>> blocks = new ArrayList<>();
+    private Vector<Vector<Vector<Block>>> blocks = new Vector<>();
     private List<BiomeState> biomePalette = new ArrayList<>();
-    private List<Table<Integer, Integer, Optional<Biome>>> biomes = new ArrayList<>();
+    private Vector<Vector<Vector<Biome>>> biomes = new Vector<>();
     private List<Entity> entities = new ArrayList<>();
     private int dataVersion = -1;
     private CompoundTag metadata;
+    private boolean hasBiomes;
 
     /**
      * Returns the dimensions of this {@link Schematic} as an {@code int[]}, ordered as {@code sizeX, sizeY, sizeZ}.
@@ -51,34 +50,40 @@ public class Schematic {
         size[1] = sizeY;
         size[2] = sizeZ;
 
-        while (blocks.size() <= sizeY) {
-            blocks.add(HashBasedTable.create());
-        }
-
-        while (biomes.size() <= sizeY) {
-            biomes.add(HashBasedTable.create());
-        }
-
-        for (int y = 0; y < sizeY; y++) {
-            if (blocks.get(y) == null) {
-                blocks.set(y, HashBasedTable.create());
+        blocks.setSize(sizeX);
+        biomes.setSize(sizeX);
+        for (int x = 0; x < sizeX; x++) {
+            Vector<Vector<Block>> blockRow = blocks.get(x);
+            if (blockRow == null) {
+                blocks.set(x, new Vector<>());
+                blockRow = blocks.get(x);
             }
+            blockRow.setSize(sizeY);
 
-            if (biomes.get(y) == null) {
-                biomes.set(y, HashBasedTable.create());
+            Vector<Vector<Biome>> biomeRow = biomes.get(x);
+            if (biomeRow == null) {
+                biomes.set(x, new Vector<>());
+                biomeRow = biomes.get(x);
             }
+            biomeRow.setSize(sizeY);
 
-            Table<Integer, Integer, Optional<Block>> blockLayer = blocks.get(y);
-            Table<Integer, Integer, Optional<Biome>> biomeLayer = biomes.get(y);
-            for (int x = 0; x < sizeX; x++) {
+            for (int y = 0; y < sizeY; y++) {
+                Vector<Block> blockColumn = blockRow.get(y);
+                if (blockColumn == null) {
+                    blockRow.set(y, new Vector<>());
+                    blockColumn = blockRow.get(y);
+                }
+                blockColumn.setSize(sizeZ);
+
+                Vector<Biome> biomeColumn = biomeRow.get(y);
+                if (biomeColumn == null) {
+                    biomeRow.set(y, new Vector<>());
+                    biomeColumn = biomeRow.get(y);
+                }
+                biomeColumn.setSize(sizeZ);
+
                 for (int z = 0; z < sizeZ; z++) {
-                    if (!blockLayer.containsRow(x) || !blockLayer.containsColumn(z) || blockLayer.get(x, z) == null) {
-                        blockLayer.put(x, z, Optional.empty());
-                    }
-
-                    if (!biomeLayer.containsRow(x) || !biomeLayer.containsColumn(z) || blockLayer.get(x, z) == null) {
-                        biomeLayer.put(x, z, Optional.empty());
-                    }
+                    // TODO maybe
                 }
             }
         }
@@ -121,7 +126,7 @@ public class Schematic {
      * @param position the position of the {@link Block}
      * @return the {@link Block}, or {@code null} if no {@link Block} is at the position
      */
-    public Optional<Block> getBlock(int @NotNull [] position) {
+    public Block getBlock(int @NotNull [] position) {
         return getBlock(position[0], position[1], position[2]);
     }
 
@@ -133,8 +138,8 @@ public class Schematic {
      * @param z the z coordinate of the {@link Block}
      * @return the block, or {@code null} if no {@link Block} is at the position
      */
-    public Optional<Block> getBlock(int x, int y, int z) {
-        return blocks.get(y).get(x, z);
+    public Block getBlock(int x, int y, int z) {
+        return blocks.get(x).get(y).get(z);
     }
 
     /**
@@ -156,14 +161,14 @@ public class Schematic {
      * @param block the new {@link Block}
      */
     public void setBlock(int x, int y, int z, Block block) {
-        blocks.get(y).put(x, z, Optional.ofNullable(block));
+        blocks.get(x).get(y).set(z, block);
     }
 
-    public List<Table<Integer, Integer, Optional<Block>>> getBlocks() {
+    public Vector<Vector<Vector<Block>>> getBlocks() {
         return blocks;
     }
 
-    public void setBlocks(List<Table<Integer, Integer, Optional<Block>>> blocks) {
+    public void setBlocks(Vector<Vector<Vector<Block>>> blocks) {
         this.blocks = blocks;
     }
 
@@ -232,7 +237,7 @@ public class Schematic {
      * @param position the position of the {@link Biome}
      * @return the {@link Biome}, or {@code null} if no {@link Biome} is at the position
      */
-    public Optional<Biome> getBiome(int @NotNull [] position) {
+    public Biome getBiome(int @NotNull [] position) {
         return getBiome(position[0], position[1], position[2]);
     }
 
@@ -244,8 +249,8 @@ public class Schematic {
      * @param z the z coordinate of the {@link Biome}
      * @return the block, or {@code null} if no {@link Biome} is at the position
      */
-    public Optional<Biome> getBiome(int x, int y, int z) {
-        return biomes.get(y).get(x, z);
+    public Biome getBiome(int x, int y, int z) {
+        return biomes.get(x).get(y).get(z);
     }
 
     /**
@@ -267,14 +272,17 @@ public class Schematic {
      * @param biome the new {@link Biome}
      */
     public void setBiome(int x, int y, int z, Biome biome) {
-        biomes.get(y).put(x, z, Optional.ofNullable(biome));
+        biomes.get(x).get(y).set(z, biome);
+        if (biome != null) {
+            hasBiomes = true;
+        }
     }
 
-    public List<Table<Integer, Integer, Optional<Biome>>> getBiomes() {
+    public Vector<Vector<Vector<Biome>>> getBiomes() {
         return biomes;
     }
 
-    public void setBiomes(List<Table<Integer, Integer, Optional<Biome>>> biomes) {
+    public void setBiomes(Vector<Vector<Vector<Biome>>> biomes) {
         this.biomes = biomes;
     }
 
@@ -302,6 +310,10 @@ public class Schematic {
 
     public void setBiomePalette(List<BiomeState> biomePalette) {
         this.biomePalette = biomePalette;
+    }
+
+    public boolean hasBiomes() {
+        return hasBiomes;
     }
 
     public List<Entity> getEntities() {

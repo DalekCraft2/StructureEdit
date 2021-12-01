@@ -16,6 +16,7 @@ module me.dalekcraft.structureedit {
     requires org.everit.json.schema;
     requires org.fusesource.jansi;
     requires org.fxmisc.richtext;
+    requires worldedit.core;
 
     exports me.dalekcraft.structureedit;
     opens me.dalekcraft.structureedit to javafx.controls, javafx.fxml;

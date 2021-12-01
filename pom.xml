@@ -190,62 +190,6 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-        <!--<dependency>
-            &lt;!&ndash; Apache Johnzon Core &ndash;&gt;
-            <groupId>org.apache.johnzon</groupId>
-            <artifactId>johnzon-core</artifactId>
-            <version>${johnzon.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            &lt;!&ndash; Apache Geronimo JSON Spec &ndash;&gt;
-            <groupId>org.apache.geronimo.specs</groupId>
-            <artifactId>geronimo-json_1.1_spec</artifactId>
-            <version>${json.spec.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            &lt;!&ndash; Apache Johnzon JSON-P Strict &ndash;&gt;
-            <groupId>org.apache.johnzon</groupId>
-            <artifactId>johnzon-jsonp-strict</artifactId>
-            <version>${johnzon.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            &lt;!&ndash; Apache Johnzon Mapper &ndash;&gt;
-            <groupId>org.apache.johnzon</groupId>
-            <artifactId>johnzon-mapper</artifactId>
-            <version>${johnzon.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            &lt;!&ndash; Apache Johnzon JSON-B &ndash;&gt;
-            <groupId>org.apache.johnzon</groupId>
-            <artifactId>johnzon-jsonb</artifactId>
-            <version>${johnzon.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            &lt;!&ndash; Apache Johnzon JSON-B Extras &ndash;&gt;
-            <groupId>org.apache.johnzon</groupId>
-            <artifactId>johnzon-jsonb-extras</artifactId>
-            <version>${johnzon.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            &lt;!&ndash; Apache Johnzon JSON Schema &ndash;&gt;
-            <groupId>org.apache.johnzon</groupId>
-            <artifactId>johnzon-jsonschema</artifactId>
-            <version>${johnzon.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>-->
 
         <!-- Logging -->
         <dependency>
@@ -291,6 +235,15 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <!-- TODO Try to use as much of this as possible. -->
+            <!-- WorldEdit Core -->
+            <groupId>com.sk89q.worldedit</groupId>
+            <artifactId>worldedit-core</artifactId>
+            <version>7.3.0-SNAPSHOT</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <!-- JetBrains Java Annotations -->
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
@@ -306,6 +259,11 @@
             <name>Jitpack</name>
             <id>jitpack.io</id>
             <url>https://jitpack.io</url>
+        </repository>
+        <repository>
+            <name>EngineHub</name>
+            <id>enginehub-repo</id>
+            <url>https://maven.enginehub.org/repo/</url>
         </repository>
     </repositories>
 

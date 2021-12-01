@@ -28,8 +28,10 @@ public class StructureReader extends NbtSchematicReader {
 
         CompoundTag root = (CompoundTag) inputStream.readTag(Tag.DEFAULT_MAX_DEPTH).getTag();
 
-        int dataVersion = requireTag(root, "DataVersion", IntTag.class).asInt();
-        schematic.setDataVersion(dataVersion);
+        OptionalInt dataVersion = getDataVersion();
+        if (dataVersion.isPresent()) {
+            schematic.setDataVersion(dataVersion.getAsInt());
+        }
 
         ListTag<?> size = requireTag(root, "size", ListTag.class);
         int sizeX = requireTag(size, 0, IntTag.class).asInt();
@@ -126,10 +128,8 @@ public class StructureReader extends NbtSchematicReader {
 
                 String id = requireTag(nbt, "id", StringTag.class).getValue();
 
-                Entity entityObject = new Entity();
+                Entity entityObject = new Entity(id, nbt);
                 entityObject.setPosition(entityX, entityY, entityZ);
-                entityObject.setId(id);
-                entityObject.setNbt(nbt);
 
                 schematic.getEntities().add(entityObject);
             }

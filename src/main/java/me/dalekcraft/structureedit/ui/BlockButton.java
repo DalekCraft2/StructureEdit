@@ -17,7 +17,7 @@
 package me.dalekcraft.structureedit.ui;
 
 import javafx.scene.control.Button;
-import me.dalekcraft.structureedit.schematic.Schematic;
+import me.dalekcraft.structureedit.schematic.container.Block;
 import org.jetbrains.annotations.Contract;
 
 /**
@@ -25,14 +25,24 @@ import org.jetbrains.annotations.Contract;
  */
 public class BlockButton extends Button {
 
-    private final Schematic.Block block;
+    private final Block block;
+    private final int[] position;
 
-    public BlockButton(Schematic.Block block) {
+    public BlockButton(Block block, int[] position) {
+        this(block, position[0], position[1], position[2]);
+    }
+
+    public BlockButton(Block block, int x, int y, int z) {
         this.block = block;
+        position = new int[]{x, y, z};
     }
 
     @Contract(pure = true)
-    public Schematic.Block getBlock() {
+    public Block getBlock() {
         return block;
+    }
+
+    public int[] getPosition() {
+        return position;
     }
 }

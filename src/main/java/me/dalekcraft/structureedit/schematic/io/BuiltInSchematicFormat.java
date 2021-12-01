@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import me.dalekcraft.structureedit.exception.ValidationException;
+import me.dalekcraft.structureedit.util.Configuration;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.io.NBTOutputStream;
 import net.querz.nbt.io.NamedTag;
@@ -43,7 +44,12 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
     MCEDIT_SCHEMATIC("mcedit", "mce", "schematic") {
         @Override
         public String getPrimaryFileExtension() {
-            return "schematic";
+            return "*.schematic";
+        }
+
+        @Override
+        public String getDescription() {
+            return Configuration.LANGUAGE.getString("ui.file_chooser.extension.mcedit");
         }
 
         @Override
@@ -202,7 +208,12 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
     SPONGE_SCHEMATIC("sponge", "schem") {
         @Override
         public String getPrimaryFileExtension() {
-            return "schem";
+            return "*.schem";
+        }
+
+        @Override
+        public String getDescription() {
+            return Configuration.LANGUAGE.getString("ui.file_chooser.extension.sponge");
         }
 
         @Override
@@ -264,7 +275,12 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
     TARDIS_SCHEMATIC("tschm") {
         @Override
         public String getPrimaryFileExtension() {
-            return "tschm";
+            return "*.tschm";
+        }
+
+        @Override
+        public String getDescription() {
+            return Configuration.LANGUAGE.getString("ui.file_chooser.extension.tardis");
         }
 
         @Override
@@ -299,7 +315,12 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
     VANILLA_STRUCTURE("nbt") {
         @Override
         public String getPrimaryFileExtension() {
-            return "nbt";
+            return "*.nbt";
+        }
+
+        @Override
+        public String getDescription() {
+            return Configuration.LANGUAGE.getString("ui.file_chooser.extension.vanilla");
         }
 
         @Override
@@ -352,11 +373,6 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
 
     @Override
     public Set<String> getFileExtensions() {
-        // TODO Make this more than just an immutable set wrapper for the primary extension, and different from getAliases.
-        /*ImmutableSet.Builder<String> builder = new ImmutableSet.Builder<>();
-        builder.add(getPrimaryFileExtension());
-        builder.addAll(getAliases());
-        return builder.build();*/
         return ImmutableSet.of(getPrimaryFileExtension());
     }
 }

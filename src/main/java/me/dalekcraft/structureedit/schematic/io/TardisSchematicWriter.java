@@ -10,7 +10,6 @@ import me.dalekcraft.structureedit.schematic.container.Schematic;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
-import java.util.Optional;
 
 public class TardisSchematicWriter extends JsonSchematicWriter {
 
@@ -38,9 +37,8 @@ public class TardisSchematicWriter extends JsonSchematicWriter {
 
                     BlockState blockState = new BlockState("minecraft:air");
 
-                    Optional<Block> blockOptional = schematic.getBlock(x, y, z);
-                    if (blockOptional.isPresent()) {
-                        Block block = blockOptional.get();
+                    Block block = schematic.getBlock(x, y, z);
+                    if (block != null) {
                         blockState = schematic.getBlockState(block.getBlockStateIndex());
                     }
 
