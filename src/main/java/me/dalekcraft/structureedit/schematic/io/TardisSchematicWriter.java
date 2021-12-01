@@ -42,9 +42,7 @@ public class TardisSchematicWriter extends JsonSchematicWriter {
                         blockState = schematic.getBlockState(block.getBlockStateIndex());
                     }
 
-                    String properties = blockState.getProperties().isEmpty() ? "" : "[" + BlockState.JOINER.join(blockState.getProperties()) + "]";
-
-                    blockTag.add("data", new JsonPrimitive(blockState.getId() + properties));
+                    blockTag.addProperty("data", blockState.toString());
 
                     column.add(blockTag);
                 }

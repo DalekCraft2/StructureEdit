@@ -126,7 +126,7 @@ public class Controller {
     {
         schematicChooser.getExtensionFilters().addAll(SchematicFormats.getFileExtensionFilterMap().keySet());
         schematicChooser.getExtensionFilters().sort(Comparator.comparing(FileChooser.ExtensionFilter::getDescription));
-        schematicChooser.getExtensionFilters().add(0 , FILTER_ALL);
+        schematicChooser.getExtensionFilters().add(0, FILTER_ALL);
         Path assets = Assets.getAssets();
         if (assets != null && !assets.toString().equals("")) {
             assetsChooser.setInitialDirectory(assets.toFile());
@@ -392,7 +392,7 @@ public class Controller {
             Block block = selected.getBlock();
             BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
             try {
-                Map<String, String> properties = BlockState.SPLITTER.split(blockPropertiesTextField.getText().trim().replace("[", "").replace("]", ""));
+                Map<String, String> properties = BlockState.toPropertyMap(blockPropertiesTextField.getText());
                 blockState.setProperties(properties);
                 blockPropertiesTextField.setStyle("-fx-text-inner-color: #000000");
             } catch (IllegalArgumentException e1) {
@@ -513,8 +513,7 @@ public class Controller {
             blockIdComboBox.getSelectionModel().select(blockState.getId());
             blockIdComboBox.setDisable(false);
 
-            String propertyString = "[" + BlockState.JOINER.join(blockState.getProperties()) + "]";
-            blockPropertiesTextField.setText(propertyString);
+            blockPropertiesTextField.setText(BlockState.toPropertyString(blockState.getProperties()));
             blockPropertiesTextField.setStyle("-fx-text-inner-color: #000000");
             blockPropertiesTextField.setDisable(false);
 
@@ -539,8 +538,7 @@ public class Controller {
             BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
 
             blockIdComboBox.getSelectionModel().select(blockState.getId());
-            String propertyString = "[" + BlockState.JOINER.join(blockState.getProperties()) + "]";
-            blockPropertiesTextField.setText(propertyString);
+            blockPropertiesTextField.setText(BlockState.toPropertyString(blockState.getProperties()));
 
             try {
                 blockNbtTextField.setText(SNBTUtil.toSNBT(block.getNbt()));
@@ -1192,7 +1190,7 @@ public class Controller {
                 JSONObject variants = blockState.getJSONObject("variants");
                 Set<String> keySet = variants.keySet();
                 for (String variantName : keySet) {
-                    Set<Map.Entry<String, String>> states = BlockState.SPLITTER.split(variantName).entrySet();
+                    Set<Map.Entry<String, String>> states = BlockState.toPropertyMap(variantName, false).entrySet();
                     boolean contains = true;
                     for (Map.Entry<String, String> state : states) {
                         if (!state.getValue().equals(properties.get(state.getKey()))) {

@@ -8,7 +8,6 @@ import javafx.collections.ObservableMap;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONObject;
 
@@ -30,12 +29,10 @@ public final class Assets {
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
 
-    @Contract(value = " -> fail", pure = true)
     private Assets() {
         throw new UnsupportedOperationException();
     }
 
-    @Contract(pure = true)
     public static Path getAssets() {
         return assets;
     }
@@ -266,7 +263,6 @@ public final class Assets {
         return ANIMATIONS;
     }
 
-    @Contract("_, _, _ -> new")
     @NotNull
     public static JSONObject toJson(String namespacedId, String folder, String extension) throws IOException {
         try (InputStream inputStream = getAsset(namespacedId, folder, extension); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); BufferedReader bufferedReader = new BufferedReader(inputStreamReader); StringWriter stringWriter = new StringWriter()) {

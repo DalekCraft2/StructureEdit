@@ -12,7 +12,6 @@ import me.dalekcraft.structureedit.schematic.container.Schematic;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.Map;
 
 public class TardisSchematicReader extends JsonSchematicReader {
 
@@ -55,17 +54,7 @@ public class TardisSchematicReader extends JsonSchematicReader {
 
                                 String data = requireTag(block, "data", JsonElement.class).getAsString();
 
-                                int nameEndIndex = data.length();
-                                if (data.contains("[")) {
-                                    nameEndIndex = data.indexOf('[');
-                                }
-
-                                String id = data.substring(0, nameEndIndex);
-
-                                String propertyString = data.substring(nameEndIndex).replace("[", "").replace("]", "");
-                                Map<String, String> propertyMap = BlockState.SPLITTER.split(propertyString);
-
-                                BlockState blockState = new BlockState(id, propertyMap);
+                                BlockState blockState = BlockState.toBlockState(data);
                                 if (!schematic.getBlockPalette().contains(blockState)) {
                                     schematic.getBlockPalette().add(blockState);
                                 } else {

@@ -80,7 +80,6 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
             root.putIntArray("Offset", offset);
         }
 
-        // TODO Blocks, biomes, and entities.
         CompoundTag blockContainer = new CompoundTag();
 
         List<BlockState> blockPalette = schematic.getBlockPalette();
@@ -89,9 +88,8 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
 
         for (int i = 0; i < blockPalette.size(); i++) {
             BlockState blockState = blockPalette.get(i);
-            String properties = blockState.getProperties().isEmpty() ? "" : "[" + BlockState.JOINER.join(blockState.getProperties()) + "]";
 
-            blockPaletteTag.putInt(blockState.getId() + properties, i);
+            blockPaletteTag.putInt(blockState.toString(), i);
         }
 
         blockContainer.put("Palette", blockPaletteTag);

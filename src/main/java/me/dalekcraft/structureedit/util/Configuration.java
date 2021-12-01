@@ -3,7 +3,6 @@ package me.dalekcraft.structureedit.util;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Contract;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -66,7 +65,6 @@ public final class Configuration {
         LANGUAGE = languageBundle;
     }
 
-    @Contract(value = " -> fail", pure = true)
     private Configuration() {
         throw new UnsupportedOperationException();
     }

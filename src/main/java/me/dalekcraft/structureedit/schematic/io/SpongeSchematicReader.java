@@ -7,7 +7,6 @@ import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Objects;
 import java.util.OptionalInt;
 
@@ -98,17 +97,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
         for (String key : blockPalette.keySet()) {
             int value = requireTag(blockPalette, key, IntTag.class).asInt();
 
-            int nameEndIndex = key.length();
-            if (key.contains("[")) {
-                nameEndIndex = key.indexOf('[');
-            }
-
-            String id = key.substring(0, nameEndIndex);
-
-            String propertyString = key.substring(nameEndIndex).replace("[", "").replace("]", "");
-            Map<String, String> propertyMap = BlockState.SPLITTER.split(propertyString);
-
-            schematic.setBlockState(value, new BlockState(id, propertyMap));
+            schematic.setBlockState(value, BlockState.toBlockState(key));
         }
 
         byte[] blockData = requireTag(root, "BlockData", ByteArrayTag.class).getValue();
@@ -191,17 +180,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
         for (String key : blockPalette.keySet()) {
             int value = requireTag(blockPalette, key, IntTag.class).asInt();
 
-            int nameEndIndex = key.length();
-            if (key.contains("[")) {
-                nameEndIndex = key.indexOf('[');
-            }
-
-            String id = key.substring(0, nameEndIndex);
-
-            String propertyString = key.substring(nameEndIndex).replace("[", "").replace("]", "");
-            Map<String, String> propertyMap = BlockState.SPLITTER.split(propertyString);
-
-            schematic.setBlockState(value, new BlockState(id, propertyMap));
+            schematic.setBlockState(value, BlockState.toBlockState(key));
         }
 
         byte[] blockData = requireTag(root, "BlockData", ByteArrayTag.class).getValue();
@@ -335,17 +314,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
             for (String key : blockPalette.keySet()) {
                 int value = requireTag(blockPalette, key, IntTag.class).asInt();
 
-                int nameEndIndex = key.length();
-                if (key.contains("[")) {
-                    nameEndIndex = key.indexOf('[');
-                }
-
-                String id = key.substring(0, nameEndIndex);
-
-                String propertyString = key.substring(nameEndIndex).replace("[", "").replace("]", "");
-                Map<String, String> propertyMap = BlockState.SPLITTER.split(propertyString);
-
-                schematic.setBlockState(value, new BlockState(id, propertyMap));
+                schematic.setBlockState(value, BlockState.toBlockState(key));
             }
 
             byte[] blockData = requireTag(blockContainer, "Data", ByteArrayTag.class).getValue();

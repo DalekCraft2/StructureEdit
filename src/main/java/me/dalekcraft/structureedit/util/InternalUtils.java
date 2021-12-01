@@ -1,14 +1,11 @@
 package me.dalekcraft.structureedit.util;
 
-import org.jetbrains.annotations.Contract;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
 
 public final class InternalUtils {
 
-    @Contract(value = " -> fail", pure = true)
     private InternalUtils() {
         throw new UnsupportedOperationException();
     }

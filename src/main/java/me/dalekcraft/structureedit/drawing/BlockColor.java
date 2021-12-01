@@ -17,7 +17,6 @@
 package me.dalekcraft.structureedit.drawing;
 
 import javafx.scene.paint.Color;
-import org.jetbrains.annotations.Contract;
 
 
 /**
@@ -925,7 +924,6 @@ public enum BlockColor {
 
     private final Color color;
 
-    @Contract(pure = true)
     BlockColor(Color color) {
         this.color = color;
     }
@@ -935,7 +933,6 @@ public enum BlockColor {
      *
      * @return Color of this material
      */
-    @Contract(pure = true)
     public Color getColor() {
         return color;
     }

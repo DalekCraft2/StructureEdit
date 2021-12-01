@@ -10,9 +10,8 @@ import java.util.Objects;
 
 public class BlockState {
 
-    public static final Splitter.MapSplitter SPLITTER = Splitter.on(",").omitEmptyStrings().trimResults().withKeyValueSeparator("=");
-    public static final Joiner.MapJoiner JOINER = Joiner.on(",").withKeyValueSeparator("=");
-
+    private static final Splitter.MapSplitter SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings().trimResults().withKeyValueSeparator("=");
+    private static final Joiner.MapJoiner JOINER = Joiner.on(",").withKeyValueSeparator("=");
     @NotNull
     private String id;
     @NotNull
@@ -25,6 +24,47 @@ public class BlockState {
     public BlockState(@NotNull String id, Map<String, String> properties) {
         this.id = Objects.requireNonNull(id);
         this.properties = Objects.requireNonNullElse(properties, new HashMap<>());
+    }
+
+    public static BlockState toBlockState(String blockStateString) {
+        int nameEndIndex = blockStateString.length();
+        if (blockStateString.contains("[")) {
+            nameEndIndex = blockStateString.indexOf('[');
+        }
+
+        String id = blockStateString.substring(0, nameEndIndex);
+
+        String propertyString = blockStateString.substring(nameEndIndex).replace("[", "").replace("]", "");
+        Map<String, String> propertyMap = toPropertyMap(propertyString);
+
+        return new BlockState(id, propertyMap);
+    }
+
+    public static String toBlockStateString(BlockState blockState) {
+        return blockState.getId() + toPropertyString(blockState.getProperties());
+    }
+
+    public static Map<String, String> toPropertyMap(String propertyString) {
+        return toPropertyMap(propertyString, true);
+    }
+
+    public static Map<String, String> toPropertyMap(String propertyString, boolean containsBrackets) {
+        if (containsBrackets) {
+            propertyString = propertyString.replace("[", "").replace("]", "");
+        }
+        return SPLITTER.split(propertyString);
+    }
+
+    public static String toPropertyString(Map<String, String> propertyMap) {
+        return toPropertyString(propertyMap, false);
+    }
+
+    public static String toPropertyString(Map<String, String> propertyMap, boolean omitBrackets) {
+        if (omitBrackets) {
+            return propertyMap.isEmpty() ? "" : JOINER.join(propertyMap);
+        } else {
+            return propertyMap.isEmpty() ? "" : "[" + JOINER.join(propertyMap) + "]";
+        }
     }
 
     /**
@@ -80,5 +120,10 @@ public class BlockState {
     @Override
     public int hashCode() {
         return Objects.hash(id, properties);
+    }
+
+    @Override
+    public String toString() {
+        return toBlockStateString(this);
     }
 }

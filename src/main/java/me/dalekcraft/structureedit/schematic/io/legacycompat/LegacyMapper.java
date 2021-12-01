@@ -86,14 +86,7 @@ public final class LegacyMapper {
             String id = blockEntry.getKey();
             final String value = blockEntry.getValue();
 
-            int nameEndIndex = value.length();
-            if (value.contains("[")) {
-                nameEndIndex = value.indexOf('[');
-            }
-            String blockId = value.substring(0, nameEndIndex);
-            String propertyString = value.substring(nameEndIndex).replace("[", "").replace("]", "");
-            Map<String, String> propertyMap = BlockState.SPLITTER.split(propertyString);
-            BlockState blockState = new BlockState(blockId, propertyMap);
+            BlockState blockState = BlockState.toBlockState(value);
 
             blockToStringMap.put(blockState, id);
             stringToBlockMap.put(id, blockState);

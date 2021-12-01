@@ -13,7 +13,6 @@ module me.dalekcraft.structureedit {
     requires org.json;
     requires org.apache.logging.log4j;
     requires org.apache.logging.log4j.core;
-    requires org.everit.json.schema;
     requires org.fusesource.jansi;
     requires org.fxmisc.richtext;
     requires worldedit.core;

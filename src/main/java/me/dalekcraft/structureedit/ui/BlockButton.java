@@ -18,7 +18,6 @@ package me.dalekcraft.structureedit.ui;
 
 import javafx.scene.control.Button;
 import me.dalekcraft.structureedit.schematic.container.Block;
-import org.jetbrains.annotations.Contract;
 
 /**
  * @author eccentric_nz
@@ -37,7 +36,6 @@ public class BlockButton extends Button {
         position = new int[]{x, y, z};
     }
 
-    @Contract(pure = true)
     public Block getBlock() {
         return block;
     }
