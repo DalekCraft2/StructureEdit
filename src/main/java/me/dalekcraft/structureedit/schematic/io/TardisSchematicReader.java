@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.schematic.container.Block;
 import me.dalekcraft.structureedit.schematic.container.BlockState;
 import me.dalekcraft.structureedit.schematic.container.Schematic;

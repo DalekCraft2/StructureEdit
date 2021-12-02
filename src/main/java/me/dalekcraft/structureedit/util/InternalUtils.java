@@ -3,7 +3,6 @@ package me.dalekcraft.structureedit.util;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 
-
 public final class InternalUtils {
 
     private InternalUtils() {

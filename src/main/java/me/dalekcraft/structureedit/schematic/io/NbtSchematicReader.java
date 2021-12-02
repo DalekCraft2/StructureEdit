@@ -18,7 +18,6 @@
  */
 package me.dalekcraft.structureedit.schematic.io;
 
-import me.dalekcraft.structureedit.exception.ValidationException;
 import net.querz.nbt.tag.CompoundTag;
 import net.querz.nbt.tag.ListTag;
 import net.querz.nbt.tag.Tag;

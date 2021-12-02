@@ -1,7 +1,6 @@
 package me.dalekcraft.structureedit.schematic.io;
 
 import com.sk89q.worldedit.internal.Constants;
-import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.schematic.container.*;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;

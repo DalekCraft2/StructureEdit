@@ -21,7 +21,6 @@ package me.dalekcraft.structureedit.schematic.io;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import me.dalekcraft.structureedit.exception.ValidationException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 

@@ -18,7 +18,6 @@
  */
 package me.dalekcraft.structureedit.schematic.io;
 
-import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
 
 import java.io.Closeable;

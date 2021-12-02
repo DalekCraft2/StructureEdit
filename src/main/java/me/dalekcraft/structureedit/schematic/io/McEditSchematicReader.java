@@ -1,6 +1,5 @@
 package me.dalekcraft.structureedit.schematic.io;
 
-import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.schematic.container.Block;
 import me.dalekcraft.structureedit.schematic.container.BlockState;
 import me.dalekcraft.structureedit.schematic.container.Entity;
@@ -10,7 +9,6 @@ import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;
 
 import java.io.IOException;
-import java.util.Optional;
 
 public class McEditSchematicReader extends NbtSchematicReader {
 

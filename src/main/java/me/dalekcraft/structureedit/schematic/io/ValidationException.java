@@ -1,7 +1,7 @@
-package me.dalekcraft.structureedit.exception;
+package me.dalekcraft.structureedit.schematic.io;
 
 /**
- * Thrown if a file does not follow its schema.
+ * Thrown if a schematic file does not follow its schema.
  */
 public class ValidationException extends Exception {
 

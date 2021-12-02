@@ -21,7 +21,6 @@ package me.dalekcraft.structureedit.schematic.io;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import me.dalekcraft.structureedit.exception.ValidationException;
 import me.dalekcraft.structureedit.util.Configuration;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.io.NBTOutputStream;

@@ -51,8 +51,6 @@
         <javafx.version>17.0.1</javafx.version>
         <jogl.version>2.3.2</jogl.version>
         <!--<jogl.version>2.4.0-rc-20200202</jogl.version>-->
-        <!--<johnzon.version>1.2.15</johnzon.version>-->
-        <!--<json.spec.version>1.5</json.spec.version>-->
     </properties>
 
     <!-- TODO Add JUnit tests. -->
@@ -179,14 +177,6 @@
             <groupId>org.json</groupId>
             <artifactId>json</artifactId>
             <version>20210307</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- everit-org/json-schema -->
-            <groupId>com.github.everit-org.json-schema</groupId>
-            <artifactId>org.everit.json.schema</artifactId>
-            <version>1.14.0</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>

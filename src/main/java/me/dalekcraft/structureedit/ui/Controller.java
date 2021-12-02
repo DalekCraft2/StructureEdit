@@ -16,7 +16,9 @@
  */
 package me.dalekcraft.structureedit.ui;
 
-import com.jogamp.opengl.*;
+import com.jogamp.opengl.GL4;
+import com.jogamp.opengl.GLAutoDrawable;
+import com.jogamp.opengl.GLEventListener;
 import com.jogamp.opengl.awt.GLJPanel;
 import com.jogamp.opengl.util.Animator;
 import com.jogamp.opengl.util.GLBuffers;
@@ -38,7 +40,7 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import me.dalekcraft.structureedit.StructureEditApplication;
 import me.dalekcraft.structureedit.drawing.BlockColor;
-import me.dalekcraft.structureedit.exception.ValidationException;
+import me.dalekcraft.structureedit.schematic.io.ValidationException;
 import me.dalekcraft.structureedit.schematic.container.Block;
 import me.dalekcraft.structureedit.schematic.container.BlockState;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
@@ -138,7 +140,7 @@ public class Controller {
     public void initialize() {
         // FIXME The GLEventListener only initializes when the window is resized or moved.
         SwingUtilities.invokeLater(() -> {
-            rendererPanel = new GLJPanel(new GLCapabilities(GLProfile.getDefault()));
+            rendererPanel = new GLJPanel();
             renderer = new SchematicRenderer();
             rendererPanel.addGLEventListener(renderer);
             rendererPanel.addKeyListener(renderer);
@@ -1076,7 +1078,6 @@ public class Controller {
 
         @Override
         public void mouseClicked(MouseEvent e) {
-            rendererPanel.requestFocus();
         }
 
         @Override
@@ -1086,7 +1087,6 @@ public class Controller {
 
         @Override
         public void mouseDragged(@NotNull MouseEvent e) {
-            rendererPanel.requestFocus();
             if (SwingUtilities.isLeftMouseButton(e)) {
                 // Rotate the camera
                 float dTheta = (float) Math.toRadians(mousePoint.x - e.getX()) * ROTATION_SENSITIVITY;
