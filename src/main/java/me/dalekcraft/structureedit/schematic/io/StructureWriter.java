@@ -33,7 +33,7 @@ public class StructureWriter extends NbtSchematicWriter {
         sizeTag.addInt(size[2]);
         root.put("size", sizeTag);
 
-        List<List<BlockState>> palettes = schematic.getBlockPalettes();
+        List<? extends List<BlockState>> palettes = schematic.getBlockPalettes();
         if (palettes.size() > 1) {
             ListTag<ListTag<?>> palettesTag = new ListTag<>(ListTag.class);
             for (List<BlockState> palette : palettes) {

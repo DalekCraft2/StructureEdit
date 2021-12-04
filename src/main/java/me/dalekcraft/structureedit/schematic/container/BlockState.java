@@ -63,7 +63,7 @@ public class BlockState {
         if (omitBrackets) {
             return propertyMap.isEmpty() ? "" : JOINER.join(propertyMap);
         } else {
-            return propertyMap.isEmpty() ? "" : "[" + JOINER.join(propertyMap) + "]";
+            return propertyMap.isEmpty() ? "[]" : "[" + JOINER.join(propertyMap) + "]";
         }
     }
 

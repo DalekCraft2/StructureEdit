@@ -1,9 +1,10 @@
 package me.dalekcraft.structureedit.schematic.container;
 
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import net.querz.nbt.tag.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Vector;
 
@@ -11,11 +12,11 @@ public class Schematic {
 
     private final int[] size = new int[3];
     private final int[] offset = new int[3];
-    private List<List<BlockState>> blockPalettes = new ArrayList<>();
+    private ObservableList<ObservableList<BlockState>> blockPalettes = FXCollections.observableArrayList();
     private Vector<Vector<Vector<Block>>> blocks = new Vector<>();
-    private List<BiomeState> biomePalette = new ArrayList<>();
+    private ObservableList<BiomeState> biomePalette = FXCollections.observableArrayList();
     private Vector<Vector<Vector<Biome>>> biomes = new Vector<>();
-    private List<Entity> entities = new ArrayList<>();
+    private ObservableList<Entity> entities = FXCollections.observableArrayList();
     private int dataVersion = -1;
     private CompoundTag metadata;
     private boolean hasBiomes;
@@ -178,7 +179,7 @@ public class Schematic {
 
     public BlockState getBlockState(int index, int paletteIndex) {
         while (blockPalettes.size() <= paletteIndex) {
-            blockPalettes.add(new ArrayList<>());
+            blockPalettes.add(FXCollections.observableArrayList());
         }
         blockPalettes.forEach(blockPalette -> {
             while (blockPalette.size() <= index) {
@@ -194,7 +195,7 @@ public class Schematic {
 
     public void setBlockState(int index, int paletteIndex, BlockState blockState) {
         while (blockPalettes.size() <= paletteIndex) {
-            blockPalettes.add(new ArrayList<>());
+            blockPalettes.add(FXCollections.observableArrayList());
         }
         blockPalettes.forEach(blockPalette -> {
             while (blockPalette.size() <= index) {
@@ -204,30 +205,30 @@ public class Schematic {
         blockPalettes.get(paletteIndex).set(index, blockState);
     }
 
-    public List<BlockState> getBlockPalette() {
+    public ObservableList<BlockState> getBlockPalette() {
         return getBlockPalette(0);
     }
 
-    public void setBlockPalette(List<BlockState> blockPalette) {
+    public void setBlockPalette(ObservableList<BlockState> blockPalette) {
         setBlockPalette(0, blockPalette);
     }
 
-    public List<BlockState> getBlockPalette(int paletteIndex) {
+    public ObservableList<BlockState> getBlockPalette(int paletteIndex) {
         while (blockPalettes.size() <= paletteIndex) {
-            blockPalettes.add(new ArrayList<>());
+            blockPalettes.add(FXCollections.observableArrayList());
         }
         return blockPalettes.get(paletteIndex);
     }
 
-    public void setBlockPalette(int paletteIndex, List<BlockState> blockPalette) {
+    public void setBlockPalette(int paletteIndex, ObservableList<BlockState> blockPalette) {
         blockPalettes.set(paletteIndex, blockPalette);
     }
 
-    public List<List<BlockState>> getBlockPalettes() {
+    public ObservableList<ObservableList<BlockState>> getBlockPalettes() {
         return blockPalettes;
     }
 
-    public void setBlockPalettes(List<List<BlockState>> blockPalettes) {
+    public void setBlockPalettes(ObservableList<ObservableList<BlockState>> blockPalettes) {
         this.blockPalettes = blockPalettes;
     }
 
@@ -308,7 +309,7 @@ public class Schematic {
         return biomePalette;
     }
 
-    public void setBiomePalette(List<BiomeState> biomePalette) {
+    public void setBiomePalette(ObservableList<BiomeState> biomePalette) {
         this.biomePalette = biomePalette;
     }
 
@@ -320,7 +321,7 @@ public class Schematic {
         return entities;
     }
 
-    public void setEntities(List<Entity> entities) {
+    public void setEntities(ObservableList<Entity> entities) {
         this.entities = entities;
     }
 

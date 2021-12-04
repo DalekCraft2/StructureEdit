@@ -25,6 +25,7 @@ import com.jogamp.opengl.util.GLBuffers;
 import com.jogamp.opengl.util.texture.Texture;
 import com.jogamp.opengl.util.texture.TextureIO;
 import javafx.application.Platform;
+import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.MapChangeListener;
 import javafx.collections.ObservableList;
@@ -40,14 +41,10 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import me.dalekcraft.structureedit.StructureEditApplication;
 import me.dalekcraft.structureedit.drawing.BlockColor;
-import me.dalekcraft.structureedit.schematic.io.ValidationException;
 import me.dalekcraft.structureedit.schematic.container.Block;
 import me.dalekcraft.structureedit.schematic.container.BlockState;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
-import me.dalekcraft.structureedit.schematic.io.SchematicFormat;
-import me.dalekcraft.structureedit.schematic.io.SchematicFormats;
-import me.dalekcraft.structureedit.schematic.io.SchematicReader;
-import me.dalekcraft.structureedit.schematic.io.SchematicWriter;
+import me.dalekcraft.structureedit.schematic.io.*;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
 import me.dalekcraft.structureedit.util.InternalUtils;
@@ -89,6 +86,11 @@ import static com.jogamp.opengl.GL4.*;
  */
 public class Controller {
     private static final Logger LOGGER = LogManager.getLogger();
+    /**
+     * Color of the missing texture's purple.
+     */
+    private static final Color MISSING_COLOR = Color.rgb(251, 64, 249);
+    private static final Color DEFAULT_TINT = Color.WHITE;
     private static final FileChooser.ExtensionFilter FILTER_ALL = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.all"), "*.*");
     public final FileChooser schematicChooser = new FileChooser();
     public final DirectoryChooser assetsChooser = new DirectoryChooser();
@@ -114,14 +116,16 @@ public class Controller {
     @FXML
     private TextField blockPositionTextField;
     @FXML
-    private ComboBox<String> blockIdComboBox;
-    private AutoCompleteComboBoxListener<String> blockIdAutoComplete;
+    private ComboBox<String> blockStateIdComboBox;
+    private AutoCompleteComboBoxListener<String> blockStateIdAutoComplete;
     @FXML
-    private TextField blockPropertiesTextField;
+    private TextField blockStatePropertiesTextField;
     @FXML
     private TextField blockNbtTextField;
     @FXML
     private GridPane blockGrid;
+    @FXML
+    private ListView<BlockState> blockStateListView;
     @FXML
     private InlineCssTextArea logArea;
 
@@ -151,7 +155,7 @@ public class Controller {
         });
 
         layerSpinner.setValueFactory(layerValueFactory);
-        layerSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onLayerUpdate());
+        layerSpinner.valueProperty().addListener(this::onLayerUpdate);
         layerSpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
             try {
                 Integer.valueOf(change.getControlNewText());
@@ -161,20 +165,8 @@ public class Controller {
             }
         }));
 
-        paletteSpinner.setValueFactory(paletteValueFactory);
-        paletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onPaletteUpdate());
-        paletteSpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
-            try {
-                Integer.valueOf(change.getControlNewText());
-                return change;
-            } catch (NumberFormatException e) {
-                return null;
-            }
-        }));
-
-        // TODO Blockbench-style palette editor, with a list of palettes and palette IDs (This will also involve separating palette editing and block editing).
         blockPaletteSpinner.setValueFactory(blockPaletteValueFactory);
-        blockPaletteSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onBlockPaletteUpdate());
+        blockPaletteSpinner.valueProperty().addListener(this::onBlockPaletteUpdate);
         blockPaletteSpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
             try {
                 Integer.valueOf(change.getControlNewText());
@@ -184,22 +176,7 @@ public class Controller {
             }
         }));
 
-        blockIdAutoComplete = new AutoCompleteComboBoxListener<>(blockIdComboBox);
-        blockIdComboBox.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> onBlockIdUpdate());
-        Assets.getBlockStateMap().addListener((MapChangeListener<String, JSONObject>) change -> Platform.runLater(() -> {
-            synchronized (Assets.getAssets()) {
-                ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
-                items.remove("minecraft:missing");
-                Collections.sort(items);
-                blockIdComboBox.setItems(items);
-                blockIdAutoComplete.setItems(items);
-            }
-        }));
-
-        // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
-        blockPropertiesTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockPropertiesUpdate());
-
-        blockNbtTextField.textProperty().addListener((observable, oldValue, newValue) -> onBlockNbtUpdate());
+        blockNbtTextField.textProperty().addListener(this::onBlockNbtUpdate);
         /*blockNbtTextField.setTextFormatter(new TextFormatter<CompoundTag>(new StringConverter<>() {
             @Override
             public String toString(CompoundTag tag) {
@@ -224,6 +201,36 @@ public class Controller {
                 }
             }
         }));*/
+
+        // TODO Palette editor, like the BlockState editor.
+        paletteSpinner.setValueFactory(paletteValueFactory);
+        paletteSpinner.valueProperty().addListener(this::onPaletteUpdate);
+        paletteSpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
+            try {
+                Integer.valueOf(change.getControlNewText());
+                return change;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }));
+
+        blockStateIdAutoComplete = new AutoCompleteComboBoxListener<>(blockStateIdComboBox);
+        blockStateIdComboBox.getSelectionModel().selectedItemProperty().addListener(this::onBlockIdUpdate);
+        Assets.getBlockStateMap().addListener((MapChangeListener<String, JSONObject>) change -> Platform.runLater(() -> {
+            synchronized (Assets.getAssets()) {
+                ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
+                items.remove("minecraft:missing");
+                Collections.sort(items);
+                blockStateIdComboBox.setItems(items);
+                blockStateIdAutoComplete.setItems(items);
+            }
+        }));
+
+        // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
+        blockStatePropertiesTextField.textProperty().addListener(this::onBlockPropertiesUpdate);
+
+        // TODO Make entries addable and removable to and from this.
+        blockStateListView.getSelectionModel().selectedItemProperty().addListener(this::onBlockStateSelected);
 
         InlineCssTextAreaAppender.addLog4j2TextAreaAppender(logArea);
     }
@@ -262,18 +269,19 @@ public class Controller {
         sizeTextField.setText(null);
         layerValueFactory.setValue(0);
         layerSpinner.setDisable(true);
-        paletteValueFactory.setValue(0);
-        paletteSpinner.setDisable(true);
-        blockPositionTextField.setText(null);
-        blockPositionTextField.setDisable(true);
-        blockIdComboBox.getSelectionModel().select(null);
-        blockIdComboBox.setDisable(true);
-        blockPropertiesTextField.setText(null);
-        blockPropertiesTextField.setDisable(true);
-        blockNbtTextField.setText(null);
-        blockNbtTextField.setDisable(true);
         blockPaletteValueFactory.setValue(0);
         blockPaletteSpinner.setDisable(true);
+        blockPositionTextField.setText(null);
+        blockPositionTextField.setDisable(true);
+        blockNbtTextField.setText(null);
+        blockNbtTextField.setDisable(true);
+        paletteValueFactory.setValue(0);
+        paletteSpinner.setDisable(true);
+        blockStateIdComboBox.getSelectionModel().select(null);
+        blockStateIdComboBox.setDisable(true);
+        blockStatePropertiesTextField.setText(null);
+        blockStatePropertiesTextField.setDisable(true);
+        blockStateListView.setItems(null);
         if (schematic != null) {
             sizeTextField.setDisable(false);
             layerSpinner.setDisable(false);
@@ -287,6 +295,7 @@ public class Controller {
             }
             int paletteSize = schematic.getBlockPalette(0).size();
             blockPaletteValueFactory.setMax(paletteSize - 1);
+            blockStateListView.setItems(schematic.getBlockPalette());
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loaded"), file);
             StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         }
@@ -379,65 +388,73 @@ public class Controller {
         renderer.animator.resume();
     }
 
-    public void onBlockIdUpdate() {
-        if (schematic != null && selected != null && blockIdComboBox.getSelectionModel().getSelectedItem() != null) {
-            Block block = selected.getBlock();
-            BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
-            String blockId = blockIdComboBox.getSelectionModel().getSelectedItem();
-            blockState.setId(blockId);
-            loadLayer();
-        }
-    }
-
-    public void onBlockPropertiesUpdate() {
-        if (schematic != null && selected != null) {
-            Block block = selected.getBlock();
-            BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
-            try {
-                Map<String, String> properties = BlockState.toPropertyMap(blockPropertiesTextField.getText());
-                blockState.setProperties(properties);
-                blockPropertiesTextField.setStyle("-fx-text-inner-color: #000000");
-            } catch (IllegalArgumentException e1) {
-                blockPropertiesTextField.setStyle("-fx-text-inner-color: #FF0000");
+    public void onBlockIdUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        if (schematic != null && newValue != null) {
+            BlockState blockState = blockStateListView.getSelectionModel().getSelectedItem();
+            if (blockState != null) {
+                blockState.setId(newValue);
             }
             loadLayer();
         }
     }
 
-    public void onBlockNbtUpdate() {
+    public void onBlockPropertiesUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        if (schematic != null && newValue != null) {
+            BlockState blockState = blockStateListView.getSelectionModel().getSelectedItem();
+            if (blockState != null) {
+                try {
+                    Map<String, String> properties = BlockState.toPropertyMap(newValue);
+                    blockState.setProperties(properties);
+                    blockStatePropertiesTextField.setStyle("-fx-text-inner-color: #000000");
+                } catch (IllegalArgumentException e1) {
+                    blockStatePropertiesTextField.setStyle("-fx-text-inner-color: #FF0000");
+                }
+            }
+            loadLayer();
+        }
+    }
+
+    // TODO Create a text field for the BlockEntity's ID;
+    public void onBlockNbtUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
         if (schematic != null && selected != null) {
             Block block = selected.getBlock();
-            try {
-                CompoundTag nbt = (CompoundTag) SNBTUtil.fromSNBT(blockNbtTextField.getText().trim());
-                block.setNbt(nbt);
-                blockNbtTextField.setStyle("-fx-text-inner-color: #000000");
-            } catch (IOException e1) {
-                blockNbtTextField.setStyle("-fx-text-inner-color: #FF0000");
+            if (block != null) {
+                try {
+                    CompoundTag nbt = (CompoundTag) SNBTUtil.fromSNBT(newValue.trim());
+                    block.setNbt(nbt);
+                    blockNbtTextField.setStyle("-fx-text-inner-color: #000000");
+                } catch (IOException | StringIndexOutOfBoundsException e1) {
+                    blockNbtTextField.setStyle("-fx-text-inner-color: #FF0000");
+                }
             }
             loadLayer();
         }
     }
 
     @FXML
-    public void onPaletteUpdate() {
+    public void onPaletteUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
         if (schematic != null) {
+            int selectedIndex = blockStateListView.getSelectionModel().getSelectedIndex();
+            blockStateListView.setItems(schematic.getBlockPalette(newValue));
+            blockStateListView.getSelectionModel().select(selectedIndex);
             loadLayer();
-            updateSelected();
         }
     }
 
     @FXML
-    public void onBlockPaletteUpdate() {
+    public void onBlockPaletteUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
         if (schematic != null && selected != null) {
             Block block = selected.getBlock();
-            block.setBlockStateIndex(blockPaletteSpinner.getValue());
+            if (block != null) {
+                block.setBlockStateIndex(newValue);
+            }
             loadLayer();
             updateSelected();
         }
     }
 
     @FXML
-    public void onLayerUpdate() {
+    public void onLayerUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
         if (schematic != null) {
             loadLayer();
         }
@@ -462,7 +479,7 @@ public class Controller {
                         try {
                             color = BlockColor.valueOf(blockName).getColor();
                         } catch (IllegalArgumentException e) {
-                            color = Color.rgb(251, 64, 249); // Color of the missing texture's purple
+                            color = MISSING_COLOR;
                         }
                         color = Color.color(color.getRed(), color.getGreen(), color.getBlue());
                         BlockButton blockButton = new BlockButton(block, x, currentLayer, z);
@@ -473,7 +490,7 @@ public class Controller {
                         blockButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
                         blockButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                         blockButton.setPrefSize(30.0, 30.0);
-                        blockButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::blockButtonPressed);
+                        blockButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::onBlockButtonPressed);
                         blockGrid.add(blockButton, x, z);
                         if (selected != null) {
                             int[] position = selected.getPosition();
@@ -500,7 +517,7 @@ public class Controller {
         }
     }
 
-    private void blockButtonPressed(@NotNull Event e) {
+    private void onBlockButtonPressed(@NotNull Event e) {
         if (selected != null) {
             selected.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
         }
@@ -508,16 +525,7 @@ public class Controller {
         Block block = selected.getBlock();
 
         if (block != null) {
-            BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
-
             selected.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
-
-            blockIdComboBox.getSelectionModel().select(blockState.getId());
-            blockIdComboBox.setDisable(false);
-
-            blockPropertiesTextField.setText(BlockState.toPropertyString(blockState.getProperties()));
-            blockPropertiesTextField.setStyle("-fx-text-inner-color: #000000");
-            blockPropertiesTextField.setDisable(false);
 
             try {
                 blockNbtTextField.setText(SNBTUtil.toSNBT(block.getNbt()));
@@ -534,13 +542,20 @@ public class Controller {
         }
     }
 
+    public void onBlockStateSelected(ObservableValue<? extends BlockState> observable, BlockState oldValue, BlockState newValue) {
+        if (newValue != null) {
+            blockStateIdComboBox.getSelectionModel().select(newValue.getId());
+            blockStateIdComboBox.setDisable(false);
+
+            blockStatePropertiesTextField.setText(BlockState.toPropertyString(newValue.getProperties()));
+            blockStatePropertiesTextField.setStyle("-fx-text-inner-color: #000000");
+            blockStatePropertiesTextField.setDisable(false);
+        }
+    }
+
     public void updateSelected() {
         if (selected != null) {
             Block block = selected.getBlock();
-            BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
-
-            blockIdComboBox.getSelectionModel().select(blockState.getId());
-            blockPropertiesTextField.setText(BlockState.toPropertyString(blockState.getProperties()));
 
             try {
                 blockNbtTextField.setText(SNBTUtil.toSNBT(block.getNbt()));
@@ -550,6 +565,7 @@ public class Controller {
         }
     }
 
+    // TODO Replace this with a JavaFX 3D implementation to make things easier. (Only do this if JavaFX 3D can do everything required to emulate Minecraft rendering)
     private class SchematicRenderer extends MouseAdapter implements GLEventListener, KeyListener {
 
         private static final Logger LOGGER = LogManager.getLogger();
@@ -731,7 +747,7 @@ public class Controller {
                     return Color.valueOf("#208030");
                 }
                 default -> {
-                    return Color.WHITE;
+                    return DEFAULT_TINT;
                 }
             }
         }
@@ -989,6 +1005,13 @@ public class Controller {
                     textures.forEach((s, texture) -> texture.destroy(gl));
                     textures.clear();
                     Assets.getTextureMap().forEach((s, textureData) -> textures.put(s, TextureIO.newTexture(textureData)));
+
+                    /*ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
+                    items.remove("minecraft:missing");
+                    Collections.sort(items);
+                    blockStateIdComboBox.setItems(items);
+                    blockStateIdAutoComplete.setItems(items);*/
+
                     shouldReloadTextures = false;
                 }
             }
@@ -1420,10 +1443,10 @@ public class Controller {
 
                         float[] components = new float[4];
                         if (tintIndex == -1) {
-                            components[0] = (float) Color.WHITE.getRed();
-                            components[1] = (float) Color.WHITE.getGreen();
-                            components[2] = (float) Color.WHITE.getBlue();
-                            components[3] = (float) Color.WHITE.getOpacity();
+                            components[0] = (float) DEFAULT_TINT.getRed();
+                            components[1] = (float) DEFAULT_TINT.getGreen();
+                            components[2] = (float) DEFAULT_TINT.getBlue();
+                            components[3] = (float) DEFAULT_TINT.getOpacity();
                         } else {
                             components[0] = (float) tint.getRed();
                             components[1] = (float) tint.getGreen();

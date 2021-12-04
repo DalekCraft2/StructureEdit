@@ -3,6 +3,7 @@
 <?import javafx.embed.swing.SwingNode?>
 <?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
@@ -78,9 +79,6 @@
                                     <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
-                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
-                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
-                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints vgrow="ALWAYS" />
                                  </rowConstraints>
                                  <children>
@@ -96,43 +94,25 @@
                                           <Tooltip text="%ui.editor.layer.tooltip" />
                                        </tooltip>
                                     </Spinner>
-                                    <Label text="%ui.editor.palette.text" GridPane.rowIndex="2" />
-                                    <Spinner fx:id="paletteSpinner" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
-                                       <tooltip>
-                                          <Tooltip text="%ui.editor.palette.tooltip" />
-                                       </tooltip>
-                                    </Spinner>
-                                    <Label text="%ui.editor.block_palette.text" GridPane.rowIndex="3" />
-                                    <Spinner fx:id="blockPaletteSpinner" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                    <Label text="%ui.editor.block_palette.text" GridPane.rowIndex="2" />
+                                    <Spinner fx:id="blockPaletteSpinner" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.block_palette.tooltip" />
                                        </tooltip>
                                     </Spinner>
-                                    <Label text="%ui.editor.block_position.text" GridPane.rowIndex="4" />
-                                    <TextField fx:id="blockPositionTextField" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                    <Label text="%ui.editor.block_position.text" GridPane.rowIndex="3" />
+                                    <TextField fx:id="blockPositionTextField" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.block_position.tooltip" />
                                        </tooltip>
                                     </TextField>
-                                    <Label text="%ui.editor.block_id.text" GridPane.rowIndex="5" />
-                                    <ComboBox fx:id="blockIdComboBox" disable="true" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="5">
-                                       <tooltip>
-                                          <Tooltip text="%ui.editor.block_id.tooltip" />
-                                       </tooltip>
-                                    </ComboBox>
-                                    <Label text="%ui.editor.block_properties.text" GridPane.rowIndex="6" />
-                                    <TextField fx:id="blockPropertiesTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="6">
-                                       <tooltip>
-                                          <Tooltip text="%ui.editor.block_properties.tooltip" />
-                                       </tooltip>
-                                    </TextField>
-                                    <Label text="%ui.editor.block_nbt.text" GridPane.rowIndex="7" />
-                                    <TextField fx:id="blockNbtTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="7">
+                                    <Label text="%ui.editor.block_nbt.text" GridPane.rowIndex="4" />
+                                    <TextField fx:id="blockNbtTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.block_nbt.tooltip" />
                                        </tooltip>
                                     </TextField>
-                                    <ScrollPane pannable="true" GridPane.columnSpan="2" GridPane.rowIndex="8">
+                                    <ScrollPane pannable="true" GridPane.columnSpan="2" GridPane.rowIndex="5">
                                        <content>
                                           <GridPane fx:id="blockGrid" alignment="CENTER" gridLinesVisible="true">
                                              <columnConstraints>
@@ -144,6 +124,43 @@
                                           </GridPane>
                                        </content>
                                     </ScrollPane>
+                                 </children>
+                              </GridPane>
+                           </content>
+                        </Tab>
+                        <Tab text="BlockState Editor">
+                           <content>
+                              <GridPane>
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints vgrow="ALWAYS" />
+                                 </rowConstraints>
+                                 <children>
+                                    <Label text="%ui.editor.palette.text" />
+                                    <Spinner fx:id="paletteSpinner" disable="true" editable="true" GridPane.columnIndex="1">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.palette.tooltip" />
+                                       </tooltip>
+                                    </Spinner>
+                                    <Label text="%ui.editor.block_id.text" GridPane.rowIndex="1" />
+                                    <ComboBox fx:id="blockStateIdComboBox" disable="true" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.block_id.tooltip" />
+                                       </tooltip>
+                                    </ComboBox>
+                                    <Label text="%ui.editor.block_properties.text" GridPane.rowIndex="2" />
+                                    <TextField fx:id="blockStatePropertiesTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.block_properties.tooltip" />
+                                       </tooltip>
+                                    </TextField>
+                                    <ListView fx:id="blockStateListView" prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="3" />
                                  </children>
                               </GridPane>
                            </content>
