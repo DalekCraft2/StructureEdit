@@ -318,7 +318,7 @@ public class Controller {
             schematicChooser.getExtensionFilters().add(0, FILTER_ALL);
             renderer.animator.resume();
         } else {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.null"));
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.not_loaded"));
         }
     }
 
@@ -333,7 +333,7 @@ public class Controller {
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.saved"), file);
             StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         } catch (IOException e1) {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.error_saving"), e1.getMessage());
+            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.error_writing"), e1.getMessage());
         }
     }
 
