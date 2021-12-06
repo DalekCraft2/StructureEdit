@@ -34,7 +34,6 @@ import java.util.Set;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-// TODO Change WorldEdit's misusage of IOExceptions.
 public enum BuiltInSchematicFormat implements SchematicFormat {
 
     /**
@@ -58,8 +57,8 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
         }
 
         @Override
-        public SchematicWriter getWriter(OutputStream outputStream) throws IOException {
-            throw new IOException("This format does not support saving");
+        public SchematicWriter getWriter(OutputStream outputStream) {
+            throw new UnsupportedOperationException("This format does not support saving");
         }
 
         @Override
@@ -300,7 +299,9 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
                 JsonObject root = JsonParser.parseReader(new InputStreamReader(nbtInputStream)).getAsJsonObject();
 
                 // Check
-                // TODO How to check for this format?
+                if (!root.has("input")) {
+                    return false;
+                }
             } catch (Exception e) {
                 return false;
             }

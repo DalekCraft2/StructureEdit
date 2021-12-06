@@ -332,7 +332,7 @@ public class Controller {
             }
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.saved"), file);
             StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
-        } catch (IOException e1) {
+        } catch (IOException | UnsupportedOperationException e1) {
             LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.error_writing"), e1.getMessage());
         }
     }
