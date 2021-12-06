@@ -1,9 +1,6 @@
 package me.dalekcraft.structureedit.schematic.io;
 
-import me.dalekcraft.structureedit.schematic.container.Block;
-import me.dalekcraft.structureedit.schematic.container.BlockState;
-import me.dalekcraft.structureedit.schematic.container.Entity;
-import me.dalekcraft.structureedit.schematic.container.Schematic;
+import me.dalekcraft.structureedit.schematic.container.*;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;
 
@@ -94,6 +91,9 @@ public class StructureReader extends NbtSchematicReader {
             CompoundTag block = requireTag(blocks, i, CompoundTag.class);
 
             int state = requireTag(block, "state", IntTag.class).asInt();
+            if (state >= schematic.getBlockPalette().size()) {
+                throw new ValidationException("Entry at index " + i + " has invalid palette index " + state);
+            }
 
             ListTag<?> position = requireTag(block, "pos", ListTag.class);
             int x = requireTag(position, 0, IntTag.class).asInt();
@@ -101,9 +101,16 @@ public class StructureReader extends NbtSchematicReader {
             int z = requireTag(position, 2, IntTag.class).asInt();
 
             CompoundTag nbt = optTag(block, "nbt", CompoundTag.class);
+            BlockEntity blockEntity = null;
+            if (nbt != null) {
+                String id = requireTag(nbt, "id", StringTag.class).getValue();
 
-            // TODO Ensure that the palette contains the state.
-            Block blockObject = new Block(state, nbt);
+                nbt.remove("id");
+
+                blockEntity = new BlockEntity(id, nbt);
+            }
+
+            Block blockObject = new Block(state, blockEntity);
 
             schematic.setBlock(x, y, z, blockObject);
         }

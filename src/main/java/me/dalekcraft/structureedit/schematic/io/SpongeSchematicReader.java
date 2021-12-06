@@ -135,11 +135,10 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 String id = requireTag(tileEntity, "Id", StringTag.class).getValue();
                 tileEntity.remove("Pos");
                 tileEntity.remove("Id");
-                tileEntity.putString("id", id);
 
                 Block block = schematic.getBlock(x, y, z);
                 if (block != null) {
-                    block.setNbt(tileEntity);
+                    block.setBlockEntity(new BlockEntity(id, tileEntity));
                 }
             }
         }
@@ -219,11 +218,10 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
                 blockEntity.remove("Pos");
                 blockEntity.remove("Id");
-                blockEntity.putString("id", id);
 
                 Block block = schematic.getBlock(x, y, z);
                 if (block != null) {
-                    block.setNbt(blockEntity);
+                    block.setBlockEntity(new BlockEntity(id, blockEntity));
                 }
             }
         }
@@ -242,7 +240,6 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
                 entityTag.remove("Pos");
                 entityTag.remove("Id");
-                // entityTag.putString("id", id);
 
                 Entity entity = new Entity(id, entityTag);
                 entity.setPosition(x, y, z);
@@ -254,7 +251,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
         IntTag biomePaletteMaxTag = optTag(root, "BiomePaletteMax", IntTag.class);
 
         CompoundTag biomePalette = optTag(root, "BiomePalette", CompoundTag.class);
-        if (biomePaletteMaxTag != null && biomePalette.size() != biomePaletteMaxTag.asInt()) {
+        if (biomePalette != null && biomePaletteMaxTag != null && biomePalette.size() != biomePaletteMaxTag.asInt()) {
             throw new ValidationException("Palette size does not match expected maximum");
         }
 
@@ -358,13 +355,13 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
                     CompoundTag nbt = optTag(blockEntity, "Data", CompoundTag.class);
                     if (nbt != null) {
-                        // TODO Separate the ID from the rest of the NBT data.
-                        nbt.putString("id", id);
+                        nbt.remove("Pos");
+                        nbt.remove("id");
                     }
 
                     Block block = schematic.getBlock(x, y, z);
                     if (block != null) {
-                        block.setNbt(nbt);
+                        block.setBlockEntity(new BlockEntity(id, nbt));
                     }
                 }
             }
@@ -415,7 +412,6 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 if (nbt != null) {
                     nbt.remove("Pos");
                     nbt.remove("id");
-                    // nbt.putString("id", id);
                 }
 
                 Entity entity = new Entity(id, nbt);

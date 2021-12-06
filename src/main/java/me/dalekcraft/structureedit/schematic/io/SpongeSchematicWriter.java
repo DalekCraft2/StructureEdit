@@ -104,12 +104,12 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
                     if (block != null) {
                         blocksList.set(index, (byte) block.getBlockStateIndex());
 
-                        CompoundTag nbt = block.getNbt();
-                        if (nbt.size() > 0) {
+                        BlockEntity blockEntity = block.getBlockEntity();
+                        if (!blockEntity.isEmpty()) {
+                            CompoundTag nbt = blockEntity.getNbt().clone();
                             CompoundTag blockEntityTag = new CompoundTag();
 
-                            String id = nbt.getString("id");
-                            nbt.remove("id");
+                            String id = blockEntity.getId();
                             blockEntityTag.putString("Id", id);
 
                             blockEntityTag.putIntArray("Pos", new int[]{x, y, z});

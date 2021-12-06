@@ -81,6 +81,7 @@
                                     <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints vgrow="ALWAYS" />
                                  </rowConstraints>
                                  <children>
@@ -108,13 +109,13 @@
                                           <Tooltip text="%ui.editor_tabbed_pane.block.block_position.tooltip" />
                                        </tooltip>
                                     </TextField>
-                                    <Label text="%ui.editor_tabbed_pane.block.block_nbt.text" GridPane.rowIndex="5" />
-                                    <TextField fx:id="blockNbtTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                    <Label text="%ui.editor_tabbed_pane.block.block_entity_nbt.text" GridPane.rowIndex="6" />
+                                    <TextField fx:id="blockEntityNbtTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                        <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.block.block_nbt.tooltip" />
+                                          <Tooltip text="%ui.editor_tabbed_pane.block.block_entity_nbt.tooltip" />
                                        </tooltip>
                                     </TextField>
-                                    <ScrollPane pannable="true" GridPane.columnSpan="2" GridPane.rowIndex="6">
+                                    <ScrollPane pannable="true" GridPane.columnSpan="2" GridPane.rowIndex="7">
                                        <content>
                                           <GridPane fx:id="blockGrid" alignment="CENTER" gridLinesVisible="true">
                                              <columnConstraints>
@@ -127,6 +128,11 @@
                                        </content>
                                     </ScrollPane>
                                     <Separator prefWidth="64.0" GridPane.columnSpan="2" GridPane.rowIndex="2" />
+                                    <TextField fx:id="blockEntityIdTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor_tabbed_pane.block.block_entity_id.tooltip" />
+                                       </tooltip></TextField>
+                                    <Label text="%ui.editor_tabbed_pane.block.block_entity_id.text" GridPane.rowIndex="5" />
                                  </children>
                               </GridPane>
                            </content>

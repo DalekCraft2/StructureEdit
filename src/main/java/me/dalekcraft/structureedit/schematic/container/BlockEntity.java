@@ -4,18 +4,17 @@ import net.querz.nbt.tag.CompoundTag;
 
 import java.util.Objects;
 
-// TODO Replace the "nbt" field in the Block class with this.
 public class BlockEntity {
 
     private String id;
     private CompoundTag nbt;
 
     public BlockEntity(String id) {
-        this(id, new CompoundTag());
+        this(id, null);
     }
 
     public BlockEntity(String id, CompoundTag nbt) {
-        this.id = id;
+        this.id = Objects.requireNonNull(id);
         this.nbt = Objects.requireNonNullElse(nbt, new CompoundTag());
     }
 
@@ -53,5 +52,9 @@ public class BlockEntity {
      */
     public void setNbt(CompoundTag nbt) {
         this.nbt = Objects.requireNonNullElse(nbt, new CompoundTag());
+    }
+
+    public boolean isEmpty() {
+        return id.isEmpty() && nbt.size() == 0;
     }
 }

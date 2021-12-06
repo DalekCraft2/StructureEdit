@@ -12,11 +12,11 @@ public class Entity {
     private CompoundTag nbt;
 
     public Entity(String id) {
-        this(id, new CompoundTag());
+        this(id, null);
     }
 
     public Entity(String id, CompoundTag nbt) {
-        this.id = id;
+        this.id = Objects.requireNonNull(id);
         this.nbt = Objects.requireNonNullElse(nbt, new CompoundTag());
     }
 

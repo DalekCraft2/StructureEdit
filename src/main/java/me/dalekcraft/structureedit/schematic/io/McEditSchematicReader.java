@@ -1,9 +1,6 @@
 package me.dalekcraft.structureedit.schematic.io;
 
-import me.dalekcraft.structureedit.schematic.container.Block;
-import me.dalekcraft.structureedit.schematic.container.BlockState;
-import me.dalekcraft.structureedit.schematic.container.Entity;
-import me.dalekcraft.structureedit.schematic.container.Schematic;
+import me.dalekcraft.structureedit.schematic.container.*;
 import me.dalekcraft.structureedit.schematic.io.legacycompat.LegacyMapper;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;
@@ -111,10 +108,11 @@ public class McEditSchematicReader extends NbtSchematicReader {
                 tileEntity.remove("x");
                 tileEntity.remove("y");
                 tileEntity.remove("z");
+                tileEntity.remove("id");
 
                 Block block = schematic.getBlock(x, y, z);
                 if (block != null) {
-                    block.setNbt(tileEntity);
+                    block.setBlockEntity(new BlockEntity(id, tileEntity));
                 }
             }
         }

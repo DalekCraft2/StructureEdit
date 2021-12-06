@@ -1,9 +1,6 @@
 package me.dalekcraft.structureedit.schematic.io;
 
-import me.dalekcraft.structureedit.schematic.container.Block;
-import me.dalekcraft.structureedit.schematic.container.BlockState;
-import me.dalekcraft.structureedit.schematic.container.Entity;
-import me.dalekcraft.structureedit.schematic.container.Schematic;
+import me.dalekcraft.structureedit.schematic.container.*;
 import net.querz.nbt.io.NBTOutputStream;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.*;
@@ -90,8 +87,11 @@ public class StructureWriter extends NbtSchematicWriter {
                         position.addInt(z);
                         blockObject.put("pos", position);
 
-                        if (block.getNbt().size() != 0) {
-                            blockObject.put("nbt", block.getNbt());
+                        BlockEntity blockEntity = block.getBlockEntity();
+                        if (!blockEntity.isEmpty()) {
+                            CompoundTag clone = blockEntity.getNbt().clone();
+                            clone.putString("id", blockEntity.getId());
+                            blockObject.put("nbt", clone);
                         }
 
                         blocks.add(blockObject);

@@ -1,21 +1,19 @@
 package me.dalekcraft.structureedit.schematic.container;
 
-import net.querz.nbt.tag.CompoundTag;
-
 import java.util.Objects;
 
 public class Block {
 
     private int blockStateIndex;
-    private CompoundTag nbt;
+    private BlockEntity nbt;
 
     public Block(int blockStateIndex) {
-        this(blockStateIndex, new CompoundTag());
+        this(blockStateIndex, null);
     }
 
-    public Block(int blockStateIndex, CompoundTag nbt) {
+    public Block(int blockStateIndex, BlockEntity nbt) {
         this.blockStateIndex = blockStateIndex;
-        this.nbt = Objects.requireNonNullElse(nbt, new CompoundTag());
+        this.nbt = Objects.requireNonNullElse(nbt, new BlockEntity(""));
     }
 
     /**
@@ -41,7 +39,7 @@ public class Block {
      *
      * @return the NBT of this {@link Block}
      */
-    public CompoundTag getNbt() {
+    public BlockEntity getBlockEntity() {
         return nbt;
     }
 
@@ -50,7 +48,7 @@ public class Block {
      *
      * @param nbt the new NBT for this {@link Block}
      */
-    public void setNbt(CompoundTag nbt) {
-        this.nbt = Objects.requireNonNullElse(nbt, new CompoundTag());
+    public void setBlockEntity(BlockEntity nbt) {
+        this.nbt = Objects.requireNonNullElse(nbt, new BlockEntity(""));
     }
 }

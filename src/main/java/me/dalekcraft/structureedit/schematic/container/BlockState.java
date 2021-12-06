@@ -18,7 +18,7 @@ public class BlockState {
     private Map<String, String> properties;
 
     public BlockState(@NotNull String id) {
-        this(id, new HashMap<>());
+        this(id, null);
     }
 
     public BlockState(@NotNull String id, Map<String, String> properties) {

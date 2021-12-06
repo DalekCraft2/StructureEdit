@@ -121,7 +121,9 @@ public class Controller {
     @FXML
     private TextField blockStatePropertiesTextField;
     @FXML
-    private TextField blockNbtTextField;
+    private TextField blockEntityIdTextField;
+    @FXML
+    private TextField blockEntityNbtTextField;
     @FXML
     private GridPane blockGrid;
     @FXML
@@ -176,7 +178,9 @@ public class Controller {
             }
         }));
 
-        blockNbtTextField.textProperty().addListener(this::onBlockNbtUpdate);
+        blockEntityIdTextField.textProperty().addListener(this::onBlockEntityIdUpdate);
+
+        blockEntityNbtTextField.textProperty().addListener(this::onBlockEntityNbtUpdate);
         /*blockNbtTextField.setTextFormatter(new TextFormatter<CompoundTag>(new StringConverter<>() {
             @Override
             public String toString(CompoundTag tag) {
@@ -273,8 +277,10 @@ public class Controller {
         blockPaletteSpinner.setDisable(true);
         blockPositionTextField.setText(null);
         blockPositionTextField.setDisable(true);
-        blockNbtTextField.setText(null);
-        blockNbtTextField.setDisable(true);
+        blockEntityIdTextField.setText(null);
+        blockEntityIdTextField.setDisable(true);
+        blockEntityNbtTextField.setText(null);
+        blockEntityNbtTextField.setDisable(true);
         paletteValueFactory.setValue(0);
         paletteSpinner.setDisable(true);
         blockStateIdComboBox.getSelectionModel().select(null);
@@ -414,17 +420,26 @@ public class Controller {
         }
     }
 
-    // TODO Create a text field for the BlockEntity's ID;
-    public void onBlockNbtUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+    public void onBlockEntityIdUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        if (schematic != null && selected != null) {
+            Block block = selected.getBlock();
+            if (block != null) {
+                block.getBlockEntity().setId(newValue);
+            }
+            loadLayer();
+        }
+    }
+
+    public void onBlockEntityNbtUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
         if (schematic != null && selected != null) {
             Block block = selected.getBlock();
             if (block != null) {
                 try {
                     CompoundTag nbt = (CompoundTag) SNBTUtil.fromSNBT(newValue.trim());
-                    block.setNbt(nbt);
-                    blockNbtTextField.setStyle("-fx-text-inner-color: #000000");
+                    block.getBlockEntity().setNbt(nbt);
+                    blockEntityNbtTextField.setStyle("-fx-text-inner-color: #000000");
                 } catch (IOException | StringIndexOutOfBoundsException e1) {
-                    blockNbtTextField.setStyle("-fx-text-inner-color: #FF0000");
+                    blockEntityNbtTextField.setStyle("-fx-text-inner-color: #FF0000");
                 }
             }
             loadLayer();
@@ -527,12 +542,15 @@ public class Controller {
         if (block != null) {
             selected.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
 
+            blockEntityIdTextField.setText(block.getBlockEntity().getId());
+            blockEntityIdTextField.setDisable(false);
+
             try {
-                blockNbtTextField.setText(SNBTUtil.toSNBT(block.getNbt()));
+                blockEntityNbtTextField.setText(SNBTUtil.toSNBT(block.getBlockEntity().getNbt()));
             } catch (IOException ignored) {
             }
-            blockNbtTextField.setDisable(false);
-            blockNbtTextField.setStyle("-fx-text-inner-color: #000000");
+            blockEntityNbtTextField.setDisable(false);
+            blockEntityNbtTextField.setStyle("-fx-text-inner-color: #000000");
 
             blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
             blockPositionTextField.setDisable(false);
@@ -557,11 +575,14 @@ public class Controller {
         if (selected != null) {
             Block block = selected.getBlock();
 
+            blockEntityIdTextField.setText(block.getBlockEntity().getId());
+            blockEntityIdTextField.setDisable(false);
+
             try {
-                blockNbtTextField.setText(SNBTUtil.toSNBT(block.getNbt()));
+                blockEntityNbtTextField.setText(SNBTUtil.toSNBT(block.getBlockEntity().getNbt()));
             } catch (IOException ignored) {
             }
-            blockNbtTextField.setDisable(false);
+            blockEntityNbtTextField.setDisable(false);
         }
     }
 
