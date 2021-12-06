@@ -100,6 +100,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
         }
 
         byte[] blockData = requireTag(root, "BlockData", ByteArrayTag.class).getValue();
+        if (blockData.length != sizeX * sizeY * sizeZ) {
+            throw new ValidationException("BlockData length is " + blockData.length + "; should be " + sizeX * sizeY * sizeZ);
+        }
         for (int i = 0; i < blockData.length; i++) {
             // index = (y * length * width) + (z * width) + x
             int x = i % (sizeX * sizeZ) % sizeX;
@@ -183,6 +186,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
         }
 
         byte[] blockData = requireTag(root, "BlockData", ByteArrayTag.class).getValue();
+        if (blockData.length != sizeX * sizeY * sizeZ) {
+            throw new ValidationException("BlockData length is " + blockData.length + "; should be " + sizeX * sizeY * sizeZ);
+        }
         for (int i = 0; i < blockData.length; i++) {
             // index = (y * length * width) + (z * width) + x
             int x = i % (sizeX * sizeZ) % sizeX;
@@ -256,6 +262,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
 
         if (biomePalette != null && biomeDataTag != null) {
             byte[] biomeData = biomeDataTag.getValue();
+            if (biomeData.length != sizeX * sizeY * sizeZ) {
+                throw new ValidationException("BiomeData length is " + biomeData.length + "; should be " + sizeX * sizeY * sizeZ);
+            }
 
             for (String key : biomePalette.keySet()) {
                 int value = requireTag(biomePalette, key, IntTag.class).asInt();
@@ -317,6 +326,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
             }
 
             byte[] blockData = requireTag(blockContainer, "Data", ByteArrayTag.class).getValue();
+            if (blockData.length != sizeX * sizeY * sizeZ) {
+                throw new ValidationException("BlockData length is " + blockData.length + "; should be " + sizeX * sizeY * sizeZ);
+            }
             for (int i = 0; i < blockData.length; i++) {
                 // index = (y * length * width) + (z * width) + x
                 int x = i % (sizeX * sizeZ) % sizeX;
@@ -368,6 +380,9 @@ public class SpongeSchematicReader extends NbtSchematicReader {
             }
 
             byte[] biomeData = requireTag(biomeContainer, "Data", ByteArrayTag.class).getValue();
+            if (biomeData.length != sizeX * sizeY * sizeZ) {
+                throw new ValidationException("BiomeData length is " + biomeData.length + "; should be " + sizeX * sizeY * sizeZ);
+            }
             for (int i = 0; i < biomeData.length; i++) {
                 // index = (y * length * width) + (z * width) + x
                 int x = i % (sizeX * sizeZ) % sizeX;

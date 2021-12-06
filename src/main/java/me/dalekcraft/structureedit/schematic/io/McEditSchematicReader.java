@@ -58,6 +58,10 @@ public class McEditSchematicReader extends NbtSchematicReader {
             }
         }
 
+        if (blocks.length != sizeX * sizeY * sizeZ) {
+            throw new ValidationException("Blocks length is " + blocks.length + "; should be " + sizeX * sizeY * sizeZ);
+        }
+
         for (int i = 0; i < blocks.length; i++) {
             // index = (y * length * width) + (z * width) + x
             int x = i % (sizeX * sizeZ) % sizeX;
