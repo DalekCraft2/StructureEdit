@@ -34,6 +34,14 @@ public class SpongeSchematicReader extends NbtSchematicReader {
     public OptionalInt getDataVersion() {
         try {
             CompoundTag root = getRoot();
+            return getDataVersion(root);
+        } catch (Exception e) {
+            return OptionalInt.empty();
+        }
+    }
+
+    private OptionalInt getDataVersion(CompoundTag root) {
+        try {
             switch (schematicVersion) {
                 case 1:
                     return OptionalInt.of(Constants.DATA_VERSION_MC_1_13_2);
@@ -63,7 +71,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
     private Schematic readV1(CompoundTag root) throws ValidationException {
         Schematic schematic = new Schematic();
 
-        OptionalInt dataVersion = getDataVersion();
+        OptionalInt dataVersion = getDataVersion(root);
         if (dataVersion.isPresent()) {
             schematic.setDataVersion(dataVersion.getAsInt());
         }
@@ -149,7 +157,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
     private Schematic readV2(CompoundTag root) throws ValidationException {
         Schematic schematic = new Schematic();
 
-        OptionalInt dataVersion = getDataVersion();
+        OptionalInt dataVersion = getDataVersion(root);
         if (dataVersion.isPresent()) {
             schematic.setDataVersion(dataVersion.getAsInt());
         }
@@ -291,7 +299,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
     private Schematic readV3(CompoundTag root) throws ValidationException {
         Schematic schematic = new Schematic();
 
-        OptionalInt dataVersion = getDataVersion();
+        OptionalInt dataVersion = getDataVersion(root);
         if (dataVersion.isPresent()) {
             schematic.setDataVersion(dataVersion.getAsInt());
         }

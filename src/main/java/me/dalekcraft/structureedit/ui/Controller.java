@@ -33,6 +33,7 @@ import javafx.embed.swing.SwingNode;
 import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.TextField;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -85,7 +86,7 @@ import static com.jogamp.opengl.GL4.*;
 /**
  * @author eccentric_nz
  */
-public class Controller {
+public class Controller extends Node {
     private static final Logger LOGGER = LogManager.getLogger();
     /**
      * Color of the missing texture's purple.
@@ -109,24 +110,28 @@ public class Controller {
     @FXML
     private TextField sizeTextField;
     @FXML
-    private Spinner<Integer> layerSpinner;
+    private TextField offsetTextField;
     @FXML
-    private Spinner<Integer> paletteSpinner;
+    private TextField dataVersionTextField;
+    @FXML
+    private Spinner<Integer> layerSpinner;
     @FXML
     private Spinner<Integer> blockPaletteSpinner;
     @FXML
     private TextField blockPositionTextField;
-    @FXML
-    private ComboBox<String> blockStateIdComboBox;
-    private AutoCompleteComboBoxListener<String> blockStateIdAutoComplete;
-    @FXML
-    private TextField blockStatePropertiesTextField;
     @FXML
     private TextField blockEntityIdTextField;
     @FXML
     private TextField blockEntityNbtTextField;
     @FXML
     private GridPane blockGrid;
+    @FXML
+    private Spinner<Integer> paletteSpinner;
+    @FXML
+    private ComboBox<String> blockStateIdComboBox;
+    private AutoCompleteComboBoxListener<String> blockStateIdAutoComplete;
+    @FXML
+    private TextField blockStatePropertiesTextField;
     @FXML
     private ListView<BlockState> blockStateListView;
     @FXML
@@ -146,7 +151,6 @@ public class Controller {
         if (assets != null && !assets.toString().equals("")) {
             assetsChooser.setInitialDirectory(assets.toFile());
         }
-
     }
 
     @FXML
@@ -273,17 +277,45 @@ public class Controller {
                 schematic = reader.read();
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.error_reading"), e.getMessage());
+                LOGGER.catching(Level.DEBUG, e);
                 StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
             } catch (ValidationException e) {
-                // LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.invalid"), e.getMessage());
-                LOGGER.catching(e);
+                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.invalid"), e.getMessage());
+                LOGGER.catching(Level.DEBUG, e);
                 StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
             }
         } else {
             LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.not_schematic"));
         }
+        resetComponents();
+        if (schematic != null) {
+            sizeTextField.setDisable(false);
+            offsetTextField.setDisable(false);
+            dataVersionTextField.setDisable(false);
+            layerSpinner.setDisable(false);
+            int[] size = schematic.getSize();
+            renderedHeight = size[1];
+            layerValueFactory.setMax(size[1] - 1);
+            if (schematic.getBlockPalettes().size() > 1) {
+                int palettesSize = schematic.getBlockPalettes().size();
+                paletteSpinner.setDisable(false);
+                paletteValueFactory.setMax(palettesSize - 1);
+            }
+            int paletteSize = schematic.getBlockPalette(0).size();
+            blockPaletteValueFactory.setMax(paletteSize - 1);
+            blockStateListView.setItems(schematic.getBlockPalette());
+            entityListView.setItems(schematic.getEntities());
+            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loaded"), file);
+            StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
+        }
+        loadLayer();
+    }
+
+    private void resetComponents() {
         selected = null;
         sizeTextField.setText(null);
+        offsetTextField.setText(null);
+        dataVersionTextField.setText(null);
         layerValueFactory.setValue(0);
         layerSpinner.setDisable(true);
         blockPaletteValueFactory.setValue(0);
@@ -306,25 +338,6 @@ public class Controller {
         entityNbtTextField.setText(null);
         entityNbtTextField.setDisable(true);
         entityListView.setItems(null);
-        if (schematic != null) {
-            sizeTextField.setDisable(false);
-            layerSpinner.setDisable(false);
-            int[] size = schematic.getSize();
-            renderedHeight = size[1];
-            layerValueFactory.setMax(size[1] - 1);
-            if (schematic.getBlockPalettes().size() > 1) {
-                int palettesSize = schematic.getBlockPalettes().size();
-                paletteSpinner.setDisable(false);
-                paletteValueFactory.setMax(palettesSize - 1);
-            }
-            int paletteSize = schematic.getBlockPalette(0).size();
-            blockPaletteValueFactory.setMax(paletteSize - 1);
-            blockStateListView.setItems(schematic.getBlockPalette());
-            entityListView.setItems(schematic.getEntities());
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loaded"), file);
-            StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
-        }
-        loadLayer();
     }
 
     @FXML
@@ -541,7 +554,10 @@ public class Controller {
         blockGrid.getChildren().clear();
         if (schematic != null) {
             int[] size = schematic.getSize();
+            int[] offset = schematic.getOffset();
             sizeTextField.setText(Arrays.toString(size));
+            offsetTextField.setText(Arrays.toString(offset));
+            dataVersionTextField.setText(String.valueOf(schematic.getDataVersion()));
             int currentLayer = layerSpinner.getValue();
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {

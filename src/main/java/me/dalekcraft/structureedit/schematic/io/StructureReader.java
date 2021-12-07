@@ -24,7 +24,7 @@ public class StructureReader extends NbtSchematicReader {
 
         CompoundTag root = (CompoundTag) inputStream.readTag(Tag.DEFAULT_MAX_DEPTH).getTag();
 
-        OptionalInt dataVersion = getDataVersion();
+        OptionalInt dataVersion = getDataVersion(root);
         if (dataVersion.isPresent()) {
             schematic.setDataVersion(dataVersion.getAsInt());
         }
@@ -150,12 +150,22 @@ public class StructureReader extends NbtSchematicReader {
     public OptionalInt getDataVersion() {
         try {
             CompoundTag root = (CompoundTag) inputStream.readTag(Tag.DEFAULT_MAX_DEPTH).getTag();
+            return getDataVersion(root);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return OptionalInt.empty();
+        }
+    }
+
+    private OptionalInt getDataVersion(CompoundTag root) {
+        try {
             int dataVersion = requireTag(root, "DataVersion", IntTag.class).asInt();
             if (dataVersion < 0) {
                 return OptionalInt.empty();
             }
             return OptionalInt.of(dataVersion);
         } catch (Exception e) {
+            e.printStackTrace();
             return OptionalInt.empty();
         }
     }

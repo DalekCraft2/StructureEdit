@@ -31,19 +31,19 @@
    <children>
       <MenuBar>
         <menus>
-          <Menu mnemonicParsing="false" text="%ui.menu_bar.file_menu.text">
+          <Menu mnemonicParsing="false" text="%ui.menu_bar.file_menu">
             <items>
               <MenuItem mnemonicParsing="false" onAction="#showOpenDialog" text="%ui.menu_bar.file_menu.open" />
                   <MenuItem mnemonicParsing="false" onAction="#showSaveDialog" text="%ui.menu_bar.file_menu.save" />
             </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="%ui.menu_bar.settings_menu.text">
+          <Menu mnemonicParsing="false" text="%ui.menu_bar.settings_menu">
                <items>
                   <MenuItem mnemonicParsing="false" onAction="#showAssetsChooser" text="%ui.menu_bar.settings_menu.assets_path" />
                   <MenuItem mnemonicParsing="false" onAction="#selectLogLevel" text="%ui.menu_bar.settings_menu.log_level" />
                </items>
           </Menu>
-          <Menu mnemonicParsing="false" text="%ui.menu_bar.help_menu.text">
+          <Menu mnemonicParsing="false" text="%ui.menu_bar.help_menu">
             <items>
               <MenuItem mnemonicParsing="false" onAction="#showControlsDialog" text="%ui.menu_bar.help_menu.controls" />
             </items>
@@ -67,7 +67,42 @@
                   </GridPane>
                   <TabPane side="RIGHT" SplitPane.resizableWithParent="false">
                      <tabs>
-                        <Tab closable="false" text="%ui.editor_tabbed_pane.block.text">
+                        <Tab closable="false" text="%ui.editor.schematic">
+                          <content>
+                              <GridPane>
+                                <columnConstraints>
+                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                </columnConstraints>
+                                <rowConstraints>
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                  <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+                                </rowConstraints>
+                                 <children>
+                                    <Label text="%ui.editor.schematic.schematic_size" />
+                                    <TextField fx:id="sizeTextField" centerShape="false" disable="true" editable="false" GridPane.columnIndex="1">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.schematic.schematic_size.tooltip" />
+                                       </tooltip>
+                                    </TextField>
+                                    <Label text="%ui.editor.schematic.schematic_offset" GridPane.rowIndex="1" />
+                                    <TextField fx:id="offsetTextField" centerShape="false" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.schematic.schematic_offset.tooltip" />
+                                       </tooltip>
+                                    </TextField>
+                                    <Label text="%ui.editor.schematic.schematic_data_version" GridPane.rowIndex="2" />
+                                    <TextField fx:id="dataVersionTextField" centerShape="false" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.schematic.schematic_data_version.tooltip" />
+                                       </tooltip>
+                                    </TextField>
+                                 </children>
+                              </GridPane>
+                          </content>
+                        </Tab>
+                        <Tab closable="false" text="%ui.editor.block">
                            <content>
                               <GridPane>
                                  <columnConstraints>
@@ -81,47 +116,40 @@
                                     <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
-                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
                                     <RowConstraints vgrow="ALWAYS" />
                                  </rowConstraints>
                                  <children>
-                                    <Label text="%ui.editor_tabbed_pane.block.schematic_size.text" />
-                                    <TextField fx:id="sizeTextField" centerShape="false" disable="true" editable="false" GridPane.columnIndex="1">
+                                    <Label text="%ui.editor.block.layer" />
+                                    <Spinner fx:id="layerSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1">
                                        <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.block.schematic_size.tooltip" />
-                                       </tooltip>
-                                    </TextField>
-                                    <Label text="%ui.editor_tabbed_pane.block.layer.text" GridPane.rowIndex="1" />
-                                    <Spinner fx:id="layerSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
-                                       <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.block.layer.tooltip" />
+                                          <Tooltip text="%ui.editor.block.layer.tooltip" />
                                        </tooltip>
                                     </Spinner>
-                                    <Separator prefWidth="64.0" GridPane.columnSpan="2" GridPane.rowIndex="2" />
-                                    <Label text="%ui.editor_tabbed_pane.block.block_palette.text" GridPane.rowIndex="3" />
-                                    <Spinner fx:id="blockPaletteSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                    <Separator prefWidth="64.0" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+                                    <Label text="%ui.editor.block.block_palette" GridPane.rowIndex="2" />
+                                    <Spinner fx:id="blockPaletteSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                        <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.block.block_palette.tooltip" />
+                                          <Tooltip text="%ui.editor.block.block_palette.tooltip" />
                                        </tooltip>
                                     </Spinner>
-                                    <Label text="%ui.editor_tabbed_pane.block.block_position.text" GridPane.rowIndex="4" />
-                                    <TextField fx:id="blockPositionTextField" centerShape="false" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                    <Label text="%ui.editor.block.block_position" GridPane.rowIndex="3" />
+                                    <TextField fx:id="blockPositionTextField" centerShape="false" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                        <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.block.block_position.tooltip" />
+                                          <Tooltip text="%ui.editor.block.block_position.tooltip" />
                                        </tooltip>
                                     </TextField>
-                                    <Label text="%ui.editor_tabbed_pane.block.block_entity_id.text" GridPane.rowIndex="5" />
-                                    <TextField fx:id="blockEntityIdTextField" centerShape="false" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                    <Label text="%ui.editor.block.block_entity_id" GridPane.rowIndex="4" />
+                                    <TextField fx:id="blockEntityIdTextField" centerShape="false" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                        <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.block.block_entity_id.tooltip" />
+                                          <Tooltip text="%ui.editor.block.block_entity_id.tooltip" />
                                        </tooltip></TextField>
-                                    <Label text="%ui.editor_tabbed_pane.block.block_entity_nbt.text" GridPane.rowIndex="6" />
-                                    <TextField fx:id="blockEntityNbtTextField" centerShape="false" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                    <Label text="%ui.editor.block.block_entity_nbt" GridPane.rowIndex="5" />
+                                    <TextField fx:id="blockEntityNbtTextField" centerShape="false" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="5">
                                        <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.block.block_entity_nbt.tooltip" />
+                                          <Tooltip text="%ui.editor.block.block_entity_nbt.tooltip" />
                                        </tooltip>
                                     </TextField>
-                                    <ScrollPane pannable="true" GridPane.columnSpan="2" GridPane.rowIndex="7">
+                                    <ScrollPane pannable="true" GridPane.columnSpan="2" GridPane.rowIndex="6">
                                        <content>
                                           <GridPane fx:id="blockGrid" alignment="CENTER" gridLinesVisible="true">
                                              <columnConstraints>
@@ -137,7 +165,7 @@
                               </GridPane>
                            </content>
                         </Tab>
-                        <Tab closable="false" text="%ui.editor_tabbed_pane.blockstate.text">
+                        <Tab closable="false" text="%ui.editor.blockstate">
                            <content>
                               <GridPane>
                                  <columnConstraints>
@@ -152,23 +180,23 @@
                                     <RowConstraints vgrow="ALWAYS" />
                                  </rowConstraints>
                                  <children>
-                                    <Label text="%ui.editor_tabbed_pane.blockstate.palette.text" />
+                                    <Label text="%ui.editor.blockstate.palette" />
                                     <Spinner fx:id="paletteSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1">
                                        <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.blockstate.palette.tooltip" />
+                                          <Tooltip text="%ui.editor.blockstate.palette.tooltip" />
                                        </tooltip>
                                     </Spinner>
                                     <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="1" />
-                                    <Label text="%ui.editor_tabbed_pane.blockstate.block_id.text" GridPane.rowIndex="2" />
+                                    <Label text="%ui.editor.blockstate.blockstate_id" GridPane.rowIndex="2" />
                                     <ComboBox fx:id="blockStateIdComboBox" centerShape="false" disable="true" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                        <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.blockstate.block_id.tooltip" />
+                                          <Tooltip text="%ui.editor.blockstate.blockstate_id.tooltip" />
                                        </tooltip>
                                     </ComboBox>
-                                    <Label text="%ui.editor_tabbed_pane.blockstate.block_properties.text" GridPane.rowIndex="3" />
+                                    <Label text="%ui.editor.blockstate.blockstate_properties" GridPane.rowIndex="3" />
                                     <TextField fx:id="blockStatePropertiesTextField" centerShape="false" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                        <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.blockstate.block_properties.tooltip" />
+                                          <Tooltip text="%ui.editor.blockstate.blockstate_properties.tooltip" />
                                        </tooltip>
                                     </TextField>
                                     <ListView fx:id="blockStateListView" prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="4" />
@@ -176,7 +204,7 @@
                               </GridPane>
                            </content>
                         </Tab>
-                        <Tab closable="false" text="%ui.editor.tabbed_pane.entity.text">
+                        <Tab closable="false" text="%ui.editor.entity">
                            <content>
                               <GridPane>
                                  <columnConstraints>
@@ -189,16 +217,16 @@
                                     <RowConstraints vgrow="ALWAYS" />
                                  </rowConstraints>
                                  <children>
-                                    <Label centerShape="false" text="%ui.editor_tabbed_pane.entity.entity_id.text" />
+                                    <Label centerShape="false" text="%ui.editor.entity.entity_id" />
                                     <TextField fx:id="entityIdTextField" disable="true" GridPane.columnIndex="1">
                                        <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.entity.entity_id.tooltip" />
+                                          <Tooltip text="%ui.editor.entity.entity_id.tooltip" />
                                        </tooltip>
                                     </TextField>
-                                    <Label text="%ui.editor_tabbed_pane.entity.entity_nbt.text" GridPane.rowIndex="1" />
+                                    <Label text="%ui.editor.entity.entity_nbt" GridPane.rowIndex="1" />
                                     <TextField fx:id="entityNbtTextField" centerShape="false" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                        <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.entity.entity_nbt.tooltip" />
+                                          <Tooltip text="%ui.editor.entity.entity_nbt.tooltip" />
                                        </tooltip>
                                     </TextField>
                                     <ListView fx:id="entityListView" prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="2" />
@@ -212,7 +240,7 @@
             </SplitPane>
             <TabPane side="BOTTOM" SplitPane.resizableWithParent="false">
               <tabs>
-                <Tab closable="false" text="%ui.tabbed_pane.log.text">
+                <Tab closable="false" text="%ui.tabbed_pane.log">
                      <content>
                         <InlineCssTextArea />
                      </content>
