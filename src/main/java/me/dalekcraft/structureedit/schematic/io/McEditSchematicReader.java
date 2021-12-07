@@ -1,5 +1,6 @@
 package me.dalekcraft.structureedit.schematic.io;
 
+import com.sk89q.worldedit.internal.Constants;
 import me.dalekcraft.structureedit.schematic.container.*;
 import me.dalekcraft.structureedit.schematic.io.legacycompat.LegacyMapper;
 import net.querz.nbt.io.NBTInputStream;
@@ -7,6 +8,7 @@ import net.querz.nbt.tag.*;
 
 import java.io.IOException;
 
+// TODO Maybe add support for the various proprietary additions to this format, based on the Minecraft wiki's page for it.
 public class McEditSchematicReader extends NbtSchematicReader {
 
     private final NBTInputStream inputStream;
@@ -18,6 +20,9 @@ public class McEditSchematicReader extends NbtSchematicReader {
     @Override
     public Schematic read() throws IOException, ValidationException {
         Schematic schematic = new Schematic();
+
+        // Set the data version to 1.13.2's because that is what the schematic is converted to
+        schematic.setDataVersion(Constants.DATA_VERSION_MC_1_13_2);
 
         CompoundTag root = (CompoundTag) inputStream.readTag(Tag.DEFAULT_MAX_DEPTH).getTag();
 
@@ -85,7 +90,11 @@ public class McEditSchematicReader extends NbtSchematicReader {
                 double y = requireTag(position, 1, DoubleTag.class).asDouble();
                 double z = requireTag(position, 2, DoubleTag.class).asDouble();
 
-                String id = requireTag(entityTag, "id", StringTag.class).getValue();
+                String legacyId = requireTag(entityTag, "id", StringTag.class).getValue();
+                String id = convertEntityId(legacyId);
+
+                entityTag.remove("Pos");
+                entityTag.remove("id");
 
                 Entity entity = new Entity(id, entityTag);
                 entity.setPosition(x, y, z);
@@ -103,7 +112,8 @@ public class McEditSchematicReader extends NbtSchematicReader {
                 int y = requireTag(tileEntity, "y", IntTag.class).asInt();
                 int z = requireTag(tileEntity, "z", IntTag.class).asInt();
 
-                String id = requireTag(tileEntity, "id", StringTag.class).getValue();
+                String legacyId = requireTag(tileEntity, "id", StringTag.class).getValue();
+                String id = convertBlockEntityId(legacyId);
 
                 tileEntity.remove("x");
                 tileEntity.remove("y");
@@ -118,6 +128,84 @@ public class McEditSchematicReader extends NbtSchematicReader {
         }
 
         return schematic;
+    }
+
+    private String convertEntityId(String id) {
+        return switch (id) {
+            case "AreaEffectCloud" -> "area_effect_cloud";
+            case "ArmorStand" -> "armor_stand";
+            case "CaveSpider" -> "cave_spider";
+            case "MinecartChest" -> "chest_minecart";
+            case "DragonFireball" -> "dragon_fireball";
+            case "ThrownEgg" -> "egg";
+            case "EnderDragon" -> "ender_dragon";
+            case "ThrownEnderpearl" -> "ender_pearl";
+            case "FallingSand" -> "falling_block";
+            case "FireworksRocketEntity" -> "fireworks_rocket";
+            case "MinecartFurnace" -> "furnace_minecart";
+            case "MinecartHopper" -> "hopper_minecart";
+            case "EntityHorse" -> "horse";
+            case "ItemFrame" -> "item_frame";
+            case "LeashKnot" -> "leash_knot";
+            case "LightningBolt" -> "lightning_bolt";
+            case "LavaSlime" -> "magma_cube";
+            case "MinecartRideable" -> "minecart";
+            case "MushroomCow" -> "mooshroom";
+            case "Ozelot" -> "ocelot";
+            case "PolarBear" -> "polar_bear";
+            case "ThrownPotion" -> "potion";
+            case "ShulkerBullet" -> "shulker_bullet";
+            case "SmallFireball" -> "small_fireball";
+            case "MinecartSpawner" -> "spawner_minecart";
+            case "SpectralArrow" -> "spectral_arrow";
+            case "PrimedTnt" -> "tnt";
+            case "MinecartTNT" -> "tnt_minecart";
+            case "VillagerGolem" -> "villager_golem";
+            case "WitherBoss" -> "wither";
+            case "WitherSkull" -> "wither_skull";
+            case "PigZombie" -> "zombie_pigman";
+            case "XPOrb", "xp_orb" -> "experience_orb";
+            case "ThrownExpBottle", "xp_bottle" -> "experience_bottle";
+            case "EyeOfEnderSignal", "eye_of_ender_signal" -> "eye_of_ender";
+            case "EnderCrystal", "ender_crystal" -> "end_crystal";
+            case "fireworks_rocket" -> "firework_rocket";
+            case "MinecartCommandBlock", "commandblock_minecart" -> "command_block_minecart";
+            case "snowman" -> "snow_golem";
+            case "villager_golem" -> "iron_golem";
+            case "evocation_fangs" -> "evoker_fangs";
+            case "evocation_illager" -> "evoker";
+            case "vindication_illager" -> "vindicator";
+            case "illusion_illager" -> "illusioner";
+            default -> id;
+        };
+    }
+
+    private String convertBlockEntityId(String id) {
+        return switch (id) {
+            case "Cauldron" -> "brewing_stand";
+            case "Control" -> "command_block";
+            case "DLDetector" -> "daylight_detector";
+            case "Trap" -> "dispenser";
+            case "EnchantTable" -> "enchanting_table";
+            case "EndGateway" -> "end_gateway";
+            case "AirPortal" -> "end_portal";
+            case "EnderChest" -> "ender_chest";
+            case "FlowerPot" -> "flower_pot";
+            case "RecordPlayer" -> "jukebox";
+            case "MobSpawner" -> "mob_spawner";
+            case "Music", "noteblock" -> "note_block";
+            case "Structure" -> "structure_block";
+            case "Chest" -> "chest";
+            case "Sign" -> "sign";
+            case "Banner" -> "banner";
+            case "Beacon" -> "beacon";
+            case "Comparator" -> "comparator";
+            case "Dropper" -> "dropper";
+            case "Furnace" -> "furnace";
+            case "Hopper" -> "hopper";
+            case "Skull" -> "skull";
+            default -> id;
+        };
     }
 
     @Override

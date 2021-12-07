@@ -49,9 +49,9 @@ public class TardisSchematicReader extends JsonSchematicReader {
                         JsonArray columns = requireTag(rows, x, JsonArray.class);
                         if (!columns.isEmpty()) {
                             for (int z = 0; z < columns.size(); z++) {
-                                JsonObject block = requireTag(columns, z, JsonObject.class);
+                                JsonObject blockTag = requireTag(columns, z, JsonObject.class);
 
-                                String data = requireTag(block, "data", JsonElement.class).getAsString();
+                                String data = requireTag(blockTag, "data", JsonElement.class).getAsString();
 
                                 BlockState blockState = BlockState.toBlockState(data);
                                 if (!schematic.getBlockPalette().contains(blockState)) {
@@ -60,8 +60,8 @@ public class TardisSchematicReader extends JsonSchematicReader {
                                     blockState = schematic.getBlockState(schematic.getBlockPalette().indexOf(blockState));
                                 }
 
-                                Block blockObject = new Block(schematic.getBlockPalette().indexOf(blockState));
-                                schematic.setBlock(x, y, z, blockObject);
+                                Block block = new Block(schematic.getBlockPalette().indexOf(blockState));
+                                schematic.setBlock(x, y, z, block);
                             }
                         }
                     }

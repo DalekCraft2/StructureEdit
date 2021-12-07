@@ -43,6 +43,7 @@ import me.dalekcraft.structureedit.StructureEditApplication;
 import me.dalekcraft.structureedit.drawing.BlockColor;
 import me.dalekcraft.structureedit.schematic.container.Block;
 import me.dalekcraft.structureedit.schematic.container.BlockState;
+import me.dalekcraft.structureedit.schematic.container.Entity;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
 import me.dalekcraft.structureedit.schematic.io.*;
 import me.dalekcraft.structureedit.util.Assets;
@@ -128,6 +129,12 @@ public class Controller {
     private GridPane blockGrid;
     @FXML
     private ListView<BlockState> blockStateListView;
+    @FXML
+    private TextField entityIdTextField;
+    @FXML
+    private TextField entityNbtTextField;
+    @FXML
+    private ListView<Entity> entityListView;
     @FXML
     private InlineCssTextArea logArea;
 
@@ -236,6 +243,12 @@ public class Controller {
         // TODO Make entries addable and removable to and from this.
         blockStateListView.getSelectionModel().selectedItemProperty().addListener(this::onBlockStateSelected);
 
+        entityIdTextField.textProperty().addListener(this::onEntityIdUpdate);
+
+        entityNbtTextField.textProperty().addListener(this::onEntityNbtUpdate);
+
+        entityListView.getSelectionModel().selectedItemProperty().addListener(this::onEntitySelected);
+
         InlineCssTextAreaAppender.addLog4j2TextAreaAppender(logArea);
     }
 
@@ -288,6 +301,11 @@ public class Controller {
         blockStatePropertiesTextField.setText(null);
         blockStatePropertiesTextField.setDisable(true);
         blockStateListView.setItems(null);
+        entityIdTextField.setText(null);
+        entityIdTextField.setDisable(true);
+        entityNbtTextField.setText(null);
+        entityNbtTextField.setDisable(true);
+        entityListView.setItems(null);
         if (schematic != null) {
             sizeTextField.setDisable(false);
             layerSpinner.setDisable(false);
@@ -302,6 +320,7 @@ public class Controller {
             int paletteSize = schematic.getBlockPalette(0).size();
             blockPaletteValueFactory.setMax(paletteSize - 1);
             blockStateListView.setItems(schematic.getBlockPalette());
+            entityListView.setItems(schematic.getEntities());
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loaded"), file);
             StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         }
@@ -399,6 +418,7 @@ public class Controller {
             BlockState blockState = blockStateListView.getSelectionModel().getSelectedItem();
             if (blockState != null) {
                 blockState.setId(newValue);
+                blockStateListView.refresh();
             }
             loadLayer();
         }
@@ -415,6 +435,7 @@ public class Controller {
                 } catch (IllegalArgumentException e1) {
                     blockStatePropertiesTextField.setStyle("-fx-text-inner-color: #FF0000");
                 }
+                blockStateListView.refresh();
             }
             loadLayer();
         }
@@ -443,6 +464,46 @@ public class Controller {
                 }
             }
             loadLayer();
+        }
+    }
+
+    public void onEntityIdUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        if (schematic != null && newValue != null) {
+            Entity entity = entityListView.getSelectionModel().getSelectedItem();
+            if (entity != null) {
+                entity.setId(newValue);
+                entityListView.refresh();
+            }
+        }
+    }
+
+    public void onEntityNbtUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        if (schematic != null && newValue != null) {
+            Entity entity = entityListView.getSelectionModel().getSelectedItem();
+            if (entity != null) {
+                try {
+                    CompoundTag nbt = (CompoundTag) SNBTUtil.fromSNBT(newValue.trim());
+                    entity.setNbt(nbt);
+                    entityNbtTextField.setStyle("-fx-text-inner-color: #000000");
+                } catch (IOException | StringIndexOutOfBoundsException e1) {
+                    entityNbtTextField.setStyle("-fx-text-inner-color: #FF0000");
+                }
+                entityListView.refresh();
+            }
+        }
+    }
+
+    public void onEntitySelected(ObservableValue<? extends Entity> observable, Entity oldValue, Entity newValue) {
+        if (newValue != null) {
+            entityIdTextField.setText(newValue.getId());
+            entityIdTextField.setDisable(false);
+
+            try {
+                entityNbtTextField.setText(SNBTUtil.toSNBT(newValue.getNbt()));
+            } catch (IOException ignored) {
+            }
+            entityNbtTextField.setStyle("-fx-text-inner-color: #000000");
+            entityNbtTextField.setDisable(false);
         }
     }
 

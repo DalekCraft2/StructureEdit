@@ -9,6 +9,7 @@ import net.querz.nbt.tag.ListTag;
 import net.querz.nbt.tag.Tag;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -82,7 +83,8 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
 
         CompoundTag blockContainer = new CompoundTag();
 
-        List<BlockState> blockPalette = schematic.getBlockPalette();
+        // Copied to make the original schematic's palette not affected from operations (I.E. adding minecraft:air to it)
+        List<BlockState> blockPalette = new ArrayList<>(schematic.getBlockPalette());
 
         CompoundTag blockPaletteTag = new CompoundTag();
 
@@ -123,7 +125,7 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
                         int airIndex;
                         if (!blockPalette.contains(blockState)) {
                             blockPalette.add(blockState);
-                            blockPaletteTag.putInt("minecraft:air", blockPalette.indexOf(blockState));
+                            blockPaletteTag.putInt(blockState.getId(), blockPalette.indexOf(blockState));
                         }
                         airIndex = schematic.getBlockPalette().indexOf(blockState);
                         blocksList.set(index, (byte) airIndex);
@@ -143,7 +145,8 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
         if (schematic.hasBiomes()) {
             CompoundTag biomeContainer = new CompoundTag();
 
-            List<BiomeState> biomePalette = schematic.getBiomePalette();
+            // Copied to make the original schematic's palette not affected from operations (I.E. adding minecraft:ocean to it)
+            List<BiomeState> biomePalette = new ArrayList<>(schematic.getBiomePalette());
 
             CompoundTag biomePaletteTag = new CompoundTag();
 
@@ -164,7 +167,14 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
                         if (biome != null) {
                             biomesList.set(index, (byte) biomePalette.indexOf(biome.getBiomeState()));
                         } else {
-                            // TODO I'unno. Probably throw an exception.
+                            BiomeState biomeState = new BiomeState("minecraft:ocean");
+                            int oceanIndex;
+                            if (!biomePalette.contains(biomeState)) {
+                                biomePalette.add(biomeState);
+                                biomePaletteTag.putInt(biomeState.getId(), biomePalette.indexOf(biomeState));
+                            }
+                            oceanIndex = schematic.getBiomePalette().indexOf(biomeState);
+                            biomesList.set(index, (byte) oceanIndex);
                         }
                     }
                 }
@@ -175,6 +185,8 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
 
             root.put("Biomes", biomeContainer);
         }
+
+
 
         NamedTag namedTag = new NamedTag("", realRoot);
 

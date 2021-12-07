@@ -86,31 +86,37 @@
                                  </rowConstraints>
                                  <children>
                                     <Label text="%ui.editor_tabbed_pane.block.schematic_size.text" />
-                                    <TextField fx:id="sizeTextField" disable="true" editable="false" GridPane.columnIndex="1">
+                                    <TextField fx:id="sizeTextField" centerShape="false" disable="true" editable="false" GridPane.columnIndex="1">
                                        <tooltip>
                                           <Tooltip text="%ui.editor_tabbed_pane.block.schematic_size.tooltip" />
                                        </tooltip>
                                     </TextField>
                                     <Label text="%ui.editor_tabbed_pane.block.layer.text" GridPane.rowIndex="1" />
-                                    <Spinner fx:id="layerSpinner" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                    <Spinner fx:id="layerSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
                                        <tooltip>
                                           <Tooltip text="%ui.editor_tabbed_pane.block.layer.tooltip" />
                                        </tooltip>
                                     </Spinner>
+                                    <Separator prefWidth="64.0" GridPane.columnSpan="2" GridPane.rowIndex="2" />
                                     <Label text="%ui.editor_tabbed_pane.block.block_palette.text" GridPane.rowIndex="3" />
-                                    <Spinner fx:id="blockPaletteSpinner" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                    <Spinner fx:id="blockPaletteSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                        <tooltip>
                                           <Tooltip text="%ui.editor_tabbed_pane.block.block_palette.tooltip" />
                                        </tooltip>
                                     </Spinner>
                                     <Label text="%ui.editor_tabbed_pane.block.block_position.text" GridPane.rowIndex="4" />
-                                    <TextField fx:id="blockPositionTextField" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4">
+                                    <TextField fx:id="blockPositionTextField" centerShape="false" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="4">
                                        <tooltip>
                                           <Tooltip text="%ui.editor_tabbed_pane.block.block_position.tooltip" />
                                        </tooltip>
                                     </TextField>
+                                    <Label text="%ui.editor_tabbed_pane.block.block_entity_id.text" GridPane.rowIndex="5" />
+                                    <TextField fx:id="blockEntityIdTextField" centerShape="false" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="5">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor_tabbed_pane.block.block_entity_id.tooltip" />
+                                       </tooltip></TextField>
                                     <Label text="%ui.editor_tabbed_pane.block.block_entity_nbt.text" GridPane.rowIndex="6" />
-                                    <TextField fx:id="blockEntityNbtTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="6">
+                                    <TextField fx:id="blockEntityNbtTextField" centerShape="false" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="6">
                                        <tooltip>
                                           <Tooltip text="%ui.editor_tabbed_pane.block.block_entity_nbt.tooltip" />
                                        </tooltip>
@@ -127,12 +133,6 @@
                                           </GridPane>
                                        </content>
                                     </ScrollPane>
-                                    <Separator prefWidth="64.0" GridPane.columnSpan="2" GridPane.rowIndex="2" />
-                                    <TextField fx:id="blockEntityIdTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="5">
-                                       <tooltip>
-                                          <Tooltip text="%ui.editor_tabbed_pane.block.block_entity_id.tooltip" />
-                                       </tooltip></TextField>
-                                    <Label text="%ui.editor_tabbed_pane.block.block_entity_id.text" GridPane.rowIndex="5" />
                                  </children>
                               </GridPane>
                            </content>
@@ -153,25 +153,55 @@
                                  </rowConstraints>
                                  <children>
                                     <Label text="%ui.editor_tabbed_pane.blockstate.palette.text" />
-                                    <Spinner fx:id="paletteSpinner" disable="true" editable="true" GridPane.columnIndex="1">
+                                    <Spinner fx:id="paletteSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1">
                                        <tooltip>
                                           <Tooltip text="%ui.editor_tabbed_pane.blockstate.palette.tooltip" />
                                        </tooltip>
                                     </Spinner>
+                                    <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="1" />
                                     <Label text="%ui.editor_tabbed_pane.blockstate.block_id.text" GridPane.rowIndex="2" />
-                                    <ComboBox fx:id="blockStateIdComboBox" disable="true" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                    <ComboBox fx:id="blockStateIdComboBox" centerShape="false" disable="true" editable="true" prefWidth="150.0" GridPane.columnIndex="1" GridPane.rowIndex="2">
                                        <tooltip>
                                           <Tooltip text="%ui.editor_tabbed_pane.blockstate.block_id.tooltip" />
                                        </tooltip>
                                     </ComboBox>
                                     <Label text="%ui.editor_tabbed_pane.blockstate.block_properties.text" GridPane.rowIndex="3" />
-                                    <TextField fx:id="blockStatePropertiesTextField" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                    <TextField fx:id="blockStatePropertiesTextField" centerShape="false" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="3">
                                        <tooltip>
                                           <Tooltip text="%ui.editor_tabbed_pane.blockstate.block_properties.tooltip" />
                                        </tooltip>
                                     </TextField>
                                     <ListView fx:id="blockStateListView" prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="4" />
-                                    <Separator prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+                                 </children>
+                              </GridPane>
+                           </content>
+                        </Tab>
+                        <Tab closable="false" text="%ui.editor.tabbed_pane.entity.text">
+                           <content>
+                              <GridPane>
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints vgrow="ALWAYS" />
+                                 </rowConstraints>
+                                 <children>
+                                    <Label centerShape="false" text="%ui.editor_tabbed_pane.entity.entity_id.text" />
+                                    <TextField fx:id="entityIdTextField" disable="true" GridPane.columnIndex="1">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor_tabbed_pane.entity.entity_id.tooltip" />
+                                       </tooltip>
+                                    </TextField>
+                                    <Label text="%ui.editor_tabbed_pane.entity.entity_nbt.text" GridPane.rowIndex="1" />
+                                    <TextField fx:id="entityNbtTextField" centerShape="false" disable="true" GridPane.columnIndex="1" GridPane.rowIndex="1">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor_tabbed_pane.entity.entity_nbt.tooltip" />
+                                       </tooltip>
+                                    </TextField>
+                                    <ListView fx:id="entityListView" prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="2" />
                                  </children>
                               </GridPane>
                            </content>

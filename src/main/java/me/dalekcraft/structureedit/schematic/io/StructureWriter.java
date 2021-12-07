@@ -36,17 +36,17 @@ public class StructureWriter extends NbtSchematicWriter {
             for (List<BlockState> palette : palettes) {
                 ListTag<CompoundTag> paletteTag = new ListTag<>(CompoundTag.class);
                 for (BlockState blockState : palette) {
-                    CompoundTag blockStateObject = new CompoundTag();
+                    CompoundTag blockStateTag = new CompoundTag();
 
-                    blockStateObject.putString("Name", blockState.getId());
+                    blockStateTag.putString("Name", blockState.getId());
 
                     if (!blockState.getProperties().isEmpty()) {
                         CompoundTag propertiesTag = new CompoundTag();
                         blockState.getProperties().forEach(propertiesTag::putString);
-                        blockStateObject.put("Properties", propertiesTag);
+                        blockStateTag.put("Properties", propertiesTag);
                     }
 
-                    paletteTag.add(blockStateObject);
+                    paletteTag.add(blockStateTag);
                 }
                 palettesTag.add(paletteTag);
             }
@@ -55,17 +55,17 @@ public class StructureWriter extends NbtSchematicWriter {
         } else {
             ListTag<CompoundTag> paletteTag = new ListTag<>(CompoundTag.class);
             for (BlockState blockState : palettes.get(0)) {
-                CompoundTag blockStateObject = new CompoundTag();
+                CompoundTag blockStateTag = new CompoundTag();
 
-                blockStateObject.putString("Name", blockState.getId());
+                blockStateTag.putString("Name", blockState.getId());
 
                 if (!blockState.getProperties().isEmpty()) {
                     CompoundTag propertiesTag = new CompoundTag();
                     blockState.getProperties().forEach(propertiesTag::putString);
-                    blockStateObject.put("Properties", propertiesTag);
+                    blockStateTag.put("Properties", propertiesTag);
                 }
 
-                paletteTag.add(blockStateObject);
+                paletteTag.add(blockStateTag);
             }
 
             root.put("palette", paletteTag);
@@ -77,24 +77,24 @@ public class StructureWriter extends NbtSchematicWriter {
                 for (int z = 0; z < size[2]; z++) {
                     Block block = schematic.getBlock(x, y, z);
                     if (block != null) {
-                        CompoundTag blockObject = new CompoundTag();
+                        CompoundTag blockTag = new CompoundTag();
 
-                        blockObject.putInt("state", block.getBlockStateIndex());
+                        blockTag.putInt("state", block.getBlockStateIndex());
 
                         ListTag<IntTag> position = new ListTag<>(IntTag.class);
                         position.addInt(x);
                         position.addInt(y);
                         position.addInt(z);
-                        blockObject.put("pos", position);
+                        blockTag.put("pos", position);
 
                         BlockEntity blockEntity = block.getBlockEntity();
                         if (!blockEntity.isEmpty()) {
                             CompoundTag clone = blockEntity.getNbt().clone();
                             clone.putString("id", blockEntity.getId());
-                            blockObject.put("nbt", clone);
+                            blockTag.put("nbt", clone);
                         }
 
-                        blocks.add(blockObject);
+                        blocks.add(blockTag);
                     }
                 }
             }
@@ -105,31 +105,31 @@ public class StructureWriter extends NbtSchematicWriter {
         if (entities != null) {
             ListTag<CompoundTag> entitiesTag = new ListTag<>(CompoundTag.class);
             for (Entity entity : entities) {
-                CompoundTag entityObject = new CompoundTag();
+                CompoundTag entityTag = new CompoundTag();
 
                 double[] position = entity.getPosition();
                 ListTag<DoubleTag> positionTag = new ListTag<>(DoubleTag.class);
                 positionTag.addDouble(position[0]);
                 positionTag.addDouble(position[1]);
                 positionTag.addDouble(position[2]);
-                entityObject.put("pos", positionTag);
+                entityTag.put("pos", positionTag);
 
                 int[] blockPosition = {(int) Math.floor(position[0]), (int) Math.floor(position[1]), (int) Math.floor(position[2])};
                 ListTag<IntTag> blockPositionTag = new ListTag<>(IntTag.class);
                 blockPositionTag.addInt(blockPosition[0]);
                 blockPositionTag.addInt(blockPosition[1]);
                 blockPositionTag.addInt(blockPosition[2]);
-                entityObject.put("blockPos", blockPositionTag);
+                entityTag.put("blockPos", blockPositionTag);
 
                 String id = entity.getId();
-                CompoundTag nbt = entity.getNbt();
+                CompoundTag nbt = entity.getNbt().clone();
 
                 nbt.put("Pos", positionTag);
                 nbt.putString("id", id);
 
-                entityObject.put("nbt", nbt);
+                entityTag.put("nbt", nbt);
 
-                entitiesTag.add(entityObject);
+                entitiesTag.add(entityTag);
             }
 
             root.put("entities", entitiesTag);

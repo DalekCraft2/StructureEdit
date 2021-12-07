@@ -3,6 +3,7 @@ package me.dalekcraft.structureedit.schematic.container;
 import net.querz.nbt.tag.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
 import java.util.Objects;
 
 public class Entity {
@@ -85,5 +86,10 @@ public class Entity {
      */
     public void setNbt(CompoundTag nbt) {
         this.nbt = Objects.requireNonNullElse(nbt, new CompoundTag());
+    }
+
+    @Override
+    public String toString() {
+        return "Entity{" + "position=" + Arrays.toString(position) + ", id='" + id + '\'' + '}';
     }
 }

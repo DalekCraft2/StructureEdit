@@ -317,7 +317,7 @@ public class Schematic {
         return hasBiomes;
     }
 
-    public List<Entity> getEntities() {
+    public ObservableList<Entity> getEntities() {
         return entities;
     }
 

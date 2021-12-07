@@ -88,19 +88,19 @@ public class StructureReader extends NbtSchematicReader {
 
         ListTag<?> blocks = requireTag(root, "blocks", ListTag.class);
         for (int i = 0; i < blocks.size(); i++) {
-            CompoundTag block = requireTag(blocks, i, CompoundTag.class);
+            CompoundTag blockTag = requireTag(blocks, i, CompoundTag.class);
 
-            int state = requireTag(block, "state", IntTag.class).asInt();
+            int state = requireTag(blockTag, "state", IntTag.class).asInt();
             if (state >= schematic.getBlockPalette().size()) {
                 throw new ValidationException("Entry at index " + i + " has invalid palette index " + state);
             }
 
-            ListTag<?> position = requireTag(block, "pos", ListTag.class);
+            ListTag<?> position = requireTag(blockTag, "pos", ListTag.class);
             int x = requireTag(position, 0, IntTag.class).asInt();
             int y = requireTag(position, 1, IntTag.class).asInt();
             int z = requireTag(position, 2, IntTag.class).asInt();
 
-            CompoundTag nbt = optTag(block, "nbt", CompoundTag.class);
+            CompoundTag nbt = optTag(blockTag, "nbt", CompoundTag.class);
             BlockEntity blockEntity = null;
             if (nbt != null) {
                 String id = requireTag(nbt, "id", StringTag.class).getValue();
@@ -110,34 +110,36 @@ public class StructureReader extends NbtSchematicReader {
                 blockEntity = new BlockEntity(id, nbt);
             }
 
-            Block blockObject = new Block(state, blockEntity);
+            Block block = new Block(state, blockEntity);
 
-            schematic.setBlock(x, y, z, blockObject);
+            schematic.setBlock(x, y, z, block);
         }
 
         ListTag<?> entities = optTag(root, "entities", ListTag.class);
         if (entities != null) {
             for (int i = 0; i < entities.size(); i++) {
-                CompoundTag entity = requireTag(entities, i, CompoundTag.class);
+                CompoundTag entityTag = requireTag(entities, i, CompoundTag.class);
 
-                ListTag<?> position = requireTag(entity, "pos", ListTag.class);
+                ListTag<?> position = requireTag(entityTag, "pos", ListTag.class);
                 double entityX = requireTag(position, 0, DoubleTag.class).asDouble();
                 double entityY = requireTag(position, 1, DoubleTag.class).asDouble();
                 double entityZ = requireTag(position, 2, DoubleTag.class).asDouble();
 
-                ListTag<?> blockPosition = requireTag(entity, "blockPos", ListTag.class);
+                ListTag<?> blockPosition = requireTag(entityTag, "blockPos", ListTag.class);
                 int blockX = requireTag(blockPosition, 0, IntTag.class).asInt();
                 int blockY = requireTag(blockPosition, 1, IntTag.class).asInt();
                 int blockZ = requireTag(blockPosition, 2, IntTag.class).asInt();
 
-                CompoundTag nbt = requireTag(entity, "nbt", CompoundTag.class);
+                CompoundTag nbt = requireTag(entityTag, "nbt", CompoundTag.class);
 
                 String id = requireTag(nbt, "id", StringTag.class).getValue();
 
-                Entity entityObject = new Entity(id, nbt);
-                entityObject.setPosition(entityX, entityY, entityZ);
+                nbt.remove("id");
 
-                schematic.getEntities().add(entityObject);
+                Entity entity = new Entity(id, nbt);
+                entity.setPosition(entityX, entityY, entityZ);
+
+                schematic.getEntities().add(entity);
             }
         }
 
