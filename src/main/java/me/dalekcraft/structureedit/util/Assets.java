@@ -25,7 +25,7 @@ public final class Assets {
     private static final ObservableMap<String, JSONObject> MODELS = FXCollections.observableHashMap();
     private static final ObservableMap<String, TextureData> TEXTURES = FXCollections.observableHashMap();
     private static final ObservableMap<String, JSONObject> ANIMATIONS = FXCollections.observableHashMap();
-    private static Path assets = Path.of("");
+    private static Path path = Path.of("");
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
 
@@ -33,60 +33,58 @@ public final class Assets {
         throw new UnsupportedOperationException();
     }
 
-    public static Path getAssets() {
-        return assets;
+    public static Path getPath() {
+        return path;
     }
 
-    public static void setAssets(Path assets) {
-        Assets.assets = Objects.requireNonNullElseGet(assets, () -> Path.of(""));
-        Configuration.CONFIG.setProperty("assets_path", Assets.assets.toString());
+    public static void setPath(Path path) {
+        Assets.path = Objects.requireNonNullElseGet(path, () -> Path.of(""));
+        Configuration.CONFIG.setProperty("assets_path", Assets.path.toString());
         load();
     }
 
     public static void load() {
-        synchronized (assets) {
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loading"), assets);
-            if (assets == null || !Files.exists(assets)) {
-                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.invalid"), assets);
-            }
-            BLOCK_STATES.clear();
-            MODELS.clear();
-            TEXTURES.forEach((s, textureData) -> textureData.destroy());
-            TEXTURES.clear();
-            ANIMATIONS.clear();
-            String protocol = Objects.requireNonNull(Assets.class.getResource("")).getProtocol();
-            if (protocol.equals("jar")) {
-                // run in jar
-                try (FileSystem fileSystem = FileSystems.newFileSystem(Path.of(Assets.class.getProtectionDomain().getCodeSource().getLocation().toURI()))) {
-                    Path internalAssets = fileSystem.getPath("assets");
-                    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {
-                        directoryStream.forEach(Assets::loadNamespace);
-                    }
-                } catch (URISyntaxException | IOException e) {
-                    LOGGER.log(Level.ERROR, e.getMessage());
+        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loading"), path);
+        if (path == null || !Files.exists(path)) {
+            LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.invalid"), path);
+        }
+        BLOCK_STATES.clear();
+        MODELS.clear();
+        TEXTURES.forEach((s, textureData) -> textureData.destroy());
+        TEXTURES.clear();
+        ANIMATIONS.clear();
+        String protocol = Objects.requireNonNull(Assets.class.getResource("")).getProtocol();
+        if (protocol.equals("jar")) {
+            // run in jar
+            try (FileSystem fileSystem = FileSystems.newFileSystem(Path.of(Assets.class.getProtectionDomain().getCodeSource().getLocation().toURI()))) {
+                Path internalAssets = fileSystem.getPath("assets");
+                try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {
+                    directoryStream.forEach(Assets::loadNamespace);
                 }
-            } else if (protocol.equals("file")) {
-                // run in ide
-                try {
-                    Path internalAssets = Path.of(Assets.class.getResource("/assets").toURI());
-                    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {
-                        directoryStream.forEach(Assets::loadNamespace);
-                    }
-                } catch (URISyntaxException | IOException e) {
-                    LOGGER.log(Level.ERROR, e.getMessage());
-                }
-            }
-            try {
-                if (assets != null) {
-                    try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(assets)) {
-                        directoryStream.forEach(Assets::loadNamespace);
-                    }
-                }
-            } catch (IOException e) {
+            } catch (URISyntaxException | IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loaded"));
+        } else if (protocol.equals("file")) {
+            // run in ide
+            try {
+                Path internalAssets = Path.of(Assets.class.getResource("/assets").toURI());
+                try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {
+                    directoryStream.forEach(Assets::loadNamespace);
+                }
+            } catch (URISyntaxException | IOException e) {
+                LOGGER.log(Level.ERROR, e.getMessage());
+            }
         }
+        try {
+            if (path != null) {
+                try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(path)) {
+                    directoryStream.forEach(Assets::loadNamespace);
+                }
+            }
+        } catch (IOException e) {
+            LOGGER.log(Level.ERROR, e.getMessage());
+        }
+        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loaded"));
     }
 
     public static void loadNamespace(Path namespace) {
@@ -165,7 +163,7 @@ public final class Assets {
             LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getString("log.assets.getting_internal"), internalPath);
             return internalStream;
         }
-        Path path = Path.of(assets.toString(), namespace + File.separator + folder + File.separator + id + "." + extension);
+        Path path = Path.of(Assets.path.toString(), namespace + File.separator + folder + File.separator + id + "." + extension);
         if (Files.exists(path)) {
             LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getString("log.assets.getting"), path);
         }

@@ -99,6 +99,9 @@ public class Controller extends Node {
     private final SpinnerValueFactory.IntegerSpinnerValueFactory layerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     private final SpinnerValueFactory.IntegerSpinnerValueFactory paletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     private final SpinnerValueFactory.IntegerSpinnerValueFactory blockPaletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
+    private final SpinnerValueFactory.DoubleSpinnerValueFactory entityXValueFactory = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 0);
+    private final SpinnerValueFactory.DoubleSpinnerValueFactory entityYValueFactory = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 0);
+    private final SpinnerValueFactory.DoubleSpinnerValueFactory entityZValueFactory = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 0);
     private int renderedHeight;
     private BlockButton selected;
     private Schematic schematic;
@@ -135,6 +138,12 @@ public class Controller extends Node {
     @FXML
     private ListView<BlockState> blockStateListView;
     @FXML
+    private Spinner<Double> entityXSpinner;
+    @FXML
+    private Spinner<Double> entityYSpinner;
+    @FXML
+    private Spinner<Double> entityZSpinner;
+    @FXML
     private TextField entityIdTextField;
     @FXML
     private TextField entityNbtTextField;
@@ -147,7 +156,7 @@ public class Controller extends Node {
         schematicChooser.getExtensionFilters().addAll(SchematicFormats.getFileExtensionFilterMap().keySet());
         schematicChooser.getExtensionFilters().sort(Comparator.comparing(FileChooser.ExtensionFilter::getDescription));
         schematicChooser.getExtensionFilters().add(0, FILTER_ALL);
-        Path assets = Assets.getAssets();
+        Path assets = Assets.getPath();
         if (assets != null && !assets.toString().equals("")) {
             assetsChooser.setInitialDirectory(assets.toFile());
         }
@@ -192,7 +201,7 @@ public class Controller extends Node {
         blockEntityIdTextField.textProperty().addListener(this::onBlockEntityIdUpdate);
 
         blockEntityNbtTextField.textProperty().addListener(this::onBlockEntityNbtUpdate);
-        /*blockNbtTextField.setTextFormatter(new TextFormatter<CompoundTag>(new StringConverter<>() {
+        /*blockEntityNbtTextField.setTextFormatter(new TextFormatter<CompoundTag>(new StringConverter<>() {
             @Override
             public String toString(CompoundTag tag) {
                 System.out.println("toString");
@@ -232,13 +241,11 @@ public class Controller extends Node {
         blockStateIdAutoComplete = new AutoCompleteComboBoxListener<>(blockStateIdComboBox);
         blockStateIdComboBox.getSelectionModel().selectedItemProperty().addListener(this::onBlockIdUpdate);
         Assets.getBlockStateMap().addListener((MapChangeListener<String, JSONObject>) change -> Platform.runLater(() -> {
-            synchronized (Assets.getAssets()) {
-                ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
-                items.remove("minecraft:missing");
-                Collections.sort(items);
-                blockStateIdComboBox.setItems(items);
-                blockStateIdAutoComplete.setItems(items);
-            }
+            ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
+            items.remove("minecraft:missing");
+            Collections.sort(items);
+            blockStateIdComboBox.setItems(items);
+            blockStateIdAutoComplete.setItems(items);
         }));
 
         // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
@@ -246,6 +253,37 @@ public class Controller extends Node {
 
         // TODO Make entries addable and removable to and from this.
         blockStateListView.getSelectionModel().selectedItemProperty().addListener(this::onBlockStateSelected);
+
+        entityXSpinner.setValueFactory(entityXValueFactory);
+        entityXSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onEntityPositionUpdate(observable, oldValue, newValue, 0));
+        entityXSpinner.getEditor().setTextFormatter(new TextFormatter<Double>(change -> {
+            try {
+                Double.valueOf(change.getControlNewText());
+                return change;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }));
+        entityYSpinner.setValueFactory(entityYValueFactory);
+        entityYSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onEntityPositionUpdate(observable, oldValue, newValue, 1));
+        entityYSpinner.getEditor().setTextFormatter(new TextFormatter<Double>(change -> {
+            try {
+                Double.valueOf(change.getControlNewText());
+                return change;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }));
+        entityZSpinner.setValueFactory(entityZValueFactory);
+        entityZSpinner.valueProperty().addListener((observable, oldValue, newValue) -> onEntityPositionUpdate(observable, oldValue, newValue, 2));
+        entityZSpinner.getEditor().setTextFormatter(new TextFormatter<Double>(change -> {
+            try {
+                Double.valueOf(change.getControlNewText());
+                return change;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }));
 
         entityIdTextField.textProperty().addListener(this::onEntityIdUpdate);
 
@@ -296,6 +334,9 @@ public class Controller extends Node {
             int[] size = schematic.getSize();
             renderedHeight = size[1];
             layerValueFactory.setMax(size[1] - 1);
+            entityXValueFactory.setMax(size[0]);
+            entityYValueFactory.setMax(size[1]);
+            entityZValueFactory.setMax(size[2]);
             if (schematic.getBlockPalettes().size() > 1) {
                 int palettesSize = schematic.getBlockPalettes().size();
                 paletteSpinner.setDisable(false);
@@ -333,6 +374,12 @@ public class Controller extends Node {
         blockStatePropertiesTextField.setText(null);
         blockStatePropertiesTextField.setDisable(true);
         blockStateListView.setItems(null);
+        entityXValueFactory.setValue(0.0);
+        entityXSpinner.setDisable(true);
+        entityYValueFactory.setValue(0.0);
+        entityYSpinner.setDisable(true);
+        entityZValueFactory.setValue(0.0);
+        entityZSpinner.setDisable(true);
         entityIdTextField.setText(null);
         entityIdTextField.setDisable(true);
         entityNbtTextField.setText(null);
@@ -390,7 +437,7 @@ public class Controller extends Node {
         file = Objects.requireNonNullElse(file, new File(""));
         assetsChooser.setInitialDirectory(file.getParentFile());
         Path assets = file.toPath();
-        Assets.setAssets(assets);
+        Assets.setPath(assets);
         shouldReloadTextures = true;
     }
 
@@ -398,7 +445,7 @@ public class Controller extends Node {
         path = Objects.requireNonNullElse(path, Path.of(""));
         File file = path.toFile();
         assetsChooser.setInitialDirectory(file.getParentFile());
-        Assets.setAssets(path);
+        Assets.setPath(path);
         shouldReloadTextures = true;
     }
 
@@ -480,6 +527,21 @@ public class Controller extends Node {
         }
     }
 
+    public void onEntityPositionUpdate(ObservableValue<? extends Double> observable, Double oldValue, Double newValue, int index) {
+        if (schematic != null) {
+            Entity entity = entityListView.getSelectionModel().getSelectedItem();
+            if (entity != null) {
+                /*double x = entityXSpinner.getValue();
+                double y = entityYSpinner.getValue();
+                double z = entityZSpinner.getValue();
+                // System.out.println("x = " + x + ", y = " + y + ", z = " + z);*/
+                entity.getPosition()[index] = newValue;
+                // entity.setPosition(x, y, z);
+                entityListView.refresh();
+            }
+        }
+    }
+
     public void onEntityIdUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
         if (schematic != null && newValue != null) {
             Entity entity = entityListView.getSelectionModel().getSelectedItem();
@@ -508,6 +570,16 @@ public class Controller extends Node {
 
     public void onEntitySelected(ObservableValue<? extends Entity> observable, Entity oldValue, Entity newValue) {
         if (newValue != null) {
+            double[] position = newValue.getPosition();
+            System.out.println(Arrays.toString(position));
+
+            entityXValueFactory.setValue(position[0]);
+            entityXSpinner.setDisable(false);
+            entityYValueFactory.setValue(position[1]);
+            entityYSpinner.setDisable(false);
+            entityZValueFactory.setValue(position[2]);
+            entityZSpinner.setDisable(false);
+
             entityIdTextField.setText(newValue.getId());
             entityIdTextField.setDisable(false);
 
@@ -1099,10 +1171,9 @@ public class Controller extends Node {
         public void display(@NotNull GLAutoDrawable drawable) {
             GL4 gl = drawable.getGL().getGL4();
             if (shouldReloadTextures) {
-                synchronized (Assets.getAssets()) {
-                    textures.forEach((s, texture) -> texture.destroy(gl));
-                    textures.clear();
-                    Assets.getTextureMap().forEach((s, textureData) -> textures.put(s, TextureIO.newTexture(textureData)));
+                textures.forEach((s, texture) -> texture.destroy(gl));
+                textures.clear();
+                Assets.getTextureMap().forEach((s, textureData) -> textures.put(s, TextureIO.newTexture(textureData)));
 
                     /*ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
                     items.remove("minecraft:missing");
@@ -1110,8 +1181,7 @@ public class Controller extends Node {
                     blockStateIdComboBox.setItems(items);
                     blockStateIdAutoComplete.setItems(items);*/
 
-                    shouldReloadTextures = false;
-                }
+                shouldReloadTextures = false;
             }
             gl.glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
             modelMatrix.identity();
