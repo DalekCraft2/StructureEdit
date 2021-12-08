@@ -29,6 +29,13 @@ public class StructureReader extends NbtSchematicReader {
             schematic.setDataVersion(dataVersion.getAsInt());
         }
 
+        String author = optTag(root, "author", StringTag.class).getValue();
+        if (author != null) {
+            CompoundTag metadata = new CompoundTag();
+            metadata.putString("Author", author);
+            schematic.setMetadata(metadata);
+        }
+
         ListTag<?> size = requireTag(root, "size", ListTag.class);
         int sizeX = requireTag(size, 0, IntTag.class).asInt();
         int sizeY = requireTag(size, 1, IntTag.class).asInt();

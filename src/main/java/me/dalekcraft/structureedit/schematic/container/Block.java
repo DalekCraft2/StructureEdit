@@ -5,15 +5,15 @@ import java.util.Objects;
 public class Block {
 
     private int blockStateIndex;
-    private BlockEntity nbt;
+    private BlockEntity blockEntity;
 
     public Block(int blockStateIndex) {
         this(blockStateIndex, null);
     }
 
-    public Block(int blockStateIndex, BlockEntity nbt) {
+    public Block(int blockStateIndex, BlockEntity blockEntity) {
         this.blockStateIndex = blockStateIndex;
-        this.nbt = Objects.requireNonNullElse(nbt, new BlockEntity(""));
+        this.blockEntity = Objects.requireNonNullElse(blockEntity, new BlockEntity(""));
     }
 
     /**
@@ -40,7 +40,7 @@ public class Block {
      * @return the NBT of this {@link Block}
      */
     public BlockEntity getBlockEntity() {
-        return nbt;
+        return blockEntity;
     }
 
     /**
@@ -49,6 +49,6 @@ public class Block {
      * @param nbt the new NBT for this {@link Block}
      */
     public void setBlockEntity(BlockEntity nbt) {
-        this.nbt = Objects.requireNonNullElse(nbt, new BlockEntity(""));
+        this.blockEntity = Objects.requireNonNullElse(nbt, new BlockEntity(""));
     }
 }
