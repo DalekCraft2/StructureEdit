@@ -5,12 +5,16 @@ import me.dalekcraft.structureedit.schematic.container.*;
 import me.dalekcraft.structureedit.schematic.io.legacycompat.LegacyMapper;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;
+import org.apache.logging.log4j.Level;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 
 import java.io.IOException;
 
 // TODO Maybe add support for the various proprietary additions to this format, based on the Minecraft wiki's page for it.
 public class McEditSchematicReader extends NbtSchematicReader {
 
+    private static final Logger LOGGER = LogManager.getLogger();
     private final NBTInputStream inputStream;
 
     public McEditSchematicReader(NBTInputStream inputStream) {
@@ -88,6 +92,10 @@ public class McEditSchematicReader extends NbtSchematicReader {
             int z = i % (sizeX * sizeZ) / sizeX;
 
             BlockState blockState = LegacyMapper.getInstance().getBlockFromLegacy(blocks[i], blockData[i]);
+            if (blockState == null) {
+                LOGGER.log(Level.DEBUG, "Could not find legacy block with ID of " + blocks[i] + ":" + blockData[i] + "; replacing with air");
+                blockState = new BlockState("minecraft:air");
+            }
             if (!schematic.getBlockPalette().contains(blockState)) {
                 schematic.getBlockPalette().add(blockState);
             } else {
@@ -140,6 +148,37 @@ public class McEditSchematicReader extends NbtSchematicReader {
                 Block block = schematic.getBlock(x, y, z);
                 if (block != null) {
                     block.setBlockEntity(new BlockEntity(id, tileEntity));
+                }
+            }
+        }
+
+        // Proprietary MCEdit-Unified biomes tag
+        ByteArrayTag biomesTag = optTag(root, "Biomes", ByteArrayTag.class);
+        if (biomesTag != null) {
+            byte[] biomes = biomesTag.getValue();
+
+            if (biomes.length != sizeX * sizeZ) {
+                throw new ValidationException("Biomes length is " + biomes.length + "; should be " + sizeX * sizeZ);
+            }
+
+            for (int i = 0; i < biomes.length; i++) {
+                // index = (z * width) + x
+                int x = i % (sizeX * sizeZ) % sizeX;
+                int z = i % (sizeX * sizeZ) / sizeX;
+
+                for (int y = 0; y < sizeY; y++) {
+                    BiomeState biomeState = LegacyMapper.getInstance().getBiomeFromLegacy(biomes[i]);
+                    if (biomeState == null) {
+                        LOGGER.log(Level.DEBUG, "Could not find legacy biome with ID of " + blocks[i] + ":" + blockData[i] + "; replacing with ocean");
+                        biomeState = new BiomeState("minecraft:ocean");
+                    }
+                    if (!schematic.getBiomePalette().contains(biomeState)) {
+                        schematic.getBiomePalette().add(biomeState);
+                    } else {
+                        biomeState = schematic.getBiomeState(schematic.getBiomePalette().indexOf(biomeState));
+                    }
+
+                    schematic.setBiome(x, y, z, new Biome(biomeState));
                 }
             }
         }

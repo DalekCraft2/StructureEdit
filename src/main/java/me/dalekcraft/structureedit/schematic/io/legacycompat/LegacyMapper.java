@@ -25,6 +25,7 @@ import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import me.dalekcraft.structureedit.schematic.container.BiomeState;
 import me.dalekcraft.structureedit.schematic.container.BlockState;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -36,6 +37,7 @@ import java.nio.charset.Charset;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.OptionalInt;
 
 public final class LegacyMapper {
 
@@ -46,6 +48,8 @@ public final class LegacyMapper {
     private final Multimap<BlockState, String> blockToStringMap = HashMultimap.create();
     // private final Map<String, ItemType> stringToItemMap = new HashMap<>();
     // private final Multimap<ItemType, String> itemToStringMap = HashMultimap.create();
+    private final Map<String, BiomeState> stringToBiomeMap = new HashMap<>();
+    private final Multimap<BiomeState, String> biomeToStringMap = HashMultimap.create();
 
     /**
      * Create a new instance.
@@ -107,6 +111,35 @@ public final class LegacyMapper {
                 stringToItemMap.put(id, type);
             }
         }*/
+
+        for (Map.Entry<String, String> biomeEntry : dataFile.biomes.entrySet()) {
+            String id = biomeEntry.getKey();
+            final String value = biomeEntry.getValue();
+
+            BiomeState biomeState = new BiomeState(value);
+
+            biomeToStringMap.put(biomeState, id);
+            stringToBiomeMap.put(id, biomeState);
+        }
+    }
+
+    @Nullable
+    public BlockState getBlockFromLegacy(int legacyId) {
+        return getBlockFromLegacy(legacyId, 0);
+    }
+
+    @Nullable
+    public BlockState getBlockFromLegacy(int legacyId, int data) {
+        return stringToBlockMap.get(legacyId + ":" + data);
+    }
+
+    public int @Nullable [] getLegacyFromBlock(BlockState blockState) {
+        if (blockToStringMap.containsKey(blockState)) {
+            String value = blockToStringMap.get(blockState).stream().findFirst().get();
+            return Arrays.stream(value.split(":")).mapToInt(Integer::parseInt).toArray();
+        } else {
+            return null;
+        }
     }
 
     /*@Nullable
@@ -130,21 +163,16 @@ public final class LegacyMapper {
     }*/
 
     @Nullable
-    public BlockState getBlockFromLegacy(int legacyId) {
-        return getBlockFromLegacy(legacyId, 0);
+    public BiomeState getBiomeFromLegacy(int legacyId) {
+        return stringToBiomeMap.get(String.valueOf(legacyId));
     }
 
-    @Nullable
-    public BlockState getBlockFromLegacy(int legacyId, int data) {
-        return stringToBlockMap.get(legacyId + ":" + data);
-    }
-
-    public int @Nullable [] getLegacyFromBlock(BlockState blockState) {
-        if (blockToStringMap.containsKey(blockState)) {
-            String value = blockToStringMap.get(blockState).stream().findFirst().get();
-            return Arrays.stream(value.split(":")).mapToInt(Integer::parseInt).toArray();
+    public OptionalInt getLegacyFromBiome(BiomeState biomeState) {
+        if (biomeToStringMap.containsKey(biomeState)) {
+            String value = biomeToStringMap.get(biomeState).stream().findFirst().get();
+            return OptionalInt.of(Integer.parseInt(value));
         } else {
-            return null;
+            return OptionalInt.empty();
         }
     }
 
@@ -152,5 +180,6 @@ public final class LegacyMapper {
     private static class LegacyDataFile {
         private Map<String, String> blocks;
         private Map<String, String> items;
+        private Map<String, String> biomes;
     }
 }
