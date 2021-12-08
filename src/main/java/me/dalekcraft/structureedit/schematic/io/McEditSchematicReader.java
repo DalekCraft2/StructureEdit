@@ -21,10 +21,27 @@ public class McEditSchematicReader extends NbtSchematicReader {
     public Schematic read() throws IOException, ValidationException {
         Schematic schematic = new Schematic();
 
+        CompoundTag root = (CompoundTag) inputStream.readTag(Tag.DEFAULT_MAX_DEPTH).getTag();
+
         // Set the data version to 1.13.2's because that is what the schematic is converted to
         schematic.setDataVersion(Constants.DATA_VERSION_MC_1_13_2);
 
-        CompoundTag root = (CompoundTag) inputStream.readTag(Tag.DEFAULT_MAX_DEPTH).getTag();
+        // Create Sponge V3 metadata for WorldEdit if present
+        if (/*root.containsKey("WEOriginX") || root.containsKey("WEOriginY") || root.containsKey("WEOriginZ") ||*/ //
+                root.containsKey("WEOffsetX") || root.containsKey("WEOffsetY") || root.containsKey("WEOffsetZ")) {
+            if (/*root.containsKey("WEOriginX") && root.containsKey("WEOriginY") && root.containsKey("WEOriginZ") &&*/ //
+                    root.containsKey("WEOffsetX") && root.containsKey("WEOffsetY") && root.containsKey("WEOffsetZ")) {
+                CompoundTag metadata = new CompoundTag();
+                CompoundTag worldEditMeta = new CompoundTag();
+                int offsetX = requireTag(root, "WEOffsetX", IntTag.class).asInt();
+                int offsetY = requireTag(root, "WEOffsetY", IntTag.class).asInt();
+                int offsetZ = requireTag(root, "WEOffsetZ", IntTag.class).asInt();
+                int[] offset = {offsetX, offsetY, offsetZ};
+                worldEditMeta.putIntArray("Offset", offset);
+                metadata.put("WorldEdit", worldEditMeta);
+                schematic.setMetadata(metadata);
+            }
+        }
 
         short sizeX = requireTag(root, "Width", ShortTag.class).asShort();
         short sizeY = requireTag(root, "Height", ShortTag.class).asShort();

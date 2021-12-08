@@ -66,8 +66,29 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
 
         root.putInt("DataVersion", schematic.getDataVersion());
 
+        // TODO Update the Date tag in the metadata
         CompoundTag metadata = schematic.getMetadata();
         if (metadata != null) {
+            try {
+                // Attempt to convert old WorldEdit metadata to V3 metadata
+                if (metadata.containsKey("WEOffsetX") || metadata.containsKey("WEOffsetY") || metadata.containsKey("WEOffsetZ")) {
+                    if (metadata.containsKey("WEOffsetX") && metadata.containsKey("WEOffsetY") && metadata.containsKey("WEOffsetZ")) {
+                        int offsetX = metadata.getInt("WEOffsetX");
+                        int offsetY = metadata.getInt("WEOffsetY");
+                        int offsetZ = metadata.getInt("WEOffsetZ");
+                        metadata.remove("WEOffsetX");
+                        metadata.remove("WEOffsetY");
+                        metadata.remove("WEOffsetZ");
+                        int[] offset = {offsetX, offsetY, offsetZ};
+                        CompoundTag worldEditMeta = metadata.containsKey("WorldEdit") ? metadata.getCompoundTag("WorldEdit") : new CompoundTag();
+                        worldEditMeta.putIntArray("Offset", offset);
+                        metadata.put("WorldEdit", worldEditMeta);
+                    }
+                }
+            } catch (ClassCastException e) {
+                // Ignore the WorldEdit metadata and continue
+            }
+
             root.put("Metadata", metadata);
         }
 
@@ -185,7 +206,6 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
 
             root.put("Biomes", biomeContainer);
         }
-
 
 
         NamedTag namedTag = new NamedTag("", realRoot);

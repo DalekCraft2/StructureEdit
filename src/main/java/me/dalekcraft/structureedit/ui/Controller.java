@@ -324,6 +324,7 @@ public class Controller extends Node {
             }
         } else {
             LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.not_schematic"));
+            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
         }
         resetComponents();
         if (schematic != null) {
