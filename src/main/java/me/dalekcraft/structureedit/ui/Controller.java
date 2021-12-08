@@ -239,7 +239,7 @@ public class Controller extends Node {
         }));
 
         blockStateIdAutoComplete = new AutoCompleteComboBoxListener<>(blockStateIdComboBox);
-        blockStateIdComboBox.getSelectionModel().selectedItemProperty().addListener(this::onBlockIdUpdate);
+        blockStateIdComboBox.getSelectionModel().selectedItemProperty().addListener(this::onBlockStateIdUpdate);
         Assets.getBlockStateMap().addListener((MapChangeListener<String, JSONObject>) change -> Platform.runLater(() -> {
             ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
             items.remove("minecraft:missing");
@@ -249,7 +249,7 @@ public class Controller extends Node {
         }));
 
         // TODO Perhaps change the properties and NBT text fields to JTrees, and create NBTExplorer-esque editors for them.
-        blockStatePropertiesTextField.textProperty().addListener(this::onBlockPropertiesUpdate);
+        blockStatePropertiesTextField.textProperty().addListener(this::onBlockStatePropertiesUpdate);
 
         // TODO Make entries addable and removable to and from this.
         blockStateListView.getSelectionModel().selectedItemProperty().addListener(this::onBlockStateSelected);
@@ -350,7 +350,7 @@ public class Controller extends Node {
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loaded"), file);
             StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         }
-        loadLayer();
+        updateBlockGrid();
     }
 
     private void resetComponents() {
@@ -430,7 +430,7 @@ public class Controller extends Node {
         if (file != null) {
             setAssets(file);
         }
-        updateSelected();
+        updateSelectedBlock();
         renderer.animator.resume();
     }
 
@@ -474,31 +474,69 @@ public class Controller extends Node {
         renderer.animator.resume();
     }
 
-    public void onBlockIdUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        if (schematic != null && newValue != null) {
-            BlockState blockState = blockStateListView.getSelectionModel().getSelectedItem();
-            if (blockState != null) {
-                blockState.setId(newValue);
-                blockStateListView.refresh();
-            }
-            loadLayer();
+
+    /*
+     * Schematic Info methods
+     */
+    public void updateSchematicInfo() {
+        if (schematic != null) {
+            int[] size = schematic.getSize();
+            int[] offset = schematic.getOffset();
+            sizeTextField.setText(Arrays.toString(size));
+            offsetTextField.setText(Arrays.toString(offset));
+            dataVersionTextField.setText(String.valueOf(schematic.getDataVersion()));
         }
     }
 
-    public void onBlockPropertiesUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        if (schematic != null && newValue != null) {
-            BlockState blockState = blockStateListView.getSelectionModel().getSelectedItem();
-            if (blockState != null) {
-                try {
-                    Map<String, String> properties = BlockState.toPropertyMap(newValue);
-                    blockState.setProperties(properties);
-                    blockStatePropertiesTextField.setStyle("-fx-text-inner-color: #000000");
-                } catch (IllegalArgumentException e1) {
-                    blockStatePropertiesTextField.setStyle("-fx-text-inner-color: #FF0000");
-                }
-                blockStateListView.refresh();
+
+    /*
+     * Block Editor methods
+     */
+
+    private void onBlockSelected(@NotNull Event e) {
+        if (selected != null) {
+            selected.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+        }
+        selected = (BlockButton) e.getSource();
+        Block block = selected.getBlock();
+
+        if (block != null) {
+            selected.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+
+            blockEntityIdTextField.setText(block.getBlockEntity().getId());
+            blockEntityIdTextField.setDisable(false);
+
+            try {
+                blockEntityNbtTextField.setText(SNBTUtil.toSNBT(block.getBlockEntity().getNbt()));
+            } catch (IOException ignored) {
             }
-            loadLayer();
+            blockEntityNbtTextField.setDisable(false);
+            blockEntityNbtTextField.setStyle("-fx-text-inner-color: #000000");
+
+            blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
+            blockPositionTextField.setDisable(false);
+
+            blockPaletteValueFactory.setValue(block.getBlockStateIndex());
+            blockPaletteSpinner.setDisable(false);
+        }
+    }
+
+    @FXML
+    public void onLayerUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
+        if (schematic != null) {
+            updateBlockGrid();
+        }
+    }
+
+    @FXML
+    public void onBlockPaletteUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
+        if (schematic != null && selected != null) {
+            Block block = selected.getBlock();
+            if (block != null) {
+                block.setBlockStateIndex(newValue);
+            }
+            updateBlockGrid();
+            updateSelectedBlock();
         }
     }
 
@@ -508,7 +546,7 @@ public class Controller extends Node {
             if (block != null) {
                 block.getBlockEntity().setId(newValue);
             }
-            loadLayer();
+            updateBlockGrid();
         }
     }
 
@@ -524,106 +562,27 @@ public class Controller extends Node {
                     blockEntityNbtTextField.setStyle("-fx-text-inner-color: #FF0000");
                 }
             }
-            loadLayer();
+            updateBlockGrid();
         }
     }
 
-    public void onEntityPositionUpdate(ObservableValue<? extends Double> observable, Double oldValue, Double newValue, int index) {
-        if (schematic != null) {
-            Entity entity = entityListView.getSelectionModel().getSelectedItem();
-            if (entity != null) {
-                /*double x = entityXSpinner.getValue();
-                double y = entityYSpinner.getValue();
-                double z = entityZSpinner.getValue();
-                // System.out.println("x = " + x + ", y = " + y + ", z = " + z);*/
-                entity.getPosition()[index] = newValue;
-                // entity.setPosition(x, y, z);
-                entityListView.refresh();
-            }
-        }
-    }
+    public void updateSelectedBlock() {
+        if (selected != null) {
+            Block block = selected.getBlock();
 
-    public void onEntityIdUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        if (schematic != null && newValue != null) {
-            Entity entity = entityListView.getSelectionModel().getSelectedItem();
-            if (entity != null) {
-                entity.setId(newValue);
-                entityListView.refresh();
-            }
-        }
-    }
-
-    public void onEntityNbtUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        if (schematic != null && newValue != null) {
-            Entity entity = entityListView.getSelectionModel().getSelectedItem();
-            if (entity != null) {
-                try {
-                    CompoundTag nbt = (CompoundTag) SNBTUtil.fromSNBT(newValue.trim());
-                    entity.setNbt(nbt);
-                    entityNbtTextField.setStyle("-fx-text-inner-color: #000000");
-                } catch (IOException | StringIndexOutOfBoundsException e1) {
-                    entityNbtTextField.setStyle("-fx-text-inner-color: #FF0000");
-                }
-                entityListView.refresh();
-            }
-        }
-    }
-
-    public void onEntitySelected(ObservableValue<? extends Entity> observable, Entity oldValue, Entity newValue) {
-        if (newValue != null) {
-            double[] position = newValue.getPosition();
-            System.out.println(Arrays.toString(position));
-
-            entityXValueFactory.setValue(position[0]);
-            entityXSpinner.setDisable(false);
-            entityYValueFactory.setValue(position[1]);
-            entityYSpinner.setDisable(false);
-            entityZValueFactory.setValue(position[2]);
-            entityZSpinner.setDisable(false);
-
-            entityIdTextField.setText(newValue.getId());
-            entityIdTextField.setDisable(false);
+            blockEntityIdTextField.setText(block.getBlockEntity().getId());
+            blockEntityIdTextField.setDisable(false);
 
             try {
-                entityNbtTextField.setText(SNBTUtil.toSNBT(newValue.getNbt()));
+                blockEntityNbtTextField.setText(SNBTUtil.toSNBT(block.getBlockEntity().getNbt()));
             } catch (IOException ignored) {
             }
-            entityNbtTextField.setStyle("-fx-text-inner-color: #000000");
-            entityNbtTextField.setDisable(false);
-        }
-    }
-
-    @FXML
-    public void onPaletteUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
-        if (schematic != null) {
-            int selectedIndex = blockStateListView.getSelectionModel().getSelectedIndex();
-            blockStateListView.setItems(schematic.getBlockPalette(newValue));
-            blockStateListView.getSelectionModel().select(selectedIndex);
-            loadLayer();
-        }
-    }
-
-    @FXML
-    public void onBlockPaletteUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
-        if (schematic != null && selected != null) {
-            Block block = selected.getBlock();
-            if (block != null) {
-                block.setBlockStateIndex(newValue);
-            }
-            loadLayer();
-            updateSelected();
-        }
-    }
-
-    @FXML
-    public void onLayerUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
-        if (schematic != null) {
-            loadLayer();
+            blockEntityNbtTextField.setDisable(false);
         }
     }
 
     // TODO Make the editor built into the 3D view instead of being a layer-by-layer editor.
-    public void loadLayer() {
+    public void updateBlockGrid() {
         blockGrid.getChildren().clear();
         if (schematic != null) {
             int[] size = schematic.getSize();
@@ -655,7 +614,7 @@ public class Controller extends Node {
                         blockButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
                         blockButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                         blockButton.setPrefSize(30.0, 30.0);
-                        blockButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::onBlockButtonPressed);
+                        blockButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::onBlockSelected);
                         blockGrid.add(blockButton, x, z);
                         if (selected != null) {
                             int[] position = selected.getPosition();
@@ -682,33 +641,9 @@ public class Controller extends Node {
         }
     }
 
-    private void onBlockButtonPressed(@NotNull Event e) {
-        if (selected != null) {
-            selected.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
-        }
-        selected = (BlockButton) e.getSource();
-        Block block = selected.getBlock();
-
-        if (block != null) {
-            selected.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
-
-            blockEntityIdTextField.setText(block.getBlockEntity().getId());
-            blockEntityIdTextField.setDisable(false);
-
-            try {
-                blockEntityNbtTextField.setText(SNBTUtil.toSNBT(block.getBlockEntity().getNbt()));
-            } catch (IOException ignored) {
-            }
-            blockEntityNbtTextField.setDisable(false);
-            blockEntityNbtTextField.setStyle("-fx-text-inner-color: #000000");
-
-            blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
-            blockPositionTextField.setDisable(false);
-
-            blockPaletteValueFactory.setValue(block.getBlockStateIndex());
-            blockPaletteSpinner.setDisable(false);
-        }
-    }
+    /*
+     * BlockState Editor methods
+     */
 
     public void onBlockStateSelected(ObservableValue<? extends BlockState> observable, BlockState oldValue, BlockState newValue) {
         if (newValue != null) {
@@ -721,18 +656,105 @@ public class Controller extends Node {
         }
     }
 
-    public void updateSelected() {
-        if (selected != null) {
-            Block block = selected.getBlock();
+    @FXML
+    public void onPaletteUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
+        if (schematic != null) {
+            int selectedIndex = blockStateListView.getSelectionModel().getSelectedIndex();
+            blockStateListView.setItems(schematic.getBlockPalette(newValue));
+            blockStateListView.getSelectionModel().select(selectedIndex);
+            updateBlockGrid();
+        }
+    }
 
-            blockEntityIdTextField.setText(block.getBlockEntity().getId());
-            blockEntityIdTextField.setDisable(false);
+    public void onBlockStateIdUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        if (schematic != null && newValue != null) {
+            BlockState blockState = blockStateListView.getSelectionModel().getSelectedItem();
+            if (blockState != null) {
+                blockState.setId(newValue);
+                blockStateListView.refresh();
+            }
+            updateBlockGrid();
+        }
+    }
+
+    public void onBlockStatePropertiesUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        if (schematic != null && newValue != null) {
+            BlockState blockState = blockStateListView.getSelectionModel().getSelectedItem();
+            if (blockState != null) {
+                try {
+                    Map<String, String> properties = BlockState.toPropertyMap(newValue);
+                    blockState.setProperties(properties);
+                    blockStatePropertiesTextField.setStyle("-fx-text-inner-color: #000000");
+                } catch (IllegalArgumentException e1) {
+                    blockStatePropertiesTextField.setStyle("-fx-text-inner-color: #FF0000");
+                }
+                blockStateListView.refresh();
+            }
+            updateBlockGrid();
+        }
+    }
+
+    /*
+     * Entity Editor methods
+     */
+
+    public void onEntitySelected(ObservableValue<? extends Entity> observable, Entity oldValue, Entity newValue) {
+        if (newValue != null) {
+            double[] position = newValue.getPosition();
+            System.out.println(Arrays.toString(position));
+
+            entityXValueFactory.setValue(position[0]);
+            entityXSpinner.setDisable(false);
+            entityYValueFactory.setValue(position[1]);
+            entityYSpinner.setDisable(false);
+            entityZValueFactory.setValue(position[2]);
+            entityZSpinner.setDisable(false);
+
+            entityIdTextField.setText(newValue.getId());
+            entityIdTextField.setDisable(false);
 
             try {
-                blockEntityNbtTextField.setText(SNBTUtil.toSNBT(block.getBlockEntity().getNbt()));
+                entityNbtTextField.setText(SNBTUtil.toSNBT(newValue.getNbt()));
             } catch (IOException ignored) {
             }
-            blockEntityNbtTextField.setDisable(false);
+            entityNbtTextField.setStyle("-fx-text-inner-color: #000000");
+            entityNbtTextField.setDisable(false);
+        }
+    }
+
+    public void onEntityPositionUpdate(ObservableValue<? extends Double> observable, Double oldValue, Double newValue, int index) {
+        if (schematic != null) {
+            Entity entity = entityListView.getSelectionModel().getSelectedItem();
+            if (entity != null) {
+                entity.getPosition()[index] = newValue;
+                entityListView.refresh();
+            }
+        }
+    }
+
+    public void onEntityIdUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        if (schematic != null && newValue != null) {
+            Entity entity = entityListView.getSelectionModel().getSelectedItem();
+            if (entity != null) {
+                entity.setId(newValue);
+                entityListView.refresh();
+            }
+        }
+    }
+
+    public void onEntityNbtUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        if (schematic != null && newValue != null) {
+            Entity entity = entityListView.getSelectionModel().getSelectedItem();
+            if (entity != null) {
+                try {
+                    CompoundTag nbt = (CompoundTag) SNBTUtil.fromSNBT(newValue.trim());
+                    entity.setNbt(nbt);
+                    entityNbtTextField.setStyle("-fx-text-inner-color: #000000");
+                } catch (IOException | StringIndexOutOfBoundsException e1) {
+                    entityNbtTextField.setStyle("-fx-text-inner-color: #FF0000");
+                }
+                entityListView.refresh();
+            }
         }
     }
 
