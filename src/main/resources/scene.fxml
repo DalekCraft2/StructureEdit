@@ -120,7 +120,7 @@
                                  </rowConstraints>
                                  <children>
                                     <Label text="%ui.editor.block.layer" />
-                                    <Spinner fx:id="layerSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1">
+                                    <Spinner fx:id="blockLayerSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1">
                                        <tooltip>
                                           <Tooltip text="%ui.editor.block.layer.tooltip" />
                                        </tooltip>
@@ -237,6 +237,79 @@
                                     <Spinner fx:id="entityXSpinner" disable="true" editable="true" GridPane.columnIndex="1" />
                                     <Spinner fx:id="entityYSpinner" disable="true" editable="true" GridPane.columnIndex="2" />
                                     <Label text="%ui.editor.entity.entity_position" />
+                                 </children>
+                              </GridPane>
+                           </content>
+                        </Tab>
+                        <Tab closable="false" text="%ui.editor.biome">
+                           <content>
+                              <GridPane>
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints vgrow="ALWAYS" />
+                                 </rowConstraints>
+                                 <children>
+                                    <Label text="%ui.editor.biome.layer" />
+                                    <Spinner fx:id="biomeLayerSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.biome.layer.tooltip" />
+                                       </tooltip>
+                                    </Spinner>
+                                    <Separator prefWidth="64.0" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+                                    <Label text="%ui.editor.biome.biome_palette" GridPane.rowIndex="2" />
+                                    <Spinner fx:id="biomePaletteSpinner" centerShape="false" disable="true" editable="true" GridPane.columnIndex="1" GridPane.rowIndex="2">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.biome.biome_palette.tooltip" />
+                                       </tooltip>
+                                    </Spinner>
+                                    <Label text="%ui.editor.biome.biome_position" GridPane.rowIndex="3" />
+                                    <TextField fx:id="biomePositionTextField" centerShape="false" disable="true" editable="false" GridPane.columnIndex="1" GridPane.rowIndex="3">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.biome.biome_position.tooltip" />
+                                       </tooltip>
+                                    </TextField>
+                                    <ScrollPane pannable="true" GridPane.columnSpan="2" GridPane.rowIndex="4">
+                                       <content>
+                                          <GridPane fx:id="biomeGrid" alignment="CENTER" gridLinesVisible="true">
+                                             <columnConstraints>
+                                                <ColumnConstraints hgrow="SOMETIMES" minWidth="0.0" />
+                                             </columnConstraints>
+                                             <rowConstraints>
+                                                <RowConstraints minHeight="0.0" vgrow="SOMETIMES" />
+                                             </rowConstraints>
+                                          </GridPane>
+                                       </content>
+                                    </ScrollPane>
+                                 </children>
+                              </GridPane>
+                           </content>
+                        </Tab>
+                        <Tab closable="false" text="%ui.editor.biomestate">
+                           <content>
+                              <GridPane>
+                                 <columnConstraints>
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+                                 </columnConstraints>
+                                 <rowConstraints>
+                                    <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+                                    <RowConstraints vgrow="ALWAYS" />
+                                 </rowConstraints>
+                                 <children>
+                                    <Label text="%ui.editor.biomestate.biomestate_id" />
+                                    <TextField fx:id="biomeStateIdTextField" centerShape="false" disable="true" GridPane.columnIndex="1">
+                                       <tooltip>
+                                          <Tooltip text="%ui.editor.biomestate.biomestate_id.tooltip" />
+                                       </tooltip>
+                                    </TextField>
+                                    <ListView fx:id="biomeStateListView" prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="2" GridPane.rowIndex="1" />
                                  </children>
                               </GridPane>
                            </content>

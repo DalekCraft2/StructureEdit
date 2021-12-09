@@ -178,7 +178,7 @@ public class McEditSchematicReader extends NbtSchematicReader {
                         biomeState = schematic.getBiomeState(schematic.getBiomePalette().indexOf(biomeState));
                     }
 
-                    schematic.setBiome(x, y, z, new Biome(biomeState));
+                    schematic.setBiome(x, y, z, new Biome(schematic.getBiomePalette().indexOf(biomeState)));
                 }
             }
         }

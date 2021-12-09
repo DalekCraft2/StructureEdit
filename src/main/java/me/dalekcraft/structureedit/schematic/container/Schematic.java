@@ -305,7 +305,7 @@ public class Schematic {
         biomePalette.set(i, biomeState);
     }
 
-    public List<BiomeState> getBiomePalette() {
+    public ObservableList<BiomeState> getBiomePalette() {
         return biomePalette;
     }
 

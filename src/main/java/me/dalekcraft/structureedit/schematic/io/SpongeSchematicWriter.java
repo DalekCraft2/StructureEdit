@@ -185,7 +185,7 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
                         int index = y * size[2] * size[0] + z * size[0] + x;
                         Biome biome = schematic.getBiome(x, y, z);
                         if (biome != null) {
-                            biomesList.set(index, (byte) biomePalette.indexOf(biome.getBiomeState()));
+                            biomesList.set(index, (byte) biomePalette.indexOf(biome.getBiomeStateIndex()));
                         } else {
                             BiomeState biomeState = new BiomeState("minecraft:ocean");
                             int oceanIndex;

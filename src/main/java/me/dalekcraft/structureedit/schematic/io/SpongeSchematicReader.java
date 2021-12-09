@@ -288,7 +288,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                     throw new ValidationException("Entry at index " + i + " has invalid palette index " + state);
                 }
 
-                Biome biome = new Biome(schematic.getBiomeState(state));
+                Biome biome = new Biome(state);
                 schematic.setBiome(x, y, z, biome);
             }
         }
@@ -399,7 +399,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                     throw new ValidationException("Entry at index " + i + " has invalid palette index " + state);
                 }
 
-                Biome biome = new Biome(schematic.getBiomeState(state));
+                Biome biome = new Biome(state);
                 schematic.setBiome(x, y, z, biome);
             }
         }

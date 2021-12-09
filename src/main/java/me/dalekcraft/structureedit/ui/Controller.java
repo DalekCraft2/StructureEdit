@@ -42,10 +42,10 @@ import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
 import me.dalekcraft.structureedit.StructureEditApplication;
 import me.dalekcraft.structureedit.drawing.BlockColor;
-import me.dalekcraft.structureedit.schematic.container.Block;
-import me.dalekcraft.structureedit.schematic.container.BlockState;
-import me.dalekcraft.structureedit.schematic.container.Entity;
-import me.dalekcraft.structureedit.schematic.container.Schematic;
+import me.dalekcraft.structureedit.drawing.FoliageColor;
+import me.dalekcraft.structureedit.drawing.GrassColor;
+import me.dalekcraft.structureedit.drawing.WaterColor;
+import me.dalekcraft.structureedit.schematic.container.*;
 import me.dalekcraft.structureedit.schematic.io.*;
 import me.dalekcraft.structureedit.util.Assets;
 import me.dalekcraft.structureedit.util.Configuration;
@@ -96,28 +96,40 @@ public class Controller extends Node {
     private static final FileChooser.ExtensionFilter FILTER_ALL = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.all"), "*.*");
     public final FileChooser schematicChooser = new FileChooser();
     public final DirectoryChooser assetsChooser = new DirectoryChooser();
-    private final SpinnerValueFactory.IntegerSpinnerValueFactory layerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
-    private final SpinnerValueFactory.IntegerSpinnerValueFactory paletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
+    private final SpinnerValueFactory.IntegerSpinnerValueFactory blockLayerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     private final SpinnerValueFactory.IntegerSpinnerValueFactory blockPaletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
+    private final SpinnerValueFactory.IntegerSpinnerValueFactory paletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     private final SpinnerValueFactory.DoubleSpinnerValueFactory entityXValueFactory = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 0);
     private final SpinnerValueFactory.DoubleSpinnerValueFactory entityYValueFactory = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 0);
     private final SpinnerValueFactory.DoubleSpinnerValueFactory entityZValueFactory = new SpinnerValueFactory.DoubleSpinnerValueFactory(0, 0);
+    private final SpinnerValueFactory.IntegerSpinnerValueFactory biomeLayerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
+    private final SpinnerValueFactory.IntegerSpinnerValueFactory biomePaletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     private int renderedHeight;
-    private BlockButton selected;
     private Schematic schematic;
     private boolean shouldReloadTextures = true;
     private SchematicRenderer renderer;
     private GLJPanel rendererPanel;
     @FXML
     private SwingNode rendererNode;
+
+    /*
+     * Schematic Info fields
+     */
+
     @FXML
     private TextField sizeTextField;
     @FXML
     private TextField offsetTextField;
     @FXML
     private TextField dataVersionTextField;
+
+    /*
+     * Block Editor fields
+     */
+
+    private BlockButton selectedBlock;
     @FXML
-    private Spinner<Integer> layerSpinner;
+    private Spinner<Integer> blockLayerSpinner;
     @FXML
     private Spinner<Integer> blockPaletteSpinner;
     @FXML
@@ -128,6 +140,11 @@ public class Controller extends Node {
     private TextField blockEntityNbtTextField;
     @FXML
     private GridPane blockGrid;
+
+    /*
+     * Block State Editor fields
+     */
+
     @FXML
     private Spinner<Integer> paletteSpinner;
     @FXML
@@ -137,6 +154,11 @@ public class Controller extends Node {
     private TextField blockStatePropertiesTextField;
     @FXML
     private ListView<BlockState> blockStateListView;
+
+    /*
+     * Entity Editor fields
+     */
+
     @FXML
     private Spinner<Double> entityXSpinner;
     @FXML
@@ -149,6 +171,30 @@ public class Controller extends Node {
     private TextField entityNbtTextField;
     @FXML
     private ListView<Entity> entityListView;
+
+    /*
+     * Biome Editor fields
+     */
+
+    private BiomeButton selectedBiome;
+    @FXML
+    private Spinner<Integer> biomeLayerSpinner;
+    @FXML
+    private Spinner<Integer> biomePaletteSpinner;
+    @FXML
+    private TextField biomePositionTextField;
+    @FXML
+    private GridPane biomeGrid;
+
+    /*
+     * Biome State Editor fields
+     */
+
+    @FXML
+    private TextField biomeStateIdTextField;
+    @FXML
+    private ListView<BiomeState> biomeStateListView;
+
     @FXML
     private InlineCssTextArea logArea;
 
@@ -176,9 +222,9 @@ public class Controller extends Node {
             rendererNode.setContent(rendererPanel);
         });
 
-        layerSpinner.setValueFactory(layerValueFactory);
-        layerSpinner.valueProperty().addListener(this::onLayerUpdate);
-        layerSpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
+        blockLayerSpinner.setValueFactory(blockLayerValueFactory);
+        blockLayerSpinner.valueProperty().addListener(this::onBlockLayerUpdate);
+        blockLayerSpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
             try {
                 Integer.valueOf(change.getControlNewText());
                 return change;
@@ -291,6 +337,32 @@ public class Controller extends Node {
 
         entityListView.getSelectionModel().selectedItemProperty().addListener(this::onEntitySelected);
 
+        biomeLayerSpinner.setValueFactory(biomeLayerValueFactory);
+        biomeLayerSpinner.valueProperty().addListener(this::onBiomeLayerUpdate);
+        biomeLayerSpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
+            try {
+                Integer.valueOf(change.getControlNewText());
+                return change;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }));
+
+        biomePaletteSpinner.setValueFactory(biomePaletteValueFactory);
+        biomePaletteSpinner.valueProperty().addListener(this::onBiomePaletteUpdate);
+        biomePaletteSpinner.getEditor().setTextFormatter(new TextFormatter<Integer>(change -> {
+            try {
+                Integer.valueOf(change.getControlNewText());
+                return change;
+            } catch (NumberFormatException e) {
+                return null;
+            }
+        }));
+
+        biomeStateIdTextField.textProperty().addListener(this::onBiomeStateIdUpdate);
+
+        biomeStateListView.getSelectionModel().selectedItemProperty().addListener(this::onBiomeStateSelected);
+
         InlineCssTextAreaAppender.addLog4j2TextAreaAppender(logArea);
     }
 
@@ -331,10 +403,12 @@ public class Controller extends Node {
             sizeTextField.setDisable(false);
             offsetTextField.setDisable(false);
             dataVersionTextField.setDisable(false);
-            layerSpinner.setDisable(false);
+            blockLayerSpinner.setDisable(false);
+            biomeLayerSpinner.setDisable(false);
             int[] size = schematic.getSize();
             renderedHeight = size[1];
-            layerValueFactory.setMax(size[1] - 1);
+            blockLayerValueFactory.setMax(size[1] - 1);
+            biomeLayerValueFactory.setMax(size[1] - 1);
             entityXValueFactory.setMax(size[0]);
             entityYValueFactory.setMax(size[1]);
             entityZValueFactory.setMax(size[2]);
@@ -343,23 +417,29 @@ public class Controller extends Node {
                 paletteSpinner.setDisable(false);
                 paletteValueFactory.setMax(palettesSize - 1);
             }
-            int paletteSize = schematic.getBlockPalette(0).size();
-            blockPaletteValueFactory.setMax(paletteSize - 1);
+            int blockPaletteSize = schematic.getBlockPalette().size();
+            int biomePaletteSize = schematic.getBiomePalette().size();
+            blockPaletteValueFactory.setMax(blockPaletteSize - 1);
             blockStateListView.setItems(schematic.getBlockPalette());
             entityListView.setItems(schematic.getEntities());
+            biomePaletteValueFactory.setMax(biomePaletteSize - 1);
+            biomeStateListView.setItems(schematic.getBiomePalette());
             LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loaded"), file);
             StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         }
+        updateSchematicInfo();
         updateBlockGrid();
+        updateBiomeGrid();
     }
 
     private void resetComponents() {
-        selected = null;
+        selectedBlock = null;
+        selectedBiome = null;
         sizeTextField.setText(null);
         offsetTextField.setText(null);
         dataVersionTextField.setText(null);
-        layerValueFactory.setValue(0);
-        layerSpinner.setDisable(true);
+        blockLayerValueFactory.setValue(0);
+        blockLayerSpinner.setDisable(true);
         blockPaletteValueFactory.setValue(0);
         blockPaletteSpinner.setDisable(true);
         blockPositionTextField.setText(null);
@@ -368,6 +448,7 @@ public class Controller extends Node {
         blockEntityIdTextField.setDisable(true);
         blockEntityNbtTextField.setText(null);
         blockEntityNbtTextField.setDisable(true);
+        blockGrid.getChildren().clear();
         paletteValueFactory.setValue(0);
         paletteSpinner.setDisable(true);
         blockStateIdComboBox.getSelectionModel().select(null);
@@ -386,6 +467,16 @@ public class Controller extends Node {
         entityNbtTextField.setText(null);
         entityNbtTextField.setDisable(true);
         entityListView.setItems(null);
+        biomeLayerValueFactory.setValue(0);
+        biomeLayerSpinner.setDisable(true);
+        biomePaletteValueFactory.setValue(0);
+        biomePaletteSpinner.setDisable(true);
+        biomePositionTextField.setText(null);
+        biomePositionTextField.setDisable(true);
+        biomeGrid.getChildren().clear();
+        biomeStateIdTextField.setText(null);
+        biomeStateIdTextField.setDisable(true);
+        biomeStateListView.setItems(null);
     }
 
     @FXML
@@ -474,10 +565,10 @@ public class Controller extends Node {
         renderer.animator.resume();
     }
 
-
     /*
      * Schematic Info methods
      */
+
     public void updateSchematicInfo() {
         if (schematic != null) {
             int[] size = schematic.getSize();
@@ -488,20 +579,19 @@ public class Controller extends Node {
         }
     }
 
-
     /*
      * Block Editor methods
      */
 
     private void onBlockSelected(@NotNull Event e) {
-        if (selected != null) {
-            selected.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+        if (selectedBlock != null) {
+            selectedBlock.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
         }
-        selected = (BlockButton) e.getSource();
-        Block block = selected.getBlock();
+        selectedBlock = (BlockButton) e.getSource();
+        Block block = selectedBlock.getBlock();
 
         if (block != null) {
-            selected.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+            selectedBlock.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
 
             blockEntityIdTextField.setText(block.getBlockEntity().getId());
             blockEntityIdTextField.setDisable(false);
@@ -513,7 +603,7 @@ public class Controller extends Node {
             blockEntityNbtTextField.setDisable(false);
             blockEntityNbtTextField.setStyle("-fx-text-inner-color: #000000");
 
-            blockPositionTextField.setText(Arrays.toString(selected.getPosition()));
+            blockPositionTextField.setText(Arrays.toString(selectedBlock.getPosition()));
             blockPositionTextField.setDisable(false);
 
             blockPaletteValueFactory.setValue(block.getBlockStateIndex());
@@ -522,7 +612,7 @@ public class Controller extends Node {
     }
 
     @FXML
-    public void onLayerUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
+    public void onBlockLayerUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
         if (schematic != null) {
             updateBlockGrid();
         }
@@ -530,8 +620,8 @@ public class Controller extends Node {
 
     @FXML
     public void onBlockPaletteUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
-        if (schematic != null && selected != null) {
-            Block block = selected.getBlock();
+        if (schematic != null && selectedBlock != null) {
+            Block block = selectedBlock.getBlock();
             if (block != null) {
                 block.setBlockStateIndex(newValue);
             }
@@ -541,18 +631,17 @@ public class Controller extends Node {
     }
 
     public void onBlockEntityIdUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        if (schematic != null && selected != null) {
-            Block block = selected.getBlock();
+        if (schematic != null && selectedBlock != null) {
+            Block block = selectedBlock.getBlock();
             if (block != null) {
                 block.getBlockEntity().setId(newValue);
             }
-            updateBlockGrid();
         }
     }
 
     public void onBlockEntityNbtUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
-        if (schematic != null && selected != null) {
-            Block block = selected.getBlock();
+        if (schematic != null && selectedBlock != null) {
+            Block block = selectedBlock.getBlock();
             if (block != null) {
                 try {
                     CompoundTag nbt = (CompoundTag) SNBTUtil.fromSNBT(newValue.trim());
@@ -562,13 +651,12 @@ public class Controller extends Node {
                     blockEntityNbtTextField.setStyle("-fx-text-inner-color: #FF0000");
                 }
             }
-            updateBlockGrid();
         }
     }
 
     public void updateSelectedBlock() {
-        if (selected != null) {
-            Block block = selected.getBlock();
+        if (selectedBlock != null) {
+            Block block = selectedBlock.getBlock();
 
             blockEntityIdTextField.setText(block.getBlockEntity().getId());
             blockEntityIdTextField.setDisable(false);
@@ -586,11 +674,7 @@ public class Controller extends Node {
         blockGrid.getChildren().clear();
         if (schematic != null) {
             int[] size = schematic.getSize();
-            int[] offset = schematic.getOffset();
-            sizeTextField.setText(Arrays.toString(size));
-            offsetTextField.setText(Arrays.toString(offset));
-            dataVersionTextField.setText(String.valueOf(schematic.getDataVersion()));
-            int currentLayer = layerSpinner.getValue();
+            int currentLayer = blockLayerSpinner.getValue();
             for (int x = 0; x < size[0]; x++) {
                 for (int z = 0; z < size[2]; z++) {
                     Block block = schematic.getBlock(x, currentLayer, z);
@@ -607,7 +691,7 @@ public class Controller extends Node {
                         }
                         color = Color.color(color.getRed(), color.getGreen(), color.getBlue());
                         BlockButton blockButton = new BlockButton(block, x, currentLayer, z);
-                        blockButton.setText(blockName.substring(0, 1));
+                        blockButton.setText(!blockName.isEmpty() ? blockName.substring(0, 1) : "?");
                         blockButton.setTooltip(new Tooltip(blockId));
                         blockButton.setTextOverrun(OverrunStyle.CLIP);
                         blockButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -616,10 +700,10 @@ public class Controller extends Node {
                         blockButton.setPrefSize(30.0, 30.0);
                         blockButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::onBlockSelected);
                         blockGrid.add(blockButton, x, z);
-                        if (selected != null) {
-                            int[] position = selected.getPosition();
+                        if (selectedBlock != null) {
+                            int[] position = selectedBlock.getPosition();
                             if (Arrays.equals(position, new int[]{x, currentLayer, z})) {
-                                selected = blockButton;
+                                selectedBlock = blockButton;
                                 // Set selected tile's border color to red
                                 blockButton.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
                             }
@@ -627,7 +711,7 @@ public class Controller extends Node {
                     } else {
                         Color color = Color.WHITE;
                         BlockButton blockButton = new BlockButton(null, x, currentLayer, z);
-                        blockButton.setText(" ");
+                        blockButton.setText("");
                         blockButton.setTextOverrun(OverrunStyle.CLIP);
                         blockButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
                         blockButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
@@ -758,6 +842,123 @@ public class Controller extends Node {
         }
     }
 
+    /*
+     * Biome Editor methods
+     */
+
+    private void onBiomeSelected(@NotNull Event e) {
+        if (selectedBiome != null) {
+            selectedBiome.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+        }
+        selectedBiome = (BiomeButton) e.getSource();
+        Biome biome = selectedBiome.getBiome();
+
+        if (biome != null) {
+            selectedBiome.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+
+            biomePositionTextField.setText(Arrays.toString(selectedBiome.getPosition()));
+            biomePositionTextField.setDisable(false);
+
+            biomePaletteValueFactory.setValue(biome.getBiomeStateIndex());
+            biomePaletteSpinner.setDisable(false);
+        }
+    }
+
+    @FXML
+    public void onBiomeLayerUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
+        if (schematic != null) {
+            updateBiomeGrid();
+        }
+    }
+
+    @FXML
+    public void onBiomePaletteUpdate(ObservableValue<? extends Integer> observable, Integer oldValue, Integer newValue) {
+        if (schematic != null && selectedBiome != null) {
+            Biome biome = selectedBiome.getBiome();
+            if (biome != null) {
+                biome.setBiomeStateIndex(newValue);
+            }
+            updateBiomeGrid();
+        }
+    }
+
+    public void updateBiomeGrid() {
+        biomeGrid.getChildren().clear();
+        if (schematic != null) {
+            int[] size = schematic.getSize();
+            int currentLayer = biomeLayerSpinner.getValue();
+            for (int x = 0; x < size[0]; x++) {
+                for (int z = 0; z < size[2]; z++) {
+                    Biome biome = schematic.getBiome(x, currentLayer, z);
+                    if (biome != null) {
+                        BiomeState biomeState = schematic.getBiomeState(biome.getBiomeStateIndex());
+
+                        String biomeId = biomeState.getId();
+                        String biomeName = biomeId.substring(biomeId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+                        Color color;
+                        try {
+                            color = GrassColor.valueOf(biomeName).getColor();
+                        } catch (IllegalArgumentException e) {
+                            color = MISSING_COLOR;
+                        }
+                        color = Color.color(color.getRed(), color.getGreen(), color.getBlue());
+                        BiomeButton biomeButton = new BiomeButton(biome, x, currentLayer, z);
+                        biomeButton.setText(!biomeName.isEmpty() ? biomeName.substring(0, 1) : "?");
+                        biomeButton.setTooltip(new Tooltip(biomeId));
+                        biomeButton.setTextOverrun(OverrunStyle.CLIP);
+                        biomeButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
+                        biomeButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+                        biomeButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+                        biomeButton.setPrefSize(30.0, 30.0);
+                        biomeButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::onBiomeSelected);
+                        biomeGrid.add(biomeButton, x, z);
+                        if (selectedBiome != null) {
+                            int[] position = selectedBiome.getPosition();
+                            if (Arrays.equals(position, new int[]{x, currentLayer, z})) {
+                                selectedBiome = biomeButton;
+                                // Set selected tile's border color to red
+                                biomeButton.setBorder(new Border(new BorderStroke(Color.RED, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+                            }
+                        }
+                    } else {
+                        Color color = Color.WHITE;
+                        BiomeButton biomeButton = new BiomeButton(null, x, currentLayer, z);
+                        biomeButton.setText("");
+                        biomeButton.setTextOverrun(OverrunStyle.CLIP);
+                        biomeButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
+                        biomeButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
+                        biomeButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
+                        biomeButton.setPrefSize(30.0, 30.0);
+                        biomeButton.setDisable(true);
+                        biomeGrid.add(biomeButton, x, z);
+                    }
+                }
+            }
+        }
+    }
+
+    /*
+     * Biome State Editor methods
+     */
+
+    public void onBiomeStateSelected(ObservableValue<? extends BiomeState> observable, BiomeState oldValue, BiomeState newValue) {
+        if (newValue != null) {
+            biomeStateIdTextField.setText(newValue.getId());
+            biomeStateIdTextField.setDisable(false);
+        }
+    }
+
+    public void onBiomeStateIdUpdate(ObservableValue<? extends String> observable, String oldValue, String newValue) {
+        if (schematic != null && newValue != null) {
+            BiomeState biomeState = biomeStateListView.getSelectionModel().getSelectedItem();
+            if (biomeState != null) {
+                biomeState.setId(newValue);
+                biomeStateListView.refresh();
+            }
+            updateBiomeGrid();
+        }
+    }
+
     // TODO Replace this with a JavaFX 3D implementation to make things easier. (Only do this if JavaFX 3D can do everything required to emulate Minecraft rendering)
     private class SchematicRenderer extends MouseAdapter implements GLEventListener, KeyListener {
 
@@ -856,9 +1057,9 @@ public class Controller extends Node {
             }
         }
 
+        // TODO Have this depend on biomes.
         @NotNull
-        public static Color getTint(@NotNull BlockState blockState) {
-
+        public static Color getTint(@NotNull BlockState blockState, BiomeState biomeState) {
             String namespacedId = blockState.getId();
             Map<String, String> properties = blockState.getProperties();
             switch (namespacedId) {
@@ -922,13 +1123,31 @@ public class Controller extends Node {
                     }
                 }
                 case "minecraft:grass_block", "minecraft:grass", "minecraft:tall_grass", "minecraft:fern", "minecraft:large_fern", "minecraft:potted_fern", "minecraft:sugar_cane" -> {
-                    return Color.valueOf("#91BD59");
+                    String biomeId = biomeState.getId();
+                    String biomeName = biomeId.substring(biomeId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+                    try {
+                        return GrassColor.valueOf(biomeName).getColor();
+                    } catch (IllegalArgumentException e) {
+                        return GrassColor.OCEAN.getColor();
+                    }
                 }
                 case "minecraft:oak_leaves", "minecraft:dark_oak_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves", "minecraft:vine" -> {
-                    return Color.valueOf("#77AB2F");
+                    String biomeId = biomeState.getId();
+                    String biomeName = biomeId.substring(biomeId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+                    try {
+                        return FoliageColor.valueOf(biomeName).getColor();
+                    } catch (IllegalArgumentException e) {
+                        return FoliageColor.OCEAN.getColor();
+                    }
                 }
                 case "minecraft:water", "minecraft:water_cauldron" -> {
-                    return Color.valueOf("#3F76E4");
+                    String biomeId = biomeState.getId();
+                    String biomeName = biomeId.substring(biomeId.indexOf(':') + 1).toUpperCase(Locale.ROOT);
+                    try {
+                        return WaterColor.valueOf(biomeName).getColor();
+                    } catch (IllegalArgumentException e) {
+                        return WaterColor.DEFAULT.getColor();
+                    }
                 }
                 case "minecraft:birch_leaves" -> {
                     return Color.valueOf("#80A755");
@@ -1221,10 +1440,17 @@ public class Controller extends Node {
                             Block block = schematic.getBlock(x, y, z);
                             if (block != null) {
                                 BlockState blockState = schematic.getBlockState(block.getBlockStateIndex(), paletteSpinner.getValue());
+
+                                Biome biome = schematic.getBiome(x, y, z);
+                                BiomeState biomeState = biome != null ? schematic.getBiomeState(biome.getBiomeStateIndex()) : new BiomeState("minecraft:ocean");
+                                if (biomeState == null) {
+                                    biomeState = new BiomeState("minecraft:ocean");
+                                }
+
                                 long seed = x + (long) y * size[2] * size[0] + (long) z * size[0];
                                 random.setSeed(seed);
                                 List<JSONObject> modelList = getModelsFromBlockState(blockState);
-                                Color tint = getTint(blockState);
+                                Color tint = getTint(blockState, biomeState);
 
                                 try {
                                     for (JSONObject model : modelList) {
