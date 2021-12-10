@@ -21,7 +21,7 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
-import me.dalekcraft.structureedit.ui.Controller;
+import me.dalekcraft.structureedit.ui.MainController;
 import me.dalekcraft.structureedit.util.Configuration;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -59,7 +59,7 @@ public class StructureEditApplication extends Application {
         primaryStage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
         primaryStage.setScene(scene);
 
-        Controller controller = fxmlLoader.getController();
+        MainController controller = fxmlLoader.getController();
 
         AnsiConsole.systemInstall();
         LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.starting"));

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.Spinner?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<GridPane xmlns="http://javafx.com/javafx/17" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.dalekcraft.structureedit.ui.EntityEditorController">
+   <columnConstraints>
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints />
+      <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints vgrow="ALWAYS" />
+   </rowConstraints>
+   <children>
+      <Label centerShape="false" text="%ui.editor.entity.entity_id" GridPane.rowIndex="1" />
+      <TextField fx:id="entityIdTextField" disable="true" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="1">
+         <tooltip>
+            <Tooltip text="%ui.editor.entity.entity_id.tooltip" />
+         </tooltip>
+      </TextField>
+      <Label text="%ui.editor.entity.entity_nbt" GridPane.rowIndex="2" />
+      <TextField fx:id="entityNbtTextField" centerShape="false" disable="true" GridPane.columnIndex="1" GridPane.columnSpan="3" GridPane.rowIndex="2">
+         <tooltip>
+            <Tooltip text="%ui.editor.entity.entity_nbt.tooltip" />
+         </tooltip>
+      </TextField>
+      <ListView fx:id="entityListView" prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="4" GridPane.rowIndex="3" />
+      <Spinner fx:id="entityZSpinner" disable="true" editable="true" GridPane.columnIndex="3" />
+      <Spinner fx:id="entityXSpinner" disable="true" editable="true" GridPane.columnIndex="1" />
+      <Spinner fx:id="entityYSpinner" disable="true" editable="true" GridPane.columnIndex="2" />
+      <Label text="%ui.editor.entity.entity_position" />
+   </children>
+</GridPane>

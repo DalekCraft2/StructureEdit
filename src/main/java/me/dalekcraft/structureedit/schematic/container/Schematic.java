@@ -5,7 +5,6 @@ import javafx.collections.ObservableList;
 import net.querz.nbt.tag.CompoundTag;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.List;
 import java.util.Vector;
 
 public class Schematic {

@@ -46,9 +46,9 @@ public class Block {
     /**
      * Sets the NBT of this {@link Block}.
      *
-     * @param nbt the new NBT for this {@link Block}
+     * @param blockEntity the new NBT for this {@link Block}
      */
-    public void setBlockEntity(BlockEntity nbt) {
-        this.blockEntity = Objects.requireNonNullElse(nbt, new BlockEntity(""));
+    public void setBlockEntity(BlockEntity blockEntity) {
+        this.blockEntity = Objects.requireNonNullElse(blockEntity, new BlockEntity(""));
     }
 }
