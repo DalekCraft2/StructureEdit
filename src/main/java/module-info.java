@@ -1,5 +1,4 @@
 module me.dalekcraft.structureedit {
-    // requires com.jogamp.opengl;
     requires com.google.common;
     requires com.google.gson;
     requires java.desktop;

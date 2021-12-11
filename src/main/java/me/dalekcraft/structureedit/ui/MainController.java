@@ -127,11 +127,17 @@ public class MainController extends Node {
             rendererPanel.addMouseListener(renderer);
             rendererPanel.addMouseMotionListener(renderer);
             rendererPanel.addMouseWheelListener(renderer);
+            /*rendererNode.addEventHandler(KeyEvent.KEY_PRESSED, event -> renderer.keyPressed(event));
+            rendererNode.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> renderer.mouseDragged(event));
+            rendererNode.addEventHandler(MouseEvent.MOUSE_MOVED, event -> renderer.mouseMoved(event));
+            rendererNode.addEventHandler(ScrollEvent.ANY, event -> renderer.mouseWheelMoved(event));*/
             rendererNode.setContent(rendererPanel);
         });
 
         blockEditorController.injectBlockStateEditorController(blockStateEditorController);
         blockStateEditorController.injectBlockEditorController(blockEditorController);
+
+        biomeStateEditorController.injectBiomeEditorController(biomeEditorController);
 
         InlineCssTextAreaAppender.addLog4j2TextAreaAppender(logArea);
     }
@@ -312,7 +318,8 @@ public class MainController extends Node {
         private final Matrix4f textureMatrix = new Matrix4f();
         private final Matrix3f normalMatrix = new Matrix3f();
         private final Map<String, Texture> textures = new HashMap<>();
-        private Animator animator;
+        private final Animator animator = new Animator();
+        private final Camera camera = new Camera();
         private int vertexShader;
         private int fragmentShader;
         private int shaderProgram;
@@ -329,8 +336,8 @@ public class MainController extends Node {
         private int materialShininessLocation;
         private int textureLocation;
         private int mixFactorLocation;
-        private Camera camera;
         private Point mousePoint;
+        // private Point2D mousePoint;
 
         @Nullable
         private static JSONArray getElements(@NotNull JSONObject model) {
@@ -387,7 +394,6 @@ public class MainController extends Node {
             }
         }
 
-        // TODO Have this depend on biomes.
         @NotNull
         public static Color getTint(@NotNull BlockState blockState, BiomeState biomeState) {
             String namespacedId = blockState.getId();
@@ -710,9 +716,9 @@ public class MainController extends Node {
 
             gl.glBindVertexArray(0);
 
-            camera = new Camera();
+            camera.reset();
 
-            animator = new Animator(drawable);
+            animator.add(drawable);
             animator.setRunAsFastAsPossible(true);
 
             animator.start();
@@ -878,6 +884,61 @@ public class MainController extends Node {
         public void mouseMoved(@NotNull MouseEvent e) {
             mousePoint = e.getPoint();
         }
+
+        /*public void keyPressed(@NotNull KeyEvent e) {
+            KeyCode keyCode = e.getCode();
+            switch (keyCode) {
+                case UP -> {
+                    if (schematic != null) {
+                        int[] size = schematic.getSize();
+                        if (renderedHeight < size[1]) {
+                            renderedHeight++;
+                        } else {
+                            // TODO How to make feedback sounds with JavaFX?
+                        }
+                        if (renderedHeight > size[1]) {
+                            renderedHeight = size[1];
+                        }
+                    }
+                }
+                case DOWN -> {
+                    if (renderedHeight > 0) {
+                        renderedHeight--;
+                    } else {
+                        // TODO How to make feedback sounds with JavaFX?
+                    }
+                    if (renderedHeight < 0) {
+                        renderedHeight = 0;
+                    }
+                }
+            }
+        }
+
+        public void mouseWheelMoved(@NotNull ScrollEvent e) {
+            camera.zoom((float) e.getDeltaY());
+        }
+
+        public void mouseDragged(@NotNull MouseEvent e) {
+            if (e.isPrimaryButtonDown()) {
+                // Rotate the camera
+                float dTheta = (float) Math.toRadians(mousePoint.getX() - e.getX()) * ROTATION_SENSITIVITY;
+                float dPhi = (float) Math.toRadians(mousePoint.getY() - e.getY()) * ROTATION_SENSITIVITY;
+                camera.rotate(dTheta, dPhi);
+            } else if (e.isSecondaryButtonDown()) {
+                // TODO Make the camera drag translation more accurate.
+                // Translate the camera
+                float dx = (float) (-(mousePoint.getX() - e.getX()) * TRANSLATION_SENSITIVITY);
+                float dy = (float) ((mousePoint.getY() - e.getY()) * TRANSLATION_SENSITIVITY);
+                // camera.pan(mousePoint.x, mousePoint.y, e.getX(), e.getY());
+                camera.pan(dx, dy);
+            }
+            mousePoint = new Point2D(e.getX(), e.getY());
+        }
+
+        // FIXME "mousePoint" does not update if the mouse is moved whilst a file chooser is open.
+        public void mouseMoved(@NotNull MouseEvent e) {
+            mousePoint = new Point2D(e.getX(), e.getY());
+        }*/
 
         public Texture getTexture(@NotNull String namespacedId) {
             if (!namespacedId.contains(":")) {
@@ -1533,6 +1594,21 @@ public class MainController extends Node {
                 float z = (float) (radius * Math.sin(phi) * Math.cos(theta));
 
                 return dest.set(x, y, z);
+            }
+
+            public void reset() {
+                viewport[0] = 0;
+                viewport[1] = 0;
+                viewport[2] = 0;
+                viewport[3] = 0;
+
+                theta = (float) Math.PI / 4.0f;
+                phi = (float) Math.PI / 4.0f;
+
+                radius = 30.0f;
+
+                panX = 0;
+                panY = 0;
             }
 
             public void rotate(float dTheta, float dPhi) {

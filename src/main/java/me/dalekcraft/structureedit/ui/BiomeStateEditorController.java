@@ -10,6 +10,7 @@ import me.dalekcraft.structureedit.schematic.container.Schematic;
 public class BiomeStateEditorController {
 
     private Schematic schematic;
+    private BiomeEditorController biomeEditorController;
     @FXML
     private TextField biomeStateIdTextField;
     @FXML
@@ -19,6 +20,10 @@ public class BiomeStateEditorController {
         biomeStateIdTextField.textProperty().addListener(this::onBiomeStateIdUpdate);
 
         biomeStateListView.getSelectionModel().selectedItemProperty().addListener(this::onBiomeStateSelected);
+    }
+
+    public void injectBiomeEditorController(BiomeEditorController biomeEditorController) {
+        this.biomeEditorController = biomeEditorController;
     }
 
     public void disableComponents() {
@@ -54,7 +59,7 @@ public class BiomeStateEditorController {
                 biomeState.setId(newValue);
                 biomeStateListView.refresh();
             }
-            // updateBiomeGrid();
+            biomeEditorController.updateBiomeGrid();
         }
     }
 }
