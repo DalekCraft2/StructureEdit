@@ -18,48 +18,49 @@ import java.nio.file.FileSystem;
 import java.nio.file.*;
 import java.util.Objects;
 
-public final class Assets {
+public class Assets {
 
     private static final Logger LOGGER = LogManager.getLogger();
-    private static final ObservableMap<String, JSONObject> BLOCK_STATES = FXCollections.observableHashMap();
-    private static final ObservableMap<String, JSONObject> MODELS = FXCollections.observableHashMap();
-    private static final ObservableMap<String, TextureData> TEXTURES = FXCollections.observableHashMap();
-    private static final ObservableMap<String, JSONObject> ANIMATIONS = FXCollections.observableHashMap();
-    private static Path path = Path.of("");
+    private static final Assets INSTANCE = new Assets();
+    private final ObservableMap<String, JSONObject> blockStates = FXCollections.observableHashMap();
+    private final ObservableMap<String, JSONObject> models = FXCollections.observableHashMap();
+    private final ObservableMap<String, TextureData> textures = FXCollections.observableHashMap();
+    private final ObservableMap<String, JSONObject> animations = FXCollections.observableHashMap();
+    private Path path = Path.of("");
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
 
-    private Assets() {
-        throw new UnsupportedOperationException();
+    public static Assets getInstance() {
+        return INSTANCE;
     }
 
-    public static Path getPath() {
+    public Path getPath() {
         return path;
     }
 
-    public static void setPath(Path path) {
-        Assets.path = Objects.requireNonNullElseGet(path, () -> Path.of(""));
-        Configuration.CONFIG.setProperty("assets_path", Assets.path.toString());
+    public void setPath(Path path) {
+        this.path = Objects.requireNonNullElseGet(path, () -> Path.of(""));
+        Configuration.CONFIG.setProperty("assets_path", path.toString());
         load();
     }
 
-    public static void load() {
+    public void load() {
         LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loading"), path);
         if (path == null || !Files.exists(path)) {
             LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.invalid"), path);
         }
-        BLOCK_STATES.clear();
-        MODELS.clear();
-        TEXTURES.forEach((s, textureData) -> textureData.destroy());
-        TEXTURES.clear();
-        ANIMATIONS.clear();
-        String protocol = Objects.requireNonNull(Assets.class.getResource("")).getProtocol();
+        blockStates.clear();
+        models.clear();
+        textures.forEach((s, textureData) -> textureData.destroy());
+        textures.clear();
+        animations.clear();
+        String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
         if (protocol.equals("jar")) {
             // run in jar
-            try (FileSystem fileSystem = FileSystems.newFileSystem(Path.of(Assets.class.getProtectionDomain().getCodeSource().getLocation().toURI()))) {
+            try (FileSystem fileSystem = FileSystems.newFileSystem(Path.of(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()))) {
                 Path internalAssets = fileSystem.getPath("assets");
                 try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {
-                    directoryStream.forEach(Assets::loadNamespace);
+                    directoryStream.forEach(this::loadNamespace);
                 }
             } catch (URISyntaxException | IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
@@ -67,9 +68,9 @@ public final class Assets {
         } else if (protocol.equals("file")) {
             // run in ide
             try {
-                Path internalAssets = Path.of(Assets.class.getResource("/assets").toURI());
+                Path internalAssets = Path.of(getClass().getResource("/assets").toURI());
                 try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {
-                    directoryStream.forEach(Assets::loadNamespace);
+                    directoryStream.forEach(this::loadNamespace);
                 }
             } catch (URISyntaxException | IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
@@ -78,7 +79,7 @@ public final class Assets {
         try {
             if (path != null) {
                 try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(path)) {
-                    directoryStream.forEach(Assets::loadNamespace);
+                    directoryStream.forEach(this::loadNamespace);
                 }
             }
         } catch (IOException e) {
@@ -87,7 +88,7 @@ public final class Assets {
         LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loaded"));
     }
 
-    public static void loadNamespace(Path namespace) {
+    public void loadNamespace(Path namespace) {
         if (Files.exists(namespace) && Files.isDirectory(namespace)) {
             FileSystem fileSystem = namespace.getFileSystem();
             loadBlockStates(fileSystem.getPath(namespace.toString(), "blockstates"), namespace.getFileName() + ":");
@@ -96,7 +97,7 @@ public final class Assets {
         }
     }
 
-    public static void loadBlockStates(@NotNull Path directory, String currentNamespace) {
+    public void loadBlockStates(@NotNull Path directory, String currentNamespace) {
         if (Files.exists(directory)) {
             try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
                 directoryStream.forEach(path -> {
@@ -113,7 +114,7 @@ public final class Assets {
         }
     }
 
-    public static void loadModels(@NotNull Path directory, String currentNamespace) {
+    public void loadModels(@NotNull Path directory, String currentNamespace) {
         if (Files.exists(directory)) {
             try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
                 directoryStream.forEach(path -> {
@@ -130,7 +131,7 @@ public final class Assets {
         }
     }
 
-    public static void loadTextures(@NotNull Path directory, String currentNamespace) {
+    public void loadTextures(@NotNull Path directory, String currentNamespace) {
         if (Files.exists(directory)) {
             try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(directory)) {
                 directoryStream.forEach(path -> {
@@ -153,116 +154,116 @@ public final class Assets {
     }
 
     @NotNull
-    public static InputStream getAsset(@NotNull String namespacedId, String folder, String extension) throws IOException {
+    public InputStream getAsset(@NotNull String namespacedId, String folder, String extension) throws IOException {
         String[] split = namespacedId.split(":");
         String namespace = split.length > 1 ? split[0] : "minecraft";
         String id = split.length > 1 ? split[1] : split[0];
         String internalPath = "/assets/" + namespace + "/" + folder + "/" + id + "." + extension;
-        InputStream internalStream = Assets.class.getResourceAsStream(internalPath);
+        InputStream internalStream = getClass().getResourceAsStream(internalPath);
         if (internalStream != null) {
             LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getString("log.assets.getting_internal"), internalPath);
             return internalStream;
         }
-        Path path = Path.of(Assets.path.toString(), namespace + File.separator + folder + File.separator + id + "." + extension);
+        Path path = Path.of(this.path.toString(), namespace + File.separator + folder + File.separator + id + "." + extension);
         if (Files.exists(path)) {
             LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getString("log.assets.getting"), path);
         }
         return Files.newInputStream(path);
     }
 
-    public static JSONObject getBlockState(@NotNull String namespacedId) {
+    public JSONObject getBlockState(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
-        if (BLOCK_STATES.containsKey(namespacedId)) {
-            return BLOCK_STATES.get(namespacedId);
+        if (blockStates.containsKey(namespacedId)) {
+            return blockStates.get(namespacedId);
         }
         JSONObject blockState;
         try {
             blockState = toJson(namespacedId, "blockstates", "json");
         } catch (IOException e) {
             LOGGER.log(Level.TRACE, e.getMessage());
-            blockState = BLOCK_STATES.get("minecraft:missing");
+            blockState = blockStates.get("minecraft:missing");
         }
-        BLOCK_STATES.put(namespacedId, blockState);
+        blockStates.put(namespacedId, blockState);
         return blockState;
     }
 
-    public static ObservableMap<String, JSONObject> getBlockStateMap() {
-        return BLOCK_STATES;
+    public ObservableMap<String, JSONObject> getBlockStateMap() {
+        return blockStates;
     }
 
-    public static JSONObject getModel(@NotNull String namespacedId) {
+    public JSONObject getModel(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
-        if (MODELS.containsKey(namespacedId)) {
-            return MODELS.get(namespacedId);
+        if (models.containsKey(namespacedId)) {
+            return models.get(namespacedId);
         }
         JSONObject model;
         try {
             model = toJson(namespacedId, "models", "json");
         } catch (IOException e) {
             LOGGER.log(Level.TRACE, e.getMessage());
-            model = MODELS.get("minecraft:missing");
+            model = models.get("minecraft:missing");
         }
-        MODELS.put(namespacedId, model);
+        models.put(namespacedId, model);
         return model;
     }
 
-    public static ObservableMap<String, JSONObject> getModelMap() {
-        return MODELS;
+    public ObservableMap<String, JSONObject> getModelMap() {
+        return models;
     }
 
-    public static TextureData getTexture(@NotNull String namespacedId) {
+    public TextureData getTexture(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
-        if (TEXTURES.containsKey(namespacedId)) {
-            return TEXTURES.get(namespacedId);
+        if (textures.containsKey(namespacedId)) {
+            return textures.get(namespacedId);
         }
         TextureData texture = null;
         try (InputStream inputStream = getAsset(namespacedId, "textures", "png")) {
             texture = TextureIO.newTextureData(GLProfile.getDefault(), inputStream, false, TextureIO.PNG);
         } catch (IOException e) {
             LOGGER.log(Level.TRACE, e.getMessage());
-            try (InputStream inputStream = Assets.class.getResourceAsStream("/assets/minecraft/textures/missing.png")) {
+            try (InputStream inputStream = getClass().getResourceAsStream("/assets/minecraft/textures/missing.png")) {
                 assert inputStream != null;
                 texture = TextureIO.newTextureData(GLProfile.getDefault(), inputStream, false, TextureIO.PNG);
             } catch (IOException e1) {
                 LOGGER.log(Level.TRACE, e.getMessage());
             }
         }
-        TEXTURES.put(namespacedId, texture);
+        textures.put(namespacedId, texture);
         return texture;
     }
 
-    public static ObservableMap<String, TextureData> getTextureMap() {
-        return TEXTURES;
+    public ObservableMap<String, TextureData> getTextureMap() {
+        return textures;
     }
 
-    public static JSONObject getAnimation(@NotNull String namespacedId) {
+    public JSONObject getAnimation(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
-        if (ANIMATIONS.containsKey(namespacedId)) {
-            return ANIMATIONS.get(namespacedId);
+        if (animations.containsKey(namespacedId)) {
+            return animations.get(namespacedId);
         }
         JSONObject animation = null;
         try {
             animation = toJson(namespacedId, "textures", "png.mcmeta");
         } catch (IOException ignored) {
         }
-        ANIMATIONS.put(namespacedId, animation);
+        animations.put(namespacedId, animation);
         return animation;
     }
 
-    public static ObservableMap<String, JSONObject> getAnimationMap() {
-        return ANIMATIONS;
+    public ObservableMap<String, JSONObject> getAnimationMap() {
+        return animations;
     }
 
     @NotNull
-    public static JSONObject toJson(String namespacedId, String folder, String extension) throws IOException {
+    public JSONObject toJson(String namespacedId, String folder, String extension) throws IOException {
         try (InputStream inputStream = getAsset(namespacedId, folder, extension); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); BufferedReader bufferedReader = new BufferedReader(inputStreamReader); StringWriter stringWriter = new StringWriter()) {
             while (bufferedReader.ready()) {
                 stringWriter.write(bufferedReader.read());

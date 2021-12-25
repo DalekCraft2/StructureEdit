@@ -45,8 +45,8 @@ public class BlockStateEditorController {
 
         blockStateIdAutoComplete = new AutoCompleteComboBoxListener<>(blockStateIdComboBox);
         blockStateIdComboBox.getSelectionModel().selectedItemProperty().addListener(this::onBlockStateIdUpdate);
-        Assets.getBlockStateMap().addListener((MapChangeListener<String, JSONObject>) change -> Platform.runLater(() -> {
-            ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
+        Assets.getInstance().getBlockStateMap().addListener((MapChangeListener<String, JSONObject>) change -> Platform.runLater(() -> {
+            ObservableList<String> items = FXCollections.observableArrayList(Assets.getInstance().getBlockStateMap().keySet());
             items.remove("minecraft:missing");
             Collections.sort(items);
             blockStateIdComboBox.setItems(items);

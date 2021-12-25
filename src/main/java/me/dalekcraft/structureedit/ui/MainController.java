@@ -110,7 +110,7 @@ public class MainController extends Node {
         schematicChooser.getExtensionFilters().addAll(SchematicFormats.getFileExtensionFilterMap().keySet());
         schematicChooser.getExtensionFilters().sort(Comparator.comparing(FileChooser.ExtensionFilter::getDescription));
         schematicChooser.getExtensionFilters().add(0, FILTER_ALL);
-        Path assets = Assets.getPath();
+        Path assets = Assets.getInstance().getPath();
         if (assets != null && !assets.toString().equals("")) {
             assetsChooser.setInitialDirectory(assets.toFile());
         }
@@ -259,7 +259,7 @@ public class MainController extends Node {
         file = Objects.requireNonNullElse(file, new File(""));
         assetsChooser.setInitialDirectory(file.getParentFile());
         Path assets = file.toPath();
-        Assets.setPath(assets);
+        Assets.getInstance().setPath(assets);
         shouldReloadTextures = true;
     }
 
@@ -267,7 +267,7 @@ public class MainController extends Node {
         path = Objects.requireNonNullElse(path, Path.of(""));
         File file = path.toFile();
         assetsChooser.setInitialDirectory(file.getParentFile());
-        Assets.setPath(path);
+        Assets.getInstance().setPath(path);
         shouldReloadTextures = true;
     }
 
@@ -344,7 +344,7 @@ public class MainController extends Node {
             if (model.has("elements")) {
                 return model.getJSONArray("elements");
             } else if (model.has("parent")) {
-                return getElements(Assets.getModel(model.getString("parent")));
+                return getElements(Assets.getInstance().getModel(model.getString("parent")));
             } else {
                 return null;
             }
@@ -359,7 +359,7 @@ public class MainController extends Node {
                 }
             }
             if (model.has("parent")) {
-                getTextures(Assets.getModel(model.getString("parent")), textures);
+                getTextures(Assets.getInstance().getModel(model.getString("parent")), textures);
             }
             return textures;
         }
@@ -367,7 +367,7 @@ public class MainController extends Node {
         private static void getTextureFromId(@NotNull JSONObject model, Map<? super String, String> textures, String name) {
             JSONObject parent = null;
             if (model.has("parent")) {
-                parent = Assets.getModel(model.getString("parent"));
+                parent = Assets.getInstance().getModel(model.getString("parent"));
             }
             if (model.has("textures")) {
                 JSONObject texturesJson = model.getJSONObject("textures");
@@ -751,7 +751,7 @@ public class MainController extends Node {
             if (shouldReloadTextures) {
                 textures.forEach((s, texture) -> texture.destroy(gl));
                 textures.clear();
-                Assets.getTextureMap().forEach((s, textureData) -> textures.put(s, TextureIO.newTexture(textureData)));
+                Assets.getInstance().getTextureMap().forEach((s, textureData) -> textures.put(s, TextureIO.newTexture(textureData)));
 
                     /*ObservableList<String> items = FXCollections.observableArrayList(Assets.getBlockStateMap().keySet());
                     items.remove("minecraft:missing");
@@ -1016,7 +1016,7 @@ public class MainController extends Node {
                 waterModel.put("model", "minecraft:block/water");
                 modelList.add(waterModel);
             }
-            JSONObject blockState = Assets.getBlockState(namespacedId);
+            JSONObject blockState = Assets.getInstance().getBlockState(namespacedId);
             if (blockState.has("variants")) {
                 JSONObject variants = blockState.getJSONObject("variants");
                 Set<String> keySet = variants.keySet();
@@ -1127,7 +1127,7 @@ public class MainController extends Node {
             gl.glUseProgram(shaderProgram);
 
             String modelPath = jsonObject.getString("model");
-            JSONObject model = Assets.getModel(modelPath);
+            JSONObject model = Assets.getInstance().getModel(modelPath);
             int x = jsonObject.optInt("x", 0);
             int y = jsonObject.optInt("y", 0);
             boolean uvlock = jsonObject.optBoolean("uvlock", false);
@@ -1288,7 +1288,7 @@ public class MainController extends Node {
                         float textureRight2 = textureRight;
                         float textureBottom2 = textureBottom;
                         gl.glUniform1f(mixFactorLocation, 0.0f);
-                        JSONObject fullAnimation = Assets.getAnimation(textures.getOrDefault(faceTexture, "minecraft:missing"));
+                        JSONObject fullAnimation = Assets.getInstance().getAnimation(textures.getOrDefault(faceTexture, "minecraft:missing"));
                         if (fullAnimation != null) {
                             JSONObject animation = fullAnimation.getJSONObject("animation");
                             boolean interpolate = animation.optBoolean("interpolate", false); // TODO Implement interpolation.
