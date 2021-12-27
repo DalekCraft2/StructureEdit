@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import me.dalekcraft.structureedit.util.Configuration;
+import me.dalekcraft.structureedit.util.Language;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.io.NBTOutputStream;
 import net.querz.nbt.io.NamedTag;
@@ -47,7 +48,7 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
 
         @Override
         public String getDescription() {
-            return Configuration.LANGUAGE.getString("ui.file_chooser.extension.mcedit");
+            return Language.LANGUAGE.getString("ui.file_chooser.extension.mcedit");
         }
 
         @Override
@@ -211,7 +212,7 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
 
         @Override
         public String getDescription() {
-            return Configuration.LANGUAGE.getString("ui.file_chooser.extension.sponge");
+            return Language.LANGUAGE.getString("ui.file_chooser.extension.sponge");
         }
 
         @Override
@@ -278,7 +279,7 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
 
         @Override
         public String getDescription() {
-            return Configuration.LANGUAGE.getString("ui.file_chooser.extension.tardis");
+            return Language.LANGUAGE.getString("ui.file_chooser.extension.tardis");
         }
 
         @Override
@@ -320,7 +321,7 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
 
         @Override
         public String getDescription() {
-            return Configuration.LANGUAGE.getString("ui.file_chooser.extension.vanilla");
+            return Language.LANGUAGE.getString("ui.file_chooser.extension.vanilla");
         }
 
         @Override

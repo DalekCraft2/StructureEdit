@@ -45,9 +45,9 @@ public class Assets {
     }
 
     public void load() {
-        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loading"), path);
+        LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.assets.loading"), path);
         if (path == null || !Files.exists(path)) {
-            LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.invalid"), path);
+            LOGGER.log(Level.WARN, Language.LANGUAGE.getString("log.assets.invalid"), path);
         }
         blockStates.clear();
         models.clear();
@@ -85,7 +85,7 @@ public class Assets {
         } catch (IOException e) {
             LOGGER.log(Level.ERROR, e.getMessage());
         }
-        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.assets.loaded"));
+        LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.assets.loaded"));
     }
 
     public void loadNamespace(Path namespace) {
@@ -161,12 +161,12 @@ public class Assets {
         String internalPath = "/assets/" + namespace + "/" + folder + "/" + id + "." + extension;
         InputStream internalStream = getClass().getResourceAsStream(internalPath);
         if (internalStream != null) {
-            LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getString("log.assets.getting_internal"), internalPath);
+            LOGGER.log(Level.TRACE, Language.LANGUAGE.getString("log.assets.getting_internal"), internalPath);
             return internalStream;
         }
-        Path path = Path.of(this.path.toString(), namespace + File.separator + folder + File.separator + id + "." + extension);
+        Path path = this.path.resolve(namespace + File.separator + folder + File.separator + id + "." + extension);
         if (Files.exists(path)) {
-            LOGGER.log(Level.TRACE, Configuration.LANGUAGE.getString("log.assets.getting"), path);
+            LOGGER.log(Level.TRACE, Language.LANGUAGE.getString("log.assets.getting"), path);
         }
         return Files.newInputStream(path);
     }

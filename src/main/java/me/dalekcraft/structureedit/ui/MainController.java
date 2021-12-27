@@ -37,10 +37,7 @@ import me.dalekcraft.structureedit.drawing.GrassColor;
 import me.dalekcraft.structureedit.drawing.WaterColor;
 import me.dalekcraft.structureedit.schematic.container.*;
 import me.dalekcraft.structureedit.schematic.io.*;
-import me.dalekcraft.structureedit.util.Assets;
-import me.dalekcraft.structureedit.util.Configuration;
-import me.dalekcraft.structureedit.util.InternalUtils;
-import me.dalekcraft.structureedit.util.Semantic;
+import me.dalekcraft.structureedit.util.*;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -81,7 +78,7 @@ public class MainController extends Node {
     public static final Color MISSING_COLOR = Color.rgb(251, 64, 249);
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Color DEFAULT_TINT = Color.WHITE;
-    private static final FileChooser.ExtensionFilter FILTER_ALL = new FileChooser.ExtensionFilter(Configuration.LANGUAGE.getString("ui.file_chooser.extension.all"), "*.*");
+    private static final FileChooser.ExtensionFilter FILTER_ALL = new FileChooser.ExtensionFilter(Language.LANGUAGE.getString("ui.file_chooser.extension.all"), "*.*");
     public final FileChooser schematicChooser = new FileChooser();
     public final DirectoryChooser assetsChooser = new DirectoryChooser();
     private int renderedHeight;
@@ -155,24 +152,24 @@ public class MainController extends Node {
     }
 
     public void openSchematic(@NotNull File file) {
-        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loading"), file);
+        LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.schematic.loading"), file);
         schematic = null;
         SchematicFormat format = SchematicFormats.findByFile(file);
         if (format != null) {
             try (SchematicReader reader = format.getReader(new FileInputStream(file))) {
                 schematic = reader.read();
             } catch (IOException e) {
-                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.error_reading"), e.getMessage());
+                LOGGER.log(Level.ERROR, Language.LANGUAGE.getString("log.schematic.error_reading"), e.getMessage());
                 LOGGER.catching(Level.DEBUG, e);
-                StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
+                StructureEditApplication.stage.setTitle(Language.LANGUAGE.getString("ui.window.title"));
             } catch (ValidationException e) {
-                LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.invalid"), e.getMessage());
+                LOGGER.log(Level.ERROR, Language.LANGUAGE.getString("log.schematic.invalid"), e.getMessage());
                 LOGGER.catching(Level.DEBUG, e);
-                StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
+                StructureEditApplication.stage.setTitle(Language.LANGUAGE.getString("ui.window.title"));
             }
         } else {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.not_schematic"));
-            StructureEditApplication.stage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
+            LOGGER.log(Level.ERROR, Language.LANGUAGE.getString("log.schematic.not_schematic"));
+            StructureEditApplication.stage.setTitle(Language.LANGUAGE.getString("ui.window.title"));
         }
 
         disableEditors();
@@ -180,8 +177,8 @@ public class MainController extends Node {
             enableEditors();
             int[] size = schematic.getSize();
             renderedHeight = size[1];
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.loaded"), file);
-            StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
+            LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.schematic.loaded"), file);
+            StructureEditApplication.stage.setTitle(String.format(Language.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         }
     }
 
@@ -225,22 +222,22 @@ public class MainController extends Node {
             schematicChooser.getExtensionFilters().add(0, FILTER_ALL);
             renderer.animator.resume();
         } else {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.not_loaded"));
+            LOGGER.log(Level.ERROR, Language.LANGUAGE.getString("log.schematic.not_loaded"));
         }
     }
 
     public void saveSchematic(File file, SchematicFormat format) {
         try {
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.saving"), file);
+            LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.schematic.saving"), file);
             if (format != null) {
                 try (SchematicWriter reader = format.getWriter(new FileOutputStream(file))) {
                     reader.write(schematic);
                 }
             }
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.schematic.saved"), file);
-            StructureEditApplication.stage.setTitle(String.format(Configuration.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
+            LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.schematic.saved"), file);
+            StructureEditApplication.stage.setTitle(String.format(Language.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         } catch (IOException | UnsupportedOperationException e1) {
-            LOGGER.log(Level.ERROR, Configuration.LANGUAGE.getString("log.schematic.error_writing"), e1.getMessage());
+            LOGGER.log(Level.ERROR, Language.LANGUAGE.getString("log.schematic.error_writing"), e1.getMessage());
         }
     }
 
@@ -274,12 +271,12 @@ public class MainController extends Node {
     @FXML
     public void selectLogLevel() {
         ChoiceDialog<Level> dialog = new ChoiceDialog<>(LogManager.getRootLogger().getLevel(), Level.values());
-        dialog.setTitle(Configuration.LANGUAGE.getString("ui.menu_bar.settings_menu.log_level.title"));
-        dialog.setContentText(Configuration.LANGUAGE.getString("ui.menu_bar.settings_menu.log_level.label"));
+        dialog.setTitle(Language.LANGUAGE.getString("ui.menu_bar.settings_menu.log_level.title"));
+        dialog.setContentText(Language.LANGUAGE.getString("ui.menu_bar.settings_menu.log_level.label"));
         dialog.getDialogPane().getScene().getWindow().setOnCloseRequest(event -> dialog.close());
         Optional<Level> level = dialog.showAndWait();
         if (level.isPresent()) {
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.log_level.setting"), level.get());
+            LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.log_level.setting"), level.get());
             Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level.get());
         }
     }
@@ -288,8 +285,8 @@ public class MainController extends Node {
     public void showControlsDialog() {
         renderer.animator.pause();
         javafx.scene.control.Dialog<?> dialog = new javafx.scene.control.Dialog<>();
-        dialog.setTitle(Configuration.LANGUAGE.getString("ui.menu_bar.help_menu.controls.title"));
-        dialog.setContentText(Configuration.LANGUAGE.getString("ui.menu_bar.help_menu.controls.dialog"));
+        dialog.setTitle(Language.LANGUAGE.getString("ui.menu_bar.help_menu.controls.title"));
+        dialog.setContentText(Language.LANGUAGE.getString("ui.menu_bar.help_menu.controls.dialog"));
         dialog.getDialogPane().getScene().getWindow().setOnCloseRequest(event -> dialog.close());
         dialog.show();
         renderer.animator.resume();

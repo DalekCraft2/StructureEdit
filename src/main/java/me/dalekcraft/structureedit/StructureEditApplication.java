@@ -23,6 +23,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import me.dalekcraft.structureedit.ui.MainController;
 import me.dalekcraft.structureedit.util.Configuration;
+import me.dalekcraft.structureedit.util.Language;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -47,22 +48,22 @@ public class StructureEditApplication extends Application {
         stage = primaryStage;
         stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png")))); // Use Objects.requireNonNull() because it should never be null
         stage.setOnCloseRequest(event -> {
-            LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.stopping"));
+            LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.stopping"));
             while (AnsiConsole.isInstalled()) {
                 AnsiConsole.systemUninstall();
             }
         });
 
         FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/scene.fxml"));
-        fxmlLoader.setResources(Configuration.LANGUAGE);
+        fxmlLoader.setResources(Language.LANGUAGE);
         Scene scene = new Scene(fxmlLoader.load());
-        primaryStage.setTitle(Configuration.LANGUAGE.getString("ui.window.title"));
+        primaryStage.setTitle(Language.LANGUAGE.getString("ui.window.title"));
         primaryStage.setScene(scene);
 
         MainController controller = fxmlLoader.getController();
 
         AnsiConsole.systemInstall();
-        LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.starting"));
+        LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.starting"));
 
         Parameters parameters = getParameters();
         Map<String, String> named = parameters.getNamed();
@@ -72,11 +73,11 @@ public class StructureEditApplication extends Application {
         if (levelName != null) {
             try {
                 Level level = Level.valueOf(levelName);
-                LOGGER.log(Level.INFO, Configuration.LANGUAGE.getString("log.log_level.setting"), level);
+                LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.log_level.setting"), level);
                 // TODO Figure out why this only works in the IDE.
                 Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level);
             } catch (IllegalArgumentException e) {
-                LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.log_level.invalid"), levelName);
+                LOGGER.log(Level.WARN, Language.LANGUAGE.getString("log.log_level.invalid"), levelName);
             }
         }
 
@@ -93,13 +94,13 @@ public class StructureEditApplication extends Application {
             try {
                 assets = Path.of(assetsArg).toRealPath();
                 if (!Files.exists(assets)) {
-                    LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.invalid"), assets);
+                    LOGGER.log(Level.WARN, Language.LANGUAGE.getString("log.assets.invalid"), assets);
                 }
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
         } else {
-            LOGGER.log(Level.WARN, Configuration.LANGUAGE.getString("log.assets.not_set"));
+            LOGGER.log(Level.WARN, Language.LANGUAGE.getString("log.assets.not_set"));
         }
         controller.setAssets(assets);
 
