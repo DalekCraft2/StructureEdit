@@ -95,10 +95,10 @@ public class StructureEditApplication extends Application {
         String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
 
         String assetsArg;
-        if (protocol.equals("jar")) {
-            assetsArg = Configuration.CONFIG.getProperty("assets_path");
-        } else {
+        if (named.containsKey("assets")) {
             assetsArg = named.get("assets");
+        } else {
+            assetsArg = Configuration.CONFIG.getProperty("assets_path");
         }
         Path assets = null;
         if (assetsArg != null && !assetsArg.equals("")) {
