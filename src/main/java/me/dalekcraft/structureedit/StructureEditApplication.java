@@ -40,8 +40,19 @@ import java.util.Objects;
 
 public class StructureEditApplication extends Application {
 
-    private static final Logger LOGGER = LogManager.getLogger();
+    private static final Logger LOGGER;
     public static Stage stage;
+
+    static {
+        try {
+            // Preload Config class to set log output file locations
+            Class.forName(Configuration.class.getName());
+        } catch (ClassNotFoundException e) {
+            e.printStackTrace();
+        }
+
+        LOGGER = LogManager.getLogger();
+    }
 
     @Override
     public void start(Stage primaryStage) throws IOException {

@@ -9,8 +9,8 @@
             <PatternLayout pattern="%highlight{%d{HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n}"
                            disableAnsi="false"/>
         </Console>
-        <RollingRandomAccessFile name="File" fileName="logs/StructureEdit-latest.log"
-                                 filePattern="logs/StructureEdit-%d{yyyy-MM-dd}-%i.log.gz" ignoreExceptions="false">
+        <RollingRandomAccessFile name="File" fileName="${sys:LOG_LATEST_FILE}"
+                                 filePattern="${sys:LOG_FILE}" ignoreExceptions="false">
             <PatternLayout pattern="%highlight{%d{yyyy-MM-dd HH:mm:ss.SSS} [%t] %-5level %logger{36} - %msg%n}"
                            disableAnsi="false"/>
             <Policies>
