@@ -3,6 +3,7 @@ package me.dalekcraft.structureedit.util;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -13,7 +14,7 @@ import java.util.Properties;
 public final class Configuration {
 
     private static final Logger LOGGER;
-    private static final Path CONFIG_DIRECTORY = ConfigPaths.getConfigFilePath("StructureEdit");
+    private static final Path CONFIG_DIRECTORY = ConfigPaths.getConfigFilePath("DalekCraft" + File.separator + "StructureEdit");
     private static final Path CONFIG_FILE = CONFIG_DIRECTORY.resolve("config.properties");
     public static final Properties CONFIG = new Properties() {
         @Override

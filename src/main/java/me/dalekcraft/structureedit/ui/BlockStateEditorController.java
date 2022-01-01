@@ -1,5 +1,6 @@
 package me.dalekcraft.structureedit.ui;
 
+import com.google.gson.JsonObject;
 import javafx.application.Platform;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
@@ -10,7 +11,6 @@ import javafx.scene.control.*;
 import me.dalekcraft.structureedit.schematic.container.BlockState;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
 import me.dalekcraft.structureedit.util.Assets;
-import org.json.JSONObject;
 
 import java.util.Collections;
 import java.util.Map;
@@ -45,7 +45,7 @@ public class BlockStateEditorController {
 
         blockStateIdAutoComplete = new AutoCompleteComboBoxListener<>(blockStateIdComboBox);
         blockStateIdComboBox.getSelectionModel().selectedItemProperty().addListener(this::onBlockStateIdUpdate);
-        Assets.getInstance().getBlockStateMap().addListener((MapChangeListener<String, JSONObject>) change -> Platform.runLater(() -> {
+        Assets.getInstance().getBlockStateMap().addListener((MapChangeListener<String, JsonObject>) change -> Platform.runLater(() -> {
             ObservableList<String> items = FXCollections.observableArrayList(Assets.getInstance().getBlockStateMap().keySet());
             items.remove("minecraft:missing");
             Collections.sort(items);

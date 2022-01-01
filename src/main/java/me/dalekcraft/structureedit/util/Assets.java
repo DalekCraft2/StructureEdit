@@ -1,5 +1,7 @@
 package me.dalekcraft.structureedit.util;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.texture.TextureData;
 import com.jogamp.opengl.util.texture.TextureIO;
@@ -9,7 +11,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.json.JSONObject;
 
 import java.io.*;
 import java.net.URISyntaxException;
@@ -22,10 +23,10 @@ public class Assets {
 
     private static final Logger LOGGER = LogManager.getLogger();
     private static final Assets INSTANCE = new Assets();
-    private final ObservableMap<String, JSONObject> blockStates = FXCollections.observableHashMap();
-    private final ObservableMap<String, JSONObject> models = FXCollections.observableHashMap();
+    private final ObservableMap<String, JsonObject> blockStates = FXCollections.observableHashMap();
+    private final ObservableMap<String, JsonObject> models = FXCollections.observableHashMap();
     private final ObservableMap<String, TextureData> textures = FXCollections.observableHashMap();
-    private final ObservableMap<String, JSONObject> animations = FXCollections.observableHashMap();
+    private final ObservableMap<String, JsonObject> animations = FXCollections.observableHashMap();
     private Path path = Path.of("");
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
@@ -171,14 +172,14 @@ public class Assets {
         return Files.newInputStream(path);
     }
 
-    public JSONObject getBlockState(@NotNull String namespacedId) {
+    public JsonObject getBlockState(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
         if (blockStates.containsKey(namespacedId)) {
             return blockStates.get(namespacedId);
         }
-        JSONObject blockState;
+        JsonObject blockState;
         try {
             blockState = toJson(namespacedId, "blockstates", "json");
         } catch (IOException e) {
@@ -189,18 +190,18 @@ public class Assets {
         return blockState;
     }
 
-    public ObservableMap<String, JSONObject> getBlockStateMap() {
+    public ObservableMap<String, JsonObject> getBlockStateMap() {
         return blockStates;
     }
 
-    public JSONObject getModel(@NotNull String namespacedId) {
+    public JsonObject getModel(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
         if (models.containsKey(namespacedId)) {
             return models.get(namespacedId);
         }
-        JSONObject model;
+        JsonObject model;
         try {
             model = toJson(namespacedId, "models", "json");
         } catch (IOException e) {
@@ -211,7 +212,7 @@ public class Assets {
         return model;
     }
 
-    public ObservableMap<String, JSONObject> getModelMap() {
+    public ObservableMap<String, JsonObject> getModelMap() {
         return models;
     }
 
@@ -242,14 +243,14 @@ public class Assets {
         return textures;
     }
 
-    public JSONObject getAnimation(@NotNull String namespacedId) {
+    public JsonObject getAnimation(@NotNull String namespacedId) {
         if (!namespacedId.contains(":")) {
             namespacedId = "minecraft:" + namespacedId;
         }
         if (animations.containsKey(namespacedId)) {
             return animations.get(namespacedId);
         }
-        JSONObject animation = null;
+        JsonObject animation = null;
         try {
             animation = toJson(namespacedId, "textures", "png.mcmeta");
         } catch (IOException ignored) {
@@ -258,17 +259,17 @@ public class Assets {
         return animation;
     }
 
-    public ObservableMap<String, JSONObject> getAnimationMap() {
+    public ObservableMap<String, JsonObject> getAnimationMap() {
         return animations;
     }
 
     @NotNull
-    public JSONObject toJson(String namespacedId, String folder, String extension) throws IOException {
+    public JsonObject toJson(String namespacedId, String folder, String extension) throws IOException {
         try (InputStream inputStream = getAsset(namespacedId, folder, extension); InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8); BufferedReader bufferedReader = new BufferedReader(inputStreamReader); StringWriter stringWriter = new StringWriter()) {
             while (bufferedReader.ready()) {
                 stringWriter.write(bufferedReader.read());
             }
-            return new JSONObject(stringWriter.toString());
+            return JsonParser.parseString(stringWriter.toString()).getAsJsonObject();
         }
     }
 }

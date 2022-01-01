@@ -9,7 +9,6 @@ module me.dalekcraft.structureedit {
     requires NBT;
     requires org.jetbrains.annotations;
     requires org.joml;
-    requires org.json;
     requires org.apache.logging.log4j;
     requires org.apache.logging.log4j.core;
     requires org.fusesource.jansi;

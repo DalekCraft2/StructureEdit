@@ -16,6 +16,10 @@
  */
 package me.dalekcraft.structureedit.ui;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
@@ -49,8 +53,6 @@ import org.joml.Matrix3f;
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
-import org.json.JSONArray;
-import org.json.JSONObject;
 
 import javax.swing.*;
 import java.awt.*;
@@ -337,39 +339,39 @@ public class MainController extends Node {
         // private Point2D mousePoint;
 
         @Nullable
-        private static JSONArray getElements(@NotNull JSONObject model) {
+        private static JsonArray getElements(@NotNull JsonObject model) {
             if (model.has("elements")) {
-                return model.getJSONArray("elements");
+                return model.getAsJsonArray("elements");
             } else if (model.has("parent")) {
-                return getElements(Assets.getInstance().getModel(model.getString("parent")));
+                return getElements(Assets.getInstance().getModel(model.get("parent").getAsString()));
             } else {
                 return null;
             }
         }
 
-        private static Map<String, String> getTextures(@NotNull JSONObject model, Map<String, String> textures) {
+        private static Map<String, String> getTextures(@NotNull JsonObject model, Map<String, String> textures) {
             if (model.has("textures")) {
-                JSONObject json = model.getJSONObject("textures");
+                JsonObject json = model.getAsJsonObject("textures");
                 Set<String> names = json.keySet();
                 for (String name : names) {
                     getTextureFromId(model, textures, name);
                 }
             }
             if (model.has("parent")) {
-                getTextures(Assets.getInstance().getModel(model.getString("parent")), textures);
+                getTextures(Assets.getInstance().getModel(model.get("parent").getAsString()), textures);
             }
             return textures;
         }
 
-        private static void getTextureFromId(@NotNull JSONObject model, Map<? super String, String> textures, String name) {
-            JSONObject parent = null;
+        private static void getTextureFromId(@NotNull JsonObject model, Map<? super String, String> textures, String name) {
+            JsonObject parent = null;
             if (model.has("parent")) {
-                parent = Assets.getInstance().getModel(model.getString("parent"));
+                parent = Assets.getInstance().getModel(model.get("parent").getAsString());
             }
             if (model.has("textures")) {
-                JSONObject texturesJson = model.getJSONObject("textures");
+                JsonObject texturesJson = model.getAsJsonObject("textures");
                 if (texturesJson.has(name)) {
-                    String path = texturesJson.getString(name);
+                    String path = texturesJson.get(name).getAsString();
                     if (path.startsWith("#")) {
                         String substring = path.substring(1);
                         if (texturesJson.has(substring)) {
@@ -782,11 +784,11 @@ public class MainController extends Node {
 
                                 long seed = x + (long) y * size[2] * size[0] + (long) z * size[0];
                                 random.setSeed(seed);
-                                List<JSONObject> modelList = getModelsFromBlockState(blockState);
+                                List<JsonObject> modelList = getModelsFromBlockState(blockState);
                                 Color tint = getTint(blockState, biomeState);
 
                                 try {
-                                    for (JSONObject model : modelList) {
+                                    for (JsonObject model : modelList) {
                                         modelMatrix.pushMatrix();
                                         modelMatrix.translate(x, y, z);
                                         drawModel(gl, model, tint);
@@ -1004,18 +1006,18 @@ public class MainController extends Node {
         }
 
         @NotNull
-        public List<JSONObject> getModelsFromBlockState(@NotNull BlockState block) {
-            List<JSONObject> modelList = new ArrayList<>();
+        public List<JsonObject> getModelsFromBlockState(@NotNull BlockState block) {
+            List<JsonObject> modelList = new ArrayList<>();
             String namespacedId = block.getId();
             Map<String, String> properties = block.getProperties();
             if (properties.containsKey("waterlogged") && properties.get("waterlogged").equals("true")) {
-                JSONObject waterModel = new JSONObject();
-                waterModel.put("model", "minecraft:block/water");
+                JsonObject waterModel = new JsonObject();
+                waterModel.addProperty("model", "minecraft:block/water");
                 modelList.add(waterModel);
             }
-            JSONObject blockState = Assets.getInstance().getBlockState(namespacedId);
+            JsonObject blockState = Assets.getInstance().getBlockState(namespacedId);
             if (blockState.has("variants")) {
-                JSONObject variants = blockState.getJSONObject("variants");
+                JsonObject variants = blockState.getAsJsonObject("variants");
                 Set<String> keySet = variants.keySet();
                 for (String variantName : keySet) {
                     Set<Map.Entry<String, String>> states = BlockState.toPropertyMap(variantName, false).entrySet();
@@ -1027,31 +1029,31 @@ public class MainController extends Node {
                         }
                     }
                     if (contains) {
-                        if (variants.has(variantName) && variants.get(variantName) instanceof JSONObject variant) {
+                        if (variants.has(variantName) && variants.get(variantName) instanceof JsonObject variant) {
                             modelList.add(variant);
                             return modelList;
-                        } else if (variants.has(variantName) && variants.get(variantName) instanceof JSONArray variantArray) {
-                            JSONObject variant = chooseRandomModel(variantArray);
+                        } else if (variants.has(variantName) && variants.get(variantName) instanceof JsonArray variantArray) {
+                            JsonObject variant = chooseRandomModel(variantArray);
                             modelList.add(variant);
                             return modelList;
                         }
                     }
                 }
             } else if (blockState.has("multipart")) {
-                JSONArray multipart = blockState.getJSONArray("multipart");
+                JsonArray multipart = blockState.getAsJsonArray("multipart");
                 for (Object partObject : multipart) {
-                    JSONObject part = (JSONObject) partObject;
+                    JsonObject part = (JsonObject) partObject;
                     if (part.has("when")) {
-                        JSONObject when = part.getJSONObject("when");
+                        JsonObject when = part.getAsJsonObject("when");
                         if (when.has("OR")) {
-                            JSONArray or = when.getJSONArray("OR");
+                            JsonArray or = when.getAsJsonArray("OR");
                             boolean contains = true;
                             for (Object orEntryObject : or) {
                                 contains = true;
-                                JSONObject orEntry = (JSONObject) orEntryObject;
+                                JsonObject orEntry = (JsonObject) orEntryObject;
                                 Set<String> keySet = orEntry.keySet();
                                 for (String state : keySet) {
-                                    List<String> values = Arrays.asList(orEntry.getString(state).split("\\|"));
+                                    List<String> values = Arrays.asList(orEntry.get(state).getAsString().split("\\|"));
                                     if (!values.contains(properties.get(state))) {
                                         contains = false;
                                         break;
@@ -1062,10 +1064,10 @@ public class MainController extends Node {
                                 }
                             }
                             if (contains) {
-                                if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
+                                if (part.has("apply") && part.get("apply") instanceof JsonObject apply) {
                                     modelList.add(apply);
-                                } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                                    JSONObject apply = chooseRandomModel(applyArray);
+                                } else if (part.has("apply") && part.get("apply") instanceof JsonArray applyArray) {
+                                    JsonObject apply = chooseRandomModel(applyArray);
                                     modelList.add(apply);
                                 }
                             }
@@ -1073,7 +1075,7 @@ public class MainController extends Node {
                             Set<String> keySet = when.keySet();
                             boolean contains = true;
                             for (String state : keySet) {
-                                List<String> values = Arrays.asList(when.getString(state).split("\\|"));
+                                List<String> values = Arrays.asList(when.get(state).getAsString().split("\\|"));
                                 if (properties.containsKey(state)) {
                                     if (!values.contains(properties.get(state))) {
                                         contains = false;
@@ -1082,19 +1084,19 @@ public class MainController extends Node {
                                 }
                             }
                             if (contains) {
-                                if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
+                                if (part.has("apply") && part.get("apply") instanceof JsonObject apply) {
                                     modelList.add(apply);
-                                } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                                    JSONObject apply = chooseRandomModel(applyArray);
+                                } else if (part.has("apply") && part.get("apply") instanceof JsonArray applyArray) {
+                                    JsonObject apply = chooseRandomModel(applyArray);
                                     modelList.add(apply);
                                 }
                             }
                         }
                     } else {
-                        if (part.has("apply") && part.get("apply") instanceof JSONObject apply) {
+                        if (part.has("apply") && part.get("apply") instanceof JsonObject apply) {
                             modelList.add(apply);
-                        } else if (part.has("apply") && part.get("apply") instanceof JSONArray applyArray) {
-                            JSONObject apply = chooseRandomModel(applyArray);
+                        } else if (part.has("apply") && part.get("apply") instanceof JsonArray applyArray) {
+                            JsonObject apply = chooseRandomModel(applyArray);
                             modelList.add(apply);
                         }
                     }
@@ -1103,12 +1105,12 @@ public class MainController extends Node {
             return modelList;
         }
 
-        private JSONObject chooseRandomModel(@NotNull JSONArray models) {
+        private JsonObject chooseRandomModel(@NotNull JsonArray models) {
             int total = 0;
-            NavigableMap<Integer, JSONObject> weightTree = new TreeMap<>();
+            NavigableMap<Integer, JsonObject> weightTree = new TreeMap<>();
             for (Object modelObject : models) {
-                JSONObject model = (JSONObject) modelObject;
-                int weight = model.optInt("weight", 1);
+                JsonObject model = (JsonObject) modelObject;
+                int weight = model.has("weight") ? model.get("weight").getAsInt() : 1;
                 if (weight <= 0) {
                     continue;
                 }
@@ -1120,14 +1122,14 @@ public class MainController extends Node {
         }
 
         // TODO use object to contain these ten million model attributes
-        public void drawModel(@NotNull GL4 gl, @NotNull JSONObject jsonObject, Color tint) {
+        public void drawModel(@NotNull GL4 gl, @NotNull JsonObject jsonObject, Color tint) {
             gl.glUseProgram(shaderProgram);
 
-            String modelPath = jsonObject.getString("model");
-            JSONObject model = Assets.getInstance().getModel(modelPath);
-            int x = jsonObject.optInt("x", 0);
-            int y = jsonObject.optInt("y", 0);
-            boolean uvlock = jsonObject.optBoolean("uvlock", false);
+            String modelPath = jsonObject.get("model").getAsString();
+            JsonObject model = Assets.getInstance().getModel(modelPath);
+            int x = jsonObject.has("x") ? jsonObject.get("x").getAsInt() : 0;
+            int y = jsonObject.has("y") ? jsonObject.get("y").getAsInt() : 0;
+            boolean uvlock = jsonObject.has("uvlock") ? jsonObject.get("uvlock").getAsBoolean() : false;
 
             modelMatrix.translate(0.5f, 0.5f, 0.5f);
             modelMatrix.rotateY((float) Math.toRadians(-y));
@@ -1136,41 +1138,41 @@ public class MainController extends Node {
 
             Map<String, String> textures = getTextures(model, new HashMap<>());
 
-            JSONArray elements = getElements(model);
+            JsonArray elements = getElements(model);
             if (elements != null) {
                 for (Object elementObject : elements) {
                     modelMatrix.pushMatrix();
 
-                    JSONObject element = (JSONObject) elementObject;
-                    JSONArray from = element.getJSONArray("from");
-                    JSONArray to = element.getJSONArray("to");
-                    JSONObject rotation = element.optJSONObject("rotation");
-                    JSONArray origin = null;
+                    JsonObject element = (JsonObject) elementObject;
+                    JsonArray from = element.getAsJsonArray("from");
+                    JsonArray to = element.getAsJsonArray("to");
+                    JsonObject rotation = element.has("rotation") ? element.getAsJsonObject("rotation") : null;
+                    JsonArray origin = null;
                     String axis = null;
                     float angle = 0.0f;
                     boolean rescale = false;
                     if (rotation != null) {
-                        origin = rotation.getJSONArray("origin");
-                        axis = rotation.getString("axis");
-                        angle = rotation.optFloat("angle", 0.0f);
-                        rescale = rotation.optBoolean("rescale", false);
+                        origin = rotation.getAsJsonArray("origin");
+                        axis = rotation.get("axis").getAsString();
+                        angle = rotation.has("angle") ? rotation.get("angle").getAsFloat() : 0.0f;
+                        rescale = rotation.has("rescale") ? rotation.get("rescale").getAsBoolean() : false;
                     }
-                    boolean shade = element.optBoolean("shade", true);
+                    boolean shade = element.has("shade") ? element.get("shade").getAsBoolean() : true;
 
-                    float fromX = (float) (from.getDouble(0) / MODEL_SIZE);
-                    float fromY = (float) (from.getDouble(1) / MODEL_SIZE);
-                    float fromZ = (float) (from.getDouble(2) / MODEL_SIZE);
-                    float toX = (float) (to.getDouble(0) / MODEL_SIZE);
-                    float toY = (float) (to.getDouble(1) / MODEL_SIZE);
-                    float toZ = (float) (to.getDouble(2) / MODEL_SIZE);
+                    float fromX = (float) (from.get(0).getAsDouble() / MODEL_SIZE);
+                    float fromY = (float) (from.get(1).getAsDouble() / MODEL_SIZE);
+                    float fromZ = (float) (from.get(2).getAsDouble() / MODEL_SIZE);
+                    float toX = (float) (to.get(0).getAsDouble() / MODEL_SIZE);
+                    float toY = (float) (to.get(1).getAsDouble() / MODEL_SIZE);
+                    float toZ = (float) (to.get(2).getAsDouble() / MODEL_SIZE);
 
                     Vector3f fromVec = new Vector3f(fromX, fromY, fromZ);
                     Vector3f toVec = new Vector3f(toX, toY, toZ);
 
                     if (axis != null && origin != null) {
-                        float originX = (float) (origin.getDouble(0) / MODEL_SIZE);
-                        float originY = (float) (origin.getDouble(1) / MODEL_SIZE);
-                        float originZ = (float) (origin.getDouble(2) / MODEL_SIZE);
+                        float originX = (float) (origin.get(0).getAsDouble() / MODEL_SIZE);
+                        float originY = (float) (origin.get(1).getAsDouble() / MODEL_SIZE);
+                        float originZ = (float) (origin.get(2).getAsDouble() / MODEL_SIZE);
                         modelMatrix.translate(originX, originY, originZ);
                         float rescaleFactor = 1.0f;
                         if (Math.abs(angle) == 22.5f) {
@@ -1231,20 +1233,20 @@ public class MainController extends Node {
                     gl.glUniform3f(materialSpecularLocation, 1.0f, 1.0f, 1.0f);
                     gl.glUniform1f(materialShininessLocation, 1.0f);
 
-                    JSONObject faces = element.getJSONObject("faces");
+                    JsonObject faces = element.getAsJsonObject("faces");
                     Set<String> faceSet = faces.keySet();
                     for (String faceName : faceSet) {
                         if (!Objects.equals(faceName, "east") && !Objects.equals(faceName, "west") && !Objects.equals(faceName, "up") && !Objects.equals(faceName, "down") && !Objects.equals(faceName, "south") && !Objects.equals(faceName, "north")) {
                             continue;
                         }
 
-                        JSONObject face = faces.getJSONObject(faceName);
+                        JsonObject face = faces.getAsJsonObject(faceName);
 
-                        JSONArray uv = face.optJSONArray("uv");
-                        String faceTexture = face.has("texture") ? face.getString("texture").substring(1) : null;
-                        String cullface = face.optString("cullface"); // TODO Implement culling.
-                        int faceRotation = face.optInt("rotation", 0);
-                        int tintIndex = face.optInt("tintindex", -1);
+                        JsonArray uv = face.has("uv") ? face.getAsJsonArray("uv") : null;
+                        String faceTexture = face.has("texture") ? face.get("texture").getAsString().substring(1) : null;
+                        String cullface = face.has("cullface") ? face.get("cullface").getAsString() : null; // TODO Implement culling.
+                        int faceRotation = face.has("rotation") ? face.get("rotation").getAsInt() : 0;
+                        int tintIndex = face.has("tintindex") ? face.get("tintindex").getAsInt() : -1;
 
                         float[] components = new float[4];
                         if (tintIndex == -1) {
@@ -1261,20 +1263,20 @@ public class MainController extends Node {
 
                         Texture texture = getTexture(textures.getOrDefault(faceTexture, "minecraft:missing"));
 
-                        float textureLeft = uv != null ? (float) (uv.getDouble(0) / MODEL_SIZE) : switch (faceName) {
+                        float textureLeft = uv != null ? (float) (uv.get(0).getAsDouble() / MODEL_SIZE) : switch (faceName) {
                             case "up", "down", "north", "south" -> fromX;
                             default -> fromZ;
                         };
-                        float textureTop = uv != null ? (float) (uv.getDouble(1) / MODEL_SIZE) : switch (faceName) {
+                        float textureTop = uv != null ? (float) (uv.get(1).getAsDouble() / MODEL_SIZE) : switch (faceName) {
                             case "up" -> fromZ;
                             case "down" -> SCALE - toZ;
                             default -> SCALE - toY;
                         };
-                        float textureRight = uv != null ? (float) (uv.getDouble(2) / MODEL_SIZE) : switch (faceName) {
+                        float textureRight = uv != null ? (float) (uv.get(2).getAsDouble() / MODEL_SIZE) : switch (faceName) {
                             case "up", "down", "north", "south" -> toX;
                             default -> toZ;
                         };
-                        float textureBottom = uv != null ? (float) (uv.getDouble(3) / MODEL_SIZE) : switch (faceName) {
+                        float textureBottom = uv != null ? (float) (uv.get(3).getAsDouble() / MODEL_SIZE) : switch (faceName) {
                             case "up" -> toZ;
                             case "down" -> SCALE - fromZ;
                             default -> SCALE - fromY;
@@ -1285,24 +1287,24 @@ public class MainController extends Node {
                         float textureRight2 = textureRight;
                         float textureBottom2 = textureBottom;
                         gl.glUniform1f(mixFactorLocation, 0.0f);
-                        JSONObject fullAnimation = Assets.getInstance().getAnimation(textures.getOrDefault(faceTexture, "minecraft:missing"));
+                        JsonObject fullAnimation = Assets.getInstance().getAnimation(textures.getOrDefault(faceTexture, "minecraft:missing"));
                         if (fullAnimation != null) {
-                            JSONObject animation = fullAnimation.getJSONObject("animation");
-                            boolean interpolate = animation.optBoolean("interpolate", false); // TODO Implement interpolation.
-                            int width = animation.optInt("width", texture.getWidth());
-                            int height = animation.optInt("height", texture.getWidth());
-                            int frametime = animation.optInt("frametime", 1);
+                            JsonObject animation = fullAnimation.getAsJsonObject("animation");
+                            boolean interpolate = animation.has("interpolate") ? animation.get("interpolate").getAsBoolean() : false; // TODO Implement interpolation.
+                            int width = animation.has("width") ? animation.get("width").getAsInt() : texture.getWidth();
+                            int height = animation.has("height") ? animation.get("height").getAsInt() : texture.getWidth();
+                            int frametime = animation.has("frametime") ? animation.get("frametime").getAsInt() : 1;
 
                             int widthFactor = Math.abs(texture.getWidth() / width);
                             int heightFactor = Math.abs(texture.getHeight() / height);
 
-                            JSONArray frames;
+                            JsonArray frames;
                             if (animation.has("frames")) {
-                                frames = animation.getJSONArray("frames");
+                                frames = animation.getAsJsonArray("frames");
                             } else {
-                                frames = new JSONArray();
+                                frames = new JsonArray();
                                 for (int i = 0; i < heightFactor; i++) {
-                                    frames.put(i, i);
+                                    frames.add(new JsonPrimitive(i));
                                 }
                             }
 
@@ -1319,30 +1321,30 @@ public class MainController extends Node {
 
                             long currentTime = System.currentTimeMillis();
                             long currentTick = currentTime / (TICK_LENGTH * frametime);
-                            int index = (int) (currentTick % frames.length());
+                            int index = (int) (currentTick % frames.size());
                             /*The mix factor should be a value between 0.0f and 1.0f, representing the passage of time from the current frame to the next. 0.0f is the current frame, and 1.0f is the next frame.*/
                             /* TODO how the heck do i get this */
                             float mixFactor = 0.0f;
 
                             gl.glUniform1f(mixFactorLocation, mixFactor);
 
-                            Object frame = frames.get(index);
+                            JsonElement frame = frames.get(index);
                             double frameDouble = 0.0;
-                            if (frame instanceof Integer frameInt) {
+                            if (frame.isJsonPrimitive() && frame.getAsJsonPrimitive().isNumber() && frame.getAsJsonPrimitive().getAsNumber() instanceof Integer frameInt) {
                                 frameDouble = (double) frameInt;
-                            } else if (frame instanceof JSONObject frameObject) {
-                                frameDouble = frameObject.getInt("index");
+                            } else if (frame instanceof JsonObject frameObject) {
+                                frameDouble = frameObject.get("index").getAsInt();
                                 // TODO Implement the "time" tag.
-                                int time = frameObject.optInt("time", frametime);
+                                int time = frameObject.has("time") ? frameObject.get("time").getAsInt() : frametime;
                             }
 
-                            int index2 = frames.length() > index + 1 ? index + 1 : 0;
-                            Object frame2 = frames.get(index2);
+                            int index2 = frames.size() > index + 1 ? index + 1 : 0;
+                            JsonElement frame2 = frames.get(index2);
                             double frameDouble2 = 0.0;
-                            if (frame2 instanceof Integer frameInt) {
+                            if (frame2.isJsonPrimitive() && frame2.getAsJsonPrimitive().isNumber() && frame2.getAsJsonPrimitive().getAsNumber() instanceof Integer frameInt) {
                                 frameDouble2 = (double) frameInt;
-                            } else if (frame2 instanceof JSONObject frameObject) {
-                                frameDouble2 = frameObject.getInt("index");
+                            } else if (frame2 instanceof JsonObject frameObject) {
+                                frameDouble2 = frameObject.get("index").getAsInt();
                             }
 
                             // Change to the current frame in the animation

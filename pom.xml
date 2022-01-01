@@ -50,7 +50,7 @@
 
         <javafx.version>17.0.1</javafx.version>
         <jogl.version>2.3.2</jogl.version>
-        <!--<jogl.version>2.4.0-rc-20210111</jogl.version>-->
+        <!--<jogl.version>v2.4.0-rc4</jogl.version>-->
     </properties>
 
     <!-- TODO Add JUnit tests. -->
@@ -106,6 +106,13 @@
             <classifier>${jogl.natives}</classifier>
             <scope>runtime</scope>
         </dependency>
+        <!--<dependency>
+            &lt;!&ndash; GlueGen Runtime Natives &ndash;&gt;
+            <groupId>org.jogamp.gluegen</groupId>
+            <artifactId>gluegen-rt-${jogl.natives}</artifactId>
+            <version>${jogl.version}</version>
+            <scope>runtime</scope>
+        </dependency>-->
         <dependency>
             <!-- JOGL -->
             <groupId>org.jogamp.jogl</groupId>
@@ -122,6 +129,13 @@
             <classifier>${jogl.natives}</classifier>
             <scope>runtime</scope>
         </dependency>
+        <!--<dependency>
+            &lt;!&ndash; JOGL Natives &ndash;&gt;
+            <groupId>org.jogamp.jogl</groupId>
+            <artifactId>jogl-all-${jogl.natives}</artifactId>
+            <version>${jogl.version}</version>
+            <scope>runtime</scope>
+        </dependency>-->
         <dependency>
             <!-- JOML -->
             <groupId>org.joml</groupId>
@@ -140,21 +154,13 @@
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
-        <dependency>
-            <!-- JSON in Java -->
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20210307</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
 
         <!-- Logging -->
         <dependency>
             <!-- Apache Log4j Core -->
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.14.1</version>
+            <version>2.17.0</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -173,6 +179,20 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
             <version>2.7</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.mojang</groupId>
+            <artifactId>datafixerupper</artifactId>
+            <version>4.0.26</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.mojang</groupId>
+            <artifactId>brigadier</artifactId>
+            <version>1.0.18</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>-->
@@ -213,15 +233,41 @@
 
     <repositories>
         <repository>
+            <id>apache.snapshots</id>
+            <name>Apache Development Snapshot Repository</name>
+            <url>https://repository.apache.org/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <repository>
             <!-- Querz/NBT, everit-org/json-schema -->
-            <name>Jitpack</name>
             <id>jitpack.io</id>
+            <name>Jitpack</name>
             <url>https://jitpack.io</url>
         </repository>
         <repository>
-            <name>EngineHub</name>
             <id>enginehub-repo</id>
+            <name>EngineHub</name>
             <url>https://maven.enginehub.org/repo/</url>
+        </repository>
+        <!--<repository>
+            <id>minecraft-libraries</id>
+            <name>Minecraft Libraries</name>
+            <url>https://libraries.minecraft.net</url>
+        </repository>-->
+        <repository>
+            <id>jzy3d-snapshots</id>
+            <name>Jzy3d Snapshots</name>
+            <url>https://maven.jzy3d.org/snapshots/</url>
+        </repository>
+        <repository>
+            <id>jzy3d-releases</id>
+            <name>Jzy3d Releases</name>
+            <url>https://maven.jzy3d.org/releases/</url>
         </repository>
     </repositories>
 
@@ -234,6 +280,13 @@
                 <filtering>false</filtering>
                 <includes>
                     <include>**/*</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>${project.basedir}</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>LICENSE.txt</include>
                 </includes>
             </resource>
         </resources>
@@ -277,15 +330,6 @@
                 </executions>
             </plugin>
             <plugin>
-                <groupId>org.openjfx</groupId>
-                <artifactId>javafx-maven-plugin</artifactId>
-                <version>0.0.8</version>
-                <configuration>
-                    <mainClass>me.dalekcraft.structureedit/${mainClass}</mainClass>
-                    <includePathExceptionsInClasspath>true</includePathExceptionsInClasspath>
-                </configuration>
-            </plugin>
-            <plugin>
                 <!-- Set the main class -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -301,6 +345,18 @@
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
                         </manifest>
                     </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
+                <configuration>
+                    <compress>2</compress>
+                    <launcher>structureedit</launcher>
+                    <jlinkImageName>structureedit</jlinkImageName>
+                    <jlinkZipName>structureedit</jlinkZipName>
+                    <mainClass>me.dalekcraft.structureedit/${mainClass}</mainClass>
                 </configuration>
             </plugin>
             <plugin>
@@ -358,7 +414,7 @@
                             <downloadUrl>http://java.com/download</downloadUrl>
                             <supportUrl>${project.ciManagement.url}</supportUrl>
                             <chdir>.</chdir>
-                            <icon>${project.basedir}/src/main/resources/icon.ico</icon>
+                            <icon>${project.build.outputDirectory}/icon.ico</icon>
                             <classPath>
                                 <mainClass>${mainClass}</mainClass>
                                 <addDependencies>true</addDependencies>
@@ -414,6 +470,35 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <!-- Create installer -->
+                <!-- Inno Setup Compiler MUST be installed for this part of the build to work. -->
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <executable>C:\Program Files (x86)\Inno Setup 6\ISCC.exe</executable>
+                    <arguments>
+                        <argument>/DName=${project.name}</argument>
+                        <argument>/DVersion=${project.version}</argument>
+                        <argument>/DPublisher=DalekCraft</argument>
+                        <argument>/DExeName=${project.name}.exe</argument>
+                        <!--suppress UnresolvedMavenProperty -->
+                        <argument>
+                            /DVersionInfoVersion=${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}
+                        </argument>
+                        <argument>setup.iss</argument>
+                    </arguments>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -432,20 +517,20 @@
                 <jogl.natives>natives-linux-amd64</jogl.natives>
             </properties>
         </profile>
-        <profile>
-            <id>jogl-natives-linux-aarch64</id>
+        <!--<profile>
+            <id>jogl-natives-linux-armv6</id>
             <activation>
                 <os>
                     <family>unix</family>
-                    <arch>aarch64</arch>
+                    <arch>arm</arch> &lt;!&ndash; TODO Find the proper architecture for this. &ndash;&gt;
                 </os>
             </activation>
             <properties>
-                <jogl.natives>natives-linux-arm64</jogl.natives>
+                <jogl.natives>natives-linux-armv6</jogl.natives>
             </properties>
-        </profile>
+        </profile>-->
         <profile>
-            <id>jogl-natives-linux-arm</id>
+            <id>jogl-natives-linux-armv6hf</id>
             <activation>
                 <os>
                     <family>unix</family>
@@ -453,19 +538,19 @@
                 </os>
             </activation>
             <properties>
-                <jogl.natives>natives-linux-armv6</jogl.natives>
+                <jogl.natives>natives-linux-armv6hf</jogl.natives>
             </properties>
         </profile>
         <profile>
-            <id>jogl-natives-linux-arm32</id>
+            <id>jogl-natives-linux-i586</id>
             <activation>
                 <os>
                     <family>unix</family>
-                    <arch>arm32</arch>
+                    <arch>x86</arch>
                 </os>
             </activation>
             <properties>
-                <jogl.natives>natives-linux-armv6</jogl.natives>
+                <jogl.natives>natives-linux-i586</jogl.natives>
             </properties>
         </profile>
         <profile>
@@ -477,6 +562,30 @@
             </activation>
             <properties>
                 <jogl.natives>natives-macosx-universal</jogl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>jogl-natives-solaris-amd64</id>
+            <activation>
+                <os>
+                    <family>solaris</family>
+                    <arch>sparc</arch>
+                </os>
+            </activation>
+            <properties>
+                <jogl.natives>natives-solaris-amd64</jogl.natives>
+            </properties>
+        </profile>
+        <profile>
+            <id>jogl-natives-solaris-i586</id>
+            <activation>
+                <os>
+                    <family>solaris</family>
+                    <arch>sparcv9</arch>
+                </os>
+            </activation>
+            <properties>
+                <jogl.natives>natives-solaris-i586</jogl.natives>
             </properties>
         </profile>
         <profile>
@@ -492,10 +601,9 @@
             </properties>
         </profile>
         <profile>
-            <id>jogl-natives-windows-x86</id>
+            <id>jogl-natives-windows-i586</id>
             <activation>
                 <os>
-                    <name>linux</name>
                     <family>windows</family>
                     <arch>x86</arch>
                 </os>
