@@ -1,14 +1,3 @@
-/*
- * Decompiled with CFR 0.152.
- *
- * Could not load the following classes:
- *  com.google.common.annotations.VisibleForTesting
- *  com.google.gson.JsonDeserializationContext
- *  com.google.gson.JsonDeserializer
- *  com.google.gson.JsonElement
- *  com.google.gson.JsonObject
- *  com.google.gson.JsonParseException
- */
 package me.dalekcraft.structureedit.assets.blockstates;
 
 import com.google.common.annotations.VisibleForTesting;

@@ -1,16 +1,3 @@
-/*
- * Decompiled with CFR 0.152.
- *
- * Could not load the following classes:
- *  com.google.common.collect.Lists
- *  com.google.gson.JsonArray
- *  com.google.gson.JsonDeserializationContext
- *  com.google.gson.JsonDeserializer
- *  com.google.gson.JsonElement
- *  com.google.gson.JsonParseException
- *  com.mojang.datafixers.util.Pair
- *  javax.annotation.Nullable
- */
 package me.dalekcraft.structureedit.assets.blockstates;
 
 import com.google.common.collect.Lists;
