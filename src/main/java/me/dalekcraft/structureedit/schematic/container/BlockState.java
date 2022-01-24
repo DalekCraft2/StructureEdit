@@ -2,6 +2,7 @@ package me.dalekcraft.structureedit.schematic.container;
 
 import com.google.common.base.Joiner;
 import com.google.common.base.Splitter;
+import me.dalekcraft.structureedit.assets.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.HashMap;
@@ -13,15 +14,15 @@ public class BlockState {
     private static final Splitter.MapSplitter SPLITTER = Splitter.on(",").trimResults().omitEmptyStrings().trimResults().withKeyValueSeparator("=");
     private static final Joiner.MapJoiner JOINER = Joiner.on(",").withKeyValueSeparator("=");
     @NotNull
-    private String id;
+    private ResourceLocation id;
     @NotNull
     private Map<String, String> properties;
 
-    public BlockState(@NotNull String id) {
+    public BlockState(@NotNull ResourceLocation id) {
         this(id, null);
     }
 
-    public BlockState(@NotNull String id, Map<String, String> properties) {
+    public BlockState(@NotNull ResourceLocation id, Map<String, String> properties) {
         this.id = Objects.requireNonNull(id);
         this.properties = Objects.requireNonNullElse(properties, new HashMap<>());
     }
@@ -32,7 +33,7 @@ public class BlockState {
             nameEndIndex = blockStateString.indexOf('[');
         }
 
-        String id = blockStateString.substring(0, nameEndIndex);
+        ResourceLocation id = new ResourceLocation(blockStateString.substring(0, nameEndIndex));
 
         String propertyString = blockStateString.substring(nameEndIndex).replace("[", "").replace("]", "");
         Map<String, String> propertyMap = toPropertyMap(propertyString);
@@ -73,7 +74,7 @@ public class BlockState {
      * @return the namespaced ID of this {@link BlockState}
      */
     @NotNull
-    public String getId() {
+    public ResourceLocation getId() {
         return id;
     }
 
@@ -82,7 +83,7 @@ public class BlockState {
      *
      * @param id the new namespaced ID for this {@link BlockState}
      */
-    public void setId(@NotNull String id) {
+    public void setId(@NotNull ResourceLocation id) {
         this.id = Objects.requireNonNull(id);
     }
 

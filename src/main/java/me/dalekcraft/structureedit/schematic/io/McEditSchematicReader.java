@@ -1,8 +1,9 @@
 package me.dalekcraft.structureedit.schematic.io;
 
-import com.sk89q.worldedit.internal.Constants;
+import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.schematic.container.*;
 import me.dalekcraft.structureedit.schematic.io.legacycompat.LegacyMapper;
+import me.dalekcraft.structureedit.util.Constants;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;
 import org.apache.logging.log4j.Level;
@@ -94,7 +95,7 @@ public class McEditSchematicReader extends NbtSchematicReader {
             BlockState blockState = LegacyMapper.getInstance().getBlockFromLegacy(blocks[i], blockData[i]);
             if (blockState == null) {
                 LOGGER.log(Level.DEBUG, "Could not find legacy block with ID of " + blocks[i] + ":" + blockData[i] + "; replacing with air");
-                blockState = new BlockState("minecraft:air");
+                blockState = new BlockState(Constants.DEFAULT_BLOCK);
             }
             if (!schematic.getBlockPalette().contains(blockState)) {
                 schematic.getBlockPalette().add(blockState);
@@ -116,7 +117,7 @@ public class McEditSchematicReader extends NbtSchematicReader {
                 double z = requireTag(position, 2, DoubleTag.class).asDouble();
 
                 String legacyId = requireTag(entityTag, "id", StringTag.class).getValue();
-                String id = convertEntityId(legacyId);
+                ResourceLocation id = new ResourceLocation(convertEntityId(legacyId));
 
                 entityTag.remove("Pos");
                 entityTag.remove("id");
@@ -138,7 +139,7 @@ public class McEditSchematicReader extends NbtSchematicReader {
                 int z = requireTag(tileEntity, "z", IntTag.class).asInt();
 
                 String legacyId = requireTag(tileEntity, "id", StringTag.class).getValue();
-                String id = convertBlockEntityId(legacyId);
+                ResourceLocation id = new ResourceLocation(convertBlockEntityId(legacyId));
 
                 tileEntity.remove("x");
                 tileEntity.remove("y");
@@ -170,7 +171,7 @@ public class McEditSchematicReader extends NbtSchematicReader {
                     BiomeState biomeState = LegacyMapper.getInstance().getBiomeFromLegacy(biomes[i]);
                     if (biomeState == null) {
                         LOGGER.log(Level.DEBUG, "Could not find legacy biome with ID of " + blocks[i] + ":" + blockData[i] + "; replacing with ocean");
-                        biomeState = new BiomeState("minecraft:ocean");
+                        biomeState = new BiomeState(Constants.DEFAULT_BIOME);
                     }
                     if (!schematic.getBiomePalette().contains(biomeState)) {
                         schematic.getBiomePalette().add(biomeState);
@@ -201,6 +202,7 @@ public class McEditSchematicReader extends NbtSchematicReader {
             case "MinecartFurnace" -> "furnace_minecart";
             case "MinecartHopper" -> "hopper_minecart";
             case "EntityHorse" -> "horse";
+            case "Item" -> "item";
             case "ItemFrame" -> "item_frame";
             case "LeashKnot" -> "leash_knot";
             case "LightningBolt" -> "lightning_bolt";
@@ -208,6 +210,7 @@ public class McEditSchematicReader extends NbtSchematicReader {
             case "MinecartRideable" -> "minecart";
             case "MushroomCow" -> "mooshroom";
             case "Ozelot" -> "ocelot";
+            case "Painting" -> "painting";
             case "PolarBear" -> "polar_bear";
             case "ThrownPotion" -> "potion";
             case "ShulkerBullet" -> "shulker_bullet";

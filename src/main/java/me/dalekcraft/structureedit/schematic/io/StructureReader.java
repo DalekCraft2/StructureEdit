@@ -1,5 +1,6 @@
 package me.dalekcraft.structureedit.schematic.io;
 
+import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.schematic.container.*;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;
@@ -50,6 +51,7 @@ public class StructureReader extends NbtSchematicReader {
                     CompoundTag state = requireTag(palette, index, CompoundTag.class);
 
                     String name = requireTag(state, "Name", StringTag.class).getValue();
+                    ResourceLocation resourceLocation = new ResourceLocation(name);
 
                     CompoundTag properties = optTag(state, "Properties", CompoundTag.class);
                     Map<String, String> propertyMap = new HashMap<>();
@@ -65,7 +67,7 @@ public class StructureReader extends NbtSchematicReader {
                         });
                     }
 
-                    schematic.setBlockState(index, paletteIndex, new BlockState(name, propertyMap));
+                    schematic.setBlockState(index, paletteIndex, new BlockState(resourceLocation, propertyMap));
                 }
             }
         } else {
@@ -74,6 +76,7 @@ public class StructureReader extends NbtSchematicReader {
                 CompoundTag state = requireTag(palette, i, CompoundTag.class);
 
                 String name = requireTag(state, "Name", StringTag.class).getValue();
+                ResourceLocation resourceLocation = new ResourceLocation(name);
 
                 CompoundTag properties = optTag(state, "Properties", CompoundTag.class);
                 Map<String, String> propertyMap = new HashMap<>();
@@ -89,7 +92,7 @@ public class StructureReader extends NbtSchematicReader {
                     });
                 }
 
-                schematic.setBlockState(i, new BlockState(name, propertyMap));
+                schematic.setBlockState(i, new BlockState(resourceLocation, propertyMap));
             }
         }
 
@@ -110,7 +113,8 @@ public class StructureReader extends NbtSchematicReader {
             CompoundTag nbt = optTag(blockTag, "nbt", CompoundTag.class);
             BlockEntity blockEntity = null;
             if (nbt != null) {
-                String id = requireTag(nbt, "id", StringTag.class).getValue();
+                String idString = requireTag(nbt, "id", StringTag.class).getValue();
+                ResourceLocation id = new ResourceLocation(idString);
 
                 nbt.remove("id");
 
@@ -139,7 +143,8 @@ public class StructureReader extends NbtSchematicReader {
 
                 CompoundTag nbt = requireTag(entityTag, "nbt", CompoundTag.class);
 
-                String id = requireTag(nbt, "id", StringTag.class).getValue();
+                String idString = requireTag(nbt, "id", StringTag.class).getValue();
+                ResourceLocation id = new ResourceLocation(idString);
 
                 nbt.remove("id");
 

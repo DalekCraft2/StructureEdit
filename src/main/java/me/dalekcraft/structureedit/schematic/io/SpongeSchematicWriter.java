@@ -1,7 +1,9 @@
 package me.dalekcraft.structureedit.schematic.io;
 
 import com.google.common.primitives.Bytes;
+import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.schematic.container.*;
+import me.dalekcraft.structureedit.util.Constants;
 import net.querz.nbt.io.NBTOutputStream;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
@@ -131,8 +133,8 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
                             CompoundTag nbt = blockEntity.getNbt().clone();
                             CompoundTag blockEntityTag = new CompoundTag();
 
-                            String id = blockEntity.getId();
-                            blockEntityTag.putString("Id", id);
+                            ResourceLocation id = blockEntity.getId();
+                            blockEntityTag.putString("Id", id.toString());
 
                             blockEntityTag.putIntArray("Pos", new int[]{x, y, z});
 
@@ -141,11 +143,11 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
                             blockEntitiesTag.add(blockEntityTag);
                         }
                     } else {
-                        BlockState blockState = new BlockState("minecraft:air");
+                        BlockState blockState = new BlockState(Constants.DEFAULT_BLOCK);
                         int airIndex;
                         if (!blockPalette.contains(blockState)) {
                             blockPalette.add(blockState);
-                            blockPaletteTag.putInt(blockState.getId(), blockPalette.indexOf(blockState));
+                            blockPaletteTag.putInt(blockState.getId().toString(), blockPalette.indexOf(blockState));
                         }
                         airIndex = schematic.getBlockPalette().indexOf(blockState);
                         blocksList.set(index, (byte) airIndex);
@@ -173,7 +175,7 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
             for (int i = 0; i < biomePalette.size(); i++) {
                 BiomeState biomeState = biomePalette.get(i);
 
-                biomePaletteTag.putInt(biomeState.getId(), i);
+                biomePaletteTag.putInt(biomeState.getId().toString(), i);
             }
 
             biomeContainer.put("Palette", biomePaletteTag);
@@ -187,11 +189,11 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
                         if (biome != null) {
                             biomesList.set(index, (byte) biomePalette.indexOf(biome.getBiomeStateIndex()));
                         } else {
-                            BiomeState biomeState = new BiomeState("minecraft:ocean");
+                            BiomeState biomeState = new BiomeState(Constants.DEFAULT_BIOME);
                             int oceanIndex;
                             if (!biomePalette.contains(biomeState)) {
                                 biomePalette.add(biomeState);
-                                biomePaletteTag.putInt(biomeState.getId(), biomePalette.indexOf(biomeState));
+                                biomePaletteTag.putInt(biomeState.getId().toString(), biomePalette.indexOf(biomeState));
                             }
                             oceanIndex = schematic.getBiomePalette().indexOf(biomeState);
                             biomesList.set(index, (byte) oceanIndex);

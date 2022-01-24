@@ -25,6 +25,6 @@ public class Biome {
      * @param biomeStateIndex the new {@link BiomeState} for this {@link Biome}
      */
     public void setBiomeStateIndex(int biomeStateIndex) {
-        this.biomeStateIndex = Objects.requireNonNull(biomeStateIndex);
+        this.biomeStateIndex = biomeStateIndex;
     }
 }

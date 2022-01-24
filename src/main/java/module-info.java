@@ -13,11 +13,16 @@ module me.dalekcraft.structureedit {
     requires org.apache.logging.log4j.core;
     requires org.fusesource.jansi;
     requires org.fxmisc.richtext;
-    requires worldedit.core;
+
+    requires datafixerupper;
+    requires brigadier;
+    requires commons.lang3;
 
     exports me.dalekcraft.structureedit;
     opens me.dalekcraft.structureedit to javafx.controls, javafx.fxml;
     exports me.dalekcraft.structureedit.ui;
     opens me.dalekcraft.structureedit.ui to javafx.controls, javafx.fxml;
     opens me.dalekcraft.structureedit.schematic.io.legacycompat to com.google.gson;
+    exports me.dalekcraft.structureedit.ui.editor;
+    opens me.dalekcraft.structureedit.ui.editor to javafx.controls, javafx.fxml;
 }

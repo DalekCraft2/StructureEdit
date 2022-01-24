@@ -1,0 +1,7 @@
+{
+    "parent": "minecraft:block/template_sign_68_5",
+    "textures": {
+        "particle": "minecraft:block/crimson_planks",
+        "0": "minecraft:entity/signs/crimson"
+    }
+}

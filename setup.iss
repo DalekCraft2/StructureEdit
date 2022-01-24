@@ -34,7 +34,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{
 
 [Files]
 Source: "target\{#ExeName}"; DestDir: "{app}"; Flags: ignoreversion
-Source: "target\{#Name}.jar"; DestDir: "{app}"; Flags: ignoreversion
+Source: "target\{#JarName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "target\lib\*"; DestDir: "{app}\lib"; Flags: ignoreversion recursesubdirs createallsubdirs
 Source: "target\classes\icon.ico"; DestDir: "{app}"; Flags: ignoreversion
 ; NOTE: Don't use "Flags: ignoreversion" on any shared system files

@@ -1,5 +1,6 @@
 package me.dalekcraft.structureedit.schematic.io;
 
+import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.schematic.container.*;
 import net.querz.nbt.io.NBTOutputStream;
 import net.querz.nbt.io.NamedTag;
@@ -38,7 +39,7 @@ public class StructureWriter extends NbtSchematicWriter {
                 for (BlockState blockState : palette) {
                     CompoundTag blockStateTag = new CompoundTag();
 
-                    blockStateTag.putString("Name", blockState.getId());
+                    blockStateTag.putString("Name", blockState.getId().toString());
 
                     if (!blockState.getProperties().isEmpty()) {
                         CompoundTag propertiesTag = new CompoundTag();
@@ -57,7 +58,7 @@ public class StructureWriter extends NbtSchematicWriter {
             for (BlockState blockState : palettes.get(0)) {
                 CompoundTag blockStateTag = new CompoundTag();
 
-                blockStateTag.putString("Name", blockState.getId());
+                blockStateTag.putString("Name", blockState.getId().toString());
 
                 if (!blockState.getProperties().isEmpty()) {
                     CompoundTag propertiesTag = new CompoundTag();
@@ -90,7 +91,7 @@ public class StructureWriter extends NbtSchematicWriter {
                         BlockEntity blockEntity = block.getBlockEntity();
                         if (!blockEntity.isEmpty()) {
                             CompoundTag clone = blockEntity.getNbt().clone();
-                            clone.putString("id", blockEntity.getId());
+                            clone.putString("id", blockEntity.getId().toString());
                             blockTag.put("nbt", clone);
                         }
 
@@ -121,11 +122,11 @@ public class StructureWriter extends NbtSchematicWriter {
                 blockPositionTag.addInt(blockPosition[2]);
                 entityTag.put("blockPos", blockPositionTag);
 
-                String id = entity.getId();
+                ResourceLocation id = entity.getId();
                 CompoundTag nbt = entity.getNbt().clone();
 
                 nbt.put("Pos", positionTag);
-                nbt.putString("id", id);
+                nbt.putString("id", id.toString());
 
                 entityTag.put("nbt", nbt);
 

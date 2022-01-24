@@ -1,5 +1,6 @@
 package me.dalekcraft.structureedit.schematic.container;
 
+import me.dalekcraft.structureedit.assets.ResourceLocation;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Objects;
@@ -7,10 +8,10 @@ import java.util.Objects;
 public class BiomeState {
 
     @NotNull
-    private String id;
+    private ResourceLocation id;
 
-    public BiomeState(@NotNull String id) {
-        this.id = id;
+    public BiomeState(@NotNull ResourceLocation id) {
+        this.id = Objects.requireNonNull(id);
     }
 
     /**
@@ -19,7 +20,7 @@ public class BiomeState {
      * @return the namespaced ID of this {@link BiomeState}
      */
     @NotNull
-    public String getId() {
+    public ResourceLocation getId() {
         return id;
     }
 
@@ -28,7 +29,7 @@ public class BiomeState {
      *
      * @param id the new namespaced ID for this {@link BiomeState}
      */
-    public void setId(@NotNull String id) {
+    public void setId(@NotNull ResourceLocation id) {
         this.id = Objects.requireNonNull(id);
     }
 
@@ -51,6 +52,6 @@ public class BiomeState {
 
     @Override
     public String toString() {
-        return id;
+        return id.toString();
     }
 }

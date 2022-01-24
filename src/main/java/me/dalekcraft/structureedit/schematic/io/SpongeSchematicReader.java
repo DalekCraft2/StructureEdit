@@ -1,7 +1,8 @@
 package me.dalekcraft.structureedit.schematic.io;
 
-import com.sk89q.worldedit.internal.Constants;
+import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.schematic.container.*;
+import me.dalekcraft.structureedit.util.Constants;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;
 
@@ -140,7 +141,8 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 int y = position[1];
                 int z = position[2];
 
-                String id = requireTag(tileEntity, "Id", StringTag.class).getValue();
+                String idString = requireTag(tileEntity, "Id", StringTag.class).getValue();
+                ResourceLocation id = new ResourceLocation(idString);
                 tileEntity.remove("Pos");
                 tileEntity.remove("Id");
 
@@ -222,7 +224,8 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 int y = position[1];
                 int z = position[2];
 
-                String id = requireTag(blockEntity, "Id", StringTag.class).getValue();
+                String idString = requireTag(blockEntity, "Id", StringTag.class).getValue();
+                ResourceLocation id = new ResourceLocation(idString);
 
                 blockEntity.remove("Pos");
                 blockEntity.remove("Id");
@@ -244,7 +247,8 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 double y = requireTag(position, 1, DoubleTag.class).asDouble();
                 double z = requireTag(position, 1, DoubleTag.class).asDouble();
 
-                String id = requireTag(entityTag, "Id", StringTag.class).getValue();
+                String idString = requireTag(entityTag, "Id", StringTag.class).getValue();
+                ResourceLocation id = new ResourceLocation(idString);
 
                 entityTag.remove("Pos");
                 entityTag.remove("Id");
@@ -274,7 +278,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
             for (String key : biomePalette.keySet()) {
                 int value = requireTag(biomePalette, key, IntTag.class).asInt();
 
-                schematic.setBiomeState(value, new BiomeState(key));
+                schematic.setBiomeState(value, new BiomeState(new ResourceLocation(key)));
             }
 
             for (int i = 0; i < biomeData.length; i++) {
@@ -359,7 +363,8 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                     int y = position[1];
                     int z = position[2];
 
-                    String id = requireTag(blockEntity, "Id", StringTag.class).getValue();
+                    String idString = requireTag(blockEntity, "Id", StringTag.class).getValue();
+                    ResourceLocation id = new ResourceLocation(idString);
 
                     CompoundTag nbt = optTag(blockEntity, "Data", CompoundTag.class);
                     if (nbt != null) {
@@ -381,7 +386,7 @@ public class SpongeSchematicReader extends NbtSchematicReader {
             for (String key : biomePalette.keySet()) {
                 int value = requireTag(biomePalette, key, IntTag.class).asInt();
 
-                schematic.setBiomeState(value, new BiomeState(key));
+                schematic.setBiomeState(value, new BiomeState(new ResourceLocation(key)));
             }
 
             byte[] biomeData = requireTag(biomeContainer, "Data", ByteArrayTag.class).getValue();
@@ -414,7 +419,8 @@ public class SpongeSchematicReader extends NbtSchematicReader {
                 double y = requireTag(position, 1, DoubleTag.class).asDouble();
                 double z = requireTag(position, 1, DoubleTag.class).asDouble();
 
-                String id = requireTag(entityTag, "Id", StringTag.class).getValue();
+                String idString = requireTag(entityTag, "Id", StringTag.class).getValue();
+                ResourceLocation id = new ResourceLocation(idString);
 
                 CompoundTag nbt = optTag(entityTag, "Data", CompoundTag.class);
                 if (nbt != null) {

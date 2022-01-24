@@ -1,5 +1,7 @@
 package me.dalekcraft.structureedit.schematic.container;
 
+import me.dalekcraft.structureedit.assets.ResourceLocation;
+
 import java.util.Objects;
 
 public class Block {
@@ -13,7 +15,7 @@ public class Block {
 
     public Block(int blockStateIndex, BlockEntity blockEntity) {
         this.blockStateIndex = blockStateIndex;
-        this.blockEntity = Objects.requireNonNullElse(blockEntity, new BlockEntity(""));
+        this.blockEntity = Objects.requireNonNullElse(blockEntity, new BlockEntity(new ResourceLocation("")));
     }
 
     /**
@@ -49,6 +51,6 @@ public class Block {
      * @param blockEntity the new NBT for this {@link Block}
      */
     public void setBlockEntity(BlockEntity blockEntity) {
-        this.blockEntity = Objects.requireNonNullElse(blockEntity, new BlockEntity(""));
+        this.blockEntity = Objects.requireNonNullElse(blockEntity, new BlockEntity(new ResourceLocation("")));
     }
 }

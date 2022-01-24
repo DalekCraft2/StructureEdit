@@ -25,6 +25,7 @@ import com.google.common.io.Resources;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.schematic.container.BiomeState;
 import me.dalekcraft.structureedit.schematic.container.BlockState;
 import org.apache.logging.log4j.LogManager;
@@ -116,7 +117,7 @@ public final class LegacyMapper {
             String id = biomeEntry.getKey();
             final String value = biomeEntry.getValue();
 
-            BiomeState biomeState = new BiomeState(value);
+            BiomeState biomeState = new BiomeState(new ResourceLocation(value));
 
             biomeToStringMap.put(biomeState, id);
             stringToBiomeMap.put(id, biomeState);

@@ -11,13 +11,13 @@
             <directory>${project.build.directory}</directory>
             <outputDirectory>/</outputDirectory>
             <includes>
-                <include>${project.build.finalName}.exe</include>
-                <include>${project.build.finalName}.jar</include>
+                <include>${exeName}</include>
+                <include>${jarName}</include>
             </includes>
         </fileSet>
         <fileSet>
-            <directory>${project.build.directory}/lib</directory>
-            <outputDirectory>lib</outputDirectory>
+            <directory>${libDirectory}</directory>
+            <outputDirectory>${libPrefix}</outputDirectory>
             <includes>
                 <include>**</include>
             </includes>
@@ -32,7 +32,7 @@
     </fileSets>
     <!--<dependencySets>
         <dependencySet>
-            <outputDirectory>lib</outputDirectory>
+            <outputDirectory>${libPrefix}</outputDirectory>
             <scope>runtime</scope>
             <excludes>
                 <exclude>${project.groupId}:${project.artifactId}</exclude>

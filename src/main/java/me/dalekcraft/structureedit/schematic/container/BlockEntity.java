@@ -1,19 +1,20 @@
 package me.dalekcraft.structureedit.schematic.container;
 
+import me.dalekcraft.structureedit.assets.ResourceLocation;
 import net.querz.nbt.tag.CompoundTag;
 
 import java.util.Objects;
 
 public class BlockEntity {
 
-    private String id;
+    private ResourceLocation id;
     private CompoundTag nbt;
 
-    public BlockEntity(String id) {
+    public BlockEntity(ResourceLocation id) {
         this(id, null);
     }
 
-    public BlockEntity(String id, CompoundTag nbt) {
+    public BlockEntity(ResourceLocation id, CompoundTag nbt) {
         this.id = Objects.requireNonNull(id);
         this.nbt = Objects.requireNonNullElse(nbt, new CompoundTag());
     }
@@ -23,7 +24,7 @@ public class BlockEntity {
      *
      * @return the namespaced ID of this {@link BlockEntity}
      */
-    public String getId() {
+    public ResourceLocation getId() {
         return id;
     }
 
@@ -32,7 +33,7 @@ public class BlockEntity {
      *
      * @param id the new namespaced ID for this {@link BlockEntity}
      */
-    public void setId(String id) {
+    public void setId(ResourceLocation id) {
         this.id = Objects.requireNonNull(id);
     }
 
@@ -55,6 +56,6 @@ public class BlockEntity {
     }
 
     public boolean isEmpty() {
-        return id.isEmpty() && nbt.size() == 0;
+        return id.toString().isEmpty() && nbt.size() == 0;
     }
 }
