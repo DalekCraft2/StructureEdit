@@ -37,10 +37,12 @@ public class Variant {
         return weight;
     }
 
+    @Override
     public String toString() {
         return "Variant{modelLocation=" + modelLocation + ", rotation=" + rotation + ", uvLock=" + uvLock + ", weight=" + weight + "}";
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -51,6 +53,7 @@ public class Variant {
         return false;
     }
 
+    @Override
     public int hashCode() {
         int n = modelLocation.hashCode();
         n = 31 * n + rotation.hashCode();

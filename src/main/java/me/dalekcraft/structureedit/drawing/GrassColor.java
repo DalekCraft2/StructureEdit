@@ -2,12 +2,15 @@ package me.dalekcraft.structureedit.drawing;
 
 import javafx.scene.paint.Color;
 
+/**
+ * @see <a href="https://minecraft.fandom.com/wiki/Block_colors#Grass_colors">Grass Colors</a>
+ */
 @SuppressWarnings("unused")
 public enum GrassColor {
 
-    BADLANDS("#908148"),
-    ERODED_BADLANDS("#908148"),
-    WOODED_BADLANDS("#908148"),
+    BADLANDS("#90814D"),
+    ERODED_BADLANDS("#90814D"),
+    WOODED_BADLANDS("#90814D"),
     DESERT("#BFB755"),
     SAVANNA("#BFB755"),
     SAVANNA_PLATEAU("#BFB755"),
@@ -17,19 +20,21 @@ public enum GrassColor {
     CRIMSON_FOREST("#BFB755"),
     WARPED_FOREST("#BFB755"),
     BASALT_DELTAS("#BFB755"),
+    STONY_PEAKS("9ABE4B"),
     JUNGLE("#59C93C"),
     BAMBOO_JUNGLE("#59C93C"),
     SPARSE_JUNGLE("#64C73F"),
-    FOREST("#79C05A"),
-    FLOWER_FOREST("#79C05A"),
-    BIRCH_FOREST("#88BB67"),
-    OLD_GROWTH_BIRCH_FOREST("#88BB67"),
-    DARK_FOREST("#507A32"),
+    MUSHROOM_FIELDS("#55C93F"),
     SWAMP("#6A7039"),
     PLAINS("#91BD59"),
     SUNFLOWER_PLAINS("#91BD59"),
     BEACH("#91BD59"),
     DRIPSTONE_CAVES("#91BD59"),
+    FOREST("#79C05A"),
+    FLOWER_FOREST("#79C05A"),
+    DARK_FOREST("#507A32"),
+    BIRCH_FOREST("#88BB67"),
+    OLD_GROWTH_BIRCH_FOREST("#88BB67"),
     OCEAN("#8EB971"),
     DEEP_OCEAN("#8EB971"),
     WARM_OCEAN("#8EB971"),
@@ -46,20 +51,24 @@ public enum GrassColor {
     END_MIDLANDS("#8EB971"),
     END_HIGHLANDS("#8EB971"),
     THE_VOID("#8EB971"),
-    MUSHROOM_FIELDS("#55C93F"),
+    MEADOW("#83BB6D"),
+    OLD_GROWTH_PINE_TAIGA("#86B87F"),
+    TAIGA("#86B783"),
+    OLD_GROWTH_SPRUCE_TAIGA("#86B783"),
     WINDSWEPT_HILLS("#8AB689"),
     WINDSWEPT_GRAVELLY_HILLS("#8AB689"),
     WINDSWEPT_FOREST("#8AB689"),
     STONY_SHORE("#8AB689"),
     SNOWY_BEACH("#83B593"),
-    OLD_GROWTH_PINE_TAIGA("#86B87F"),
-    OLD_GROWTH_SPRUCE_TAIGA("#86B783"),
-    TAIGA("#86B783"),
     SNOWY_PLAINS("#80B497"),
     ICE_SPIKES("#80B497"),
     SNOWY_TAIGA("#80B497"),
     FROZEN_OCEAN("#80B497"),
-    FROZEN_RIVER("#80B497");
+    FROZEN_RIVER("#80B497"),
+    GROVE("#80B497"),
+    SNOWY_SLOPES("#80B497"),
+    FROZEN_PEAKS("#80B497"),
+    JAGGED_PEAKS("#80B497");
 
     private final Color color;
 

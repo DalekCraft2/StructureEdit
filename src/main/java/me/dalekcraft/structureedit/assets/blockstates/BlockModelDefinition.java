@@ -57,6 +57,7 @@ public class BlockModelDefinition {
         return multiVariant;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -69,6 +70,7 @@ public class BlockModelDefinition {
         return false;
     }
 
+    @Override
     public int hashCode() {
         return 31 * variants.hashCode() + (isMultiPart() ? multiPart.hashCode() : 0);
     }

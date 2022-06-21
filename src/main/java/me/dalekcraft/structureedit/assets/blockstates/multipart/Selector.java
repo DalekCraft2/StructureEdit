@@ -37,10 +37,12 @@ public class Selector {
         return condition.getPredicate(stateDefinition);
     }
 
+    @Override
     public boolean equals(Object obj) {
         return this == obj;
     }
 
+    @Override
     public int hashCode() {
         return System.identityHashCode(this);
     }

@@ -2,6 +2,9 @@ package me.dalekcraft.structureedit.drawing;
 
 import javafx.scene.paint.Color;
 
+/**
+ * @see <a href="https://minecraft.fandom.com/wiki/Map_item_format">Map Item Format</a>
+ */
 public final class MapColor {
 
     public static final Color TRANSPARENT = Color.rgb(255, 255, 255);

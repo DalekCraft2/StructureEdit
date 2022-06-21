@@ -41,6 +41,7 @@ public class KeyValueCondition implements Condition {
         return blockState -> Objects.equals(blockState.getProperties().get(key), value);
     }
 
+    @Override
     public String toString() {
         return MoreObjects.toStringHelper(this).add("key", key).add("value", value).toString();
     }

@@ -16,10 +16,6 @@
  */
 package me.dalekcraft.structureedit.ui;
 
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
 import com.jogamp.opengl.GL4;
 import com.jogamp.opengl.GLAutoDrawable;
 import com.jogamp.opengl.GLEventListener;
@@ -42,10 +38,12 @@ import me.dalekcraft.structureedit.assets.blockstates.BlockModelDefinition;
 import me.dalekcraft.structureedit.assets.blockstates.BlockModelRotation;
 import me.dalekcraft.structureedit.assets.blockstates.MultiVariant;
 import me.dalekcraft.structureedit.assets.blockstates.Variant;
-import me.dalekcraft.structureedit.assets.models.*;
 import me.dalekcraft.structureedit.assets.blockstates.multipart.MultiPart;
 import me.dalekcraft.structureedit.assets.blockstates.multipart.Selector;
+import me.dalekcraft.structureedit.assets.models.*;
 import me.dalekcraft.structureedit.assets.textures.MissingTexture;
+import me.dalekcraft.structureedit.assets.textures.metadata.AnimationFrame;
+import me.dalekcraft.structureedit.assets.textures.metadata.AnimationMetadataSection;
 import me.dalekcraft.structureedit.drawing.FoliageColor;
 import me.dalekcraft.structureedit.drawing.GrassColor;
 import me.dalekcraft.structureedit.drawing.WaterColor;
@@ -423,7 +421,7 @@ public class MainController extends Node {
                         return GrassColor.OCEAN.getColor();
                     }
                 }
-                case "minecraft:oak_leaves", "minecraft:dark_oak_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves", "minecraft:vine" -> {
+                case "minecraft:oak_leaves", "minecraft:dark_oak_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves", "minecraft:mangrove_leaves", "minecraft:vine" -> {
                     ResourceLocation biomeId = biomeState.getId();
                     String biomeName = biomeId.getPath();
                     try {
@@ -1079,9 +1077,12 @@ public class MainController extends Node {
                         }
                         if (rescale) {
                             switch (axis) {
-                                case X -> modelMatrix.translate(-origin.x, -origin.y * rescaleFactor, -origin.z * rescaleFactor);
-                                case Y -> modelMatrix.translate(-origin.x * rescaleFactor, -origin.y, -origin.z * rescaleFactor);
-                                case Z -> modelMatrix.translate(-origin.x * rescaleFactor, -origin.y * rescaleFactor, -origin.z);
+                                case X ->
+                                        modelMatrix.translate(-origin.x, -origin.y * rescaleFactor, -origin.z * rescaleFactor);
+                                case Y ->
+                                        modelMatrix.translate(-origin.x * rescaleFactor, -origin.y, -origin.z * rescaleFactor);
+                                case Z ->
+                                        modelMatrix.translate(-origin.x * rescaleFactor, -origin.y * rescaleFactor, -origin.z);
                             }
                         } else {
                             modelMatrix.translate(-origin.x, -origin.y, -origin.z);
@@ -1137,24 +1138,21 @@ public class MainController extends Node {
                         float textureRight2 = textureRight;
                         float textureBottom2 = textureBottom;
                         gl.glUniform1f(mixFactorLocation, 0.0f);
-                        JsonObject fullAnimation = Registries.getInstance().getAnimation(model.getMaterial(faceTexture).texture());
-                        if (fullAnimation != null) {
-                            JsonObject animation = fullAnimation.getAsJsonObject("animation");
-                            boolean interpolate = animation.has("interpolate") && animation.get("interpolate").getAsBoolean(); // TODO Implement interpolation.
-                            int width = animation.has("width") ? animation.get("width").getAsInt() : texture.getWidth();
-                            int height = animation.has("height") ? animation.get("height").getAsInt() : texture.getWidth();
-                            int frametime = animation.has("frametime") ? animation.get("frametime").getAsInt() : 1;
+                        AnimationMetadataSection animation = Registries.getInstance().getAnimationMetadataSection(model.getMaterial(faceTexture).texture());
+                        if (animation != null && animation != AnimationMetadataSection.EMPTY) {
+                            boolean interpolate = animation.isInterpolatedFrames(); // TODO Implement interpolation.
+                            int width = animation.getFrameWidth(texture.getWidth());
+                            int height = animation.getFrameHeight(texture.getWidth());
+                            int frameTime = animation.getDefaultFrameTime();
 
                             int widthFactor = Math.abs(texture.getWidth() / width);
                             int heightFactor = Math.abs(texture.getHeight() / height);
 
-                            JsonArray frames;
-                            if (animation.has("frames")) {
-                                frames = animation.getAsJsonArray("frames");
-                            } else {
-                                frames = new JsonArray();
+                            List<AnimationFrame> frames = animation.frames;
+                            if (frames.isEmpty()) {
+                                frames = new ArrayList<>();
                                 for (int i = 0; i < heightFactor; i++) {
-                                    frames.add(new JsonPrimitive(i));
+                                    frames.add(new AnimationFrame(i));
                                 }
                             }
 
@@ -1170,32 +1168,22 @@ public class MainController extends Node {
                             textureBottom2 /= heightFactor;
 
                             long currentTime = System.currentTimeMillis();
-                            long currentTick = currentTime / (TICK_LENGTH * frametime);
-                            int index = (int) (currentTick % frames.size());
+                            long currentTick = currentTime / TICK_LENGTH;
+                            int index = (int) (currentTick / frameTime % frames.size());
                             /*The mix factor should be a value between 0.0f and 1.0f, representing the passage of time from the current frame to the next. 0.0f is the current frame, and 1.0f is the next frame.*/
                             /* TODO how the heck do i get this */
                             float mixFactor = 0.0f;
 
                             gl.glUniform1f(mixFactorLocation, mixFactor);
 
-                            JsonElement frame = frames.get(index);
-                            double frameDouble = 0.0;
-                            if (frame.isJsonPrimitive() && frame.getAsJsonPrimitive().isNumber()) {
-                                frameDouble = frame.getAsDouble();
-                            } else if (frame instanceof JsonObject frameObject) {
-                                frameDouble = frameObject.get("index").getAsInt();
-                                // TODO Implement the "time" tag.
-                                int time = frameObject.has("time") ? frameObject.get("time").getAsInt() : frametime;
-                            }
+                            AnimationFrame frame = frames.get(index);
+                            double frameDouble = frame.getIndex();
+                            // TODO Implement the "time" tag.
+                            // int time = frame.getTime(frameTime);
 
                             int index2 = frames.size() > index + 1 ? index + 1 : 0;
-                            JsonElement frame2 = frames.get(index2);
-                            double frameDouble2 = 0.0;
-                            if (frame2.isJsonPrimitive() && frame2.getAsJsonPrimitive().isNumber()) {
-                                frameDouble2 = frame2.getAsDouble();
-                            } else if (frame2 instanceof JsonObject frameObject) {
-                                frameDouble2 = frameObject.get("index").getAsInt();
-                            }
+                            AnimationFrame frame2 = frames.get(index2);
+                            double frameDouble2 = frame2.getIndex();
 
                             // Change to the current frame in the animation
                             textureTop += frameDouble / heightFactor;
@@ -1204,9 +1192,11 @@ public class MainController extends Node {
                             textureTop2 += frameDouble2 / heightFactor;
                             textureBottom2 += frameDouble2 / heightFactor;
                         } else if (texture.getWidth() != texture.getHeight()) {
-                            texture = getTexture(MissingTexture.getLocation());
+                            // This breaks sign textures
+                            // texture = getTexture(MissingTexture.getLocation());
                         }
 
+                        // I'll be honest, I did trial and error for this part. I have no idea how it works.
                         for (int i = 0; i < faceRotation; i += 90) {
                             float temp = textureLeft;
                             textureLeft = SCALE - textureBottom;

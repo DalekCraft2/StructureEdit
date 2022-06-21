@@ -17,6 +17,8 @@ module me.dalekcraft.structureedit {
     requires datafixerupper;
     requires brigadier;
     requires commons.lang3;
+    requires fastutil;
+    requires gluegen.rt;
 
     exports me.dalekcraft.structureedit;
     opens me.dalekcraft.structureedit to javafx.controls, javafx.fxml;

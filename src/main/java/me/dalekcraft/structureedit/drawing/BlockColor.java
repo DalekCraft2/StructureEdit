@@ -20,12 +20,15 @@ import javafx.scene.paint.Color;
 
 
 /**
- * An enum of all materials accepted by the official server and client
+ * An enum of all materials accepted by the official server and client.
+ *
+ * @see <a href="https://minecraft.fandom.com/wiki/Map_item_format">Map Item Format</a>
  */
 @SuppressWarnings("unused")
 public enum BlockColor {
 
     // TODO Possibly use this enum to make default block states for blocks.
+    // TODO Should I order these how they are ordered in Minecraft's code so it's easier to add new entries?
 
     ACACIA_BUTTON(MapColor.COLOR_ORANGE),
     ACACIA_DOOR(MapColor.COLOR_ORANGE),
@@ -302,6 +305,10 @@ public enum BlockColor {
     DEEPSLATE_IRON_ORE(MapColor.DEEPSLATE),
     DEEPSLATE_LAPIS_ORE(MapColor.DEEPSLATE),
     DEEPSLATE_REDSTONE_ORE(MapColor.DEEPSLATE),
+    DEEPSLATE_TILE_SLAB(MapColor.DEEPSLATE),
+    DEEPSLATE_TILE_STAIRS(MapColor.DEEPSLATE),
+    DEEPSLATE_TILE_WALL(MapColor.DEEPSLATE),
+    DEEPSLATE_TILES(MapColor.DEEPSLATE),
     DETECTOR_RAIL(MapColor.METAL),
     DIAMOND_BLOCK(MapColor.DIAMOND),
     DIAMOND_ORE(MapColor.STONE),
@@ -346,6 +353,7 @@ public enum BlockColor {
     FLOWER_POT(MapColor.COLOR_RED),
     FLOWERING_AZALEA(MapColor.PLANT),
     FLOWERING_AZALEA_LEAVES(MapColor.PLANT),
+    FROGSPAWN(MapColor.TRANSPARENT),
     FROSTED_ICE(MapColor.ICE),
     FURNACE(MapColor.STONE),
     GILDED_BLACKSTONE(MapColor.COLOR_BLACK),
@@ -509,6 +517,22 @@ public enum BlockColor {
     MAGENTA_WALL_BANNER(MapColor.WOOD),
     MAGENTA_WOOL(MapColor.COLOR_MAGENTA),
     MAGMA_BLOCK(MapColor.NETHER),
+    MANGROVE_BUTTON(MapColor.COLOR_RED),
+    MANGROVE_DOOR(MapColor.COLOR_RED),
+    MANGROVE_FENCE(MapColor.COLOR_RED),
+    MANGROVE_FENCE_GATE(MapColor.COLOR_RED),
+    MANGROVE_LEAVES(MapColor.PLANT),
+    MANGROVE_LOG(MapColor.PODZOL),
+    MANGROVE_PLANKS(MapColor.COLOR_RED),
+    MANGROVE_PRESSURE_PLATE(MapColor.COLOR_RED),
+    MANGROVE_PROPAGULE(MapColor.PLANT),
+    MANGROVE_ROOTS(MapColor.PODZOL),
+    MANGROVE_SIGN(MapColor.COLOR_RED),
+    MANGROVE_SLAB(MapColor.COLOR_RED),
+    MANGROVE_STAIRS(MapColor.COLOR_RED),
+    MANGROVE_TRAPDOOR(MapColor.COLOR_RED),
+    MANGROVE_WALL_SIGN(MapColor.COLOR_RED),
+    MANGROVE_WOOD(MapColor.COLOR_RED),
     MEDIUM_AMETHYST_BUD(MapColor.COLOR_PURPLE),
     MELON(MapColor.COLOR_LIGHT_GREEN),
     MELON_STEM(MapColor.PLANT),
@@ -523,6 +547,12 @@ public enum BlockColor {
     MOSSY_STONE_BRICK_WALL(MapColor.STONE),
     MOSSY_STONE_BRICKS(MapColor.STONE),
     MOVING_PISTON(MapColor.TRANSPARENT),
+    MUD(MapColor.TERRACOTTA_CYAN),
+    MUD_BRICK_SLAB(MapColor.TERRACOTTA_LIGHT_GRAY),
+    MUD_BRICK_STAIRS(MapColor.TERRACOTTA_LIGHT_GRAY),
+    MUD_BRICK_WALL(MapColor.TERRACOTTA_LIGHT_GRAY),
+    MUD_BRICKS(MapColor.TERRACOTTA_LIGHT_GRAY),
+    MUDDY_MANGROVE_ROOTS(MapColor.PODZOL),
     MUSHROOM_STEM(MapColor.WOOL),
     MYCELIUM(MapColor.COLOR_PURPLE),
     NETHER_BRICK_FENCE(MapColor.NETHER),
@@ -556,6 +586,7 @@ public enum BlockColor {
     OAK_WOOD(MapColor.WOOD),
     OBSERVER(MapColor.STONE),
     OBSIDIAN(MapColor.COLOR_BLACK),
+    OCHRE_FROGLIGHT(MapColor.SAND),
     ORANGE_BANNER(MapColor.WOOD),
     ORANGE_BED(MapColor.COLOR_ORANGE),
     ORANGE_CANDLE(MapColor.COLOR_ORANGE),
@@ -577,6 +608,8 @@ public enum BlockColor {
     OXIDIZED_CUT_COPPER_SLAB(MapColor.WARPED_NYLIUM),
     OXIDIZED_CUT_COPPER_STAIRS(MapColor.WARPED_NYLIUM),
     PACKED_ICE(MapColor.ICE),
+    PACKED_MUD(MapColor.DIRT),
+    PEARLESCENT_FROGLIGHT(MapColor.COLOR_PINK),
     PEONY(MapColor.PLANT),
     PETRIFIED_OAK_SLAB(MapColor.WOOD),
     PINK_BANNER(MapColor.WOOD),
@@ -645,6 +678,7 @@ public enum BlockColor {
     POTTED_FLOWERING_AZALEA_BUSH(MapColor.COLOR_RED),
     POTTED_JUNGLE_SAPLING(MapColor.COLOR_RED),
     POTTED_LILY_OF_THE_VALLEY(MapColor.COLOR_RED),
+    POTTED_MANGROVE_PROPAGULE(MapColor.COLOR_RED),
     POTTED_OAK_SAPLING(MapColor.COLOR_RED),
     POTTED_ORANGE_TULIP(MapColor.COLOR_RED),
     POTTED_OXEYE_DAISY(MapColor.COLOR_RED),
@@ -728,6 +762,7 @@ public enum BlockColor {
     REDSTONE_TORCH(MapColor.FIRE),
     REDSTONE_WALL_TORCH(MapColor.FIRE),
     REDSTONE_WIRE(MapColor.FIRE),
+    REINFORCED_DEEPSLATE(MapColor.DEEPSLATE),
     REPEATER(MapColor.STONE),
     REPEATING_COMMAND_BLOCK(MapColor.COLOR_PURPLE),
     RESPAWN_ANCHOR(MapColor.COLOR_BLACK),
@@ -739,7 +774,11 @@ public enum BlockColor {
     SANDSTONE_STAIRS(MapColor.SAND),
     SANDSTONE_WALL(MapColor.SAND),
     SCAFFOLDING(MapColor.SAND),
+    SCULK(MapColor.COLOR_BLACK),
+    SCULK_CATALYST(MapColor.COLOR_BLACK),
     SCULK_SENSOR(MapColor.COLOR_CYAN),
+    SCULK_SHRIEKER(MapColor.COLOR_BLACK),
+    SCULK_VEIN(MapColor.COLOR_BLACK),
     SEA_LANTERN(MapColor.QUARTZ),
     SEA_PICKLE(MapColor.COLOR_GREEN),
     SEAGRASS(MapColor.WATER),
@@ -841,6 +880,7 @@ public enum BlockColor {
     TURTLE_EGG(MapColor.SAND),
     TWISTING_VINES(MapColor.COLOR_CYAN),
     TWISTING_VINES_PLANT(MapColor.COLOR_CYAN),
+    VERDANT_FROGLIGHT(MapColor.GLOW_LICHEN),
     VINE(MapColor.PLANT),
     VOID_AIR(MapColor.TRANSPARENT),
     WALL_TORCH(MapColor.COLOR_YELLOW),

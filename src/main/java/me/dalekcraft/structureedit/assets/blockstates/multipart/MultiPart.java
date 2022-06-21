@@ -33,6 +33,7 @@ public class MultiPart {
         return multiVariants;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -43,6 +44,7 @@ public class MultiPart {
         return false;
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(definition, selectors);
     }

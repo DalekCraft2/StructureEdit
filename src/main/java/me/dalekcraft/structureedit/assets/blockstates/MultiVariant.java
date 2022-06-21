@@ -18,6 +18,7 @@ public class MultiVariant {
         return variants;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -28,6 +29,7 @@ public class MultiVariant {
         return false;
     }
 
+    @Override
     public int hashCode() {
         return variants.hashCode();
     }

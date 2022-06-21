@@ -31,8 +31,8 @@ public final class MissingBlockModel extends BlockModel {
         ELEMENTS.add(element);
 
         TEXTURE_MAP = new HashMap<>();
-        TEXTURE_MAP.put("missingno", Either.left(new Material(MissingTexture.getLocation())));
-        TEXTURE_MAP.put("particle", Either.left(new Material(MissingTexture.getLocation())));
+        TEXTURE_MAP.put(MissingTexture.getLocation().getPath(), Either.left(new Material(MissingTexture.getLocation())));
+        TEXTURE_MAP.put(BlockModel.PARTICLE_TEXTURE_REFERENCE, Either.left(new Material(MissingTexture.getLocation())));
 
         INSTANCE = new MissingBlockModel(ELEMENTS, TEXTURE_MAP, true);
         INSTANCE.name = MISSING_MODEL_LOCATION.toString();

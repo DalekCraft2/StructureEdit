@@ -2,6 +2,7 @@ package me.dalekcraft.structureedit.util;
 
 import com.google.common.collect.Iterators;
 import com.mojang.serialization.DataResult;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
 import org.joml.Vector3f;
@@ -274,6 +275,7 @@ public enum Direction {
         return (data2d & 3) * 90;
     }
 
+    @Override
     public String toString() {
         return name;
     }
@@ -355,6 +357,8 @@ public enum Direction {
             return this == X || this == Z;
         }
 
+
+        @Override
         public String toString() {
             return name;
         }
@@ -397,6 +401,7 @@ public enum Direction {
             return name;
         }
 
+        @Override
         public String toString() {
             return name;
         }
@@ -424,6 +429,7 @@ public enum Direction {
         }
 
         @Override
+        @NotNull
         public Iterator<Direction> iterator() {
             return Iterators.forArray(faces);
         }

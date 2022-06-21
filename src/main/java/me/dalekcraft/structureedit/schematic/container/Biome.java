@@ -7,7 +7,7 @@ public class Biome {
     private int biomeStateIndex;
 
     public Biome(int biomeStateIndex) {
-        this.biomeStateIndex = Objects.requireNonNull(biomeStateIndex);
+        this.biomeStateIndex = biomeStateIndex;
     }
 
     /**

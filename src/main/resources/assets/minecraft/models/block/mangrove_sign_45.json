@@ -1,0 +1,7 @@
+{
+    "parent": "minecraft:block/template_sign_45",
+    "textures": {
+        "particle": "minecraft:block/mangrove_planks",
+        "0": "minecraft:entity/signs/mangrove"
+    }
+}

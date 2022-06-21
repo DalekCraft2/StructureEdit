@@ -16,6 +16,7 @@ public class Material {
         return texture;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -27,10 +28,12 @@ public class Material {
         return texture.equals(material.texture);
     }
 
+    @Override
     public int hashCode() {
         return Objects.hash(texture);
     }
 
+    @Override
     public String toString() {
         return "Material{texture=" + texture + "}";
     }

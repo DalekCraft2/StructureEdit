@@ -5,10 +5,13 @@ import com.google.gson.JsonParser;
 import com.jogamp.opengl.GLProfile;
 import com.jogamp.opengl.util.texture.TextureData;
 import com.jogamp.opengl.util.texture.TextureIO;
-import me.dalekcraft.structureedit.assets.models.BlockModel;
 import me.dalekcraft.structureedit.assets.blockstates.BlockModelDefinition;
-import me.dalekcraft.structureedit.assets.models.MissingBlockModel;
 import me.dalekcraft.structureedit.assets.blockstates.MissingBlockModelDefinition;
+import me.dalekcraft.structureedit.assets.models.BlockModel;
+import me.dalekcraft.structureedit.assets.models.MissingBlockModel;
+import me.dalekcraft.structureedit.assets.textures.MissingTexture;
+import me.dalekcraft.structureedit.assets.textures.metadata.AnimationMetadataSection;
+import me.dalekcraft.structureedit.assets.textures.metadata.TextureMetadataSection;
 import me.dalekcraft.structureedit.util.Configuration;
 import me.dalekcraft.structureedit.util.Language;
 import org.apache.logging.log4j.Level;
@@ -30,7 +33,8 @@ public class Registries {
     private final Registry<BlockModelDefinition> blockStates = new Registry<>("blockstate");
     private final Registry<BlockModel> models = new Registry<>("model");
     private final Registry<TextureData> textures = new Registry<>("texture");
-    private final Registry<JsonObject> animations = new Registry<>("animation");
+    private final Registry<AnimationMetadataSection> animationMetadataSections = new Registry<>("animationMetadata");
+    private final Registry<TextureMetadataSection> textureMetadataSections = new Registry<>("textureMetadata");
     private final BlockModelDefinition.Context context = new BlockModelDefinition.Context();
     private Path path = Path.of("");
 
@@ -40,13 +44,15 @@ public class Registries {
         models.setDefaultValue(MissingBlockModel.getInstance());
 
         TextureData texture = null;
-        try (InputStream inputStream = getClass().getResourceAsStream("/assets/minecraft/textures/missingno.png")) {
+        try (InputStream inputStream = getClass().getResourceAsStream("/assets/" + MissingTexture.getLocation().getNamespace() + "/textures/" + MissingTexture.getLocation().getNamespace() + ".png")) {
             assert inputStream != null;
             texture = TextureIO.newTextureData(GLProfile.getDefault(), inputStream, false, TextureIO.PNG);
         } catch (IOException e) {
             LOGGER.log(Level.TRACE, e.getMessage());
         }
         textures.setDefaultValue(texture);
+
+        animationMetadataSections.setDefaultValue(AnimationMetadataSection.EMPTY);
     }
 
     // TODO Create custom model files for the blocks what do not have them, like liquids, signs, and heads.
@@ -72,7 +78,7 @@ public class Registries {
         }
         textures.forEach(TextureData::destroy);
         textures.clear();
-        animations.clear();
+        animationMetadataSections.clear();
         models.clear();
         blockStates.clear();
         String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
@@ -210,7 +216,7 @@ public class Registries {
                             loadTexture(namespacedId);
                         } else if (path.toString().endsWith(".png.mcmeta")) {
                             ResourceLocation namespacedId = new ResourceLocation(currentNamespace + path.getFileName().toString().substring(0, path.getFileName().toString().lastIndexOf(".png.mcmeta")));
-                            loadAnimation(namespacedId);
+                            loadMetadataSection(namespacedId);
                         }
                     }
                 });
@@ -240,23 +246,53 @@ public class Registries {
         return textures;
     }
 
-    public void loadAnimation(@NotNull ResourceLocation namespacedId) {
-        if (animations.containsKey(namespacedId)) {
-            return;
-        }
+    public void loadMetadataSection(@NotNull ResourceLocation namespacedId) {
         try {
-            JsonObject animation = toJson(namespacedId, "textures", "png.mcmeta");
-            animations.register(namespacedId, animation);
+            JsonObject json = toJson(namespacedId, "textures", "png.mcmeta");
+            if (json.has(TextureMetadataSection.SECTION_NAME)) { // Typically in textures/misc/
+                loadTextureMetadataSection(namespacedId, json.getAsJsonObject(TextureMetadataSection.SECTION_NAME));
+            }
+            // This isn't needed because we don't render Villagers (yet, at least).
+            // if (json.has(VillagerMetadataSection.SECTION_NAME)) { // Typically in textures/entity/villager/
+            //     loadVillagerMetadataSection(namespacedId, json.getAsJsonObject(VillagerMetadataSection.SECTION_NAME));
+            // }
+            if (json.has(AnimationMetadataSection.SECTION_NAME)) { // Every other texture directory
+                loadAnimationMetadataSection(namespacedId, json.getAsJsonObject(AnimationMetadataSection.SECTION_NAME));
+            }
         } catch (IOException ignored) {
         }
     }
 
-    public JsonObject getAnimation(@NotNull ResourceLocation namespacedId) {
-        return animations.get(namespacedId);
+    public void loadTextureMetadataSection(@NotNull ResourceLocation namespacedId, JsonObject json) {
+        if (textureMetadataSections.containsKey(namespacedId)) {
+            return;
+        }
+        TextureMetadataSection textureMetadataSection = TextureMetadataSection.SERIALIZER.deserialize(json);
+        textureMetadataSections.register(namespacedId, textureMetadataSection);
     }
 
-    public Registry<JsonObject> getAnimations() {
-        return animations;
+    public TextureMetadataSection getTextureMetadataSection(@NotNull ResourceLocation namespacedId) {
+        return textureMetadataSections.get(namespacedId);
+    }
+
+    public Registry<TextureMetadataSection> getTextureMetadataSections() {
+        return textureMetadataSections;
+    }
+
+    public void loadAnimationMetadataSection(@NotNull ResourceLocation namespacedId, JsonObject json) {
+        if (animationMetadataSections.containsKey(namespacedId)) {
+            return;
+        }
+        AnimationMetadataSection animation = AnimationMetadataSection.SERIALIZER.deserialize(json);
+        animationMetadataSections.register(namespacedId, animation);
+    }
+
+    public AnimationMetadataSection getAnimationMetadataSection(@NotNull ResourceLocation namespacedId) {
+        return animationMetadataSections.get(namespacedId);
+    }
+
+    public Registry<AnimationMetadataSection> getAnimationMetadataSections() {
+        return animationMetadataSections;
     }
 
     @NotNull

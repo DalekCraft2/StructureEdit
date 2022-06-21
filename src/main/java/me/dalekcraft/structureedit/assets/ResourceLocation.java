@@ -5,7 +5,6 @@ import com.mojang.brigadier.LiteralMessage;
 import com.mojang.brigadier.StringReader;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.exceptions.SimpleCommandExceptionType;
-import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import me.dalekcraft.structureedit.util.GsonHelper;
 import org.apache.commons.lang3.StringUtils;
@@ -132,10 +131,12 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
         return namespace;
     }
 
+    @Override
     public String toString() {
         return namespace + NAMESPACE_SEPARATOR + path;
     }
 
+    @Override
     public boolean equals(Object obj) {
         if (this == obj) {
             return true;
@@ -146,6 +147,7 @@ public class ResourceLocation implements Comparable<ResourceLocation> {
         return false;
     }
 
+    @Override
     public int hashCode() {
         return 31 * namespace.hashCode() + path.hashCode();
     }
