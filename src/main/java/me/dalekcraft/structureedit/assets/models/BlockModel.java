@@ -23,7 +23,6 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-// TODO Use newer 1.19 model code
 public class BlockModel {
 
     public static final String PARTICLE_TEXTURE_REFERENCE = "particle";

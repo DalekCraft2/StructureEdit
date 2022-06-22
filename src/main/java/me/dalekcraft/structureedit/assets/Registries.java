@@ -43,7 +43,7 @@ public class Registries {
 
         models.setDefaultValue(MissingBlockModel.getInstance());
 
-        TextureData texture = null;
+        TextureData texture = null; // TODO Manage to create the missing texture entirely programmatically by setting the pixel colors
         try (InputStream inputStream = getClass().getResourceAsStream("/assets/" + MissingTexture.getLocation().getNamespace() + "/textures/" + MissingTexture.getLocation().getNamespace() + ".png")) {
             assert inputStream != null;
             texture = TextureIO.newTextureData(GLProfile.getDefault(), inputStream, false, TextureIO.PNG);

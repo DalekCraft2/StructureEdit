@@ -8,7 +8,7 @@ public final class Constants {
 
     public static final ResourceLocation DEFAULT_BLOCK = new ResourceLocation("air");
     public static final ResourceLocation DEFAULT_BIOME = new ResourceLocation("ocean");
-    public static final ResourceLocation WATERLOGGED_BLOCK = new ResourceLocation("water");
+    public static final ResourceLocation WATERLOGGED_BLOCK = new ResourceLocation("block/water");
 
     public static final List<String> NO_COPY_ENTITY_NBT_FIELDS;
     /**

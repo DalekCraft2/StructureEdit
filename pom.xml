@@ -57,6 +57,7 @@
         <libDirectory>${project.build.directory}/${libPrefix}</libDirectory>
 
         <javafx.version>17.0.2</javafx.version>
+        <!--<javafx.version>18.0.1</javafx.version>-->
         <jogl.version>2.3.2</jogl.version>
         <!--<jogl.version>v2.4.0-rc4</jogl.version>-->
     </properties>
@@ -293,7 +294,7 @@
                 <!-- Compile -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.10.1</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -317,7 +318,7 @@
                 <!-- Attach Javadocs -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -331,7 +332,7 @@
                 <!-- Set the main class -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.2.2</version>
                 <configuration>
                     <archive>
                         <manifest>
@@ -348,7 +349,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
-                <version>2.5.2</version>
+                <version>3.0.0-M1</version>
                 <configuration>
                     <!-- This is an app, so we don't want to install it in the local Maven repository -->
                     <skip>true</skip>
@@ -357,7 +358,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>copy-dependencies</id>
@@ -551,7 +552,7 @@
             <!--<plugin>
                 <groupId>com.gluonhq</groupId>
                 <artifactId>gluonfx-maven-plugin</artifactId>
-                <version>1.0.11</version>
+                <version>1.0.14</version>
                 <configuration>
                     <mainClass>${mainModule}/${mainClass}</mainClass>
                     <nativeImageArgs>-H:-CheckToolchain</nativeImageArgs>
@@ -983,7 +984,7 @@
                 <!-- Parse version components and create properties for them -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>parse-version</id>

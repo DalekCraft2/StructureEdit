@@ -739,7 +739,7 @@ public class MainController extends Node {
                                     for (Variant variant : variants) {
                                         modelMatrix.pushMatrix();
                                         modelMatrix.translate(x, y, z);
-                                        drawModel(gl, variant, tint);
+                                        drawModel(gl, variant, tint, new int[]{x, y, z});
                                         modelMatrix.popMatrix();
                                     }
                                 } catch (IllegalStateException e) {
@@ -956,6 +956,7 @@ public class MainController extends Node {
             ResourceLocation namespacedId = blockState.getId();
             Map<String, String> properties = blockState.getProperties();
             if (properties.containsKey("waterlogged") && properties.get("waterlogged").equals("true")) {
+                // TODO Figure out how to get both the block tint and the water tint into drawModel().
                 Variant waterModel = new Variant(Constants.WATERLOGGED_BLOCK, BlockModelRotation.X0_Y0, false, 1);
                 modelList.add(waterModel);
             }
@@ -1010,14 +1011,15 @@ public class MainController extends Node {
             return weightTree.ceilingEntry(value).getValue();
         }
 
-        public void drawModel(@NotNull GL4 gl, @NotNull Variant variant, Color tint) {
+        // I'm going to use this "position" argument to implement cullfaces
+        public void drawModel(@NotNull GL4 gl, @NotNull Variant variant, Color tint, int[] position) {
             gl.glUseProgram(shaderProgram);
 
             BlockModel model = Registries.getInstance().getModel(variant.getModelLocation());
             BlockModelRotation blockModelRotation = variant.getRotation();
             int x = blockModelRotation.getXRotation();
             int y = blockModelRotation.getYRotation();
-            boolean uvlock = variant.isUvLocked();
+            boolean uvLock = variant.isUvLocked();
 
             modelMatrix.translate(0.5f, 0.5f, 0.5f);
             modelMatrix.rotateY((float) Math.toRadians(-y));
@@ -1214,7 +1216,7 @@ public class MainController extends Node {
                         textureMatrix.identity();
                         textureMatrix.translate(0.5f, 0.5f, 0.0f);
                         textureMatrix.rotateZ((float) Math.toRadians(faceRotation));
-                        if (uvlock) {
+                        if (uvLock) {
                             switch (faceName) {
                                 case UP -> {
                                     if (x == 180) {
