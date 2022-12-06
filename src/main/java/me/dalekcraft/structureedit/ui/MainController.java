@@ -801,6 +801,7 @@ public class MainController extends Node {
 
         @Override
         public void mouseClicked(MouseEvent e) {
+            mousePoint = e.getPoint();
         }
 
         @Override
@@ -861,6 +862,10 @@ public class MainController extends Node {
             }
         }
 
+        public void mouseClicked(@NotNull MouseEvent e) {
+            mousePoint = new Point2D(e.getX(), e.getY());
+        }
+
         public void mouseWheelMoved(@NotNull ScrollEvent e) {
             camera.zoom((float) e.getDeltaY());
         }
@@ -879,11 +884,6 @@ public class MainController extends Node {
                 // camera.pan(mousePoint.x, mousePoint.y, e.getX(), e.getY());
                 camera.pan(dx, dy);
             }
-            mousePoint = new Point2D(e.getX(), e.getY());
-        }
-
-        // FIXME "mousePoint" does not update if the mouse is moved whilst a file chooser is open.
-        public void mouseMoved(@NotNull MouseEvent e) {
             mousePoint = new Point2D(e.getX(), e.getY());
         }*/
 
