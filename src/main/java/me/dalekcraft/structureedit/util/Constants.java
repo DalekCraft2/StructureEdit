@@ -44,6 +44,8 @@ public final class Constants {
      */
     public static final int DATA_VERSION_MC_1_19 = 3105;
 
+    public static final double EDITOR_TILE_SIZE = 30.0;
+
     static {
         NO_COPY_ENTITY_NBT_FIELDS = List.of("UUIDLeast", "UUIDMost", "UUID", // Bukkit and Vanilla
                 "WorldUUIDLeast", "WorldUUIDMost", // Bukkit and Vanilla

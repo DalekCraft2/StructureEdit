@@ -1,7 +1,5 @@
 package me.dalekcraft.structureedit.schematic.container;
 
-import java.util.Objects;
-
 public class Biome {
 
     private int biomeStateIndex;

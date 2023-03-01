@@ -27,7 +27,7 @@ public class BlockModel {
 
     public static final String PARTICLE_TEXTURE_REFERENCE = "particle";
     @VisibleForTesting
-    static final Gson GSON = new GsonBuilder().registerTypeAdapter(BlockModel.class, new Deserializer()).registerTypeAdapter(BlockElement.class, new BlockElement.Deserializer()).registerTypeAdapter(BlockElementFace.class, new BlockElementFace.Deserializer()).registerTypeAdapter(BlockFaceUV.class, new BlockFaceUV.Deserializer()).create();
+    static final Gson GSON = new GsonBuilder().registerTypeAdapter(BlockModel.class, new Deserializer()).registerTypeAdapter(BlockElement.class, new BlockElement.Deserializer()).registerTypeAdapter(BlockElementFace.class, new BlockElementFace.Deserializer()).registerTypeAdapter(BlockFaceUv.class, new BlockFaceUv.Deserializer()).create();
     private static final Logger LOGGER = LogManager.getLogger();
     private static final char REFERENCE_CHAR = '#';
     @VisibleForTesting
@@ -97,7 +97,7 @@ public class BlockModel {
     }
 
     public boolean hasTexture(String reference) {
-        return !MissingTexture.getLocation().equals(getMaterial(reference).texture());
+        return !MissingTexture.MISSING_TEXTURE_LOCATION.equals(getMaterial(reference).texture());
     }
 
     public Material getMaterial(String reference) {
@@ -111,7 +111,7 @@ public class BlockModel {
             reference = either.right().get();
             if (arrayList.contains(reference)) {
                 LOGGER.warn("Unable to resolve texture due to reference chain {}->{} in {}", Joiner.on("->").join(arrayList), reference, name);
-                return new Material(MissingTexture.getLocation());
+                return new Material(MissingTexture.MISSING_TEXTURE_LOCATION);
             }
             arrayList.add(reference);
         }
@@ -127,7 +127,7 @@ public class BlockModel {
             }
             blockModel = blockModel.parent;
         }
-        return Either.left(new Material(MissingTexture.getLocation()));
+        return Either.left(new Material(MissingTexture.MISSING_TEXTURE_LOCATION));
     }
 
     public BlockModel getRootModel() {

@@ -14,6 +14,7 @@ import me.dalekcraft.structureedit.schematic.container.BiomeState;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
 import me.dalekcraft.structureedit.ui.BiomeButton;
 import me.dalekcraft.structureedit.ui.MainController;
+import me.dalekcraft.structureedit.util.Constants;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.Arrays;
@@ -150,7 +151,7 @@ public class BiomeEditorController {
                         biomeButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
                         biomeButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
                         biomeButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-                        biomeButton.setPrefSize(30.0, 30.0);
+                        biomeButton.setPrefSize(Constants.EDITOR_TILE_SIZE, Constants.EDITOR_TILE_SIZE);
                         biomeButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::onBiomeSelected);
                         biomeGrid.add(biomeButton, x, z);
                         if (selectedBiome != null) {
@@ -169,7 +170,7 @@ public class BiomeEditorController {
                         biomeButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
                         biomeButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
                         biomeButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-                        biomeButton.setPrefSize(30.0, 30.0);
+                        biomeButton.setPrefSize(Constants.EDITOR_TILE_SIZE, Constants.EDITOR_TILE_SIZE);
                         biomeButton.setDisable(true);
                         biomeGrid.add(biomeButton, x, z);
                     }

@@ -13,9 +13,9 @@ public class BlockElementFace {
     public final Direction cullForDirection;
     public final int tintIndex;
     public final String texture;
-    public final BlockFaceUV uv;
+    public final BlockFaceUv uv;
 
-    public BlockElementFace(@Nullable Direction cullForDirection, int tintIndex, String texture, BlockFaceUV uv) {
+    public BlockElementFace(@Nullable Direction cullForDirection, int tintIndex, String texture, BlockFaceUv uv) {
         this.cullForDirection = cullForDirection;
         this.tintIndex = tintIndex;
         this.texture = texture;
@@ -31,7 +31,7 @@ public class BlockElementFace {
             Direction cullForDirection = getCullFacing(jsonObject);
             int tintIndex = getTintIndex(jsonObject);
             String texture = getTexture(jsonObject);
-            BlockFaceUV uv = context.deserialize(jsonObject, BlockFaceUV.class);
+            BlockFaceUv uv = context.deserialize(jsonObject, BlockFaceUv.class);
             return new BlockElementFace(cullForDirection, tintIndex, texture, uv);
         }
 

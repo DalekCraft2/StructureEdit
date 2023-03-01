@@ -44,15 +44,16 @@ public class SpongeSchematicReader extends NbtSchematicReader {
     private OptionalInt getDataVersion(CompoundTag root) {
         try {
             switch (schematicVersion) {
-                case 1:
+                case 1 -> {
                     return OptionalInt.of(Constants.DATA_VERSION_MC_1_13_2);
-                case 2:
-                case 3:
+                }
+                case 2, 3 -> {
                     int dataVersion = requireTag(root, "DataVersion", IntTag.class).asInt();
                     if (dataVersion < 0) {
                         return OptionalInt.empty();
                     }
                     return OptionalInt.of(dataVersion);
+                }
             }
             return OptionalInt.empty();
         } catch (Exception e) {

@@ -10,7 +10,7 @@
     <packaging>jar</packaging>
 
     <name>StructureEdit</name>
-    <description>A Java OpenGL application for viewing Minecraft schematic files</description>
+    <description>A JavaFX application for viewing Minecraft schematic files</description>
     <url>https://github.com/DalekCraft2/StructureEdit</url>
     <inceptionYear>2015</inceptionYear>
     <licenses>
@@ -57,8 +57,6 @@
         <libDirectory>${project.build.directory}/${libPrefix}</libDirectory>
 
         <javafx.version>19</javafx.version>
-        <jogl.version>2.3.2</jogl.version>
-        <!--<jogl.version>v2.4.0-rc4</jogl.version>-->
     </properties>
 
     <!-- TODO Add JUnit tests. -->
@@ -107,53 +105,6 @@
             </exclusions>
         </dependency>
 
-        <!-- JOGL -->
-        <dependency>
-            <!-- GlueGen Runtime -->
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
-            <version>${jogl.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- GlueGen Runtime Natives -->
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>${jogl.natives}</classifier>
-            <scope>runtime</scope>
-        </dependency>
-        <!--<dependency>
-            &lt;!&ndash; GlueGen Runtime Natives &ndash;&gt;
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt-${jogl.natives}</artifactId>
-            <version>${jogl.version}</version>
-            <scope>runtime</scope>
-        </dependency>-->
-        <dependency>
-            <!-- JOGL -->
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
-            <version>${jogl.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- JOGL Natives -->
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>${jogl.natives}</classifier>
-            <scope>runtime</scope>
-        </dependency>
-        <!--<dependency>
-            &lt;!&ndash; JOGL Natives &ndash;&gt;
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all-${jogl.natives}</artifactId>
-            <version>${jogl.version}</version>
-            <scope>runtime</scope>
-        </dependency>-->
         <dependency>
             <!-- JOML -->
             <groupId>org.joml</groupId>
@@ -234,7 +185,7 @@
             <!-- JetBrains Java Annotations -->
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>23.0.0</version>
+            <version>23.1.0</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -348,8 +299,8 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <!-- Set the main class -->
+            <!-- <plugin>
+                &lt;!&ndash; Set the main class &ndash;&gt;
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>3.2.2</version>
@@ -358,7 +309,7 @@
                         <manifest>
                             <addClasspath>true</addClasspath>
                             <classpathPrefix>${libPrefix}</classpathPrefix>
-                            <!--<classpathLayoutType>repository</classpathLayoutType>-->
+                            &lt;!&ndash;<classpathLayoutType>repository</classpathLayoutType>&ndash;&gt;
                             <mainClass>${mainClass}</mainClass>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                             <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
@@ -371,11 +322,11 @@
                 <artifactId>maven-install-plugin</artifactId>
                 <version>3.0.0-M1</version>
                 <configuration>
-                    <!-- This is an app, so we don't want to install it in the local Maven repository -->
+                    &lt;!&ndash; This is an app, so we don't want to install it in the local Maven repository &ndash;&gt;
                     <skip>true</skip>
                 </configuration>
-            </plugin>
-            <plugin>
+            </plugin> -->
+            <!-- <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.3.0</version>
@@ -387,7 +338,7 @@
                             <goal>copy-dependencies</goal>
                         </goals>
                         <configuration>
-                            <!--<useRepositoryLayout>true</useRepositoryLayout>-->
+                            &lt;!&ndash;<useRepositoryLayout>true</useRepositoryLayout>&ndash;&gt;
                             <outputDirectory>${libDirectory}</outputDirectory>
                             <overWriteReleases>false</overWriteReleases>
                             <overWriteSnapshots>false</overWriteSnapshots>
@@ -410,9 +361,9 @@
                         <configuration>
                             <modules>
                                 <module>
-                                    <!-- JavaFX -->
+                                    &lt;!&ndash; JavaFX &ndash;&gt;
                                     <artifact>
-                                        <!-- RichTextFX -->
+                                        &lt;!&ndash; RichTextFX &ndash;&gt;
                                         <groupId>org.fxmisc.richtext</groupId>
                                         <artifactId>richtextfx</artifactId>
                                         <version>0.10.9</version>
@@ -422,34 +373,10 @@
                                     </moduleInfoSource>
                                 </module>
 
-                                <!-- JOGL -->
+                                &lt;!&ndash; Logging &ndash;&gt;
                                 <module>
                                     <artifact>
-                                        <!-- GlueGen Runtime -->
-                                        <groupId>org.jogamp.gluegen</groupId>
-                                        <artifactId>gluegen-rt</artifactId>
-                                        <version>${jogl.version}</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module gluegen.rt {}
-                                    </moduleInfoSource>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        <!-- JOGL -->
-                                        <groupId>org.jogamp.jogl</groupId>
-                                        <artifactId>jogl-all</artifactId>
-                                        <version>${jogl.version}</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module jogl.all {}
-                                    </moduleInfoSource>
-                                </module>
-
-                                <!-- Logging -->
-                                <module>
-                                    <artifact>
-                                        <!-- Apache Log4j Core -->
+                                        &lt;!&ndash; Apache Log4j Core &ndash;&gt;
                                         <groupId>org.apache.logging.log4j</groupId>
                                         <artifactId>log4j-core</artifactId>
                                         <version>2.17.2</version>
@@ -460,7 +387,7 @@
                                 </module>
                                 <module>
                                     <artifact>
-                                        <!-- Jansi -->
+                                        &lt;!&ndash; Jansi &ndash;&gt;
                                         <groupId>org.fusesource.jansi</groupId>
                                         <artifactId>jansi</artifactId>
                                         <version>2.4.0</version>
@@ -470,7 +397,7 @@
                                     </moduleInfoSource>
                                 </module>
 
-                                <!-- Other -->
+                                &lt;!&ndash; Other &ndash;&gt;
                                 <module>
                                     <artifact>
                                         <groupId>com.mojang</groupId>
@@ -493,7 +420,7 @@
                                 </module>
                                 <module>
                                     <artifact>
-                                        <!-- Querz/NBT -->
+                                        &lt;!&ndash; Querz/NBT &ndash;&gt;
                                         <groupId>com.github.Querz</groupId>
                                         <artifactId>NBT</artifactId>
                                         <version>6.1</version>
@@ -504,7 +431,7 @@
                                 </module>
                                 <module>
                                     <artifact>
-                                        <!-- Google Guava -->
+                                        &lt;!&ndash; Google Guava &ndash;&gt;
                                         <groupId>com.google.guava</groupId>
                                         <artifactId>guava</artifactId>
                                         <version>31.1-jre</version>
@@ -515,7 +442,7 @@
                                 </module>
                                 <module>
                                     <artifact>
-                                        <!-- Apache Commons Language -->
+                                        &lt;!&ndash; Apache Commons Language &ndash;&gt;
                                         <groupId>org.apache.commons</groupId>
                                         <artifactId>commons-lang3</artifactId>
                                         <version>3.5</version>
@@ -529,7 +456,7 @@
                             <overwriteExistingFiles>true</overwriteExistingFiles>
                         </configuration>
                     </execution>
-                    <!--<execution>
+                    &lt;!&ndash;<execution>
                         <id>create-runtime-image</id>
                         <phase>package</phase>
                         <goals>
@@ -566,27 +493,9 @@
                             <outputDirectory>${project.build.directory}/jlink</outputDirectory>
                             <jarInclusionPolicy>APP_WITH_DEPENDENCIES</jarInclusionPolicy>
                         </configuration>
-                    </execution>-->
+                    </execution>&ndash;&gt;
                 </executions>
-            </plugin>
-            <!--<plugin>
-                <groupId>com.gluonhq</groupId>
-                <artifactId>gluonfx-maven-plugin</artifactId>
-                <version>1.0.14</version>
-                <configuration>
-                    <mainClass>${mainModule}/${mainClass}</mainClass>
-                    <nativeImageArgs>-H:-CheckToolchain</nativeImageArgs>
-                </configuration>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>link</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
+            </plugin> -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
@@ -594,412 +503,22 @@
                 <configuration>
                     <mainClass>${mainModule}/${mainClass}</mainClass>
                     <jlinkImageName>jlink</jlinkImageName>
-                    <jmodsPath>${libDirectory}</jmodsPath>
+                    <!-- <jmodsPath>${libDirectory}</jmodsPath> -->
                     <jlinkVerbose>true</jlinkVerbose>
                     <compress>2</compress>
                 </configuration>
             </plugin>
-            <!--<plugin>
-                &lt;!&ndash; https://github.com/wiverson/jtoolprovider-plugin &ndash;&gt;
-                <groupId>io.github.wiverson</groupId>
-                <artifactId>jtoolprovider-plugin</artifactId>
-                <version>1.0.34</version>
+            <plugin>
+                <!-- GraalVM must be installed for this to work. -->
+                <!-- It works with the GRAALVM_HOME environment variable set to the installation directory. -->
+                <!-- This has to be run from the x64 native tools command prompt. -->
+                <groupId>com.gluonhq</groupId>
+                <artifactId>gluonfx-maven-plugin</artifactId>
+                <version>1.0.16</version>
                 <configuration>
-                    <toolName>jpackage</toolName>
-                    <writeOutputToLog>true</writeOutputToLog>
-                    <writeErrorsToLog>true</writeErrorsToLog>
-                    <failOnError>true</failOnError>
-                    <removeDirectories>${project.build.directory}/installer-work</removeDirectories>
-                    <dest>${project.build.directory}/jpackage</dest>
-                    <type>app-image</type>
-                    <debug>true</debug>
-                    <appVersion>${project.version}</appVersion>
-                    <copyright>Copyright (C) 2022 Eric Thompson</copyright>
-                    <description>${project.name}</description>
-                    <name>${project.name}</name>
-                    <vendor>${vendor}</vendor>
-                    <icon>${project.basedir}/config/jpackage/resources/icon.ico</icon>
-                    <runtimeImage>${project.build.directory}/jlink</runtimeImage>
-                    <module>${mainModule}/${mainClass}</module>
-                    &lt;!&ndash;<appImage>${project.build.directory}/jpackage/appimage</appImage>&ndash;&gt;
-                    &lt;!&ndash;<installDir>${vendor}/${project.name}</installDir>&ndash;&gt;
-                    &lt;!&ndash;<licenseFile>${project.basedir}/LICENSE.txt</licenseFile>&ndash;&gt;
-                    <resourceDir>${project.basedir}/config/jpackage/resources</resourceDir>
-                    <input>${project.build.directory}/jlink</input>
-                    <modulePath>${project.build.directory}/jars</modulePath>
+                    <mainClass>${mainModule}/${mainClass}</mainClass>
                 </configuration>
-                <executions>
-                    &lt;!&ndash; The command that actually generates the installer. The options for each platform
-                    are found the /src/packaging directory. These files are copied into the target directory by
-                    the Maven resources plugin, which does the filtering to replace the original values with
-                    the actual Maven properties.
-                    https://github.com/wiverson/jtoolprovider-plugin/blob/main/java-tool-doc.md
-                    &ndash;&gt;
-                    <execution>
-                        <id>jpackage</id>
-                        <phase>install</phase>
-                        <goals>
-                            <goal>java-tool</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>-->
-            <!--<plugin>
-                <groupId>com.github.akman</groupId>
-                <artifactId>jpackage-maven-plugin</artifactId>
-                <version>0.1.3</version>
-                <configuration>
-                    &lt;!&ndash;
-                      Specifies the JDK home path which provides the tool needed.
-                      If not specified the jpackage tool executable will be found in
-                      the following order:
-                        - user specified JDK home directory by toolchains-plugin
-                        - JDK home directory specified by system variable JAVA_HOME
-                        - system path specified by system variable PATH
-                    &ndash;&gt;
-                    &lt;!&ndash;<toolhome>path/to/jpackage/home</toolhome>&ndash;&gt;
-
-
-                    &lt;!&ndash; generic options &ndash;&gt;
-
-
-                    &lt;!&ndash;
-                      Specifies the location in which generated output files are placed.
-                      Default value: ${project.build.directory}/jpackage
-                    &ndash;&gt;
-                    <dest>${project.build.directory}/jpackage</dest>
-                    &lt;!&ndash;
-                      Specifies the location in which temporary files are placed.
-                      If specified, the directory will not be removed upon the task
-                      completion and must be removed manually.
-                    &ndash;&gt;
-                    &lt;!&ndash;<temp>${project.build.directory}/jpackage/temp</temp>&ndash;&gt;
-                    &lt;!&ndash;
-                      Specifies the type of package to
-                      create: { PLATFORM | IMAGE | EXE | MSI }.
-                      Default value: PLATFORM (a platform dependent default type)
-                    &ndash;&gt;
-                    <type>IMAGE</type>
-                    &lt;!&ndash;
-                      Enable verbose tracing.
-                      Default value: false.
-                    &ndash;&gt;
-                    <verbose>true</verbose>
-                    &lt;!&ndash;
-                      Specifies version of the application and/or package.
-                    &ndash;&gt;
-                    <appversion>${project.version}</appversion>
-                    &lt;!&ndash;
-                      Specifies copyright for the application.
-                    &ndash;&gt;
-                    <copyright>Copyright (C) 2022 Eric Thompson</copyright>
-                    &lt;!&ndash;
-                      Specifies description of the application.
-                    &ndash;&gt;
-                    <description>${project.name}</description>
-                    &lt;!&ndash;
-                      Specifies the name of subdirectory relative to the destination
-                      directory in which files of generated application image are placed.
-                    &ndash;&gt;
-                    <name>appimage</name>
-                    &lt;!&ndash;
-                      Specifies vendor of the application.
-                    &ndash;&gt;
-                    <vendor>${vendor}</vendor>
-
-
-                    &lt;!&ndash; options for creating the application image &ndash;&gt;
-
-
-                    &lt;!&ndash;
-                      Specifies the location of the icon of the application package.
-                    &ndash;&gt;
-                    <icon>${project.basedir}/config/jpackage/resources/icon.ico</icon>
-                    &lt;!&ndash;
-                      Specifies the location of the input directory that contains
-                      the files to be packaged. All files in the input directory
-                      will be packaged into the application image.
-                    &ndash;&gt;
-                    &lt;!&ndash;<input>${project.build.directory}/jlink/lib</input>&ndash;&gt;
-
-
-                    &lt;!&ndash; options for creating the runtime image &ndash;&gt;
-
-
-                    &lt;!&ndash;
-                      Specifies the location of the predefined runtime
-                      image (result of jlink) that will be copied into
-                      the application image.
-                      If not specified, jpackage will run jlink to create
-                      the runtime image using options:
-                        - strip-debug
-                        - no-header-files
-                        - no-man-pages
-                        - strip-native-commands
-                    &ndash;&gt;
-                    <runtimeimage>${project.build.directory}/jlink</runtimeimage>
-                    &lt;!&ndash;
-                      Specifies the module path. The path where the jlink tool discovers
-                      observable modules: modular JAR files, JMOD files, exploded modules.
-                      If this option is not specified, then the default module path
-                      is $JAVA_HOME/jmods. This directory contains the java.base module
-                      and the other standard and JDK modules. If this option is specified
-                      but the java.base module cannot be resolved from it, then
-                      the jlink command appends $JAVA_HOME/jmods to the module path.
-                      Pass on &dash;-modulepath option to jlink.
-                      pathelements - passed to jlink as is
-                      filesets - sets of files (without directories)
-                      dirsets - sets of directories (without files)
-                      dependencysets - sets of dependencies with specified includes and
-                                       excludes patterns (glob: or regex:) for file names
-                                       and regex patterns only for module names, and
-                                       excludes for automatic modules
-                    &ndash;&gt;
-                    <modulepath>
-                        <filesets>
-                            <fileset>
-                                <directory>${project.build.directory}/jlink/jars</directory>
-                                <includes>
-                                    <include>**/*</include>
-                                </includes>
-                                <excludes>
-                                    <exclude>**/*Empty.jar</exclude>
-                                    &lt;!&ndash;<exclude>jlink.opts</exclude>&ndash;&gt;
-                                    &lt;!&ndash;<exclude>jlink-opts</exclude>&ndash;&gt;
-                                </excludes>
-                                <followSymlinks>true</followSymlinks>
-                            </fileset>
-                            <fileset>
-                                <directory>${project.build.directory}</directory>
-                                <includes>
-                                    <include>${project.build.finalName}.jar</include>
-                                </includes>
-                            </fileset>
-                        </filesets>
-                    </modulepath>
-                    &lt;!&ndash;
-                      Link service provider modules and their dependencies.
-                      Pass on &dash;-bind-services option to jlink.
-                      Default value: false.
-                    &ndash;&gt;
-                    &lt;!&ndash;<bindservices>true</bindservices>&ndash;&gt;
-
-
-                    &lt;!&ndash; options for creating the application launcher(s) &ndash;&gt;
-
-
-                    &lt;!&ndash;
-                      Specifies the main module (and optionally main class) of
-                      the application. This module must be located on the module path.
-                      When this option is specified, the main module will be linked
-                      in the Java runtime image. Either module or mainjar option
-                      can be specified but not both.
-                    &ndash;&gt;
-                    <module>${mainModule}/${mainClass}</module>
-                    &lt;!&ndash;
-                      Specifies the command line arguments to pass to the main class
-                      if no command line arguments are given to the launcher.
-                    &ndash;&gt;
-                    &lt;!&ndash;<arguments>&#45;&#45;gui</arguments>&ndash;&gt;
-                    &lt;!&ndash;
-                      Specifies the options to pass to the Java runtime.
-                    &ndash;&gt;
-                    &lt;!&ndash;<javaoptions>-Dfile.encoding=UTF-8 -Xms256m -Xmx512m</javaoptions>&ndash;&gt;
-                    &lt;!&ndash;
-                      Specifies options are added to, or used to overwrite, the original
-                      command line options to build additional alternative launchers.
-                    &ndash;&gt;
-                    <addlaunchers>
-                        <addlauncher>
-                            <name>appimage</name>
-                            &lt;!&ndash;<file>config/jpackage/launcher1.properties</file>&ndash;&gt;
-                            <module>${mainModule}/${mainClass}</module>
-                            &lt;!&ndash;<arguments>&#45;&#45;arg11 &#45;&#45;arg12</arguments>&ndash;&gt;
-                            &lt;!&ndash;<javaoptions>-Xms128m -Xmx1024m</javaoptions>&ndash;&gt;
-                            <appversion>${project.version}</appversion>
-                            <icon>config/jpackage/icon.ico</icon>
-                            <winconsole>true</winconsole>
-                        </addlauncher>
-                    </addlaunchers>
-
-
-                    &lt;!&ndash;
-                      platform dependent option for creating
-                      the application launcher
-                    &ndash;&gt;
-
-
-                    &lt;!&ndash;
-                      Enable creating a console launcher for the application, should be
-                      specified for application which requires console interactions.
-                      Default value: false
-                    &ndash;&gt;
-                    &lt;!&ndash;<winconsole>false</winconsole>&ndash;&gt;
-
-
-                    &lt;!&ndash;
-                      options for creating the application
-                      installable package
-                    &ndash;&gt;
-
-
-                    &lt;!&ndash;
-                      Specifies the location of the predefined application image
-                      that is used to build an installable package.
-                    &ndash;&gt;
-                    <appimage>${project.build.directory}/jpackage/appimage</appimage>
-                    &lt;!&ndash;
-                      Specifies the location of a properties file that contains
-                      list of key, value pairs. The keys "extension", "mime-type",
-                      "icon", and "description" can be used to describe the association.
-                    &ndash;&gt;
-                    &lt;!&ndash;<fileassociations>
-                        <fileassociation>config/jpackage/associations1.properties</fileassociation>
-                        <fileassociation>config/jpackage/associations2.properties</fileassociation>
-                    </fileassociations>&ndash;&gt;
-                    &lt;!&ndash;
-                      Specifies the relative sub-path under the default installation
-                      location of the application for Windows, or absolute path of the
-                      installation directory of the application for Mac or Linux.
-                    &ndash;&gt;
-                    <installdir>${vendor}/${project.name}</installdir>
-                    &lt;!&ndash;
-                      Specifies the location of a license file.
-                    &ndash;&gt;
-                    <licensefile>${project.basedir}/LICENSE.txt</licensefile>
-                    &lt;!&ndash;
-                      Specifies the location of a resources directory that override
-                      jpackage resources. Icons, template files, and other resources
-                      of jpackage can be overridden by adding replacement resources
-                      to this directory.
-                    &ndash;&gt;
-                    <resourcedir>${project.basedir}/config/jpackage/resources</resourcedir>
-
-
-                    &lt;!&ndash;
-                      WINDOWS platform dependent options for creating
-                      the application installable package
-                    &ndash;&gt;
-
-
-                    &lt;!&ndash;
-                      Enable adding a dialog to choose a directory in which
-                      the product is installed.
-                      Default value: false
-                    &ndash;&gt;
-                    &lt;!&ndash;<windirchooser>true</windirchooser>&ndash;&gt;
-                    &lt;!&ndash;
-                      Enable adding the application to the system menu.
-                      Default value: false
-                    &ndash;&gt;
-                    &lt;!&ndash;<winmenu>true</winmenu>&ndash;&gt;
-                    &lt;!&ndash;
-                      Start menu group this application is placed in.
-                    &ndash;&gt;
-                    &lt;!&ndash;<winmenugroup>StructureEdit</winmenugroup>&ndash;&gt;
-                    &lt;!&ndash;
-                      Enable requesting to perform an installation on a per-user basis.
-                      Default value: false
-                    &ndash;&gt;
-                    &lt;!&ndash;<winperuserinstall>true</winperuserinstall>&ndash;&gt;
-                    &lt;!&ndash;
-                      Enable creating a desktop shortcut for the application.
-                      Default value: false
-                    &ndash;&gt;
-                    &lt;!&ndash;<winshortcut>true</winshortcut>&ndash;&gt;
-                    &lt;!&ndash;
-                      UUID associated with upgrades for this package.
-                    &ndash;&gt;
-                    &lt;!&ndash;<winupgradeuuid>8CF81762-0B19-46A6-875E-1F839A1700D0</winupgradeuuid>&ndash;&gt;
-
-
-                    &lt;!&ndash;
-                      MAC platform dependent options for creating
-                      the application installable package
-                    &ndash;&gt;
-
-                    &lt;!&ndash;
-                      An identifier that uniquely identifies the application for macOS.
-                      Defaults to the main class name. May only use
-                      alphanumeric (A-Z,a-z,0-9), hyphen (-), and period (.) characters.
-                    &ndash;&gt;
-                    &lt;!&ndash;<macpackageidentifier>macPackageIdentifier</macpackageidentifier>&ndash;&gt;
-                    &lt;!&ndash;
-                      Name of the application as it appears in the Menu Bar.
-                      This can be different from the application name.
-                      This name must be less than 16 characters long and be suitable for
-                      displaying in the menu bar and the application Info window.
-                      Defaults to the application name.
-                    &ndash;&gt;
-                    &lt;!&ndash;<macpackagename>macPackageName</macpackagename>&ndash;&gt;
-                    &lt;!&ndash;
-                      When signing the application package, this value is prefixed
-                      to all components that need to be signed that don't have
-                      an existing package identifier.
-                    &ndash;&gt;
-                    &lt;!&ndash;<macpackagesigningprefix>macPackageSigningPrefix</macpackagesigningprefix>&ndash;&gt;
-                    &lt;!&ndash;
-                      Request that the package be signed.
-                      Default value: false
-                    &ndash;&gt;
-                    &lt;!&ndash;<macsign>false</macsign>&ndash;&gt;
-                    &lt;!&ndash;
-                      Path of the keychain to search for the signing identity
-                      (absolute path or relative to the current directory).
-                      If not specified, the standard keychains are used.
-                    &ndash;&gt;
-                    &lt;!&ndash;<macsigningkeychain>macSigningKeyChain</macsigningkeychain>&ndash;&gt;
-                    &lt;!&ndash;
-                      Team name portion in Apple signing identities' names.
-                      For example "Developer ID Application: ".
-                    &ndash;&gt;
-                    &lt;!&ndash;<macsigningkeyusername>macSigningKeyUserName</macsigningkeyusername>&ndash;&gt;
-
-
-                    &lt;!&ndash;
-                      LINUX platform dependent options for creating
-                      the application installable package
-                    &ndash;&gt;
-
-
-                    &lt;!&ndash;
-                      Name for Linux package, defaults to the application name.
-                    &ndash;&gt;
-                    &lt;!&ndash;<linuxpackagename>linuxPackageName</linuxpackagename>&ndash;&gt;
-                    &lt;!&ndash;
-                      Maintainer for .deb package (email).
-                    &ndash;&gt;
-                    &lt;!&ndash;<linuxdebmaintainer>linuxDebMaintainer</linuxdebmaintainer>&ndash;&gt;
-                    &lt;!&ndash;
-                      Menu group this application is placed in.
-                    &ndash;&gt;
-                    &lt;!&ndash;<linuxmenugroup>linuxMenuGroup</linuxmenugroup>&ndash;&gt;
-                    &lt;!&ndash;
-                      Required packages or capabilities for the application.
-                      Default value: false
-                    &ndash;&gt;
-                    &lt;!&ndash;<linuxpackagedeps>false</linuxpackagedeps>&ndash;&gt;
-                    &lt;!&ndash;
-                      Type of the license ("License: <name>" of the RPM .spec).
-                    &ndash;&gt;
-                    &lt;!&ndash;<linuxrpmlicensetype>MIT</linuxrpmlicensetype>&ndash;&gt;
-                    &lt;!&ndash;
-                      Release value of the RPM <name>.spec file or Debian revision value
-                      of the DEB control file.
-                    &ndash;&gt;
-                    &lt;!&ndash;<linuxapprelease>linuxAppRelease</linuxapprelease>&ndash;&gt;
-                    &lt;!&ndash;
-                      Group value of the RPM <name>.spec file or Section value
-                      of DEB control file.
-                    &ndash;&gt;
-                    &lt;!&ndash;<linuxappcategory>linuxAppCategory</linuxappcategory>&ndash;&gt;
-                    &lt;!&ndash;
-                      Creates a shortcut for the application.
-                      Default value: false
-                    &ndash;&gt;
-                    &lt;!&ndash;<linuxshortcut>true</linuxshortcut>&ndash;&gt;
-                </configuration>
-            </plugin>-->
+            </plugin>
             <plugin>
                 <!-- Parse version components and create properties for them -->
                 <groupId>org.codehaus.mojo</groupId>
@@ -1014,224 +533,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <!-- Create an .exe file to run the application -->
-                <groupId>com.akathist.maven.plugins.launch4j</groupId>
-                <artifactId>launch4j-maven-plugin</artifactId>
-                <version>2.1.2</version>
-                <executions>
-                    <execution>
-                        <id>l4j-clui</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>launch4j</goal>
-                        </goals>
-                        <configuration>
-                            <headerType>console</headerType>
-                            <outfile>${project.build.directory}/${exeName}</outfile>
-                            <jar>${jarName}</jar>
-                            <dontWrapJar>true</dontWrapJar>
-                            <downloadUrl>http://java.com/download</downloadUrl>
-                            <supportUrl>${project.ciManagement.url}</supportUrl>
-                            <chdir>.</chdir>
-                            <icon>${project.build.outputDirectory}/icon.ico</icon>
-                            <classPath>
-                                <mainClass>${mainClass}</mainClass>
-                                <addDependencies>true</addDependencies>
-                                <jarLocation>${libPrefix}</jarLocation>
-                            </classPath>
-                            <jre>
-                                <path>%JAVA_HOME%</path>
-                                <jdkPreference>preferJdk</jdkPreference>
-                            </jre>
-                            <versionInfo>
-                                <!--suppress UnresolvedMavenProperty -->
-                                <fileVersion>
-                                    ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}
-                                </fileVersion>
-                                <txtFileVersion>${project.version}</txtFileVersion>
-                                <fileDescription>${project.name}</fileDescription>
-                                <copyright>${vendor}</copyright>
-                                <!--suppress UnresolvedMavenProperty -->
-                                <productVersion>
-                                    ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}
-                                </productVersion>
-                                <txtProductVersion>${project.version}</txtProductVersion>
-                                <productName>${project.name}</productName>
-                                <internalName>${project.artifactId}</internalName>
-                                <originalFilename>${exeName}</originalFilename>
-                            </versionInfo>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- Bundle everything into a .zip file -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>${mainClass}</mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptors>
-                                <descriptor>assembly.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- Create installer -->
-                <!-- Inno Setup Compiler MUST be installed for this part of the build to work. -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>3.0.0</version>
-                <executions>
-                    <execution>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                    </execution>
-                </executions>
-                <configuration>
-                    <executable>C:\Program Files (x86)\Inno Setup 6\ISCC.exe</executable>
-                    <arguments>
-                        <argument>/DName=${project.name}</argument>
-                        <argument>/DVersion=${project.version}</argument>
-                        <argument>/DPublisher=${vendor}</argument>
-                        <argument>/DExeName=${exeName}</argument>
-                        <argument>/DJarName=${jarName}</argument>
-                        <!--suppress UnresolvedMavenProperty -->
-                        <argument>
-                            /DVersionInfoVersion=${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}
-                        </argument>
-                        <argument>setup.iss</argument>
-                    </arguments>
-                </configuration>
-            </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <!-- Determine which OS is being used, and download the correct natives for JOGL -->
-        <!-- TODO Ensure that these all work and are not mismatched. Difficult, because I only have a Windows computer. -->
-        <profile>
-            <id>jogl-natives-linux-amd64</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>amd64</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-linux-amd64</jogl.natives>
-            </properties>
-        </profile>
-        <!--<profile>
-            <id>jogl-natives-linux-armv6</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>arm</arch> &lt;!&ndash; TODO Find the proper architecture for this. &ndash;&gt;
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-linux-armv6</jogl.natives>
-            </properties>
-        </profile>-->
-        <profile>
-            <id>jogl-natives-linux-armv6hf</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>arm</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-linux-armv6hf</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-linux-i586</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>x86</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-linux-i586</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-macosx-universal</id>
-            <activation>
-                <os>
-                    <family>mac</family>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-macosx-universal</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-solaris-amd64</id>
-            <activation>
-                <os>
-                    <family>solaris</family>
-                    <arch>sparc</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-solaris-amd64</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-solaris-i586</id>
-            <activation>
-                <os>
-                    <family>solaris</family>
-                    <arch>sparcv9</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-solaris-i586</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-windows-amd64</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                    <arch>amd64</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-windows-amd64</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-windows-i586</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                    <arch>x86</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-windows-i586</jogl.natives>
-            </properties>
-        </profile>
-    </profiles>
 </project>

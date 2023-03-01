@@ -16,14 +16,8 @@
  */
 package me.dalekcraft.structureedit.ui;
 
-import com.jogamp.opengl.awt.GLJPanel;
-import javafx.embed.swing.SwingNode;
 import javafx.fxml.FXML;
-import javafx.scene.Node;
 import javafx.scene.control.ChoiceDialog;
-import javafx.scene.input.KeyEvent;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.input.ScrollEvent;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -40,7 +34,6 @@ import org.apache.logging.log4j.core.config.Configurator;
 import org.fxmisc.richtext.InlineCssTextArea;
 import org.jetbrains.annotations.NotNull;
 
-import javax.swing.*;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -53,7 +46,7 @@ import java.util.Optional;
 /**
  * @author eccentric_nz
  */
-public class MainController extends Node {
+public class MainController {
     /**
      * Color of the missing texture's purple.
      */
@@ -63,9 +56,8 @@ public class MainController extends Node {
     public final FileChooser schematicChooser = new FileChooser();
     public final DirectoryChooser assetsChooser = new DirectoryChooser();
     private Schematic schematic;
-    private SchematicRenderer renderer;
     @FXML
-    private SwingNode rendererNode;
+    private SchematicRendererController rendererController;
     @FXML
     private SchematicInfoController schematicInfoController;
     @FXML
@@ -86,34 +78,16 @@ public class MainController extends Node {
         schematicChooser.getExtensionFilters().sort(Comparator.comparing(FileChooser.ExtensionFilter::getDescription));
         schematicChooser.getExtensionFilters().add(0, FILTER_ALL);
         Path assets = Registries.getInstance().getPath();
-        if (assets != null && !assets.toString().equals("")) {
+        if (null != assets && !"".equals(assets.toString())) {
             assetsChooser.setInitialDirectory(assets.toFile());
         }
     }
 
     @FXML
     public void initialize() {
-
-        // FIXME The GLEventListener only initializes when the window is resized or moved.
-        SwingUtilities.invokeLater(() -> {
-            renderer = new SchematicRenderer();
-            renderer.injectBlockStateEditorController(blockStateEditorController);
-            GLJPanel rendererPanel = new GLJPanel();
-            rendererPanel.addGLEventListener(renderer);
-            /*rendererNode.addEventHandler(KeyEvent.KEY_PRESSED, event -> renderer.keyPressed(event));
-            rendererNode.addEventHandler(MouseEvent.MOUSE_DRAGGED, event -> renderer.mouseDragged(event));
-            rendererNode.addEventHandler(MouseEvent.MOUSE_PRESSED, event -> renderer.mousePressed(event));
-            rendererNode.addEventHandler(ScrollEvent.ANY, event -> renderer.mouseWheelMoved(event));*/
-            rendererPanel.addMouseListener(renderer);
-            rendererPanel.addMouseMotionListener(renderer);
-            rendererPanel.addMouseWheelListener(renderer);
-            rendererPanel.addKeyListener(renderer);
-            rendererNode.setContent(rendererPanel);
-        });
-
+        rendererController.injectBlockStateEditorController(blockStateEditorController);
         blockEditorController.injectBlockStateEditorController(blockStateEditorController);
         blockStateEditorController.injectBlockEditorController(blockEditorController);
-
         biomeStateEditorController.injectBiomeEditorController(biomeEditorController);
 
         InlineCssTextAreaAppender.addLog4j2TextAreaAppender(logArea);
@@ -121,25 +95,25 @@ public class MainController extends Node {
 
     @FXML
     public void showOpenDialog() {
-        renderer.pause();
+        rendererController.pause();
         File file = schematicChooser.showOpenDialog(StructureEditApplication.stage);
-        if (file != null) {
+        if (null != file) {
             schematicChooser.setInitialDirectory(file.getParentFile());
             schematicChooser.setInitialFileName(file.getName());
             openSchematic(file);
         }
-        renderer.resume();
+        rendererController.resume();
     }
 
     public void openSchematic(@NotNull File file) {
         LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.schematic.loading"), file);
         schematic = null;
-        renderer.schematic = null;
+        rendererController.schematic = null;
         SchematicFormat format = SchematicFormats.findByFile(file);
-        if (format != null) {
+        if (null != format) {
             try (SchematicReader reader = format.getReader(new FileInputStream(file))) {
                 schematic = reader.read();
-                renderer.schematic = schematic;
+                rendererController.schematic = schematic;
             } catch (IOException e) {
                 LOGGER.log(Level.ERROR, Language.LANGUAGE.getString("log.schematic.error_reading"), e.getMessage());
                 LOGGER.catching(Level.DEBUG, e);
@@ -155,13 +129,15 @@ public class MainController extends Node {
         }
 
         disableEditors();
-        if (schematic != null) {
+        if (null != schematic) {
             enableEditors();
             int[] size = schematic.getSize();
-            renderer.renderedHeight = size[1];
+            rendererController.renderedHeight = size[1];
             LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.schematic.loaded"), file);
             StructureEditApplication.stage.setTitle(String.format(Language.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         }
+
+//        rendererController.drawSchematic();
     }
 
     private void disableEditors() {
@@ -190,11 +166,11 @@ public class MainController extends Node {
 
     @FXML
     public void showSaveDialog() {
-        if (schematic != null) {
-            renderer.pause();
+        if (null != schematic) {
+            rendererController.pause();
             schematicChooser.getExtensionFilters().remove(FILTER_ALL);
             File file = schematicChooser.showSaveDialog(StructureEditApplication.stage);
-            if (file != null) {
+            if (null != file) {
                 schematicChooser.setInitialDirectory(file.getParentFile());
                 schematicChooser.setInitialFileName(file.getName());
                 FileChooser.ExtensionFilter filter = schematicChooser.getSelectedExtensionFilter();
@@ -202,7 +178,7 @@ public class MainController extends Node {
                 saveSchematic(file, format);
             }
             schematicChooser.getExtensionFilters().add(0, FILTER_ALL);
-            renderer.resume();
+            rendererController.resume();
         } else {
             LOGGER.log(Level.ERROR, Language.LANGUAGE.getString("log.schematic.not_loaded"));
         }
@@ -211,7 +187,7 @@ public class MainController extends Node {
     public void saveSchematic(File file, SchematicFormat format) {
         try {
             LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.schematic.saving"), file);
-            if (format != null) {
+            if (null != format) {
                 try (SchematicWriter reader = format.getWriter(new FileOutputStream(file))) {
                     reader.write(schematic);
                 }
@@ -225,13 +201,13 @@ public class MainController extends Node {
 
     @FXML
     public void showAssetsChooser() {
-        renderer.pause();
+        rendererController.pause();
         File file = assetsChooser.showDialog(StructureEditApplication.stage);
-        if (file != null) {
+        if (null != file) {
             setAssets(file);
         }
         blockEditorController.updateSelectedBlock();
-        renderer.resume();
+        rendererController.resume();
     }
 
     public void setAssets(File file) {
@@ -239,7 +215,6 @@ public class MainController extends Node {
         assetsChooser.setInitialDirectory(file.getParentFile());
         Path assets = file.toPath();
         Registries.getInstance().setPath(assets);
-        renderer.shouldReloadTextures = true;
     }
 
     public void setAssets(Path path) {
@@ -248,7 +223,6 @@ public class MainController extends Node {
         assetsChooser.setInitialDirectory(file.getParentFile());
         Registries.getInstance().setPath(path);
         blockStateEditorController.reloadBlockStates();
-        renderer.shouldReloadTextures = true;
     }
 
     @FXML
@@ -266,12 +240,12 @@ public class MainController extends Node {
 
     @FXML
     public void showControlsDialog() {
-        renderer.pause();
+        rendererController.pause();
         javafx.scene.control.Dialog<?> dialog = new javafx.scene.control.Dialog<>();
         dialog.setTitle(Language.LANGUAGE.getString("ui.menu_bar.help_menu.controls.title"));
         dialog.setContentText(Language.LANGUAGE.getString("ui.menu_bar.help_menu.controls.dialog"));
         dialog.getDialogPane().getScene().getWindow().setOnCloseRequest(event -> dialog.close());
         dialog.show();
-        renderer.resume();
+        rendererController.resume();
     }
 }

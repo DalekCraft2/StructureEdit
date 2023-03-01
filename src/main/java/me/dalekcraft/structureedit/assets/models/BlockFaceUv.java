@@ -7,12 +7,12 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Type;
 import java.util.Objects;
 
-public class BlockFaceUV {
+public class BlockFaceUv {
 
     public final int rotation;
     public float[] uvs;
 
-    public BlockFaceUV(float @Nullable [] uvs, int rotation) {
+    public BlockFaceUv(float @Nullable [] uvs, int rotation) {
         this.uvs = uvs;
         this.rotation = rotation;
     }
@@ -43,15 +43,15 @@ public class BlockFaceUV {
         }
     }
 
-    protected static class Deserializer implements JsonDeserializer<BlockFaceUV> {
+    protected static class Deserializer implements JsonDeserializer<BlockFaceUv> {
         private static final int DEFAULT_ROTATION = 0;
 
         @Override
-        public BlockFaceUV deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
+        public BlockFaceUv deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
             JsonObject jsonObject = json.getAsJsonObject();
             float[] fArray = getUVs(jsonObject);
             int n = getRotation(jsonObject);
-            return new BlockFaceUV(fArray, n);
+            return new BlockFaceUv(fArray, n);
         }
 
         protected int getRotation(JsonObject jsonObject) {

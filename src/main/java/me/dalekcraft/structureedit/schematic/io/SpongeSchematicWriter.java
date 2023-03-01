@@ -7,18 +7,18 @@ import me.dalekcraft.structureedit.util.Constants;
 import net.querz.nbt.io.NBTOutputStream;
 import net.querz.nbt.io.NamedTag;
 import net.querz.nbt.tag.CompoundTag;
+import net.querz.nbt.tag.DoubleTag;
 import net.querz.nbt.tag.ListTag;
 import net.querz.nbt.tag.Tag;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 public class SpongeSchematicWriter extends NbtSchematicWriter {
 
     private final NBTOutputStream outputStream;
+
+    private int schematicVersion = -1;
 
     public SpongeSchematicWriter(NBTOutputStream outputStream) {
         this.outputStream = Objects.requireNonNull(outputStream);
@@ -28,6 +28,13 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
     public void write(Schematic schematic) throws IOException {
         // TODO How to determine which Sponge schematic version to use?
         writeV3(schematic);
+
+        /* switch (schematicVersion) {
+            case 1 -> writeV1(schematic);
+            case 2 -> writeV2(schematic);
+            case 3 -> writeV3(schematic);
+            default -> throw new ValidationException("Illegal Sponge schematic version: " + schematicVersion);
+        } */
     }
 
     private void writeV2(Schematic schematic) throws IOException {
@@ -52,7 +59,138 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
             root.putIntArray("Offset", offset);
         }
 
-        // TODO Blocks, biomes, and entities.
+        // TODO Ensure that the block, biome, and entity stuff works correctly.
+
+        // Copied to make the original schematic's palette not affected from operations (I.E. adding minecraft:air to it)
+        List<BlockState> blockPalette = new ArrayList<>(schematic.getBlockPalette());
+
+        root.putInt("PaletteMax", blockPalette.size());
+
+        CompoundTag blockPaletteTag = new CompoundTag();
+
+        for (int i = 0; i < blockPalette.size(); i++) {
+            BlockState blockState = blockPalette.get(i);
+
+            blockPaletteTag.putInt(blockState.toString(), i);
+        }
+
+        root.put("Palette", blockPaletteTag);
+
+        ListTag<CompoundTag> blockEntitiesTag = new ListTag<>(CompoundTag.class);
+        List<Byte> blocksList = Arrays.asList(new Byte[size[0] * size[1] * size[2]]);
+        for (int y = 0; y < size[1]; y++) {
+            for (int z = 0; z < size[2]; z++) {
+                for (int x = 0; x < size[0]; x++) {
+                    int index = y * size[2] * size[0] + z * size[0] + x;
+                    Block block = schematic.getBlock(x, y, z);
+                    if (block != null) {
+                        blocksList.set(index, (byte) block.getBlockStateIndex());
+
+                        BlockEntity blockEntity = block.getBlockEntity();
+                        if (!blockEntity.isEmpty()) {
+                            CompoundTag nbt = blockEntity.getNbt().clone();
+                            CompoundTag blockEntityTag = new CompoundTag();
+
+                            ResourceLocation id = blockEntity.getId();
+                            blockEntityTag.putString("Id", id.toString());
+
+                            blockEntityTag.putIntArray("Pos", new int[]{x, y, z});
+
+                            for (Map.Entry<String, Tag<?>> entry : nbt.entrySet()) {
+                                blockEntityTag.put(entry.getKey(), entry.getValue());
+                            }
+
+                            blockEntitiesTag.add(blockEntityTag);
+                        }
+                    } else {
+                        BlockState blockState = new BlockState(Constants.DEFAULT_BLOCK);
+                        int airIndex;
+                        if (!blockPalette.contains(blockState)) {
+                            blockPalette.add(blockState);
+                            blockPaletteTag.putInt(blockState.getId().toString(), blockPalette.indexOf(blockState));
+                        }
+                        airIndex = schematic.getBlockPalette().indexOf(blockState);
+                        blocksList.set(index, (byte) airIndex);
+                    }
+                }
+            }
+        }
+
+        byte[] blocks = Bytes.toArray(blocksList);
+        root.putByteArray("BlockData", blocks);
+        if (blockEntitiesTag.size() > 0) {
+            root.put("BlockEntities", blockEntitiesTag);
+        }
+
+        if (schematic.hasBiomes()) {
+            // Copied to make the original schematic's palette not affected from operations (I.E. adding minecraft:ocean to it)
+            List<BiomeState> biomePalette = new ArrayList<>(schematic.getBiomePalette());
+
+            root.putInt("BiomePaletteMax", biomePalette.size());
+
+            CompoundTag biomePaletteTag = new CompoundTag();
+
+            for (int i = 0; i < biomePalette.size(); i++) {
+                BiomeState biomeState = biomePalette.get(i);
+
+                biomePaletteTag.putInt(biomeState.getId().toString(), i);
+            }
+
+            root.put("BiomePalette", biomePaletteTag);
+
+            List<Byte> biomesList = Arrays.asList(new Byte[size[0] * size[1] * size[2]]);
+            for (int y = 0; y < size[1]; y++) {
+                for (int z = 0; z < size[2]; z++) {
+                    for (int x = 0; x < size[0]; x++) {
+                        int index = y * size[2] * size[0] + z * size[0] + x;
+                        Biome biome = schematic.getBiome(x, y, z);
+                        if (biome != null) {
+                            biomesList.set(index, (byte) biome.getBiomeStateIndex());
+                        } else {
+                            BiomeState biomeState = new BiomeState(Constants.DEFAULT_BIOME);
+                            int oceanIndex;
+                            if (!biomePalette.contains(biomeState)) {
+                                biomePalette.add(biomeState);
+                                biomePaletteTag.putInt(biomeState.getId().toString(), biomePalette.indexOf(biomeState));
+                            }
+                            oceanIndex = schematic.getBiomePalette().indexOf(biomeState);
+                            biomesList.set(index, (byte) oceanIndex);
+                        }
+                    }
+                }
+            }
+
+            byte[] biomes = Bytes.toArray(biomesList);
+            root.putByteArray("BiomeData", biomes);
+        }
+
+        List<Entity> entities = schematic.getEntities();
+        if (entities != null) {
+            ListTag<CompoundTag> entitiesTag = new ListTag<>(CompoundTag.class);
+            for (Entity entity : entities) {
+                CompoundTag entityTag = new CompoundTag();
+
+                double[] position = entity.getPosition();
+                ListTag<DoubleTag> positionTag = new ListTag<>(DoubleTag.class);
+                positionTag.addDouble(position[0]);
+                positionTag.addDouble(position[1]);
+                positionTag.addDouble(position[2]);
+                entityTag.put("Pos", positionTag);
+
+                ResourceLocation id = entity.getId();
+                CompoundTag nbt = entity.getNbt().clone();
+
+                entityTag.put("Pos", positionTag);
+                entityTag.putString("Id", id.toString());
+                for (Map.Entry<String, Tag<?>> entry : nbt.entrySet()) {
+                    entityTag.put(entry.getKey(), entry.getValue());
+                }
+
+                entitiesTag.add(entityTag);
+            }
+
+            root.put("Entities", entitiesTag);
+        }
 
         NamedTag namedTag = new NamedTag("Schematic", root);
 
@@ -208,6 +346,33 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
             root.put("Biomes", biomeContainer);
         }
 
+        // TODO Ensure that the entity stuff works correctly.
+
+        List<Entity> entities = schematic.getEntities();
+        if (entities != null) {
+            ListTag<CompoundTag> entitiesTag = new ListTag<>(CompoundTag.class);
+            for (Entity entity : entities) {
+                CompoundTag entityTag = new CompoundTag();
+
+                double[] position = entity.getPosition();
+                ListTag<DoubleTag> positionTag = new ListTag<>(DoubleTag.class);
+                positionTag.addDouble(position[0]);
+                positionTag.addDouble(position[1]);
+                positionTag.addDouble(position[2]);
+                entityTag.put("Pos", positionTag);
+
+                ResourceLocation id = entity.getId();
+                CompoundTag nbt = entity.getNbt().clone();
+
+                entityTag.put("Pos", positionTag);
+                entityTag.putString("Id", id.toString());
+                entityTag.put("Data", nbt);
+
+                entitiesTag.add(entityTag);
+            }
+
+            root.put("Entities", entitiesTag);
+        }
 
         NamedTag namedTag = new NamedTag("", realRoot);
 

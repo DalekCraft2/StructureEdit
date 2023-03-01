@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import javafx.embed.swing.SwingNode?>
 <?import javafx.scene.control.Menu?>
 <?import javafx.scene.control.MenuBar?>
 <?import javafx.scene.control.MenuItem?>
@@ -46,17 +45,7 @@
         <items>
             <SplitPane dividerPositions="0.75">
               <items>
-                  <GridPane>
-                     <columnConstraints>
-                        <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
-                     </columnConstraints>
-                     <rowConstraints>
-                        <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
-                     </rowConstraints>
-                     <children>
-                        <SwingNode fx:id="rendererNode" />
-                     </children>
-                  </GridPane>
+                  <fx:include fx:id="renderer" source="schematic_renderer.fxml" />
                   <TabPane side="RIGHT" SplitPane.resizableWithParent="false">
                      <tabs>
                         <Tab closable="false" text="%ui.editor.schematic">
@@ -96,9 +85,6 @@
             <TabPane side="BOTTOM" SplitPane.resizableWithParent="false">
               <tabs>
                 <Tab closable="false" text="%ui.tabbed_pane.log">
-                     <content>
-                        <InlineCssTextArea />
-                     </content>
                      <content>
                         <InlineCssTextArea fx:id="logArea" editable="false" style="-fx-background-color: BLACK;" wrapText="true" />
                      </content>

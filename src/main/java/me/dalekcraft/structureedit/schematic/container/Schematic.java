@@ -82,9 +82,8 @@ public class Schematic {
                 }
                 biomeColumn.setSize(sizeZ);
 
-                // for (int z = 0; z < sizeZ; z++) {
-                // TODO maybe
-                // }
+                /* for (int z = 0; z < sizeZ; z++) {
+                } */
             }
         }
     }

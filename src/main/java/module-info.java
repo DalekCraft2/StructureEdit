@@ -5,7 +5,6 @@ module me.dalekcraft.structureedit {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.swing;
-    requires jogl.all;
     requires NBT;
     requires org.jetbrains.annotations;
     requires org.joml;
@@ -18,7 +17,6 @@ module me.dalekcraft.structureedit {
     requires brigadier;
     requires commons.lang3;
     requires fastutil;
-    requires gluegen.rt;
 
     exports me.dalekcraft.structureedit;
     opens me.dalekcraft.structureedit to javafx.controls, javafx.fxml;

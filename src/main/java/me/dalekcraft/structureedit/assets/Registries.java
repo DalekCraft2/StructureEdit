@@ -2,9 +2,7 @@ package me.dalekcraft.structureedit.assets;
 
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.jogamp.opengl.GLProfile;
-import com.jogamp.opengl.util.texture.TextureData;
-import com.jogamp.opengl.util.texture.TextureIO;
+import javafx.scene.image.Image;
 import me.dalekcraft.structureedit.assets.blockstates.BlockModelDefinition;
 import me.dalekcraft.structureedit.assets.blockstates.MissingBlockModelDefinition;
 import me.dalekcraft.structureedit.assets.models.BlockModel;
@@ -32,7 +30,7 @@ public class Registries {
     private static final Registries INSTANCE = new Registries();
     private final Registry<BlockModelDefinition> blockStates = new Registry<>("blockstate");
     private final Registry<BlockModel> models = new Registry<>("model");
-    private final Registry<TextureData> textures = new Registry<>("texture");
+    private final Registry<Image> textures = new Registry<>("texture");
     private final Registry<AnimationMetadataSection> animationMetadataSections = new Registry<>("animationMetadata");
     private final Registry<TextureMetadataSection> textureMetadataSections = new Registry<>("textureMetadata");
     private final BlockModelDefinition.Context context = new BlockModelDefinition.Context();
@@ -43,14 +41,7 @@ public class Registries {
 
         models.setDefaultValue(MissingBlockModel.getInstance());
 
-        TextureData texture = null; // TODO Manage to create the missing texture entirely programmatically by setting the pixel colors
-        try (InputStream inputStream = getClass().getResourceAsStream("/assets/" + MissingTexture.getLocation().getNamespace() + "/textures/" + MissingTexture.getLocation().getNamespace() + ".png")) {
-            assert inputStream != null;
-            texture = TextureIO.newTextureData(GLProfile.getDefault(), inputStream, false, TextureIO.PNG);
-        } catch (IOException e) {
-            LOGGER.log(Level.TRACE, e.getMessage());
-        }
-        textures.setDefaultValue(texture);
+        textures.setDefaultValue(MissingTexture.getInstance());
 
         animationMetadataSections.setDefaultValue(AnimationMetadataSection.EMPTY);
     }
@@ -76,13 +67,13 @@ public class Registries {
         if (path == null || !Files.exists(path)) {
             LOGGER.log(Level.WARN, Language.LANGUAGE.getString("log.assets.invalid"), path);
         }
-        textures.forEach(TextureData::destroy);
+//        textures.forEach(Image::destroy);
         textures.clear();
         animationMetadataSections.clear();
         models.clear();
         blockStates.clear();
         String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
-        if (protocol.equals("jar")) {
+        if ("jar".equals(protocol)) {
             // run in jar
             try (FileSystem fileSystem = FileSystems.newFileSystem(Path.of(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()))) {
                 Path internalAssets = fileSystem.getPath("assets");
@@ -92,7 +83,7 @@ public class Registries {
             } catch (URISyntaxException | IOException e) {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
-        } else if (protocol.equals("file")) {
+        } else if ("file".equals(protocol)) {
             // run in ide
             try {
                 Path internalAssets = Path.of(getClass().getResource("/assets").toURI());
@@ -231,18 +222,19 @@ public class Registries {
             return;
         }
         try (InputStream inputStream = getAsset(namespacedId, "textures", "png")) {
-            TextureData texture = TextureIO.newTextureData(GLProfile.getDefault(), inputStream, false, TextureIO.PNG);
+            Image texture = new Image(inputStream);
+            // Image texture = new Image(inputStream, 16, 16, true, false);
             textures.register(namespacedId, texture);
         } catch (IOException e) {
             LOGGER.log(Level.TRACE, e.getMessage());
         }
     }
 
-    public TextureData getTexture(@NotNull ResourceLocation namespacedId) {
+    public Image getTexture(@NotNull ResourceLocation namespacedId) {
         return textures.get(namespacedId);
     }
 
-    public Registry<TextureData> getTextures() {
+    public Registry<Image> getTextures() {
         return textures;
     }
 

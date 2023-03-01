@@ -14,6 +14,7 @@ import me.dalekcraft.structureedit.schematic.container.BlockState;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
 import me.dalekcraft.structureedit.ui.BlockButton;
 import me.dalekcraft.structureedit.ui.MainController;
+import me.dalekcraft.structureedit.util.Constants;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
 import org.jetbrains.annotations.NotNull;
@@ -251,7 +252,7 @@ public class BlockEditorController {
                         blockButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
                         blockButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
                         blockButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-                        blockButton.setPrefSize(30.0, 30.0);
+                        blockButton.setPrefSize(Constants.EDITOR_TILE_SIZE, Constants.EDITOR_TILE_SIZE);
                         blockButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::onBlockSelected);
                         blockGrid.add(blockButton, x, z);
                         if (selectedBlock != null) {
@@ -270,7 +271,7 @@ public class BlockEditorController {
                         blockButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
                         blockButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
                         blockButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
-                        blockButton.setPrefSize(30.0, 30.0);
+                        blockButton.setPrefSize(Constants.EDITOR_TILE_SIZE, Constants.EDITOR_TILE_SIZE);
                         blockButton.setDisable(true);
                         blockGrid.add(blockButton, x, z);
                     }

@@ -2,12 +2,12 @@ package me.dalekcraft.structureedit.util;
 
 import com.google.common.collect.Iterators;
 import com.mojang.serialization.DataResult;
+import javafx.geometry.Point3D;
+import javafx.scene.transform.Transform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Matrix4f;
 import org.joml.Vector3f;
 import org.joml.Vector3i;
-import org.joml.Vector4f;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -55,11 +55,11 @@ public enum Direction {
         return new Direction[]{direction, direction2, direction3, direction3.getOpposite(), direction2.getOpposite(), direction.getOpposite()};
     }
 
-    public static Direction rotate(Matrix4f matrix4f, Direction direction) {
+    public static Direction rotate(Transform transform, Direction direction) {
         Vector3i vec3i = direction.getNormal();
-        Vector4f vector4f = new Vector4f(vec3i, 0.0f);
-        matrix4f.transform(vector4f);
-        return getNearest(vector4f.x(), vector4f.y(), vector4f.z());
+        Point3D vector4f = new Point3D(vec3i.x, vec3i.y, vec3i.z);
+        vector4f = transform.transform(vector4f);
+        return getNearest(vector4f.getX(), vector4f.getY(), vector4f.getZ());
     }
 
     @Nullable
