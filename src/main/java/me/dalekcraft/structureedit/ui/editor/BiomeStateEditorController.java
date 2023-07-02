@@ -7,7 +7,6 @@ import javafx.scene.control.TextField;
 import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.schematic.container.BiomeState;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
-import me.dalekcraft.structureedit.ui.editor.BiomeEditorController;
 
 public class BiomeStateEditorController {
 

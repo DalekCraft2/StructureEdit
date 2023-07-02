@@ -1,10 +1,9 @@
 module me.dalekcraft.structureedit {
     requires com.google.common;
     requires com.google.gson;
-    requires java.desktop;
     requires javafx.controls;
     requires javafx.fxml;
-    requires javafx.swing;
+    requires javafx.graphics;
     requires NBT;
     requires org.jetbrains.annotations;
     requires org.joml;
@@ -16,7 +15,7 @@ module me.dalekcraft.structureedit {
     requires datafixerupper;
     requires brigadier;
     requires commons.lang3;
-    requires fastutil;
+    // requires org.apache.commons.lang3; // This is for a newer version of commons-lang3, which is provided with commons-configuration2, which I might use
 
     exports me.dalekcraft.structureedit;
     opens me.dalekcraft.structureedit to javafx.controls, javafx.fxml;

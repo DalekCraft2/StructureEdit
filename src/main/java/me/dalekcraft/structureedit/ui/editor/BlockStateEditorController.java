@@ -89,9 +89,7 @@ public class BlockStateEditorController {
     public void reloadBlockStates() {
         ObservableList<ResourceLocation> items = FXCollections.observableArrayList(Registries.getInstance().getBlockStates().keySet());
         ObservableList<String> stringItems = FXCollections.observableArrayList();
-        items.forEach(resourceLocation -> {
-            stringItems.add(resourceLocation.toString());
-        });
+        items.forEach(resourceLocation -> stringItems.add(resourceLocation.toString()));
         Collections.sort(stringItems);
         blockStateIdComboBox.setItems(stringItems);
         blockStateIdAutoComplete.setItems(stringItems);

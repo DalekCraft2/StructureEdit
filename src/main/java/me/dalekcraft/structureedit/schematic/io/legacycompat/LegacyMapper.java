@@ -84,8 +84,7 @@ public final class LegacyMapper {
             throw new IOException("Could not find legacy.json");
         }
         String data = Resources.toString(url, Charset.defaultCharset());
-        LegacyDataFile dataFile = gson.fromJson(data, new TypeToken<LegacyDataFile>() {
-        }.getType());
+        LegacyDataFile dataFile = gson.fromJson(data, TypeToken.get(LegacyDataFile.class).getType());
 
         for (Map.Entry<String, String> blockEntry : dataFile.blocks.entrySet()) {
             String id = blockEntry.getKey();

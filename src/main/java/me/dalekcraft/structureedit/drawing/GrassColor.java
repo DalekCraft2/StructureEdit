@@ -3,6 +3,8 @@ package me.dalekcraft.structureedit.drawing;
 import javafx.scene.paint.Color;
 
 /**
+ * Colors used for tinting grass in different biomes.
+ *
  * @see <a href="https://minecraft.fandom.com/wiki/Block_colors#Grass_colors">Grass Colors</a>
  */
 @SuppressWarnings("unused")

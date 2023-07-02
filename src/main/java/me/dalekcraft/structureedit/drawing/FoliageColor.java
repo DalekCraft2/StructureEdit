@@ -3,6 +3,8 @@ package me.dalekcraft.structureedit.drawing;
 import javafx.scene.paint.Color;
 
 /**
+ * Colors used for tinting foliage in different biomes.
+ *
  * @see <a href="https://minecraft.fandom.com/wiki/Block_colors#Foliage_colors">Foliage Colors</a>
  */
 @SuppressWarnings("unused")

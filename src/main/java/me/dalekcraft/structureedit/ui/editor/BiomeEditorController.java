@@ -5,6 +5,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import me.dalekcraft.structureedit.assets.ResourceLocation;
@@ -145,14 +146,14 @@ public class BiomeEditorController {
                         }
                         color = Color.color(color.getRed(), color.getGreen(), color.getBlue());
                         BiomeButton biomeButton = new BiomeButton(biome, x, currentLayer, z);
-                        biomeButton.setText(!biomeName.isEmpty() ? biomeName.substring(0, 1) : "?");
+                        biomeButton.setText(biomeName.isEmpty() ? "?" : biomeName.substring(0, 1));
                         biomeButton.setTooltip(new Tooltip(biomeId.toString()));
                         biomeButton.setTextOverrun(OverrunStyle.CLIP);
                         biomeButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
                         biomeButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
                         biomeButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                         biomeButton.setPrefSize(Constants.EDITOR_TILE_SIZE, Constants.EDITOR_TILE_SIZE);
-                        biomeButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::onBiomeSelected);
+                        biomeButton.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onBiomeSelected);
                         biomeGrid.add(biomeButton, x, z);
                         if (selectedBiome != null) {
                             int[] position = selectedBiome.getPosition();

@@ -84,7 +84,6 @@ public enum Direction {
 
     public static Direction fromAxisAndDirection(Axis axis, AxisDirection axisDirection) {
         return switch (axis) {
-            default -> throw new IncompatibleClassChangeError();
             case X -> {
                 if (axisDirection == AxisDirection.POSITIVE) {
                     yield EAST;
@@ -151,7 +150,6 @@ public enum Direction {
 
     public Direction getClockWise(Axis axis) {
         return switch (axis) {
-            default -> throw new IncompatibleClassChangeError();
             case X -> {
                 if (this == WEST || this == EAST) {
                     yield this;
@@ -170,7 +168,6 @@ public enum Direction {
 
     public Direction getCounterClockWise(Axis axis) {
         return switch (axis) {
-            default -> throw new IncompatibleClassChangeError();
             case X -> {
                 if (this == WEST || this == EAST) {
                     yield this;
@@ -370,7 +367,6 @@ public enum Direction {
 
         public Plane getPlane() {
             return switch (this) {
-                default -> throw new IncompatibleClassChangeError();
                 case X, Z -> Plane.HORIZONTAL;
                 case Y -> Plane.VERTICAL;
             };

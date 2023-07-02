@@ -6,7 +6,6 @@ import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.util.GsonHelper;
 
 import java.lang.reflect.Type;
-import java.util.Objects;
 
 public class Variant {
     private final ResourceLocation modelLocation;
@@ -48,7 +47,7 @@ public class Variant {
             return true;
         }
         if (obj instanceof Variant variant) {
-            return modelLocation.equals(variant.modelLocation) && Objects.equals(rotation, variant.rotation) && uvLock == variant.uvLock && weight == variant.weight;
+            return modelLocation.equals(variant.modelLocation) && rotation == variant.rotation && uvLock == variant.uvLock && weight == variant.weight;
         }
         return false;
     }

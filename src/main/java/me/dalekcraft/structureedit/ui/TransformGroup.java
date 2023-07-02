@@ -42,13 +42,13 @@ import javafx.scene.transform.Translate;
  */
 public class TransformGroup extends Group {
 
-    public Translate translate = new Translate();
-    public Translate pivot = new Translate();
-    public Translate inversePivot = new Translate();
-    public Rotate rotateX = new Rotate(0, Rotate.X_AXIS);
-    public Rotate rotateY = new Rotate(0, Rotate.Y_AXIS);
-    public Rotate rotateZ = new Rotate(0, Rotate.Y_AXIS);
-    public Scale scale = new Scale();
+    public final Translate translate = new Translate();
+    public final Translate pivot = new Translate();
+    public final Translate inversePivot = new Translate();
+    public final Rotate rotateX = new Rotate(0, Rotate.X_AXIS);
+    public final Rotate rotateY = new Rotate(0, Rotate.Y_AXIS);
+    public final Rotate rotateZ = new Rotate(0, Rotate.Y_AXIS);
+    public final Scale scale = new Scale();
 
     public TransformGroup() {
         this(RotateOrder.XYZ);

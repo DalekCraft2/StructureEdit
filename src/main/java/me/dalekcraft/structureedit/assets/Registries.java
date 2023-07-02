@@ -74,7 +74,7 @@ public class Registries {
         blockStates.clear();
         String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
         if ("jar".equals(protocol)) {
-            // run in jar
+            // run in .jar
             try (FileSystem fileSystem = FileSystems.newFileSystem(Path.of(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()))) {
                 Path internalAssets = fileSystem.getPath("assets");
                 try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {
@@ -84,7 +84,7 @@ public class Registries {
                 LOGGER.log(Level.ERROR, e.getMessage());
             }
         } else if ("file".equals(protocol)) {
-            // run in ide
+            // run in IDE
             try {
                 Path internalAssets = Path.of(getClass().getResource("/assets").toURI());
                 try (DirectoryStream<Path> directoryStream = Files.newDirectoryStream(internalAssets)) {

@@ -20,7 +20,7 @@ import javafx.scene.paint.Color;
 
 
 /**
- * An enum of all materials accepted by the official server and client.
+ * A list of all blocks, and of the colors what represent those blocks on maps.
  *
  * @see <a href="https://minecraft.fandom.com/wiki/Map_item_format">Map Item Format</a>
  */
@@ -28,7 +28,7 @@ import javafx.scene.paint.Color;
 public enum BlockColor {
 
     // TODO Possibly use this enum to make default block states for blocks.
-    // TODO Should I order these how they are ordered in Minecraft's code so it's easier to add new entries?
+    // TODO Should I order these how they are ordered in Minecraft's code, so it's easier to add new entries?
 
     ACACIA_BUTTON(MapColor.COLOR_ORANGE),
     ACACIA_DOOR(MapColor.COLOR_ORANGE),

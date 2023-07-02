@@ -1,4 +1,4 @@
-/*******************************************************************************
+/*
  * Copyright (c) 2015 Jeff Martin.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the GNU Lesser General Public
@@ -7,21 +7,25 @@
  *
  * Contributors:
  *     Jeff Martin - initial API and implementation
- ******************************************************************************/
+ */
 
 package me.dalekcraft.structureedit.util;
 
 import java.nio.file.Path;
 
-public class ConfigPaths {
+public final class ConfigPaths {
+
+    private ConfigPaths() {
+        throw new UnsupportedOperationException();
+    }
 
     public static Path getConfigFilePath(String name) {
-        String fileName = Os.getOs() == Os.LINUX ? String.format("%src", name) : String.format("%s", name);
+        String fileName = OperatingSystem.getOperatingSystem() == OperatingSystem.LINUX ? String.format("%src", name) : String.format("%s", name);
         return getConfigPathRoot().resolve(fileName);
     }
 
     public static Path getConfigPathRoot() {
-        switch (Os.getOs()) {
+        switch (OperatingSystem.getOperatingSystem()) {
             case LINUX -> {
                 String configHome = System.getenv("XDG_CONFIG_HOME");
                 if (configHome == null) {

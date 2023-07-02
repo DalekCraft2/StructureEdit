@@ -18,6 +18,7 @@ package me.dalekcraft.structureedit.ui;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceDialog;
+import javafx.scene.control.Dialog;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
@@ -78,7 +79,7 @@ public class MainController {
         schematicChooser.getExtensionFilters().sort(Comparator.comparing(FileChooser.ExtensionFilter::getDescription));
         schematicChooser.getExtensionFilters().add(0, FILTER_ALL);
         Path assets = Registries.getInstance().getPath();
-        if (null != assets && !"".equals(assets.toString())) {
+        if (assets != null && !"".equals(assets.toString())) {
             assetsChooser.setInitialDirectory(assets.toFile());
         }
     }
@@ -97,7 +98,7 @@ public class MainController {
     public void showOpenDialog() {
         rendererController.pause();
         File file = schematicChooser.showOpenDialog(StructureEditApplication.stage);
-        if (null != file) {
+        if (file != null) {
             schematicChooser.setInitialDirectory(file.getParentFile());
             schematicChooser.setInitialFileName(file.getName());
             openSchematic(file);
@@ -110,7 +111,7 @@ public class MainController {
         schematic = null;
         rendererController.schematic = null;
         SchematicFormat format = SchematicFormats.findByFile(file);
-        if (null != format) {
+        if (format != null) {
             try (SchematicReader reader = format.getReader(new FileInputStream(file))) {
                 schematic = reader.read();
                 rendererController.schematic = schematic;
@@ -129,7 +130,7 @@ public class MainController {
         }
 
         disableEditors();
-        if (null != schematic) {
+        if (schematic != null) {
             enableEditors();
             int[] size = schematic.getSize();
             rendererController.renderedHeight = size[1];
@@ -166,11 +167,11 @@ public class MainController {
 
     @FXML
     public void showSaveDialog() {
-        if (null != schematic) {
+        if (schematic != null) {
             rendererController.pause();
             schematicChooser.getExtensionFilters().remove(FILTER_ALL);
             File file = schematicChooser.showSaveDialog(StructureEditApplication.stage);
-            if (null != file) {
+            if (file != null) {
                 schematicChooser.setInitialDirectory(file.getParentFile());
                 schematicChooser.setInitialFileName(file.getName());
                 FileChooser.ExtensionFilter filter = schematicChooser.getSelectedExtensionFilter();
@@ -187,7 +188,7 @@ public class MainController {
     public void saveSchematic(File file, SchematicFormat format) {
         try {
             LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.schematic.saving"), file);
-            if (null != format) {
+            if (format != null) {
                 try (SchematicWriter reader = format.getWriter(new FileOutputStream(file))) {
                     reader.write(schematic);
                 }
@@ -203,7 +204,7 @@ public class MainController {
     public void showAssetsChooser() {
         rendererController.pause();
         File file = assetsChooser.showDialog(StructureEditApplication.stage);
-        if (null != file) {
+        if (file != null) {
             setAssets(file);
         }
         blockEditorController.updateSelectedBlock();
@@ -241,7 +242,7 @@ public class MainController {
     @FXML
     public void showControlsDialog() {
         rendererController.pause();
-        javafx.scene.control.Dialog<?> dialog = new javafx.scene.control.Dialog<>();
+        Dialog<?> dialog = new Dialog<>();
         dialog.setTitle(Language.LANGUAGE.getString("ui.menu_bar.help_menu.controls.title"));
         dialog.setContentText(Language.LANGUAGE.getString("ui.menu_bar.help_menu.controls.dialog"));
         dialog.getDialogPane().getScene().getWindow().setOnCloseRequest(event -> dialog.close());

@@ -7,7 +7,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class MissingBlockModelDefinition extends BlockModelDefinition {
+public final class MissingBlockModelDefinition extends BlockModelDefinition {
 
     public static final ResourceLocation MISSING_MODEL_DEFINITION_LOCATION = new ResourceLocation("missing");
     private static final MissingBlockModelDefinition INSTANCE;

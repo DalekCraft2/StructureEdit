@@ -3,6 +3,8 @@ package me.dalekcraft.structureedit.drawing;
 import javafx.scene.paint.Color;
 
 /**
+ * Colors used for tinting water in different biomes.
+ *
  * @see <a href="https://minecraft.fandom.com/wiki/Block_colors#Water_colors">Water Colors</a>
  */
 @SuppressWarnings("unused")

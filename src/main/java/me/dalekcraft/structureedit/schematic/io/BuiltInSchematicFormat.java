@@ -232,10 +232,10 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
                 NamedTag rootTag = nbtInputStream.readTag(Tag.DEFAULT_MAX_DEPTH);
                 CompoundTag schematic = (CompoundTag) rootTag.getTag();
                 CompoundTag baseTag;
-                if (!rootTag.getName().equals("Schematic")) {
-                    baseTag = getRoot(schematic);
-                } else {
+                if (rootTag.getName().equals("Schematic")) {
                     baseTag = schematic;
+                } else {
+                    baseTag = getRoot(schematic);
                 }
 
                 // Check

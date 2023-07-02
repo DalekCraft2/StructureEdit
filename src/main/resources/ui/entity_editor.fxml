@@ -36,9 +36,21 @@
          </tooltip>
       </TextField>
       <ListView fx:id="entityListView" prefHeight="200.0" prefWidth="200.0" GridPane.columnSpan="4" GridPane.rowIndex="3" />
-      <Spinner fx:id="entityZSpinner" disable="true" editable="true" GridPane.columnIndex="3" />
-      <Spinner fx:id="entityXSpinner" disable="true" editable="true" GridPane.columnIndex="1" />
-      <Spinner fx:id="entityYSpinner" disable="true" editable="true" GridPane.columnIndex="2" />
+      <Spinner fx:id="entityZSpinner" disable="true" editable="true" GridPane.columnIndex="3">
+        <tooltip>
+          <Tooltip text="%ui.editor.entity.entity_position.tooltip"/>
+        </tooltip>
+      </Spinner>
+      <Spinner fx:id="entityXSpinner" disable="true" editable="true" GridPane.columnIndex="1">
+          <tooltip>
+              <Tooltip text="%ui.editor.entity.entity_position.tooltip"/>
+          </tooltip>
+      </Spinner>
+      <Spinner fx:id="entityYSpinner" disable="true" editable="true" GridPane.columnIndex="2">
+          <tooltip>
+              <Tooltip text="%ui.editor.entity.entity_position.tooltip"/>
+          </tooltip>
+      </Spinner>
       <Label text="%ui.editor.entity.entity_position" />
    </children>
 </GridPane>

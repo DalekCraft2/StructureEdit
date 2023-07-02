@@ -10,13 +10,13 @@
     <packaging>jar</packaging>
 
     <name>StructureEdit</name>
-    <description>A JavaFX application for viewing Minecraft schematic files</description>
+    <description>A JavaFX application for viewing Minecraft schematic files.</description>
     <url>https://github.com/DalekCraft2/StructureEdit</url>
     <inceptionYear>2015</inceptionYear>
     <licenses>
         <license>
             <name>GNU General Public License v3.0</name>
-            <url>https://github.com/DalekCraft2/StructureEdit/blob/main/LICENSE.txt</url>
+            <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -44,8 +44,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>19</maven.compiler.source>
-        <maven.compiler.target>19</maven.compiler.target>
+        <maven.compiler.source>20</maven.compiler.source>
+        <maven.compiler.target>20</maven.compiler.target>
         <mainModule>me.dalekcraft.structureedit</mainModule>
         <mainClass>me.dalekcraft.structureedit.Launcher</mainClass>
         <vendor>DalekCraft</vendor>
@@ -56,7 +56,7 @@
         <libPrefix>lib</libPrefix>
         <libDirectory>${project.build.directory}/${libPrefix}</libDirectory>
 
-        <javafx.version>19</javafx.version>
+        <javafx.version>20</javafx.version>
     </properties>
 
     <!-- TODO Add JUnit tests. -->
@@ -74,14 +74,6 @@
             <!-- JavaFX FXML -->
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-fxml</artifactId>
-            <version>${javafx.version}</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- JavaFX Swing -->
-            <groupId>org.openjfx</groupId>
-            <artifactId>javafx-swing</artifactId>
             <version>${javafx.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
@@ -109,7 +101,7 @@
             <!-- JOML -->
             <groupId>org.joml</groupId>
             <artifactId>joml</artifactId>
-            <version>1.10.4</version>
+            <version>1.10.5</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -119,7 +111,7 @@
             <!-- Gson -->
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.10</version>
+            <version>2.10.1</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -129,7 +121,7 @@
             <!-- Apache Log4j Core -->
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-core</artifactId>
-            <version>2.19.0</version>
+            <version>2.20.0</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -143,14 +135,14 @@
         </dependency>
 
         <!-- Other -->
-        <!--<dependency>
+        <!-- <dependency>
             &lt;!&ndash; Apache Commons Configuration &ndash;&gt;
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-configuration2</artifactId>
-            <version>2.8.0</version>
+            <version>2.9.0</version>
             <scope>compile</scope>
             <optional>true</optional>
-        </dependency>-->
+        </dependency> -->
         <dependency>
             <groupId>com.mojang</groupId>
             <artifactId>datafixerupper</artifactId>
@@ -185,7 +177,7 @@
             <!-- JetBrains Java Annotations -->
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>23.1.0</version>
+            <version>24.0.1</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -203,7 +195,7 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        <!--<repository>
+        <!-- <repository>
             <id>sonatype.snapshots</id>
             <name>Sonatype Snapshot Repository</name>
             <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
@@ -213,7 +205,7 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-        </repository>-->
+        </repository> -->
         <repository>
             <!-- Querz/NBT, everit-org/json-schema -->
             <id>jitpack.io</id>
@@ -265,7 +257,7 @@
                 <!-- Compile -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.10.1</version>
+                <version>3.11.0</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -275,7 +267,7 @@
                 <!-- Attach sources -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.3.0</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -289,7 +281,7 @@
                 <!-- Attach Javadocs -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.4.0</version>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -299,222 +291,21 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- <plugin>
-                &lt;!&ndash; Set the main class &ndash;&gt;
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.2</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>${libPrefix}</classpathPrefix>
-                            &lt;!&ndash;<classpathLayoutType>repository</classpathLayoutType>&ndash;&gt;
-                            <mainClass>${mainClass}</mainClass>
-                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
-                        </manifest>
-                    </archive>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-install-plugin</artifactId>
-                <version>3.0.0-M1</version>
-                <configuration>
-                    &lt;!&ndash; This is an app, so we don't want to install it in the local Maven repository &ndash;&gt;
-                    <skip>true</skip>
-                </configuration>
-            </plugin> -->
-            <!-- <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            &lt;!&ndash;<useRepositoryLayout>true</useRepositoryLayout>&ndash;&gt;
-                            <outputDirectory>${libDirectory}</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>false</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.moditect</groupId>
-                <artifactId>moditect-maven-plugin</artifactId>
-                <version>1.0.0.RC2</version>
-                <executions>
-                    <execution>
-                        <id>add-module-infos</id>
-                        <phase>generate-resources</phase>
-                        <goals>
-                            <goal>add-module-info</goal>
-                        </goals>
-                        <configuration>
-                            <modules>
-                                <module>
-                                    &lt;!&ndash; JavaFX &ndash;&gt;
-                                    <artifact>
-                                        &lt;!&ndash; RichTextFX &ndash;&gt;
-                                        <groupId>org.fxmisc.richtext</groupId>
-                                        <artifactId>richtextfx</artifactId>
-                                        <version>0.10.9</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module org.fxmisc.richtext {}
-                                    </moduleInfoSource>
-                                </module>
-
-                                &lt;!&ndash; Logging &ndash;&gt;
-                                <module>
-                                    <artifact>
-                                        &lt;!&ndash; Apache Log4j Core &ndash;&gt;
-                                        <groupId>org.apache.logging.log4j</groupId>
-                                        <artifactId>log4j-core</artifactId>
-                                        <version>2.17.2</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module org.apache.logging.log4j.core {}
-                                    </moduleInfoSource>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        &lt;!&ndash; Jansi &ndash;&gt;
-                                        <groupId>org.fusesource.jansi</groupId>
-                                        <artifactId>jansi</artifactId>
-                                        <version>2.4.0</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module org.fusesource.jansi {}
-                                    </moduleInfoSource>
-                                </module>
-
-                                &lt;!&ndash; Other &ndash;&gt;
-                                <module>
-                                    <artifact>
-                                        <groupId>com.mojang</groupId>
-                                        <artifactId>datafixerupper</artifactId>
-                                        <version>4.0.26</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module datafixerupper {}
-                                    </moduleInfoSource>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        <groupId>com.mojang</groupId>
-                                        <artifactId>brigadier</artifactId>
-                                        <version>1.0.18</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module brigadier {}
-                                    </moduleInfoSource>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        &lt;!&ndash; Querz/NBT &ndash;&gt;
-                                        <groupId>com.github.Querz</groupId>
-                                        <artifactId>NBT</artifactId>
-                                        <version>6.1</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module NBT {}
-                                    </moduleInfoSource>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        &lt;!&ndash; Google Guava &ndash;&gt;
-                                        <groupId>com.google.guava</groupId>
-                                        <artifactId>guava</artifactId>
-                                        <version>31.1-jre</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module com.google.common {}
-                                    </moduleInfoSource>
-                                </module>
-                                <module>
-                                    <artifact>
-                                        &lt;!&ndash; Apache Commons Language &ndash;&gt;
-                                        <groupId>org.apache.commons</groupId>
-                                        <artifactId>commons-lang3</artifactId>
-                                        <version>3.5</version>
-                                    </artifact>
-                                    <moduleInfoSource>
-                                        module commons.lang3 {}
-                                    </moduleInfoSource>
-                                </module>
-                            </modules>
-                            <outputDirectory>${libDirectory}</outputDirectory>
-                            <overwriteExistingFiles>true</overwriteExistingFiles>
-                        </configuration>
-                    </execution>
-                    &lt;!&ndash;<execution>
-                        <id>create-runtime-image</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>create-runtime-image</goal>
-                        </goals>
-                        <configuration>
-                            <modulePath>
-                                <path>${libDirectory}</path>
-                            </modulePath>
-                            <modules>
-                                <module>com.google.common</module>
-                                <module>com.google.gson</module>
-                                <module>java.desktop</module>
-                                <module>javafx.controls</module>
-                                <module>javafx.fxml</module>
-                                <module>javafx.swing</module>
-                                <module>jogl.all</module>
-                                <module>NBT</module>
-                                <module>org.jetbrains.annotations</module>
-                                <module>org.joml</module>
-                                <module>org.apache.logging.log4j</module>
-                                <module>org.apache.logging.log4j.core</module>
-                                <module>org.fusesource.jansi</module>
-                                <module>org.fxmisc.richtext</module>
-                                <module>datafixerupper</module>
-                                <module>brigadier</module>
-                                <module>commons.lang3</module>
-                            </modules>
-                            &lt;!&ndash;<launcher>
-                                <name>launcher</name>
-                                <mainClass>${mainClass}</mainClass>
-                                <module>${mainModule}</module>
-                            </launcher>&ndash;&gt;
-                            <outputDirectory>${project.build.directory}/jlink</outputDirectory>
-                            <jarInclusionPolicy>APP_WITH_DEPENDENCIES</jarInclusionPolicy>
-                        </configuration>
-                    </execution>&ndash;&gt;
-                </executions>
-            </plugin> -->
             <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>${mainModule}/${mainClass}</mainClass>
-                    <jlinkImageName>jlink</jlinkImageName>
-                    <!-- <jmodsPath>${libDirectory}</jmodsPath> -->
-                    <jlinkVerbose>true</jlinkVerbose>
-                    <compress>2</compress>
                 </configuration>
             </plugin>
             <plugin>
                 <!-- GraalVM must be installed for this to work. -->
                 <!-- It works with the GRAALVM_HOME environment variable set to the installation directory. -->
-                <!-- This has to be run from the x64 native tools command prompt. -->
+                <!-- This has to be run from the x64 Native Tools Command Prompt for Visual Studio. -->
                 <groupId>com.gluonhq</groupId>
                 <artifactId>gluonfx-maven-plugin</artifactId>
-                <version>1.0.16</version>
+                <version>1.0.19</version>
                 <configuration>
                     <mainClass>${mainModule}/${mainClass}</mainClass>
                 </configuration>
@@ -523,7 +314,7 @@
                 <!-- Parse version components and create properties for them -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.3.0</version>
+                <version>3.4.0</version>
                 <executions>
                     <execution>
                         <id>parse-version</id>

@@ -104,12 +104,11 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
                         }
                     } else {
                         BlockState blockState = new BlockState(Constants.DEFAULT_BLOCK);
-                        int airIndex;
                         if (!blockPalette.contains(blockState)) {
                             blockPalette.add(blockState);
                             blockPaletteTag.putInt(blockState.getId().toString(), blockPalette.indexOf(blockState));
                         }
-                        airIndex = schematic.getBlockPalette().indexOf(blockState);
+                        int airIndex = schematic.getBlockPalette().indexOf(blockState);
                         blocksList.set(index, (byte) airIndex);
                     }
                 }
@@ -148,12 +147,11 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
                             biomesList.set(index, (byte) biome.getBiomeStateIndex());
                         } else {
                             BiomeState biomeState = new BiomeState(Constants.DEFAULT_BIOME);
-                            int oceanIndex;
                             if (!biomePalette.contains(biomeState)) {
                                 biomePalette.add(biomeState);
                                 biomePaletteTag.putInt(biomeState.getId().toString(), biomePalette.indexOf(biomeState));
                             }
-                            oceanIndex = schematic.getBiomePalette().indexOf(biomeState);
+                            int oceanIndex = schematic.getBiomePalette().indexOf(biomeState);
                             biomesList.set(index, (byte) oceanIndex);
                         }
                     }
@@ -282,12 +280,11 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
                         }
                     } else {
                         BlockState blockState = new BlockState(Constants.DEFAULT_BLOCK);
-                        int airIndex;
                         if (!blockPalette.contains(blockState)) {
                             blockPalette.add(blockState);
                             blockPaletteTag.putInt(blockState.getId().toString(), blockPalette.indexOf(blockState));
                         }
-                        airIndex = schematic.getBlockPalette().indexOf(blockState);
+                        int airIndex = schematic.getBlockPalette().indexOf(blockState);
                         blocksList.set(index, (byte) airIndex);
                     }
                 }
@@ -328,12 +325,11 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
                             biomesList.set(index, (byte) biome.getBiomeStateIndex());
                         } else {
                             BiomeState biomeState = new BiomeState(Constants.DEFAULT_BIOME);
-                            int oceanIndex;
                             if (!biomePalette.contains(biomeState)) {
                                 biomePalette.add(biomeState);
                                 biomePaletteTag.putInt(biomeState.getId().toString(), biomePalette.indexOf(biomeState));
                             }
-                            oceanIndex = schematic.getBiomePalette().indexOf(biomeState);
+                            int oceanIndex = schematic.getBiomePalette().indexOf(biomeState);
                             biomesList.set(index, (byte) oceanIndex);
                         }
                     }

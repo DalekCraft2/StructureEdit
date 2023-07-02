@@ -107,7 +107,20 @@ public class BlockModel {
         List<String> arrayList = Lists.newArrayList();
         Either<Material, String> either;
         Optional<Material> optional;
-        while ((optional = (either = findTextureEntry(reference)).left()).isEmpty()) {
+        /* while ((optional = (either = findTextureEntry(reference)).left()).isEmpty()) {
+            reference = either.right().get();
+            if (arrayList.contains(reference)) {
+                LOGGER.warn("Unable to resolve texture due to reference chain {}->{} in {}", Joiner.on("->").join(arrayList), reference, name);
+                return new Material(MissingTexture.MISSING_TEXTURE_LOCATION);
+            }
+            arrayList.add(reference);
+        } */
+        while (true) {
+            either = findTextureEntry(reference);
+            optional = either.left();
+            if (optional.isPresent()) {
+                break;
+            }
             reference = either.right().get();
             if (arrayList.contains(reference)) {
                 LOGGER.warn("Unable to resolve texture due to reference chain {}->{} in {}", Joiner.on("->").join(arrayList), reference, name);

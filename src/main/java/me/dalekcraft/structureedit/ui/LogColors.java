@@ -19,12 +19,8 @@ public final class LogColors {
     }
 
     public static String colorToHex(@NotNull Color color) {
-        String hex1;
-        String hex2;
-
-        hex1 = Integer.toHexString(color.hashCode()).toUpperCase(Locale.ROOT);
-
-        hex2 = switch (hex1.length()) {
+        String hex1 = Integer.toHexString(color.hashCode()).toUpperCase(Locale.ROOT);
+        String hex2 = switch (hex1.length()) {
             case 2 -> "#000000";
             case 3 -> String.format("#00000%s", hex1.charAt(0));
             case 4 -> String.format("#0000%s", hex1.substring(0, 2));

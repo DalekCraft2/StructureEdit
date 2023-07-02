@@ -5,6 +5,7 @@ import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
+import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import me.dalekcraft.structureedit.assets.ResourceLocation;
@@ -246,14 +247,14 @@ public class BlockEditorController {
                         }
                         color = Color.color(color.getRed(), color.getGreen(), color.getBlue());
                         BlockButton blockButton = new BlockButton(block, x, currentLayer, z);
-                        blockButton.setText(!blockName.isEmpty() ? blockName.substring(0, 1) : "?");
+                        blockButton.setText(blockName.isEmpty() ? "?" : blockName.substring(0, 1));
                         blockButton.setTooltip(new Tooltip(blockId.toString()));
                         blockButton.setTextOverrun(OverrunStyle.CLIP);
                         blockButton.setBackground(new Background(new BackgroundFill(color, CornerRadii.EMPTY, Insets.EMPTY)));
                         blockButton.setBorder(new Border(new BorderStroke(Color.BLACK, BorderStrokeStyle.SOLID, CornerRadii.EMPTY, BorderStroke.DEFAULT_WIDTHS)));
                         blockButton.setMaxSize(Double.MAX_VALUE, Double.MAX_VALUE);
                         blockButton.setPrefSize(Constants.EDITOR_TILE_SIZE, Constants.EDITOR_TILE_SIZE);
-                        blockButton.addEventHandler(javafx.scene.input.MouseEvent.MOUSE_CLICKED, this::onBlockSelected);
+                        blockButton.addEventHandler(MouseEvent.MOUSE_CLICKED, this::onBlockSelected);
                         blockGrid.add(blockButton, x, z);
                         if (selectedBlock != null) {
                             int[] position = selectedBlock.getPosition();

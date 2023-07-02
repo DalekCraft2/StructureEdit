@@ -120,7 +120,7 @@ public final class SchematicFormats {
      * It is not in SchematicCommands because it may rely on internal register calls.
      */
     public static String[] getFileExtensionArray() {
-        return FILE_EXTENSION_MAP.keySet().toArray(new String[FILE_EXTENSION_MAP.keySet().size()]);
+        return FILE_EXTENSION_MAP.keySet().toArray(new String[0]);
     }
 
 }

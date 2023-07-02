@@ -65,7 +65,7 @@ public class StructureEditApplication extends Application {
             }
         });
 
-        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/scene.fxml"));
+        FXMLLoader fxmlLoader = new FXMLLoader(getClass().getResource("/ui/scene.fxml"));
         fxmlLoader.setResources(Language.LANGUAGE);
         Scene scene = new Scene(fxmlLoader.load());
         primaryStage.setTitle(Language.LANGUAGE.getString("ui.window.title"));

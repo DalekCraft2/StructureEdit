@@ -54,10 +54,10 @@ public class TardisSchematicReader extends JsonSchematicReader {
                                 String data = requireTag(blockTag, "data", JsonElement.class).getAsString();
 
                                 BlockState blockState = BlockState.toBlockState(data);
-                                if (!schematic.getBlockPalette().contains(blockState)) {
-                                    schematic.getBlockPalette().add(blockState);
-                                } else {
+                                if (schematic.getBlockPalette().contains(blockState)) {
                                     blockState = schematic.getBlockState(schematic.getBlockPalette().indexOf(blockState));
+                                } else {
+                                    schematic.getBlockPalette().add(blockState);
                                 }
 
                                 Block block = new Block(schematic.getBlockPalette().indexOf(blockState));

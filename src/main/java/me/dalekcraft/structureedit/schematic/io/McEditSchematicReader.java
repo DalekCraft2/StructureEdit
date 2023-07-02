@@ -97,10 +97,10 @@ public class McEditSchematicReader extends NbtSchematicReader {
                 LOGGER.log(Level.DEBUG, "Could not find legacy block with ID of " + blocks[i] + ":" + blockData[i] + "; replacing with air");
                 blockState = new BlockState(Constants.DEFAULT_BLOCK);
             }
-            if (!schematic.getBlockPalette().contains(blockState)) {
-                schematic.getBlockPalette().add(blockState);
-            } else {
+            if (schematic.getBlockPalette().contains(blockState)) {
                 blockState = schematic.getBlockState(schematic.getBlockPalette().indexOf(blockState));
+            } else {
+                schematic.getBlockPalette().add(blockState);
             }
 
             schematic.setBlock(x, y, z, new Block(schematic.getBlockPalette().indexOf(blockState)));
@@ -173,10 +173,10 @@ public class McEditSchematicReader extends NbtSchematicReader {
                         LOGGER.log(Level.DEBUG, "Could not find legacy biome with ID of " + blocks[i] + ":" + blockData[i] + "; replacing with ocean");
                         biomeState = new BiomeState(Constants.DEFAULT_BIOME);
                     }
-                    if (!schematic.getBiomePalette().contains(biomeState)) {
-                        schematic.getBiomePalette().add(biomeState);
-                    } else {
+                    if (schematic.getBiomePalette().contains(biomeState)) {
                         biomeState = schematic.getBiomeState(schematic.getBiomePalette().indexOf(biomeState));
+                    } else {
+                        schematic.getBiomePalette().add(biomeState);
                     }
 
                     schematic.setBiome(x, y, z, new Biome(schematic.getBiomePalette().indexOf(biomeState)));
