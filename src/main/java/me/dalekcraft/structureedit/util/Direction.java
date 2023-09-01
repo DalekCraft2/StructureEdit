@@ -6,8 +6,6 @@ import javafx.geometry.Point3D;
 import javafx.scene.transform.Transform;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.joml.Vector3f;
-import org.joml.Vector3i;
 
 import java.util.*;
 import java.util.function.Predicate;
@@ -15,12 +13,12 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public enum Direction {
-    DOWN(0, 1, -1, "down", AxisDirection.NEGATIVE, Axis.Y, new Vector3i(0, -1, 0)),
-    UP(1, 0, -1, "up", AxisDirection.POSITIVE, Axis.Y, new Vector3i(0, 1, 0)),
-    NORTH(2, 3, 2, "north", AxisDirection.NEGATIVE, Axis.Z, new Vector3i(0, 0, -1)),
-    SOUTH(3, 2, 0, "south", AxisDirection.POSITIVE, Axis.Z, new Vector3i(0, 0, 1)),
-    WEST(4, 5, 1, "west", AxisDirection.NEGATIVE, Axis.X, new Vector3i(-1, 0, 0)),
-    EAST(5, 4, 3, "east", AxisDirection.POSITIVE, Axis.X, new Vector3i(1, 0, 0));
+    DOWN(0, 1, -1, "down", AxisDirection.NEGATIVE, Axis.Y, new Point3D(0, -1, 0)),
+    UP(1, 0, -1, "up", AxisDirection.POSITIVE, Axis.Y, new Point3D(0, 1, 0)),
+    NORTH(2, 3, 2, "north", AxisDirection.NEGATIVE, Axis.Z, new Point3D(0, 0, -1)),
+    SOUTH(3, 2, 0, "south", AxisDirection.POSITIVE, Axis.Z, new Point3D(0, 0, 1)),
+    WEST(4, 5, 1, "west", AxisDirection.NEGATIVE, Axis.X, new Point3D(-1, 0, 0)),
+    EAST(5, 4, 3, "east", AxisDirection.POSITIVE, Axis.X, new Point3D(1, 0, 0));
     private static final Direction[] VALUES;
     private static final Map<String, Direction> BY_NAME;
     private static final Direction[] BY_3D_DATA;
@@ -39,9 +37,9 @@ public enum Direction {
     private final String name;
     private final Axis axis;
     private final AxisDirection axisDirection;
-    private final Vector3i normal;
+    private final Point3D normal;
 
-    Direction(int data3d, int oppositeIndex, int data2d, String name, AxisDirection axisDirection, Axis axis, Vector3i normal) {
+    Direction(int data3d, int oppositeIndex, int data2d, String name, AxisDirection axisDirection, Axis axis, Point3D normal) {
         this.data3d = data3d;
         this.data2d = data2d;
         this.oppositeIndex = oppositeIndex;
@@ -56,10 +54,9 @@ public enum Direction {
     }
 
     public static Direction rotate(Transform transform, Direction direction) {
-        Vector3i vec3i = direction.getNormal();
-        Point3D vector4f = new Point3D(vec3i.x, vec3i.y, vec3i.z);
-        vector4f = transform.transform(vector4f);
-        return getNearest(vector4f.getX(), vector4f.getY(), vector4f.getZ());
+        Point3D normal = direction.getNormal();
+        normal = transform.transform(normal);
+        return getNearest(normal.getX(), normal.getY(), normal.getZ());
     }
 
     @Nullable
@@ -101,21 +98,21 @@ public enum Direction {
     }
 
     public static Direction getNearest(double d, double d2, double d3) {
-        return getNearest((float) d, (float) d2, (float) d3);
-    }
-
-    public static Direction getNearest(float f, float f2, float f3) {
         Direction direction = NORTH;
-        float f4 = Float.MIN_VALUE;
+        double d4 = Double.MIN_VALUE;
         for (Direction direction2 : VALUES) {
-            float f5 = f * direction2.normal.x() + f2 * direction2.normal.y() + f3 * direction2.normal.z();
-            if (!(f5 > f4)) {
+            double d5 = d * direction2.normal.getX() + d2 * direction2.normal.getY() + d3 * direction2.normal.getZ();
+            if (!(d5 > d4)) {
                 continue;
             }
-            f4 = f5;
+            d4 = d5;
             direction = direction2;
         }
         return direction;
+    }
+
+    public static Direction getNearest(float f, float f2, float f3) {
+        return getNearest(f, f2, (double) f3);
     }
 
     private static DataResult<Direction> verifyVertical(Direction direction) {
@@ -245,19 +242,19 @@ public enum Direction {
     }
 
     public int getStepX() {
-        return normal.x();
+        return (int) normal.getX();
     }
 
     public int getStepY() {
-        return normal.y();
+        return (int) normal.getY();
     }
 
     public int getStepZ() {
-        return normal.z();
+        return (int) normal.getZ();
     }
 
-    public Vector3f step() {
-        return new Vector3f(getStepX(), getStepY(), getStepZ());
+    public Point3D step() {
+        return new Point3D(getStepX(), getStepY(), getStepZ());
     }
 
     public String getName() {
@@ -277,7 +274,7 @@ public enum Direction {
         return name;
     }
 
-    public Vector3i getNormal() {
+    public Point3D getNormal() {
         return normal;
     }
 
@@ -285,7 +282,7 @@ public enum Direction {
         float f2 = f * ((float) Math.PI / 180);
         float f3 = (float) -Math.sin(f2);
         float f4 = (float) Math.cos(f2);
-        return normal.x() * f3 + normal.z() * f4 > 0.0f;
+        return normal.getX() * f3 + normal.getZ() * f4 > 0.0f;
     }
 
     public enum Axis implements Predicate<Direction> {

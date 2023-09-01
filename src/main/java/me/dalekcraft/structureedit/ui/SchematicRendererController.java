@@ -6,9 +6,7 @@ import javafx.animation.AnimationTimer;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
-import javafx.scene.Group;
-import javafx.scene.PerspectiveCamera;
-import javafx.scene.SubScene;
+import javafx.scene.*;
 import javafx.scene.image.Image;
 import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
@@ -66,6 +64,8 @@ public class SchematicRendererController {
     private static final long TICK_LENGTH = 50L;
     private final PerspectiveCamera camera = new PerspectiveCamera(true);
     private final TransformGroup cameraTransform = new TransformGroup();
+    private final PointLight pointLight = new PointLight();
+    private final AmbientLight ambientLight = new AmbientLight();
     private final Random random = new Random();
     private final Affine textureMatrix = new Affine();
     private final Group world = new Group();
@@ -114,8 +114,15 @@ public class SchematicRendererController {
         Group root = new Group();
         root.getChildren().add(world);
         root.getChildren().add(cameraTransform);
+        root.getChildren().add(pointLight);
+        root.getChildren().add(ambientLight);
         cameraTransform.getChildren().add(camera);
+        cameraTransform.getChildren().add(pointLight);
         subScene.setRoot(root);
+
+        pointLight.translateXProperty().bind(camera.translateXProperty());
+        pointLight.translateYProperty().bind(camera.translateYProperty());
+        pointLight.translateZProperty().bind(camera.translateZProperty());
 
         camera.setNearClip(CAMERA_NEAR_CLIP);
         camera.setFarClip(CAMERA_FAR_CLIP);
@@ -136,7 +143,7 @@ public class SchematicRendererController {
 
         KeyCode keyCode = event.getCode();
         switch (keyCode) {
-            // FIXME If UP or DOWN are pressed at all, JavaFX key detection completely breaks; it might be because UP and DOWN change which UI element is focused
+            //  FIXME If UP or DOWN are pressed at all, JavaFX key detection completely breaks; it might be because UP and DOWN change which UI element is focused
             case UP, E -> {
                 if (schematic != null) {
                     int[] size = schematic.getSize();
@@ -234,8 +241,16 @@ public class SchematicRendererController {
         animationTimer.start();
     }
 
+    // TODO Only call this when the schematic is changed, instead of calling it constantly. This will greatly increase performance. (For animated textures, look into JavaFX interpolation.)
     public void drawSchematic() {
         world.getChildren().clear();
+
+        pointLight.getScope().clear();
+        pointLight.getExclusionScope().clear();
+
+        ambientLight.getScope().clear();
+        ambientLight.getExclusionScope().clear();
+
         modelMatrix.setToIdentity();
         if (schematic != null) {
             int[] size = schematic.getSize();
@@ -307,10 +322,8 @@ public class SchematicRendererController {
         xAxis.getTransforms().add(modelMatrix);
         PhongMaterial redMaterial = new PhongMaterial();
         redMaterial.setDiffuseColor(Color.RED);
-        WritableImage redMap = new WritableImage(1, 1);
-        redMap.getPixelWriter().setColor(0, 0, Color.RED);
-        redMaterial.setSelfIlluminationMap(redMap);
         xAxis.setMaterial(redMaterial);
+        pointLight.getExclusionScope().add(xAxis);
 
         // Y-axis
         // TriangleMesh yMesh = new TriangleMesh();
@@ -327,10 +340,8 @@ public class SchematicRendererController {
         yAxis.getTransforms().add(modelMatrix);
         PhongMaterial greenMaterial = new PhongMaterial();
         greenMaterial.setDiffuseColor(Color.GREEN);
-        WritableImage greenMap = new WritableImage(1, 1);
-        greenMap.getPixelWriter().setColor(0, 0, Color.GREEN);
-        greenMaterial.setSelfIlluminationMap(greenMap);
         yAxis.setMaterial(greenMaterial);
+        pointLight.getExclusionScope().add(yAxis);
 
         // Z-axis
         // TriangleMesh zMesh = new TriangleMesh();
@@ -347,10 +358,8 @@ public class SchematicRendererController {
         zAxis.getTransforms().add(modelMatrix);
         PhongMaterial blueMaterial = new PhongMaterial();
         blueMaterial.setDiffuseColor(Color.BLUE);
-        WritableImage blueMap = new WritableImage(1, 1);
-        blueMap.getPixelWriter().setColor(0, 0, Color.BLUE);
-        blueMaterial.setSelfIlluminationMap(blueMap);
         zAxis.setMaterial(blueMaterial);
+        pointLight.getExclusionScope().add(zAxis);
 
         // Add all axes
         world.getChildren().addAll(xAxis, yAxis, zAxis);
@@ -422,6 +431,7 @@ public class SchematicRendererController {
         BlockModelRotation blockModelRotation = variant.getRotation();
         int x = blockModelRotation.getXRotation();
         int y = blockModelRotation.getYRotation();
+        // int x = 0, y = 0;
         boolean uvLock = variant.isUvLocked();
 
         Affine rotationMatrix = new Affine();
@@ -784,8 +794,7 @@ public class SchematicRendererController {
                     mesh2.getTexCoords().setAll(texCoords2);
 
 
-                    // FIXME The self-illumination map hides the tint, making stuff like grass appear gray/grey (because, apparently, the grass model disables shading).
-                    PhongMaterial material = new PhongMaterial(tint, texture, null, null, shade ? null : texture);
+                    PhongMaterial material = new PhongMaterial(tint, texture, null, null, null);
 
                     // FIXME Despite the mixFactor being the correct value now, the two texture frames do not change opacity at all and thus do not have interpolation.
                     MeshView meshView = new MeshView(mesh);
@@ -801,6 +810,14 @@ public class SchematicRendererController {
                     meshView2.setMaterial(material);
                     meshView2.setOpacity(mixFactor);
                     world.getChildren().add(meshView2);
+
+                    if (shade) {
+                        ambientLight.getExclusionScope().add(meshView);
+                        ambientLight.getExclusionScope().add(meshView2);
+                    } else {
+                        pointLight.getExclusionScope().add(meshView);
+                        pointLight.getExclusionScope().add(meshView2);
+                    }
                 }
                 // modelMatrix.popMatrix();
                 modelMatrix = pushedMatrix;
