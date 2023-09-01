@@ -3,12 +3,16 @@ package me.dalekcraft.structureedit.ui;
 import com.google.common.primitives.Doubles;
 import com.google.common.primitives.Floats;
 import javafx.animation.AnimationTimer;
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
+import javafx.beans.InvalidationListener;
+import javafx.beans.property.LongProperty;
+import javafx.beans.property.SimpleLongProperty;
 import javafx.fxml.FXML;
 import javafx.geometry.Point2D;
 import javafx.geometry.Point3D;
 import javafx.scene.*;
 import javafx.scene.image.Image;
-import javafx.scene.image.WritableImage;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.input.MouseEvent;
@@ -19,6 +23,7 @@ import javafx.scene.paint.PhongMaterial;
 import javafx.scene.shape.*;
 import javafx.scene.transform.Affine;
 import javafx.scene.transform.Rotate;
+import javafx.util.Duration;
 import me.dalekcraft.structureedit.assets.Registries;
 import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.assets.blockstates.BlockModelDefinition;
@@ -79,13 +84,18 @@ public class SchematicRendererController {
     private double mousePosX;
     private double mousePosY;
     private BlockStateEditorController blockStateEditorController;
+
     private final AnimationTimer animationTimer = new AnimationTimer() {
         @Override
         public void handle(long now) {
-            drawSchematic();
+            tickProperty.set(getCurrentTick());
         }
     };
 
+    public static long getCurrentTick() {
+        long currentTime = System.currentTimeMillis();
+        return currentTime / TICK_LENGTH;
+    }
 
 
     /* public static double simplifyAngle(double angle) {
@@ -241,7 +251,10 @@ public class SchematicRendererController {
         animationTimer.start();
     }
 
-    // TODO Only call this when the schematic is changed, instead of calling it constantly. This will greatly increase performance. (For animated textures, look into JavaFX interpolation.)
+    public void onSchematicUpdated() {
+        drawSchematic();
+    }
+
     public void drawSchematic() {
         world.getChildren().clear();
 
@@ -250,6 +263,16 @@ public class SchematicRendererController {
 
         ambientLight.getScope().clear();
         ambientLight.getExclusionScope().clear();
+
+        for (InvalidationListener listener : tickPropertyListeners) {
+            tickProperty.removeListener(listener);
+        }
+        tickPropertyListeners.clear();
+
+        for (Timeline timeline : timelines) {
+            timeline.stop();
+        }
+        timelines.clear();
 
         modelMatrix.setToIdentity();
         if (schematic != null) {
@@ -426,6 +449,10 @@ public class SchematicRendererController {
         return weightTree.ceilingEntry(value).getValue();
     }
 
+    private final LongProperty tickProperty = new SimpleLongProperty();
+    private final List<InvalidationListener> tickPropertyListeners = new ArrayList<>();
+    private final List<Timeline> timelines = new ArrayList<>();
+
     public void drawModel(@NotNull Variant variant, Color tint, int[] position) {
         BlockModel model = Registries.getInstance().getModel(variant.getModelLocation());
         BlockModelRotation blockModelRotation = variant.getRotation();
@@ -517,7 +544,9 @@ public class SchematicRendererController {
                     int faceRotation = uv.rotation;
                     int tintIndex = face.tintIndex;
 
-                    if (cullface != null) {
+                    /* Disabled culling for now because the performance enhancement means we can afford not using it.
+                     Plus, it's kind of broken. I'll be reenabling it when I fix it. */
+                    /* if (cullface != null) {
                         // TODO Make some blocks not cull, because some blocks, like stairs and fences, do not cull in-game
                         cullface = Direction.rotate(rotationMatrix, cullface);
 
@@ -534,7 +563,7 @@ public class SchematicRendererController {
                                 }
                             }
                             case UP -> {
-                                if (position[1] + 1 < /* schematic.getSize()[1] */ renderedHeight) {
+                                if (position[1] + 1 <  *//* schematic.getSize()[1] *//*  renderedHeight) {
                                     blockToCheck = schematic.getBlock(position[0], position[1] + 1, position[2]);
                                 }
                             }
@@ -560,7 +589,7 @@ public class SchematicRendererController {
                         if (shouldBeCulled) {
                             continue;
                         }
-                    }
+                    } */
 
                     if (tintIndex == -1) {
                         tint = TintHelper.DEFAULT_TINT;
@@ -578,9 +607,17 @@ public class SchematicRendererController {
                     float textureRight2 = textureRight;
                     float textureBottom2 = textureBottom;
                     float mixFactor = 0.0f;
+                    boolean interpolate = false;
+                    boolean animate = false;
+                    Timeline timeline = null;
                     AnimationMetadataSection animation = Registries.getInstance().getAnimationMetadataSection(model.getMaterial(faceTexture).texture());
                     if (animation != null && animation != AnimationMetadataSection.EMPTY) {
-                        boolean interpolate = animation.isInterpolatedFrames();
+                        // TODO Consider emptying out most of this conditional block because most of this code is done by the event handler later.
+                        animate = true;
+                        /* Because interpolation does not work right now and the old attempt at interpolation
+                         would not work with the JavaFX animation system, I am keeping interpolation disabled for now.
+                         It will probably increase performance a bit, now that I have interpolation-related conditionals. */
+                        // interpolate = animation.isInterpolatedFrames();
                         int width = animation.getFrameWidth((int) texture.getWidth());
                         int height = animation.getFrameHeight((int) texture.getWidth());
                         int frameTime = animation.getDefaultFrameTime();
@@ -602,22 +639,14 @@ public class SchematicRendererController {
                         textureRight /= widthFactor;
                         textureBottom /= heightFactor;
 
-                        textureLeft2 /= widthFactor;
-                        textureTop2 /= heightFactor;
-                        textureRight2 /= widthFactor;
-                        textureBottom2 /= heightFactor;
-
-                        long currentTime = System.currentTimeMillis();
-                        long currentTick = currentTime / TICK_LENGTH;
-                        int index = (int) (currentTick / frameTime % frames.size());
-
                         if (interpolate) {
-                            long timeOfStartOfFrame = index * frameTime * TICK_LENGTH;
-                            long timeOfEndOfFrame = (index + 1) * frameTime * TICK_LENGTH;
-                            // The mix factor should be a value between 0.0f and 1.0f, representing the passage of time from the current frame to the next. 0.0f is the current frame, and 1.0f is the next frame.
-                            mixFactor = (currentTime % (timeOfEndOfFrame - timeOfStartOfFrame)) / ((timeOfEndOfFrame - timeOfStartOfFrame) * 1.0f);
+                            textureLeft2 /= widthFactor;
+                            textureTop2 /= heightFactor;
+                            textureRight2 /= widthFactor;
+                            textureBottom2 /= heightFactor;
                         }
 
+                        int index = (int) (tickProperty.get() / frameTime % frames.size());
                         AnimationFrame frame = frames.get(index);
                         double frameDouble = frame.getIndex();
                         // TODO Implement the "time" tag.
@@ -633,6 +662,22 @@ public class SchematicRendererController {
 
                         textureTop2 += frameDouble2 / heightFactor;
                         textureBottom2 += frameDouble2 / heightFactor;
+
+                        if (interpolate) {
+                            long timeOfStartOfFrame = index * frameTime * TICK_LENGTH;
+                            long timeOfEndOfFrame = index2 * frameTime * TICK_LENGTH;
+                            // The mix factor should be a value between 0.0f and 1.0f, representing the passage of time from the current frame to the next. 0.0f is the current frame, and 1.0f is the next frame.
+                            mixFactor = (System.currentTimeMillis() % (timeOfEndOfFrame - timeOfStartOfFrame)) / ((timeOfEndOfFrame - timeOfStartOfFrame) * 1.0f);
+                        }
+
+                        timeline = new Timeline(frameTime);
+                        for (AnimationFrame animationFrame : frames) {
+                            int time = animationFrame.getTime(frameTime);
+
+                            KeyFrame keyFrame = new KeyFrame(Duration.millis(time * TICK_LENGTH));
+                            timeline.getKeyFrames().add(keyFrame);
+                        }
+                        timelines.add(timeline);
                     } /* else if (texture.getWidth() != texture.getHeight()) {
                         // This breaks the textures of signs, because those textures are not square, resulting in the rendered signs having the missing texture.
                         // For this reason, I am not using this code, even though the wiki mentions that this is how it works.
@@ -648,11 +693,13 @@ public class SchematicRendererController {
                         textureRight = SCALE - textureTop;
                         textureTop = temp;
 
-                        float temp2 = textureLeft2;
-                        textureLeft2 = SCALE - textureBottom2;
-                        textureBottom2 = textureRight2;
-                        textureRight2 = SCALE - textureTop2;
-                        textureTop2 = temp2;
+                        if (interpolate) {
+                            float temp2 = textureLeft2;
+                            textureLeft2 = SCALE - textureBottom2;
+                            textureBottom2 = textureRight2;
+                            textureRight2 = SCALE - textureTop2;
+                            textureTop2 = temp2;
+                        }
                     }
 
                     textureMatrix.setToIdentity();
@@ -678,14 +725,16 @@ public class SchematicRendererController {
                     }
 
                     TriangleMesh mesh = new TriangleMesh();
-                    TriangleMesh mesh2 = new TriangleMesh();
+                    TriangleMesh mesh2 = interpolate ? new TriangleMesh() : null;
 
                     int[] indices = { //
                             0, 0, 1, 1, 2, 2, //
                             2, 2, 3, 3, 0, 0 //
                     };
                     mesh.getFaces().setAll(indices);
-                    mesh2.getFaces().setAll(indices);
+                    if (interpolate) {
+                        mesh2.getFaces().setAll(indices);
+                    }
 
                     float[] positions = switch (faceName) { //
                         case EAST -> new float[]{ //
@@ -726,7 +775,9 @@ public class SchematicRendererController {
                         };
                     };
                     mesh.getPoints().setAll(positions);
-                    mesh2.getPoints().setAll(positions);
+                    if (interpolate) {
+                        mesh2.getPoints().setAll(positions);
+                    }
 
                     float[] normals = switch (faceName) { //
                         case EAST -> new float[]{ //
@@ -767,7 +818,9 @@ public class SchematicRendererController {
                         };
                     };
                     mesh.getNormals().setAll(normals);
-                    mesh2.getNormals().setAll(normals);
+                    if (interpolate) {
+                        mesh2.getNormals().setAll(normals);
+                    }
 
                     float[] texCoords = { //
                             textureLeft, textureBottom, //
@@ -781,17 +834,19 @@ public class SchematicRendererController {
                     texCoords = Floats.toArray(Doubles.asList(destination));
                     mesh.getTexCoords().setAll(texCoords);
 
-                    float[] texCoords2 = { //
-                            textureLeft2, textureBottom2, //
-                            textureRight2, textureBottom2, //
-                            textureRight2, textureTop2, //
-                            textureLeft2, textureTop2 //
-                    };
-                    double[] converted2 = Doubles.toArray(Floats.asList(texCoords2));
-                    double[] destination2 = new double[texCoords2.length];
-                    textureMatrix.transform2DPoints(converted2, 0, destination2, 0, texCoords2.length / 2);
-                    texCoords2 = Floats.toArray(Doubles.asList(destination2));
-                    mesh2.getTexCoords().setAll(texCoords2);
+                    if (interpolate) {
+                        float[] texCoords2 = { //
+                                textureLeft2, textureBottom2, //
+                                textureRight2, textureBottom2, //
+                                textureRight2, textureTop2, //
+                                textureLeft2, textureTop2 //
+                        };
+                        double[] converted2 = Doubles.toArray(Floats.asList(texCoords2));
+                        double[] destination2 = new double[texCoords2.length];
+                        textureMatrix.transform2DPoints(converted2, 0, destination2, 0, texCoords2.length / 2);
+                        texCoords2 = Floats.toArray(Doubles.asList(destination2));
+                        mesh2.getTexCoords().setAll(texCoords2);
+                    }
 
 
                     PhongMaterial material = new PhongMaterial(tint, texture, null, null, null);
@@ -801,22 +856,94 @@ public class SchematicRendererController {
                     meshView.setCullFace(CullFace.BACK);
                     meshView.getTransforms().add(modelMatrix);
                     meshView.setMaterial(material);
-                    meshView.setOpacity(1 - mixFactor);
+                    if (interpolate) {
+                        meshView.setOpacity(1 - mixFactor);
+                    }
                     world.getChildren().add(meshView);
 
-                    MeshView meshView2 = new MeshView(mesh2);
-                    meshView2.setCullFace(CullFace.BACK);
-                    meshView2.getTransforms().add(modelMatrix);
-                    meshView2.setMaterial(material);
-                    meshView2.setOpacity(mixFactor);
-                    world.getChildren().add(meshView2);
+                    MeshView meshView2 = interpolate ? new MeshView(mesh2) : null;
+                    if (interpolate) {
+                        meshView2.setCullFace(CullFace.BACK);
+                        meshView2.getTransforms().add(modelMatrix);
+                        meshView2.setMaterial(material);
+                        meshView2.setOpacity(mixFactor);
+                        world.getChildren().add(meshView2);
+                    }
 
                     if (shade) {
                         ambientLight.getExclusionScope().add(meshView);
-                        ambientLight.getExclusionScope().add(meshView2);
+                        if (interpolate) {
+                            ambientLight.getExclusionScope().add(meshView2);
+                        }
                     } else {
                         pointLight.getExclusionScope().add(meshView);
-                        pointLight.getExclusionScope().add(meshView2);
+                        if (interpolate) {
+                            pointLight.getExclusionScope().add(meshView2);
+                        }
+                    }
+
+                    if (animate) {
+                        Affine textureMatrixCopy = textureMatrix.clone();
+
+                        InvalidationListener listener = observable -> {
+                            float textureLeft1 = uv.uvs[0] / MODEL_SIZE;
+                            float textureTop1 = uv.uvs[1] / MODEL_SIZE;
+                            float textureRight1 = uv.uvs[2] / MODEL_SIZE;
+                            float textureBottom1 = uv.uvs[3] / MODEL_SIZE;
+
+                            int width = animation.getFrameWidth((int) texture.getWidth());
+                            int height = animation.getFrameHeight((int) texture.getWidth());
+                            int frameTime = animation.getDefaultFrameTime();
+
+                            double widthFactor = Math.abs(texture.getWidth() / width);
+                            double heightFactor = Math.abs(texture.getHeight() / height);
+
+                            // Set all texture coordinates to the first frame
+                            textureLeft1 /= widthFactor;
+                            textureTop1 /= heightFactor;
+                            textureRight1 /= widthFactor;
+                            textureBottom1 /= heightFactor;
+
+                            List<AnimationFrame> frames = animation.frames;
+                            if (frames.isEmpty()) {
+                                frames = new ArrayList<>();
+                                for (int i = 0; i < heightFactor; i++) {
+                                    frames.add(new AnimationFrame(i));
+                                }
+                            }
+
+                            // TODO Account for custom frame times in case not all frames have the same duration
+                            int index = (int) (tickProperty.get() / frameTime % frames.size());
+                            AnimationFrame frame = frames.get(index);
+                            double frameDouble = frame.getIndex();
+
+                            // Change to the current frame in the animation
+                            textureTop1 += frameDouble / heightFactor;
+                            textureBottom1 += frameDouble / heightFactor;
+
+                            for (int i = 0; i < faceRotation; i += 90) {
+                                float temp = textureLeft1;
+                                textureLeft1 = SCALE - textureBottom1;
+                                textureBottom1 = textureRight1;
+                                textureRight1 = SCALE - textureTop1;
+                                textureTop1 = temp;
+                            }
+
+                            float[] texCoords1 = { //
+                                    textureLeft1, textureBottom1, //
+                                    textureRight1, textureBottom1, //
+                                    textureRight1, textureTop1, //
+                                    textureLeft1, textureTop1 //
+                            };
+                            double[] converted1 = Doubles.toArray(Floats.asList(texCoords1));
+                            double[] destination1 = new double[texCoords1.length];
+                            textureMatrixCopy.transform2DPoints(converted1, 0, destination1, 0, texCoords1.length / 2);
+                            texCoords1 = Floats.toArray(Doubles.asList(destination1));
+                            ((TriangleMesh) meshView.getMesh()).getTexCoords().setAll(texCoords1);
+                        };
+                        tickProperty.addListener(listener);
+                        tickPropertyListeners.add(listener);
+                        timeline.play();
                     }
                 }
                 // modelMatrix.popMatrix();

@@ -88,8 +88,12 @@ public class MainController {
     public void initialize() {
         rendererController.injectBlockStateEditorController(blockStateEditorController);
         blockEditorController.injectBlockStateEditorController(blockStateEditorController);
+        blockEditorController.injectSchematicRendererController(rendererController);
         blockStateEditorController.injectBlockEditorController(blockEditorController);
+        blockStateEditorController.injectSchematicRendererController(rendererController);
+        biomeEditorController.injectSchematicRendererController(rendererController);
         biomeStateEditorController.injectBiomeEditorController(biomeEditorController);
+        biomeStateEditorController.injectSchematicRendererController(rendererController);
 
         InlineCssTextAreaAppender.addLog4j2TextAreaAppender(logArea);
     }
@@ -138,7 +142,7 @@ public class MainController {
             StructureEditApplication.stage.setTitle(String.format(Language.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         }
 
-//        rendererController.drawSchematic();
+        rendererController.onSchematicUpdated();
     }
 
     private void disableEditors() {

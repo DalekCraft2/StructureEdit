@@ -10,6 +10,7 @@ import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.schematic.container.BlockState;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
 import me.dalekcraft.structureedit.ui.AutoCompleteComboBoxListener;
+import me.dalekcraft.structureedit.ui.SchematicRendererController;
 
 import java.util.Collections;
 import java.util.Map;
@@ -19,6 +20,7 @@ public class BlockStateEditorController {
     private final SpinnerValueFactory.IntegerSpinnerValueFactory paletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     private Schematic schematic;
     private BlockEditorController blockEditorController;
+    private SchematicRendererController schematicRendererController;
     @FXML
     private Spinner<Integer> paletteSpinner;
     @FXML
@@ -54,6 +56,10 @@ public class BlockStateEditorController {
 
     public void injectBlockEditorController(BlockEditorController blockEditorController) {
         this.blockEditorController = blockEditorController;
+    }
+
+    public void injectSchematicRendererController(SchematicRendererController schematicRendererController) {
+        this.schematicRendererController = schematicRendererController;
     }
 
     public void disableComponents() {
@@ -117,6 +123,7 @@ public class BlockStateEditorController {
             blockStateListView.setItems(schematic.getBlockPalette(newValue));
             blockStateListView.getSelectionModel().select(selectedIndex);
             blockEditorController.updateBlockGrid();
+            schematicRendererController.onSchematicUpdated();
         }
     }
 
@@ -128,6 +135,7 @@ public class BlockStateEditorController {
                 blockStateListView.refresh();
             }
             blockEditorController.updateBlockGrid();
+            schematicRendererController.onSchematicUpdated();
         }
     }
 
@@ -145,6 +153,7 @@ public class BlockStateEditorController {
                 blockStateListView.refresh();
             }
             blockEditorController.updateBlockGrid();
+            schematicRendererController.onSchematicUpdated();
         }
     }
 }

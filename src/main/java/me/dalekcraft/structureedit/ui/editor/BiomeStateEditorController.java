@@ -7,11 +7,13 @@ import javafx.scene.control.TextField;
 import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.schematic.container.BiomeState;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
+import me.dalekcraft.structureedit.ui.SchematicRendererController;
 
 public class BiomeStateEditorController {
 
     private Schematic schematic;
     private BiomeEditorController biomeEditorController;
+    private SchematicRendererController schematicRendererController;
     @FXML
     private TextField biomeStateIdTextField;
     @FXML
@@ -25,6 +27,10 @@ public class BiomeStateEditorController {
 
     public void injectBiomeEditorController(BiomeEditorController biomeEditorController) {
         this.biomeEditorController = biomeEditorController;
+    }
+
+    public void injectSchematicRendererController(SchematicRendererController schematicRendererController) {
+        this.schematicRendererController = schematicRendererController;
     }
 
     public void disableComponents() {
@@ -61,6 +67,7 @@ public class BiomeStateEditorController {
                 biomeStateListView.refresh();
             }
             biomeEditorController.updateBiomeGrid();
+            schematicRendererController.onSchematicUpdated();
         }
     }
 }

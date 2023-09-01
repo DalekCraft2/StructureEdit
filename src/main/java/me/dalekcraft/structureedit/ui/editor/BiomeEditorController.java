@@ -15,6 +15,7 @@ import me.dalekcraft.structureedit.schematic.container.BiomeState;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
 import me.dalekcraft.structureedit.ui.BiomeButton;
 import me.dalekcraft.structureedit.ui.MainController;
+import me.dalekcraft.structureedit.ui.SchematicRendererController;
 import me.dalekcraft.structureedit.util.Constants;
 import org.jetbrains.annotations.NotNull;
 
@@ -26,6 +27,7 @@ public class BiomeEditorController {
     private final SpinnerValueFactory.IntegerSpinnerValueFactory biomeLayerValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     private final SpinnerValueFactory.IntegerSpinnerValueFactory biomePaletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     private Schematic schematic;
+    private SchematicRendererController schematicRendererController;
     private BiomeButton selectedBiome;
     @FXML
     private Spinner<Integer> biomeLayerSpinner;
@@ -58,6 +60,10 @@ public class BiomeEditorController {
                 return null;
             }
         }));
+    }
+
+    public void injectSchematicRendererController(SchematicRendererController schematicRendererController) {
+        this.schematicRendererController = schematicRendererController;
     }
 
     public void disableComponents() {
@@ -122,6 +128,8 @@ public class BiomeEditorController {
                 biome.setBiomeStateIndex(newValue);
             }
             updateBiomeGrid();
+
+            schematicRendererController.onSchematicUpdated();
         }
     }
 

@@ -15,6 +15,7 @@ import me.dalekcraft.structureedit.schematic.container.BlockState;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
 import me.dalekcraft.structureedit.ui.BlockButton;
 import me.dalekcraft.structureedit.ui.MainController;
+import me.dalekcraft.structureedit.ui.SchematicRendererController;
 import me.dalekcraft.structureedit.util.Constants;
 import net.querz.nbt.io.SNBTUtil;
 import net.querz.nbt.tag.CompoundTag;
@@ -30,6 +31,7 @@ public class BlockEditorController {
     private final SpinnerValueFactory.IntegerSpinnerValueFactory blockPaletteValueFactory = new SpinnerValueFactory.IntegerSpinnerValueFactory(0, 0);
     private Schematic schematic;
     private BlockStateEditorController blockStateEditorController;
+    private SchematicRendererController schematicRendererController;
     private BlockButton selectedBlock;
     @FXML
     private Spinner<Integer> blockLayerSpinner;
@@ -98,6 +100,10 @@ public class BlockEditorController {
 
     public void injectBlockStateEditorController(BlockStateEditorController blockStateEditorController) {
         this.blockStateEditorController = blockStateEditorController;
+    }
+
+    public void injectSchematicRendererController(SchematicRendererController schematicRendererController) {
+        this.schematicRendererController = schematicRendererController;
     }
 
     public void disableComponents() {
@@ -180,6 +186,8 @@ public class BlockEditorController {
             }
             updateBlockGrid();
             updateSelectedBlock();
+
+            schematicRendererController.onSchematicUpdated();
         }
     }
 
