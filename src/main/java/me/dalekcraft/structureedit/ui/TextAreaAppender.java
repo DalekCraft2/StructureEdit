@@ -5,6 +5,7 @@
 package me.dalekcraft.structureedit.ui;
 
 import javafx.scene.control.TextArea;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Layout;
 import org.apache.logging.log4j.core.LogEvent;
@@ -23,7 +24,7 @@ import static org.apache.logging.log4j.core.layout.PatternLayout.createDefaultLa
 @Plugin(name = "TextAreaAppender", category = "Core", elementType = "appender", printObject = true)
 public class TextAreaAppender extends AbstractAppender {
     private static final Collection<TextArea> TEXT_AREAS = new ArrayList<>();
-    private final int maxLines; // TODO Maybe reimplement this.
+    private final int maxLines;
 
     private TextAreaAppender(String name, Layout<?> layout, Filter filter, int maxLines, boolean ignoreExceptions) {
         super(name, filter, layout, ignoreExceptions, Property.EMPTY_ARRAY);
@@ -57,6 +58,18 @@ public class TextAreaAppender extends AbstractAppender {
         for (TextArea textArea : TEXT_AREAS) {
             if (textArea != null) {
                 textArea.appendText(message);
+
+                // Limit number of lines
+                if (maxLines >= 0) {
+                    String text = textArea.getText();
+                    int count = StringUtils.countMatches(text, '\n');
+                    if (count > maxLines) {
+                        for (int numExtras = count - maxLines; numExtras > 0; numExtras--) {
+                            text = text.substring(text.indexOf('\n') + 1);
+                        }
+                        textArea.setText(text);
+                    }
+                }
             }
         }
     }

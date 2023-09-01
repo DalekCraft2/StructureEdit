@@ -6,6 +6,7 @@ package me.dalekcraft.structureedit.ui;
 
 import javafx.application.Platform;
 import javafx.scene.paint.Color;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.core.Filter;
 import org.apache.logging.log4j.core.Layout;
@@ -26,7 +27,7 @@ import static org.apache.logging.log4j.core.layout.PatternLayout.createDefaultLa
 @Plugin(name = "InlineCssTextAreaAppender", category = "Core", elementType = "appender", printObject = true)
 public class InlineCssTextAreaAppender extends AbstractAppender {
     private static final Collection<InlineCssTextArea> TEXT_AREAS = new ArrayList<>();
-    private final int maxLines; // TODO Maybe reimplement this.
+    private final int maxLines;
 
     private InlineCssTextAreaAppender(String name, Layout<?> layout, Filter filter, int maxLines, boolean ignoreExceptions) {
         super(name, filter, layout, ignoreExceptions, Property.EMPTY_ARRAY);
@@ -108,6 +109,17 @@ public class InlineCssTextAreaAppender extends AbstractAppender {
                     textArea.appendText(message);
                     int index2 = textArea.getLength();
                     textArea.setStyle(index1, index2 - 1, style);
+
+                    // Limit number of lines
+                    if (maxLines > 0) {
+                        String text = textArea.getText();
+                        int count = StringUtils.countMatches(text, '\n');
+                        if (count > maxLines) {
+                            for (int numExtras = count - maxLines; numExtras > 0; numExtras--) {
+                                textArea.replaceText(0, textArea.getText().indexOf('\n') + 1, "");
+                            }
+                        }
+                    }
                 });
             }
         }

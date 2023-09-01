@@ -23,6 +23,8 @@ import javafx.scene.paint.Color;
  * A list of all blocks, and of the colors what represent those blocks on maps.
  *
  * @see <a href="https://minecraft.fandom.com/wiki/Map_item_format">Map Item Format</a>
+ *
+ * TODO Update these enums for Minecraft 1.20. Or, maybe, use that one WorldEdit repository to generate block/biome/etc. data JSON files for each version so the editor can read schematics from all versions.
  */
 @SuppressWarnings("unused")
 public enum BlockColor {
