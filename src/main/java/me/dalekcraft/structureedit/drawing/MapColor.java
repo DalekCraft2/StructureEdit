@@ -5,7 +5,7 @@ import javafx.scene.paint.Color;
 /**
  * Colors used for indicating blocks on maps.
  *
- * @see <a href="https://minecraft.fandom.com/wiki/Map_item_format#Color_table">Map Item Format</a>
+ * @see <a href="https://minecraft.wiki/w/Map_item_format#Color_table">Map Item Format</a>
  */
 public final class MapColor {
 

@@ -5,7 +5,7 @@ import javafx.scene.paint.Color;
 /**
  * Colors used for tinting water in different biomes.
  *
- * @see <a href="https://minecraft.fandom.com/wiki/Block_colors#Water_colors">Water Colors</a>
+ * @see <a href="https://minecraft.wiki/w/Block_colors#Water_colors">Water Colors</a>
  */
 @SuppressWarnings("unused")
 public enum WaterColor {

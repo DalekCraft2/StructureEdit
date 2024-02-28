@@ -153,7 +153,7 @@ public class SchematicRendererController {
 
         KeyCode keyCode = event.getCode();
         switch (keyCode) {
-            //  FIXME If UP or DOWN are pressed at all, JavaFX key detection completely breaks; it might be because UP and DOWN change which UI element is focused
+            // FIXME If UP or DOWN are pressed at all, JavaFX key detection completely breaks; it might be because UP and DOWN change which UI element is focused
             case UP, E -> {
                 if (schematic != null) {
                     int[] size = schematic.getSize();
@@ -681,7 +681,7 @@ public class SchematicRendererController {
                     } /* else if (texture.getWidth() != texture.getHeight()) {
                         // This breaks the textures of signs, because those textures are not square, resulting in the rendered signs having the missing texture.
                         // For this reason, I am not using this code, even though the wiki mentions that this is how it works.
-                        // It mentions it here: https://minecraft.fandom.com/wiki/Resource_pack#Animation
+                        // It mentions it here: https://minecraft.wiki/w/Resource_pack#Animation
                         texture = Registries.getInstance().getTexture(MissingTexture.getLocation());
                     } */
 
