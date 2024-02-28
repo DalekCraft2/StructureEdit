@@ -306,7 +306,12 @@ public class SchematicRendererController {
                                     // modelMatrix.pushMatrix();
                                     Affine pushedMatrix = modelMatrix.clone();
                                     modelMatrix.appendTranslation(x, y, z);
-                                    drawModel(variant, tint, new int[]{x, y, z});
+                                    int[] position = {x, y, z};
+                                    if (variant.getModelLocation().equals(Constants.WATERLOGGED_BLOCK)) {
+                                        drawModel(variant, TintHelper.getWaterTint(biomeState), position);
+                                    } else {
+                                        drawModel(variant, tint, position);
+                                    }
                                     // modelMatrix.popMatrix();
                                     modelMatrix = pushedMatrix;
                                 }
@@ -394,7 +399,6 @@ public class SchematicRendererController {
         ResourceLocation namespacedId = blockState.getId();
         Map<String, String> properties = blockState.getProperties();
         if (properties.containsKey("waterlogged") && "true".equals(properties.get("waterlogged"))) {
-            // TODO Figure out how to get both the block tint and the water tint into drawModel().
             Variant waterModel = new Variant(Constants.WATERLOGGED_BLOCK, BlockModelRotation.X0_Y0, false, 1);
             modelList.add(waterModel);
         }

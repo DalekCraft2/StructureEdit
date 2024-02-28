@@ -87,31 +87,13 @@ public final class TintHelper {
                 }
             }
             case "minecraft:grass_block", "minecraft:grass", "minecraft:tall_grass", "minecraft:fern", "minecraft:large_fern", "minecraft:potted_fern", "minecraft:sugar_cane" -> {
-                ResourceLocation biomeId = biomeState.getId();
-                String biomeName = biomeId.getPath();
-                try {
-                    return GrassColor.valueOf(biomeName).getColor();
-                } catch (IllegalArgumentException e) {
-                    return GrassColor.OCEAN.getColor();
-                }
+                return getGrassTint(biomeState);
             }
             case "minecraft:oak_leaves", "minecraft:dark_oak_leaves", "minecraft:jungle_leaves", "minecraft:acacia_leaves", "minecraft:mangrove_leaves", "minecraft:vine" -> {
-                ResourceLocation biomeId = biomeState.getId();
-                String biomeName = biomeId.getPath();
-                try {
-                    return FoliageColor.valueOf(biomeName).getColor();
-                } catch (IllegalArgumentException e) {
-                    return FoliageColor.OCEAN.getColor();
-                }
+                return getFoliageTint(biomeState);
             }
             case "minecraft:water", "minecraft:water_cauldron" -> {
-                ResourceLocation biomeId = biomeState.getId();
-                String biomeName = biomeId.getPath();
-                try {
-                    return WaterColor.valueOf(biomeName).getColor();
-                } catch (IllegalArgumentException e) {
-                    return WaterColor.DEFAULT.getColor();
-                }
+                return getWaterTint(biomeState);
             }
             case "minecraft:birch_leaves" -> {
                 return Color.valueOf("#80A755");
@@ -125,6 +107,36 @@ public final class TintHelper {
             default -> {
                 return DEFAULT_TINT;
             }
+        }
+    }
+
+    public static Color getGrassTint(BiomeState biomeState) {
+        ResourceLocation biomeId = biomeState.getId();
+        String biomeName = biomeId.getPath();
+        try {
+            return GrassColor.valueOf(biomeName).getColor();
+        } catch (IllegalArgumentException e) {
+            return GrassColor.OCEAN.getColor();
+        }
+    }
+
+    public static Color getFoliageTint(BiomeState biomeState) {
+        ResourceLocation biomeId = biomeState.getId();
+        String biomeName = biomeId.getPath();
+        try {
+            return FoliageColor.valueOf(biomeName).getColor();
+        } catch (IllegalArgumentException e) {
+            return FoliageColor.OCEAN.getColor();
+        }
+    }
+
+    public static Color getWaterTint(BiomeState biomeState) {
+        ResourceLocation biomeId = biomeState.getId();
+        String biomeName = biomeId.getPath();
+        try {
+            return WaterColor.valueOf(biomeName).getColor();
+        } catch (IllegalArgumentException e) {
+            return WaterColor.DEFAULT.getColor();
         }
     }
 }
