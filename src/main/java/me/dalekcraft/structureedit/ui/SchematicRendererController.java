@@ -616,7 +616,6 @@ public class SchematicRendererController {
                     Timeline timeline = null;
                     AnimationMetadataSection animation = Registries.getInstance().getAnimationMetadataSection(model.getMaterial(faceTexture).texture());
                     if (animation != null && animation != AnimationMetadataSection.EMPTY) {
-                        // TODO Consider emptying out most of this conditional block because most of this code is done by the event handler later.
                         animate = true;
                         /* Because interpolation does not work right now and the old attempt at interpolation
                          would not work with the JavaFX animation system, I am keeping interpolation disabled for now.
@@ -672,6 +671,11 @@ public class SchematicRendererController {
                             long timeOfEndOfFrame = index2 * frameTime * TICK_LENGTH;
                             // The mix factor should be a value between 0.0f and 1.0f, representing the passage of time from the current frame to the next. 0.0f is the current frame, and 1.0f is the next frame.
                             mixFactor = (System.currentTimeMillis() % (timeOfEndOfFrame - timeOfStartOfFrame)) / ((timeOfEndOfFrame - timeOfStartOfFrame) * 1.0f);
+                            if (mixFactor < 0.0f) {
+                                mixFactor = 0.0f;
+                            } else if (mixFactor > 1.0f) {
+                                mixFactor = 1.0f;
+                            }
                         }
 
                         timeline = new Timeline(frameTime);
@@ -854,14 +858,19 @@ public class SchematicRendererController {
 
 
                     PhongMaterial material = new PhongMaterial(tint, texture, null, null, null);
+                    PhongMaterial material2 = new PhongMaterial(tint, texture, null, null, null);
 
-                    // FIXME Despite the mixFactor being the correct value now, the two texture frames do not change opacity at all and thus do not have interpolation.
                     MeshView meshView = new MeshView(mesh);
                     meshView.setCullFace(CullFace.BACK);
                     meshView.getTransforms().add(modelMatrix);
                     meshView.setMaterial(material);
                     if (interpolate) {
-                        meshView.setOpacity(1 - mixFactor);
+                        // setOpacity() does not work, so we have to change the opacity of the color of the material
+                        // FIXME Only one MeshView is visible at a time because the lack of a z-buffer causes one to always render over the other.
+                        // meshView.setOpacity(1 - mixFactor);
+                        Color color = material.getDiffuseColor();
+                        Color newColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 1 - mixFactor);
+                        material.setDiffuseColor(newColor);
                     }
                     world.getChildren().add(meshView);
 
@@ -869,8 +878,14 @@ public class SchematicRendererController {
                     if (interpolate) {
                         meshView2.setCullFace(CullFace.BACK);
                         meshView2.getTransforms().add(modelMatrix);
-                        meshView2.setMaterial(material);
-                        meshView2.setOpacity(mixFactor);
+                        // meshView2.setMaterial(material);
+                        meshView2.setMaterial(material2);
+                        // setOpacity() does not work, so we have to change the opacity of the color of the material;
+                        // this is also why we need a separate Material object for meshView2, so we can change their colors separately
+                        // meshView2.setOpacity(mixFactor);
+                        Color color = material2.getDiffuseColor();
+                        Color newColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), mixFactor);
+                        material2.setDiffuseColor(newColor);
                         world.getChildren().add(meshView2);
                     }
 
@@ -888,12 +903,20 @@ public class SchematicRendererController {
 
                     if (animate) {
                         Affine textureMatrixCopy = textureMatrix.clone();
+                        // I hate these variable names with "1" and "2_1" at the end of them.
+                        // I'll think of better ones eventually.
+                        boolean interpolate1 = interpolate;
 
                         InvalidationListener listener = observable -> {
                             float textureLeft1 = uv.uvs[0] / MODEL_SIZE;
                             float textureTop1 = uv.uvs[1] / MODEL_SIZE;
                             float textureRight1 = uv.uvs[2] / MODEL_SIZE;
                             float textureBottom1 = uv.uvs[3] / MODEL_SIZE;
+                            float textureLeft2_1 = textureLeft1;
+                            float textureTop2_1 = textureTop1;
+                            float textureRight2_1 = textureRight1;
+                            float textureBottom2_1 = textureBottom1;
+                            float mixFactor1 = 0.0f;
 
                             int width = animation.getFrameWidth((int) texture.getWidth());
                             int height = animation.getFrameHeight((int) texture.getWidth());
@@ -908,6 +931,13 @@ public class SchematicRendererController {
                             textureRight1 /= widthFactor;
                             textureBottom1 /= heightFactor;
 
+                            if (interpolate1) {
+                                textureLeft2_1 /= widthFactor;
+                                textureTop2_1 /= heightFactor;
+                                textureRight2_1 /= widthFactor;
+                                textureBottom2_1 /= heightFactor;
+                            }
+
                             List<AnimationFrame> frames = animation.frames;
                             if (frames.isEmpty()) {
                                 frames = new ArrayList<>();
@@ -921,9 +951,28 @@ public class SchematicRendererController {
                             AnimationFrame frame = frames.get(index);
                             double frameDouble = frame.getIndex();
 
+                            int index2 = frames.size() > index + 1 ? index + 1 : 0;
+                            AnimationFrame frame2 = frames.get(index2);
+                            double frameDouble2 = frame2.getIndex();
+
                             // Change to the current frame in the animation
                             textureTop1 += frameDouble / heightFactor;
                             textureBottom1 += frameDouble / heightFactor;
+
+                            textureTop2_1 += frameDouble2 / heightFactor;
+                            textureBottom2_1 += frameDouble2 / heightFactor;
+
+                            if (interpolate1) {
+                                long timeOfStartOfFrame = index * frameTime * TICK_LENGTH;
+                                long timeOfEndOfFrame = index2 * frameTime * TICK_LENGTH;
+                                // The mix factor should be a value between 0.0f and 1.0f, representing the passage of time from the current frame to the next. 0.0f is the current frame, and 1.0f is the next frame.
+                                mixFactor1 = (System.currentTimeMillis() % (timeOfEndOfFrame - timeOfStartOfFrame)) / ((timeOfEndOfFrame - timeOfStartOfFrame) * 1.0f);
+                                if (mixFactor1 < 0.0f) {
+                                    mixFactor1 = 0.0f;
+                                } else if (mixFactor1 > 1.0f) {
+                                    mixFactor1 = 1.0f;
+                                }
+                            }
 
                             for (int i = 0; i < faceRotation; i += 90) {
                                 float temp = textureLeft1;
@@ -931,6 +980,14 @@ public class SchematicRendererController {
                                 textureBottom1 = textureRight1;
                                 textureRight1 = SCALE - textureTop1;
                                 textureTop1 = temp;
+
+                                if (interpolate1) {
+                                    float temp2 = textureLeft2_1;
+                                    textureLeft2_1 = SCALE - textureBottom2_1;
+                                    textureBottom2_1 = textureRight2_1;
+                                    textureRight2_1 = SCALE - textureTop2_1;
+                                    textureTop2_1 = temp2;
+                                }
                             }
 
                             float[] texCoords1 = { //
@@ -944,6 +1001,32 @@ public class SchematicRendererController {
                             textureMatrixCopy.transform2DPoints(converted1, 0, destination1, 0, texCoords1.length / 2);
                             texCoords1 = Floats.toArray(Doubles.asList(destination1));
                             ((TriangleMesh) meshView.getMesh()).getTexCoords().setAll(texCoords1);
+
+                            if (interpolate1) {
+                                float[] texCoords2 = { //
+                                        textureLeft2_1, textureBottom2_1, //
+                                        textureRight2_1, textureBottom2_1, //
+                                        textureRight2_1, textureTop2_1, //
+                                        textureLeft2_1, textureTop2_1 //
+                                };
+                                double[] converted2 = Doubles.toArray(Floats.asList(texCoords2));
+                                double[] destination2 = new double[texCoords2.length];
+                                textureMatrix.transform2DPoints(converted2, 0, destination2, 0, texCoords2.length / 2);
+                                texCoords2 = Floats.toArray(Doubles.asList(destination2));
+                                ((TriangleMesh) meshView2.getMesh()).getTexCoords().setAll(texCoords2);
+
+                                // meshView.setOpacity(1 - mixFactor1);
+                                // meshView2.setOpacity(mixFactor1);
+
+                                // setOpacity() does not work, so we have to change the opacity of the color of the material
+                                Color color = material.getDiffuseColor();
+                                Color newColor = new Color(color.getRed(), color.getGreen(), color.getBlue(), 1 - mixFactor1);
+                                material.setDiffuseColor(newColor);
+
+                                Color color2 = material2.getDiffuseColor();
+                                Color newColor2 = new Color(color2.getRed(), color2.getGreen(), color2.getBlue(), mixFactor1);
+                                material2.setDiffuseColor(newColor2);
+                            }
                         };
                         tickProperty.addListener(listener);
                         tickPropertyListeners.add(listener);
