@@ -548,11 +548,13 @@ public class SchematicRendererController {
                     int faceRotation = uv.rotation;
                     int tintIndex = face.tintIndex;
 
-                    /* Disabled culling for now because the performance enhancement means we can afford not using it.
-                     Plus, it's kind of broken. I'll be reenabling it when I fix it. */
-                    /* if (cullface != null) {
-                        // TODO Make some blocks not cull, because some blocks, like stairs and fences, do not cull in-game
-                        cullface = Direction.rotate(rotationMatrix, cullface);
+                    if (cullface != null) {
+                        // rotationMatrix2 is the same as rotationMatrix, but with the rotation pivots set to be the origin.
+                        // This makes the Direction.rotate() call behave properly.
+                        Affine rotationMatrix2 = new Affine();
+                        rotationMatrix2.appendRotation(-y, Point3D.ZERO, Rotate.Y_AXIS);
+                        rotationMatrix2.appendRotation(-x, Point3D.ZERO, Rotate.X_AXIS);
+                        cullface = Direction.rotate(rotationMatrix2, cullface);
 
                         Block blockToCheck = null;
                         switch (cullface) {
@@ -567,7 +569,7 @@ public class SchematicRendererController {
                                 }
                             }
                             case UP -> {
-                                if (position[1] + 1 <  *//* schematic.getSize()[1] *//*  renderedHeight) {
+                                if (position[1] + 1 < /* schematic.getSize()[1] */ renderedHeight) {
                                     blockToCheck = schematic.getBlock(position[0], position[1] + 1, position[2]);
                                 }
                             }
@@ -593,7 +595,7 @@ public class SchematicRendererController {
                         if (shouldBeCulled) {
                             continue;
                         }
-                    } */
+                    }
 
                     if (tintIndex == -1) {
                         tint = TintHelper.DEFAULT_TINT;
