@@ -716,19 +716,19 @@ public class SchematicRendererController {
                         switch (faceName) {
                             case UP -> {
                                 if (x == 180) {
-                                    textureMatrix.appendRotation(y, new Point2D(0.5, 0.5));
-                                } else {
                                     textureMatrix.appendRotation(-y, new Point2D(0.5, 0.5));
+                                } else {
+                                    textureMatrix.appendRotation(y, new Point2D(0.5, 0.5));
                                 }
                             }
                             case DOWN -> {
                                 if (x == 180) {
-                                    textureMatrix.appendRotation(-y, new Point2D(0.5, 0.5));
-                                } else {
                                     textureMatrix.appendRotation(y, new Point2D(0.5, 0.5));
+                                } else {
+                                    textureMatrix.appendRotation(-y, new Point2D(0.5, 0.5));
                                 }
                             }
-                            default -> textureMatrix.appendRotation(-x, new Point2D(0.5, 0.5));
+                            default -> textureMatrix.appendRotation(x, new Point2D(0.5, 0.5));
                         }
                     }
 
