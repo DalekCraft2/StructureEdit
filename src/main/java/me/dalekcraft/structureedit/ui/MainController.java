@@ -190,9 +190,11 @@ public class MainController {
     }
 
     public void saveSchematic(File file, SchematicFormat format) {
+        // boolean fileExistedBefore = file.exists() && file.isFile();
         try {
             LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.schematic.saving"), file);
             if (format != null) {
+                // FIXME This creates a schematic file even if an UnsupportedOperationException is thrown.
                 try (SchematicWriter reader = format.getWriter(new FileOutputStream(file))) {
                     reader.write(schematic);
                 }
@@ -201,6 +203,12 @@ public class MainController {
             StructureEditApplication.stage.setTitle(String.format(Language.LANGUAGE.getString("ui.window.title_with_file"), file.getName()));
         } catch (IOException | UnsupportedOperationException e1) {
             LOGGER.log(Level.ERROR, Language.LANGUAGE.getString("log.schematic.error_writing"), e1.getMessage());
+            /* if (!fileExistedBefore && file.exists()) {
+                // If there was an UnsupportedOperationException, and the file didn't exist before but does exist now,
+                // delete the file. This is a workaround for the fact that creating a FileOutputStream also creates the
+                // specified file immediately, even if nothing is written to it.
+                file.delete();
+            } */
         }
     }
 
