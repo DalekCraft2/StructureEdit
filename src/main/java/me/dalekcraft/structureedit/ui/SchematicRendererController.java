@@ -469,6 +469,12 @@ public class SchematicRendererController {
         rotationMatrix.appendRotation(-y, new Point3D(0.5, 0.5, 0.5), Rotate.Y_AXIS);
         rotationMatrix.appendRotation(-x, new Point3D(0.5, 0.5, 0.5), Rotate.X_AXIS);
 
+        // rotationMatrix2 is the same as rotationMatrix, but with the rotation pivots set to be the origin.
+        // This makes the Direction.rotate() call behave properly when we perform the culling logic later.
+        Affine rotationMatrix2 = new Affine();
+        rotationMatrix2.appendRotation(-y, Point3D.ZERO, Rotate.Y_AXIS);
+        rotationMatrix2.appendRotation(-x, Point3D.ZERO, Rotate.X_AXIS);
+
         modelMatrix.append(rotationMatrix);
 
         List<BlockElement> elements = model.getElements();
@@ -549,11 +555,6 @@ public class SchematicRendererController {
                     int tintIndex = face.tintIndex;
 
                     if (cullface != null) {
-                        // rotationMatrix2 is the same as rotationMatrix, but with the rotation pivots set to be the origin.
-                        // This makes the Direction.rotate() call behave properly.
-                        Affine rotationMatrix2 = new Affine();
-                        rotationMatrix2.appendRotation(-y, Point3D.ZERO, Rotate.Y_AXIS);
-                        rotationMatrix2.appendRotation(-x, Point3D.ZERO, Rotate.X_AXIS);
                         cullface = Direction.rotate(rotationMatrix2, cullface);
 
                         Block blockToCheck = null;
