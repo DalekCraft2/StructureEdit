@@ -6,17 +6,17 @@
 
     <groupId>me.dalekcraft</groupId>
     <artifactId>structureedit</artifactId>
-    <version>2.3.1-SNAPSHOT</version>
+    <version>2.4.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>StructureEdit</name>
-    <description>A Java OpenGL application for viewing Minecraft schematic files</description>
+    <description>A JavaFX application for viewing Minecraft schematic files.</description>
     <url>https://github.com/DalekCraft2/StructureEdit</url>
     <inceptionYear>2015</inceptionYear>
     <licenses>
         <license>
             <name>GNU General Public License v3.0</name>
-            <url>https://github.com/DalekCraft2/StructureEdit/blob/main/LICENSE.txt</url>
+            <url>https://www.gnu.org/licenses/gpl-3.0.html</url>
             <distribution>repo</distribution>
         </license>
     </licenses>
@@ -44,70 +44,116 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>17</maven.compiler.source>
-        <maven.compiler.target>17</maven.compiler.target>
-        <mainClass>me.dalekcraft.structureedit.Main</mainClass>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+        <mainModule>me.dalekcraft.structureedit</mainModule>
+        <mainClass>me.dalekcraft.structureedit.Launcher</mainClass>
+        <vendor>DalekCraft</vendor>
 
-        <jogl.version>2.3.2</jogl.version>
+        <exeName>${project.name}.exe</exeName>
+        <jarName>${project.build.finalName}.jar</jarName>
+
+        <libPrefix>lib</libPrefix>
+        <libDirectory>${project.build.directory}/${libPrefix}</libDirectory>
+
+        <javafx.version>21.0.6-ea+2</javafx.version>
     </properties>
 
     <!-- TODO Add JUnit tests. -->
     <dependencies>
+        <!-- JavaFX -->
         <dependency>
-            <!-- GlueGen Runtime -->
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
-            <version>${jogl.version}</version>
+            <!-- JavaFX Controls -->
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <!-- GlueGen Runtime Natives -->
-            <groupId>org.jogamp.gluegen</groupId>
-            <artifactId>gluegen-rt</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>${jogl.natives}</classifier>
+            <!-- JavaFX FXML -->
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-fxml</artifactId>
+            <version>${javafx.version}</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <!-- JOGL -->
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
-            <version>${jogl.version}</version>
+            <!-- RichTextFX -->
+            <groupId>org.fxmisc.richtext</groupId>
+            <artifactId>richtextfx</artifactId>
+            <version>0.11.4</version>
             <scope>compile</scope>
             <optional>true</optional>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-base</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.openjfx</groupId>
+                    <artifactId>javafx-graphics</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
-        <dependency>
-            <!-- JOGL Natives -->
-            <groupId>org.jogamp.jogl</groupId>
-            <artifactId>jogl-all</artifactId>
-            <version>${jogl.version}</version>
-            <classifier>${jogl.natives}</classifier>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
+
         <dependency>
             <!-- JOML -->
             <groupId>org.joml</groupId>
             <artifactId>joml</artifactId>
-            <version>1.10.2</version>
+            <version>1.10.8</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- JSON -->
+        <dependency>
+            <!-- Gson -->
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.11.0</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Logging -->
+        <dependency>
+            <!-- Apache Log4j Core -->
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.24.3</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <!-- JSON in Java -->
-            <groupId>org.json</groupId>
-            <artifactId>json</artifactId>
-            <version>20210307</version>
+            <!-- Jansi -->
+            <groupId>org.fusesource.jansi</groupId>
+            <artifactId>jansi</artifactId>
+            <version>2.4.1</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- Other -->
+        <!-- <dependency>
+            &lt;!&ndash; Apache Commons Configuration &ndash;&gt;
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-configuration2</artifactId>
+            <version>2.11.0</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency> -->
+        <dependency>
+            <groupId>com.mojang</groupId>
+            <artifactId>datafixerupper</artifactId>
+            <version>4.0.26</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
         <dependency>
-            <!-- everit-org/json-schema -->
-            <groupId>com.github.everit-org.json-schema</groupId>
-            <artifactId>org.everit.json.schema</artifactId>
-            <version>1.14.0</version>
+            <groupId>com.mojang</groupId>
+            <artifactId>brigadier</artifactId>
+            <version>1.0.18</version>
             <scope>compile</scope>
             <optional>true</optional>
         </dependency>
@@ -120,75 +166,75 @@
             <optional>true</optional>
         </dependency>
         <dependency>
+            <!-- Google Guava -->
+            <groupId>com.google.guava</groupId>
+            <artifactId>guava</artifactId>
+            <version>33.4.0-jre</version>
+            <scope>compile</scope>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <!-- JetBrains Java Annotations -->
             <groupId>org.jetbrains</groupId>
             <artifactId>annotations</artifactId>
-            <version>22.0.0</version>
+            <version>26.0.1</version>
             <scope>compile</scope>
             <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- Apache Log4j Core -->
-            <groupId>org.apache.logging.log4j</groupId>
-            <artifactId>log4j-core</artifactId>
-            <version>2.14.1</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- Jansi -->
-            <groupId>org.fusesource.jansi</groupId>
-            <artifactId>jansi</artifactId>
-            <version>2.4.0</version>
-            <scope>compile</scope>
-            <optional>true</optional>
-        </dependency>
-        <dependency>
-            <!-- JetBrains GUI Forms Runtime -->
-            <groupId>com.jetbrains.intellij.java</groupId>
-            <artifactId>java-gui-forms-rt</artifactId>
-            <version>212.5457.59</version>
-            <scope>runtime</scope>
         </dependency>
     </dependencies>
 
     <repositories>
         <repository>
+            <id>apache.snapshots</id>
+            <name>Apache Development Snapshot Repository</name>
+            <url>https://repository.apache.org/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+        <!-- <repository>
+            <id>sonatype.snapshots</id>
+            <name>Sonatype Snapshot Repository</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository> -->
+        <repository>
             <!-- Querz/NBT, everit-org/json-schema -->
-            <name>Jitpack</name>
             <id>jitpack.io</id>
+            <name>Jitpack</name>
             <url>https://jitpack.io</url>
         </repository>
         <repository>
-            <!-- JetBrains GUI Forms Runtime -->
-            <name>IntelliJ Releases</name>
-            <id>intellij-repository</id>
-            <url>https://www.jetbrains.com/intellij-repository/releases</url>
+            <id>enginehub-repo</id>
+            <name>EngineHub</name>
+            <url>https://maven.enginehub.org/repo/</url>
+        </repository>
+        <repository>
+            <id>minecraft-libraries</id>
+            <name>Minecraft Libraries</name>
+            <url>https://libraries.minecraft.net</url>
+        </repository>
+        <repository>
+            <id>jzy3d-snapshots</id>
+            <name>Jzy3d Snapshots</name>
+            <url>https://maven.jzy3d.org/snapshots/</url>
+        </repository>
+        <repository>
+            <id>jzy3d-releases</id>
+            <name>Jzy3d Releases</name>
+            <url>https://maven.jzy3d.org/releases/</url>
         </repository>
     </repositories>
-    <pluginRepositories>
-        <pluginRepository>
-            <!-- Apache Maven Shade Plugin -->
-            <name>Apache Snapshots</name>
-            <id>apache-snapshots</id>
-            <url>https://repository.apache.org/snapshots/</url>
-        </pluginRepository>
-        <pluginRepository>
-            <!-- JetBrains GUI Forms Compiler -->
-            <name>IntelliJ Releases</name>
-            <id>intellij-repository</id>
-            <url>https://www.jetbrains.com/intellij-repository/releases</url>
-        </pluginRepository>
-        <pluginRepository>
-            <!-- JetBrains GUI Forms Compiler dependencies -->
-            <name>IntelliJ Third-Party</name>
-            <id>intellij-third-party</id>
-            <url>https://cache-redirector.jetbrains.com/intellij-dependencies</url>
-        </pluginRepository>
-    </pluginRepositories>
 
     <build>
-        <finalName>${project.name}</finalName>
         <defaultGoal>clean package</defaultGoal>
         <resources>
             <resource>
@@ -198,13 +244,20 @@
                     <include>**/*</include>
                 </includes>
             </resource>
+            <resource>
+                <directory>${project.basedir}</directory>
+                <filtering>false</filtering>
+                <includes>
+                    <include>LICENSE.txt</include>
+                </includes>
+            </resource>
         </resources>
         <plugins>
             <plugin>
                 <!-- Compile -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.13.0</version>
                 <configuration>
                     <source>${maven.compiler.source}</source>
                     <target>${maven.compiler.target}</target>
@@ -214,7 +267,7 @@
                 <!-- Attach sources -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
+                <version>3.3.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>
@@ -228,7 +281,7 @@
                 <!-- Attach Javadocs -->
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.3.1</version>
+                <version>3.11.2</version>
                 <executions>
                     <execution>
                         <id>attach-javadocs</id>
@@ -239,70 +292,29 @@
                 </executions>
             </plugin>
             <plugin>
-                <!-- Generate Swing GUI -->
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>ideauidesigner-maven-plugin</artifactId>
-                <version>1.0-beta-1</version>
-                <dependencies>
-                    <dependency>
-                        <groupId>com.jetbrains.intellij.java</groupId>
-                        <artifactId>java-compiler-ant-tasks</artifactId>
-                        <version>212.5457.59</version>
-                    </dependency>
-                </dependencies>
-                <executions>
-                    <execution>
-                        <goals>
-                            <goal>javac2</goal>
-                        </goals>
-                    </execution>
-                </executions>
+                <groupId>org.openjfx</groupId>
+                <artifactId>javafx-maven-plugin</artifactId>
+                <version>0.0.8</version>
                 <configuration>
-                    <fork>true</fork>
-                    <debug>true</debug>
-                    <failOnError>true</failOnError>
+                    <mainClass>${mainModule}/${mainClass}</mainClass>
                 </configuration>
             </plugin>
             <plugin>
-                <!-- Set the main class -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.2.0</version>
+                <!-- GraalVM must be installed for this to work. -->
+                <!-- It works with the GRAALVM_HOME environment variable set to the installation directory. -->
+                <!-- This has to be run from the x64 Native Tools Command Prompt for Visual Studio. -->
+                <groupId>com.gluonhq</groupId>
+                <artifactId>gluonfx-maven-plugin</artifactId>
+                <version>1.0.24</version>
                 <configuration>
-                    <archive>
-                        <manifest>
-                            <addClasspath>true</addClasspath>
-                            <classpathPrefix>lib/</classpathPrefix>
-                            <mainClass>${mainClass}</mainClass>
-                        </manifest>
-                    </archive>
+                    <mainClass>${mainModule}/${mainClass}</mainClass>
                 </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-dependency-plugin</artifactId>
-                <version>3.2.0</version>
-                <executions>
-                    <execution>
-                        <id>copy-dependencies</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>copy-dependencies</goal>
-                        </goals>
-                        <configuration>
-                            <outputDirectory>${project.build.directory}/lib</outputDirectory>
-                            <overWriteReleases>false</overWriteReleases>
-                            <overWriteSnapshots>false</overWriteSnapshots>
-                            <overWriteIfNewer>true</overWriteIfNewer>
-                        </configuration>
-                    </execution>
-                </executions>
             </plugin>
             <plugin>
                 <!-- Parse version components and create properties for them -->
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>3.6.0</version>
                 <executions>
                     <execution>
                         <id>parse-version</id>
@@ -312,171 +324,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <plugin>
-                <!-- Create an .exe file to run the application -->
-                <groupId>com.akathist.maven.plugins.launch4j</groupId>
-                <artifactId>launch4j-maven-plugin</artifactId>
-                <version>2.1.2</version>
-                <executions>
-                    <execution>
-                        <id>l4j-clui</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>launch4j</goal>
-                        </goals>
-                        <configuration>
-                            <headerType>console</headerType>
-                            <outfile>${project.build.directory}/${project.build.finalName}.exe</outfile>
-                            <jar>${project.build.finalName}.jar</jar>
-                            <dontWrapJar>true</dontWrapJar>
-                            <downloadUrl>http://java.com/download</downloadUrl>
-                            <supportUrl>${project.ciManagement.url}</supportUrl>
-                            <chdir>.</chdir>
-                            <icon>${project.basedir}/src/main/resources/icon.ico</icon>
-                            <classPath>
-                                <mainClass>${mainClass}</mainClass>
-                                <addDependencies>true</addDependencies>
-                                <jarLocation>lib/</jarLocation>
-                            </classPath>
-                            <jre>
-                                <path>%JAVA_HOME%</path>
-                                <jdkPreference>preferJdk</jdkPreference>
-                            </jre>
-                            <versionInfo>
-                                <!--suppress UnresolvedMavenProperty -->
-                                <fileVersion>
-                                    ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}
-                                </fileVersion>
-                                <txtFileVersion>${project.version}</txtFileVersion>
-                                <fileDescription>${project.name}</fileDescription>
-                                <copyright>DalekCraft</copyright>
-                                <!--suppress UnresolvedMavenProperty -->
-                                <productVersion>
-                                    ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}
-                                </productVersion>
-                                <txtProductVersion>${project.version}</txtProductVersion>
-                                <productName>${project.name}</productName>
-                                <internalName>${project.artifactId}</internalName>
-                                <originalFilename>${project.build.finalName}.exe</originalFilename>
-                            </versionInfo>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
-            <plugin>
-                <!-- Bundle everything into a .zip file -->
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.3.0</version>
-                <executions>
-                    <execution>
-                        <id>assembly</id>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                        <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>${mainClass}</mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptors>
-                                <descriptor>assembly.xml</descriptor>
-                            </descriptors>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
-
-    <profiles>
-        <!-- Determine which OS is being used, and download the correct natives for JOGL -->
-        <!-- TODO Ensure that these all work and are not mismatched. Difficult, because I only have a Windows computer. -->
-        <profile>
-            <id>jogl-natives-linux-amd64</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>amd64</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-linux-amd64</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-linux-aarch64</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>aarch64</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-linux-arm64</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-linux-arm</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>arm</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-linux-armv6</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-linux-arm32</id>
-            <activation>
-                <os>
-                    <family>unix</family>
-                    <arch>arm32</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-linux-armv6</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-macosx-universal</id>
-            <activation>
-                <os>
-                    <family>mac</family>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-macosx-universal</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-windows-amd64</id>
-            <activation>
-                <os>
-                    <family>windows</family>
-                    <arch>amd64</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-windows-amd64</jogl.natives>
-            </properties>
-        </profile>
-        <profile>
-            <id>jogl-natives-windows-x86</id>
-            <activation>
-                <os>
-                    <name>linux</name>
-                    <family>windows</family>
-                    <arch>x86</arch>
-                </os>
-            </activation>
-            <properties>
-                <jogl.natives>natives-windows-i586</jogl.natives>
-            </properties>
-        </profile>
-    </profiles>
 </project>

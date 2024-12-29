@@ -1,13 +1,9 @@
 package me.dalekcraft.structureedit.util;
 
-import me.dalekcraft.structureedit.Main;
-import me.dalekcraft.structureedit.ui.UserInterface;
-import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.Contract;
 
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -17,52 +13,50 @@ import java.util.Properties;
 // TODO Add more configuration.
 public final class Configuration {
 
-    public static final Properties LANGUAGE = new Properties();
-    private static final Logger LOGGER = LogManager.getLogger(UserInterface.class);
+    private static final Logger LOGGER;
+    private static final Path CONFIG_DIRECTORY = ConfigPaths.getConfigFilePath("DalekCraft" + File.separator + "StructureEdit");
+    private static final Path CONFIG_FILE = CONFIG_DIRECTORY.resolve("config.properties");
     public static final Properties CONFIG = new Properties() {
         @Override
         public synchronized Object setProperty(String key, String value) {
             Object o = super.setProperty(key, value);
-            String protocol = Configuration.class.getClassLoader().getResource("").getProtocol();
-            if (protocol.equals("jar")) {
-                try (FileOutputStream fileOutputStream = new FileOutputStream("config.properties")) {
-                    store(fileOutputStream, null);
-                } catch (IOException e) {
-                    LOGGER.log(Level.ERROR, e.getMessage());
-                }
+            try {
+                store(Files.newOutputStream(CONFIG_FILE), null);
+            } catch (IOException e) {
+                LOGGER.catching(e);
             }
             return o;
         }
     };
+    private static final Path LOG_DIRECTORY = CONFIG_DIRECTORY.resolve("logs");
+    public static final Path LOG_LATEST_FILE = LOG_DIRECTORY.resolve("StructureEdit-latest.log");
+    public static final Path LOG_FILE = LOG_DIRECTORY.resolve("StructureEdit-%d{yyyy-MM-dd}-%i.log.gz");
+
 
     static {
+        // Set the log output file locations
+        System.setProperty("LOG_LATEST_FILE", LOG_LATEST_FILE.toString());
+        System.setProperty("LOG_FILE", LOG_FILE.toString());
+
+        LOGGER = LogManager.getLogger();
+
         try {
-            String protocol = Configuration.class.getClassLoader().getResource("").getProtocol();
-            if (protocol.equals("jar")) {
-                Path configPath = Path.of("config.properties");
-                if (!Files.exists(configPath)) {
-                    InputStream configStream = Configuration.class.getClassLoader().getResourceAsStream("config.properties");
-                    try {
-                        Files.copy(configStream, configPath);
-                    } catch (IOException e) {
-                        LOGGER.log(Level.ERROR, e.getMessage());
-                    }
+            if (!Files.exists(CONFIG_DIRECTORY)) {
+                InputStream configStream = Configuration.class.getResourceAsStream("/" + CONFIG_FILE.getFileName());
+                try {
+                    assert configStream != null;
+                    Files.createDirectories(CONFIG_FILE.getParent());
+                    Files.copy(configStream, CONFIG_FILE);
+                } catch (IOException e) {
+                    LOGGER.catching(e);
                 }
-                CONFIG.load(Files.newInputStream(configPath));
-            } else {
-                CONFIG.load(Configuration.class.getClassLoader().getResourceAsStream("config.properties"));
             }
+            CONFIG.load(Files.newInputStream(CONFIG_FILE));
         } catch (IOException e) {
-            LOGGER.log(Level.ERROR, e.getMessage());
-        }
-        try {
-            LANGUAGE.load(Configuration.class.getClassLoader().getResourceAsStream("language.properties"));
-        } catch (IOException e) {
-            LOGGER.log(Level.ERROR, e.getMessage());
+            LOGGER.catching(e);
         }
     }
 
-    @Contract(value = " -> fail", pure = true)
     private Configuration() {
         throw new UnsupportedOperationException();
     }

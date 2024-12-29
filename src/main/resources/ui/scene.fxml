@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.Tab?>
+<?import javafx.scene.control.TabPane?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import org.fxmisc.richtext.InlineCssTextArea?>
+
+<GridPane prefHeight="600.0" prefWidth="1024.0" xmlns="http://javafx.com/javafx/19" xmlns:fx="http://javafx.com/fxml/1" fx:controller="me.dalekcraft.structureedit.ui.MainController">
+  <columnConstraints>
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <MenuBar>
+        <menus>
+          <Menu mnemonicParsing="false" text="%ui.menu_bar.file_menu">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#showOpenDialog" text="%ui.menu_bar.file_menu.open" />
+                  <MenuItem mnemonicParsing="false" onAction="#showSaveDialog" text="%ui.menu_bar.file_menu.save" />
+            </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="%ui.menu_bar.settings_menu">
+               <items>
+                  <MenuItem mnemonicParsing="false" onAction="#showAssetsChooser" text="%ui.menu_bar.settings_menu.assets_path" />
+                  <MenuItem mnemonicParsing="false" onAction="#selectLogLevel" text="%ui.menu_bar.settings_menu.log_level" />
+               </items>
+          </Menu>
+          <Menu mnemonicParsing="false" text="%ui.menu_bar.help_menu">
+            <items>
+              <MenuItem mnemonicParsing="false" onAction="#showControlsDialog" text="%ui.menu_bar.help_menu.controls" />
+            </items>
+          </Menu>
+        </menus>
+      </MenuBar>
+      <SplitPane dividerPositions="0.7" maxHeight="1.7976931348623157E308" maxWidth="1.7976931348623157E308" orientation="VERTICAL" GridPane.rowIndex="1">
+        <items>
+            <SplitPane dividerPositions="0.75">
+              <items>
+                  <fx:include fx:id="renderer" source="schematic_renderer.fxml" />
+                  <TabPane side="RIGHT" SplitPane.resizableWithParent="false">
+                     <tabs>
+                        <Tab closable="false" text="%ui.editor.schematic">
+                           <content>
+                              <fx:include fx:id="schematicInfo" source="schematic_info.fxml" />
+                           </content>
+                        </Tab>
+                        <Tab closable="false" text="%ui.editor.block">
+                           <content>
+                              <fx:include fx:id="blockEditor" source="block_editor.fxml" />
+                           </content>
+                        </Tab>
+                        <Tab closable="false" text="%ui.editor.blockstate">
+                           <content>
+                              <fx:include fx:id="blockStateEditor" source="block_state_editor.fxml" />
+                           </content>
+                        </Tab>
+                        <Tab closable="false" text="%ui.editor.entity">
+                           <content>
+                              <fx:include fx:id="entityEditor" source="entity_editor.fxml" />
+                           </content>
+                        </Tab>
+                        <Tab closable="false" text="%ui.editor.biome">
+                           <content>
+                              <fx:include fx:id="biomeEditor" source="biome_editor.fxml" />
+                           </content>
+                        </Tab>
+                        <Tab closable="false" text="%ui.editor.biomestate">
+                           <content>
+                              <fx:include fx:id="biomeStateEditor" source="biome_state_editor.fxml" />
+                           </content>
+                        </Tab>
+                     </tabs>
+                  </TabPane>
+              </items>
+            </SplitPane>
+            <TabPane side="BOTTOM" SplitPane.resizableWithParent="false">
+              <tabs>
+                <Tab closable="false" text="%ui.tabbed_pane.log">
+                     <content>
+                        <InlineCssTextArea fx:id="logArea" editable="false" style="-fx-background-color: BLACK;" wrapText="true" />
+                     </content>
+                  </Tab>
+              </tabs>
+            </TabPane>
+        </items>
+      </SplitPane>
+   </children>
+</GridPane>

@@ -1,0 +1,48 @@
+{
+	"credit": "Made by DalekCraft",
+	"texture_size": [64, 32],
+	"elements": [
+		{
+			"name": "board",
+			"from": [0, 9.33333, 7.33333],
+			"to": [16, 17.33333, 8.66667],
+			"rotation": {"angle": -22.5, "axis": "y", "origin": [8, 5.33333, 8]},
+			"faces": {
+				"north": {"uv": [0.5, 1, 6.5, 7], "texture": "#0"},
+				"east": {"uv": [0, 1, 0.5, 7], "texture": "#0"},
+				"south": {"uv": [7, 1, 13, 7], "texture": "#0"},
+				"west": {"uv": [6.5, 1, 7, 7], "texture": "#0"},
+				"up": {"uv": [6.5, 1, 0.5, 0], "texture": "#0"},
+				"down": {"uv": [12.5, 0, 6.5, 1], "texture": "#0"}
+			}
+		},
+		{
+			"name": "stick",
+			"from": [7.33333, 0, 7.33333],
+			"to": [8.66667, 9.33333, 8.66667],
+			"rotation": {"angle": -22.5, "axis": "y", "origin": [8, 5.33333, 8]},
+			"faces": {
+				"north": {"uv": [0.5, 8, 1, 15], "texture": "#0"},
+				"east": {"uv": [0, 8, 0.5, 15], "texture": "#0"},
+				"south": {"uv": [1.5, 8, 2, 15], "texture": "#0"},
+				"west": {"uv": [1, 8, 1.5, 15], "texture": "#0"},
+				"up": {"uv": [1, 8, 0.5, 7], "texture": "#0"},
+				"down": {"uv": [1.5, 7, 1, 8], "texture": "#0"}
+			}
+		}
+	],
+	"groups": [
+		{
+			"name": "board",
+			"origin": [0, 12, 0],
+			"color": 0,
+			"children": [0]
+		},
+		{
+			"name": "stick",
+			"origin": [0, 12, 0],
+			"color": 0,
+			"children": [1]
+		}
+	]
+}

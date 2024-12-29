@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2021 eccentric_nz
+ * Copyright (C) 2015 eccentric_nz
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -16,24 +16,31 @@
  */
 package me.dalekcraft.structureedit.ui;
 
-import me.dalekcraft.structureedit.schematic.Schematic;
-import org.jetbrains.annotations.Contract;
-
-import javax.swing.*;
+import javafx.scene.control.Button;
+import me.dalekcraft.structureedit.schematic.container.Block;
 
 /**
  * @author eccentric_nz
  */
-public class BlockButton extends JButton {
+public class BlockButton extends Button {
 
-    private final Schematic.Block block;
+    private final Block block;
+    private final int[] position;
 
-    public BlockButton(Schematic.Block block) {
-        this.block = block;
+    public BlockButton(Block block, int[] position) {
+        this(block, position[0], position[1], position[2]);
     }
 
-    @Contract(pure = true)
-    public Schematic.Block getBlock() {
+    public BlockButton(Block block, int x, int y, int z) {
+        this.block = block;
+        position = new int[]{x, y, z};
+    }
+
+    public Block getBlock() {
         return block;
+    }
+
+    public int[] getPosition() {
+        return position;
     }
 }
