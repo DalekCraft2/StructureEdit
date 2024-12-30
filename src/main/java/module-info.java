@@ -7,6 +7,7 @@ module me.dalekcraft.structureedit {
     requires NBT;
     requires org.jetbrains.annotations;
     requires org.joml;
+    requires org.apache.commons.lang3;
     requires org.apache.logging.log4j;
     requires org.apache.logging.log4j.core;
     requires org.fusesource.jansi;
@@ -14,8 +15,6 @@ module me.dalekcraft.structureedit {
 
     requires datafixerupper;
     requires brigadier;
-    requires commons.lang3;
-    // requires org.apache.commons.lang3; // This is for a newer version of commons-lang3, which is provided with commons-configuration2, which I might use
 
     exports me.dalekcraft.structureedit;
     opens me.dalekcraft.structureedit to javafx.controls, javafx.fxml;

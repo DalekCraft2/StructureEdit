@@ -116,7 +116,7 @@ public enum Direction {
     }
 
     private static DataResult<Direction> verifyVertical(Direction direction) {
-        return direction.getAxis().isVertical() ? DataResult.success(direction) : DataResult.error((String) "Expected a vertical direction");
+        return direction.getAxis().isVertical() ? DataResult.success(direction) : DataResult.error(() -> "Expected a vertical direction");
     }
 
     public static Direction get(AxisDirection axisDirection, Axis axis) {
