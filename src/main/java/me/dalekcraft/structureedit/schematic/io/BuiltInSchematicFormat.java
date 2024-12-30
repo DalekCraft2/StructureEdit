@@ -339,7 +339,7 @@ public enum BuiltInSchematicFormat implements SchematicFormat {
         public boolean isFormat(File file) {
             try (NBTInputStream nbtInputStream = new NBTInputStream(new GZIPInputStream(new FileInputStream(file)))) {
                 NamedTag rootTag = nbtInputStream.readTag(Tag.DEFAULT_MAX_DEPTH);
-                if (!rootTag.getName().equals("")) {
+                if (!rootTag.getName().isEmpty()) {
                     return false;
                 }
                 CompoundTag schematic = (CompoundTag) rootTag.getTag();

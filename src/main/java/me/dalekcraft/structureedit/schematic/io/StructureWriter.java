@@ -55,7 +55,7 @@ public class StructureWriter extends NbtSchematicWriter {
             root.put("palettes", palettesTag);
         } else {
             ListTag<CompoundTag> paletteTag = new ListTag<>(CompoundTag.class);
-            for (BlockState blockState : palettes.get(0)) {
+            for (BlockState blockState : palettes.getFirst()) {
                 CompoundTag blockStateTag = new CompoundTag();
 
                 blockStateTag.putString("Name", blockState.getId().toString());

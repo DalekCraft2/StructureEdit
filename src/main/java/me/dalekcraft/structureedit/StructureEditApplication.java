@@ -101,7 +101,7 @@ public class StructureEditApplication extends Application {
             assetsArg = Configuration.CONFIG.getProperty("assets_path");
         }
         Path assets = null;
-        if (assetsArg != null && !assetsArg.equals("")) {
+        if (assetsArg != null && !assetsArg.isEmpty()) {
             try {
                 assets = Path.of(assetsArg).toRealPath();
                 if (!Files.exists(assets)) {
@@ -117,7 +117,7 @@ public class StructureEditApplication extends Application {
 
         String path = null;
         if (protocol.equals("jar") && !raw.isEmpty()) {
-            path = raw.get(raw.size() - 1);
+            path = raw.getLast();
         } else if (protocol.equals("file")) {
             path = named.get("path");
         }

@@ -18,7 +18,7 @@ public class SpongeSchematicWriter extends NbtSchematicWriter {
 
     private final NBTOutputStream outputStream;
 
-    private int schematicVersion = -1;
+    // private int schematicVersion = -1;
 
     public SpongeSchematicWriter(NBTOutputStream outputStream) {
         this.outputStream = Objects.requireNonNull(outputStream);

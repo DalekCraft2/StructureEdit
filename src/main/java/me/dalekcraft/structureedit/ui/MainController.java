@@ -77,9 +77,9 @@ public class MainController {
     {
         schematicChooser.getExtensionFilters().addAll(SchematicFormats.getFileExtensionFilterMap().keySet());
         schematicChooser.getExtensionFilters().sort(Comparator.comparing(FileChooser.ExtensionFilter::getDescription));
-        schematicChooser.getExtensionFilters().add(0, FILTER_ALL);
+        schematicChooser.getExtensionFilters().addFirst(FILTER_ALL);
         Path assets = Registries.getInstance().getPath();
-        if (assets != null && !"".equals(assets.toString())) {
+        if (assets != null && !assets.toString().isEmpty()) {
             assetsChooser.setInitialDirectory(assets.toFile());
         }
     }
@@ -182,7 +182,7 @@ public class MainController {
                 SchematicFormat format = SchematicFormats.getFileExtensionFilterMap().get(filter);
                 saveSchematic(file, format);
             }
-            schematicChooser.getExtensionFilters().add(0, FILTER_ALL);
+            schematicChooser.getExtensionFilters().addFirst(FILTER_ALL);
             rendererController.resume();
         } else {
             LOGGER.log(Level.ERROR, Language.LANGUAGE.getString("log.schematic.not_loaded"));

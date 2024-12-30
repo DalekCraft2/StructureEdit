@@ -42,7 +42,7 @@ public class BlockElement {
         return switch (direction) {
             case DOWN -> new float[]{from.x(), 16.0f - to.z(), to.x(), 16.0f - from.z()};
             case UP -> new float[]{from.x(), from.z(), to.x(), to.z()};
-            default -> new float[]{16.0f - to.x(), 16.0f - to.y(), 16.0f - from.x(), 16.0f - from.y()};
+            default -> new float[]{16.0f - to.x(), 16.0f - to.y(), 16.0f - from.x(), 16.0f - from.y()}; // NORTH
             case SOUTH -> new float[]{from.x(), 16.0f - to.y(), to.x(), 16.0f - from.y()};
             case WEST -> new float[]{from.z(), 16.0f - to.y(), to.z(), 16.0f - from.y()};
             case EAST -> new float[]{16.0f - to.z(), 16.0f - to.y(), 16.0f - from.z(), 16.0f - from.y()};

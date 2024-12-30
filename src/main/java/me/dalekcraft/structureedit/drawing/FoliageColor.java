@@ -5,7 +5,7 @@ import javafx.scene.paint.Color;
 /**
  * Colors used for tinting foliage in different biomes.
  *
- * @see <a href="https://minecraft.wiki/w/Block_colors">Foliage Colors</a>
+ * @see <a href="https://minecraft.wiki/w/Block_colors#Foliage_colors">Foliage Colors</a>
  */
 @SuppressWarnings("unused")
 public enum FoliageColor {

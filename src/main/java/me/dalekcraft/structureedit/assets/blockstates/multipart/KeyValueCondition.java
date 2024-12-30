@@ -20,7 +20,6 @@ public class KeyValueCondition implements Condition {
 
     @Override
     public Predicate<BlockState> getPredicate(BlockState blockState) {
-        String key = this.key;
         String value = this.value;
         boolean negated = !value.isEmpty() && value.charAt(0) == '!';
         if (negated) {

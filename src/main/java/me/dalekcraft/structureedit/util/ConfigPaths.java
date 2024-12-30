@@ -20,7 +20,7 @@ public final class ConfigPaths {
     }
 
     public static Path getConfigFilePath(String name) {
-        String fileName = OperatingSystem.getOperatingSystem() == OperatingSystem.LINUX ? String.format("%src", name) : String.format("%s", name);
+        String fileName = String.format(OperatingSystem.getOperatingSystem() == OperatingSystem.LINUX ? "%src" : "%s", name);
         return getConfigPathRoot().resolve(fileName);
     }
 
