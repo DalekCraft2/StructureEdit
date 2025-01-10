@@ -2,7 +2,7 @@ package me.dalekcraft.structureedit.schematic.io;
 
 import me.dalekcraft.structureedit.assets.ResourceLocation;
 import me.dalekcraft.structureedit.schematic.container.*;
-import me.dalekcraft.structureedit.schematic.io.legacycompat.LegacyMapper;
+import me.dalekcraft.structureedit.blockdata.LegacyMapper;
 import me.dalekcraft.structureedit.util.Constants;
 import net.querz.nbt.io.NBTInputStream;
 import net.querz.nbt.tag.*;

@@ -17,7 +17,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package me.dalekcraft.structureedit.schematic.io.legacycompat;
+package me.dalekcraft.structureedit.blockdata;
 
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
@@ -59,7 +59,7 @@ public final class LegacyMapper {
         try {
             loadFromResource();
         } catch (Throwable e) {
-            LOGGER.warn("Failed to load the built-in legacy id registry", e);
+            LOGGER.warn("Failed to load the built-in legacy ID registry", e);
         }
     }
 
@@ -77,14 +77,13 @@ public final class LegacyMapper {
      */
     private void loadFromResource() throws IOException {
         GsonBuilder gsonBuilder = new GsonBuilder();
-        // gsonBuilder.registerTypeAdapter(Vector3.class, new VectorAdapter());
         Gson gson = gsonBuilder.disableHtmlEscaping().create();
         URL url = getClass().getResource("/legacy.json");
         if (url == null) {
             throw new IOException("Could not find legacy.json");
         }
         String data = Resources.toString(url, Charset.defaultCharset());
-        LegacyDataFile dataFile = gson.fromJson(data, TypeToken.get(LegacyDataFile.class).getType());
+        LegacyDataFile dataFile = gson.fromJson(data, TypeToken.get(LegacyDataFile.class));
 
         for (Map.Entry<String, String> blockEntry : dataFile.blocks.entrySet()) {
             String id = blockEntry.getKey();

@@ -35,6 +35,8 @@ import me.dalekcraft.structureedit.assets.blockstates.multipart.Selector;
 import me.dalekcraft.structureedit.assets.models.*;
 import me.dalekcraft.structureedit.assets.textures.metadata.AnimationFrame;
 import me.dalekcraft.structureedit.assets.textures.metadata.AnimationMetadataSection;
+import me.dalekcraft.structureedit.blockdata.BlockData;
+import me.dalekcraft.structureedit.blockdata.BlockMaterial;
 import me.dalekcraft.structureedit.schematic.container.*;
 import me.dalekcraft.structureedit.ui.editor.BlockStateEditorController;
 import me.dalekcraft.structureedit.util.Constants;
@@ -591,10 +593,20 @@ public class SchematicRendererController {
                             }
                         }
                         ResourceLocation resourceLocation = blockToCheck == null ? null : schematic.getBlockPalette(blockStateEditorController.getPaletteIndex()).get(blockToCheck.getBlockStateIndex()).getId();
-                        // TODO Find a way to check whether blockToCheck is a block what would actually cause culling like cobblestone, and not a block like an anvil.
-                        boolean shouldBeCulled = resourceLocation != null && !resourceLocation.equals(new ResourceLocation("minecraft", "air")) && !resourceLocation.equals(new ResourceLocation("minecraft", "water"));
-                        if (shouldBeCulled) {
-                            continue;
+                        // WARNING: Atrocious hardcoding below. Read at your own risk.
+                        // TODO: Somehow export the VoxelShapes of every block into a JSON file so I can do culling with VoxelShapes the same way Minecraft does.
+                        // The MCUtils-generated blocks.1214.json file has "fullCube" set to true for stair blocks for some reason,
+                        // so I am going to avoid culling any blocks whose IDs end with "_stairs".
+                        if (resourceLocation != null && !resourceLocation.toString().endsWith("_stairs")) {
+                            // Extended pistons are not full blocks, so don't cull if the block is an extended piston.
+                            if (resourceLocation.equals(new ResourceLocation("piston")) && schematic.getBlockPalette(blockStateEditorController.getPaletteIndex()).get(blockToCheck.getBlockStateIndex()).getProperties().get("extended").equals("true")) {
+                                continue;
+                            }
+                            BlockMaterial material = BlockData.getInstance().getMaterialById(resourceLocation.toString());
+                            boolean shouldBeCulled = material != null && !material.isAir() && !material.isLiquid() && material.isSolid() && material.isFullCube() && material.isOpaque();
+                            if (shouldBeCulled) {
+                                continue;
+                            }
                         }
                     }
 

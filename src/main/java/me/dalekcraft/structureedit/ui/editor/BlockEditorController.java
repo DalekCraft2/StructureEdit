@@ -9,6 +9,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import me.dalekcraft.structureedit.assets.ResourceLocation;
+import me.dalekcraft.structureedit.blockdata.BlockData;
 import me.dalekcraft.structureedit.drawing.BlockColor;
 import me.dalekcraft.structureedit.schematic.container.Block;
 import me.dalekcraft.structureedit.schematic.container.BlockState;
@@ -249,7 +250,7 @@ public class BlockEditorController {
                         String blockName = blockId.getPath().toUpperCase(Locale.ROOT);
                         Color color;
                         try {
-                            color = BlockColor.valueOf(blockName).getColor();
+                            color = BlockData.getInstance().getMaterialById(blockId.toString()).getMapColor();
                         } catch (IllegalArgumentException e) {
                             color = MainController.MISSING_COLOR;
                         }
