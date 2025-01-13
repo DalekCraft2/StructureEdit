@@ -82,7 +82,12 @@ public class StructureEditApplication extends Application {
         Map<String, String> named = parameters.getNamed();
         List<String> raw = parameters.getRaw();
 
-        String levelName = named.get("log_level");
+        String levelName;
+        if (named.containsKey("log_level")) {
+            levelName = named.get("log_level");
+        } else {
+            levelName = Configuration.CONFIG.getProperty("log_level");
+        }
         if (levelName != null) {
             try {
                 Level level = Level.valueOf(levelName);

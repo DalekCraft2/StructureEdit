@@ -27,6 +27,7 @@ import me.dalekcraft.structureedit.assets.Registries;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
 import me.dalekcraft.structureedit.schematic.io.*;
 import me.dalekcraft.structureedit.ui.editor.*;
+import me.dalekcraft.structureedit.util.Configuration;
 import me.dalekcraft.structureedit.util.Language;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -247,6 +248,7 @@ public class MainController {
         Optional<Level> level = dialog.showAndWait();
         if (level.isPresent()) {
             LOGGER.log(Level.INFO, Language.LANGUAGE.getString("log.log_level.setting"), level.get());
+            Configuration.CONFIG.setProperty("log_level", String.valueOf(level.get()));
             Configurator.setAllLevels(LogManager.ROOT_LOGGER_NAME, level.get());
         }
     }
