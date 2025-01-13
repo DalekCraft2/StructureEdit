@@ -110,19 +110,6 @@ public class SchematicRendererController {
 
     @FXML
     public void initialize() {
-        /* subScene = new SubScene(pane, pane.getWidth(), pane.getHeight(), true, SceneAntialiasing.DISABLED);
-        subScene.setFill(Color.GREY);
-        subScene.setFocusTraversable(true);
-        subScene.setOnKeyPressed(this::onKeyPressed);
-        subScene.setOnKeyReleased(this::onKeyReleased);
-        subScene.setOnKeyTyped(this::onKeyTyped);
-        subScene.setOnMouseDragged(this::onMouseDragged);
-        subScene.setOnMousePressed(this::onMousePressed);
-        subScene.setOnScroll(this::onScroll);
-        subScene.setPickOnBounds(true);
-        pane.getChildren().add(subScene); */
-        // onScroll="#onScroll" pickOnBounds="true" GridPane.hgrow="SOMETIMES" GridPane.vgrow="SOMETIMES"
-
         Group root = new Group();
         root.getChildren().add(world);
         root.getChildren().add(cameraTransform);
@@ -153,6 +140,8 @@ public class SchematicRendererController {
     private void onKeyPressed(KeyEvent event) {
         LOGGER.info("key pressed");
 
+        int oldRenderedHeight = renderedHeight;
+
         KeyCode keyCode = event.getCode();
         switch (keyCode) {
             // FIXME If UP or DOWN are pressed at all, JavaFX key detection completely breaks; it might be because UP and DOWN change which UI element is focused
@@ -175,6 +164,11 @@ public class SchematicRendererController {
                     renderedHeight = 0;
                 }
             }
+        }
+
+        if (renderedHeight != oldRenderedHeight) {
+            // Redraw schematic if the rendered height changed
+            onSchematicUpdated();
         }
     }
 
@@ -459,6 +453,7 @@ public class SchematicRendererController {
     private final List<InvalidationListener> tickPropertyListeners = new ArrayList<>();
     private final List<Timeline> timelines = new ArrayList<>();
 
+    // TODO: Use Minecraft's BakedModel interface to make the process of drawing models more optimized.
     public void drawModel(@NotNull Variant variant, Color tint, int[] position) {
         BlockModel model = Registries.getInstance().getModel(variant.getModelLocation());
         BlockModelRotation blockModelRotation = variant.getRotation();
@@ -872,6 +867,7 @@ public class SchematicRendererController {
                     }
 
 
+                    // TODO: Once JavaFX implements the ability to use filtering levels other than "linear", make these textures use the "nearest" filter so they are pixelated.
                     PhongMaterial material = new PhongMaterial(tint, texture, null, null, null);
                     PhongMaterial material2 = new PhongMaterial(tint, texture, null, null, null);
 

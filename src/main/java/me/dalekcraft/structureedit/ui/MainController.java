@@ -221,6 +221,8 @@ public class MainController {
             setAssets(file);
         }
         blockEditorController.updateSelectedBlock();
+        // Update schematic so it uses assets from the selected assets folder
+        rendererController.onSchematicUpdated();
         rendererController.resume();
     }
 
