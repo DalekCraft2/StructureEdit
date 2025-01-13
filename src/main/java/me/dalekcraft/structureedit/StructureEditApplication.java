@@ -100,6 +100,7 @@ public class StructureEditApplication extends Application {
         }
 
         String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
+        LOGGER.log(Level.DEBUG, Language.LANGUAGE.getString("log.internal_resource_protocol"), protocol);
 
         // Preload both data registries
         BlockData.getInstance();
