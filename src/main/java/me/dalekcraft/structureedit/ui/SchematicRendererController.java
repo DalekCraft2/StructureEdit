@@ -138,13 +138,12 @@ public class SchematicRendererController {
 
     @FXML
     private void onKeyPressed(KeyEvent event) {
-        LOGGER.info("key pressed");
+        // LOGGER.info("Key pressed: {}", event.getCode());
 
         int oldRenderedHeight = renderedHeight;
 
         KeyCode keyCode = event.getCode();
         switch (keyCode) {
-            // FIXME If UP or DOWN are pressed at all, JavaFX key detection completely breaks; it might be because UP and DOWN change which UI element is focused
             case UP, E -> {
                 if (schematic != null) {
                     int[] size = schematic.getSize();
@@ -174,12 +173,12 @@ public class SchematicRendererController {
 
     @FXML
     private void onKeyReleased(KeyEvent event) {
-        LOGGER.info("key released");
+        // LOGGER.info("Key released: {}", event.getCode());
     }
 
     @FXML
     private void onKeyTyped(KeyEvent event) {
-        LOGGER.info("key typed");
+        // LOGGER.info("Key typed: {}", event.getCode());
     }
 
     @FXML
@@ -215,6 +214,11 @@ public class SchematicRendererController {
 
     @FXML
     private void onMousePressed(MouseEvent event) {
+        // LOGGER.info("Mouse pressed; requesting focus");
+        // Request focus on the renderer if it is clicked.
+        // This is a workaround for the issue of focus being shifted away from the renderer if the UP or DOWN keys are pressed.
+        subScene.requestFocus();
+
         mousePosX = event.getSceneX();
         mousePosY = event.getSceneY();
     }
