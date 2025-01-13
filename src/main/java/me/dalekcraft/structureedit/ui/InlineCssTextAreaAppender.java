@@ -8,9 +8,7 @@ import javafx.application.Platform;
 import javafx.scene.paint.Color;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
-import org.apache.logging.log4j.core.Filter;
-import org.apache.logging.log4j.core.Layout;
-import org.apache.logging.log4j.core.LogEvent;
+import org.apache.logging.log4j.core.*;
 import org.apache.logging.log4j.core.appender.AbstractAppender;
 import org.apache.logging.log4j.core.config.Property;
 import org.apache.logging.log4j.core.config.plugins.Plugin;
@@ -24,7 +22,7 @@ import java.util.Collection;
 
 import static org.apache.logging.log4j.core.layout.PatternLayout.createDefaultLayout;
 
-@Plugin(name = "InlineCssTextAreaAppender", category = "Core", elementType = "appender", printObject = true)
+@Plugin(name = "InlineCssTextAreaAppender", category = Core.CATEGORY_NAME, elementType = Appender.ELEMENT_TYPE, printObject = true)
 public class InlineCssTextAreaAppender extends AbstractAppender {
     private static final Collection<InlineCssTextArea> TEXT_AREAS = new ArrayList<>();
     private final int maxLines;
