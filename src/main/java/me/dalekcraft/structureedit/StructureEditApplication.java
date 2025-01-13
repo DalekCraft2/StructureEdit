@@ -21,6 +21,8 @@ import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.stage.Stage;
+import me.dalekcraft.structureedit.blockdata.BlockData;
+import me.dalekcraft.structureedit.blockdata.LegacyMapper;
 import me.dalekcraft.structureedit.ui.MainController;
 import me.dalekcraft.structureedit.util.Configuration;
 import me.dalekcraft.structureedit.util.Language;
@@ -94,6 +96,10 @@ public class StructureEditApplication extends Application {
 
         String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
 
+        // Preload both data registries
+        BlockData.getInstance();
+        LegacyMapper.getInstance();
+
         String assetsArg;
         if (named.containsKey("assets")) {
             assetsArg = named.get("assets");
@@ -129,6 +135,5 @@ public class StructureEditApplication extends Application {
         }
 
         primaryStage.show();
-
     }
 }
