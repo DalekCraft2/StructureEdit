@@ -405,7 +405,16 @@ public class SchematicRendererController {
             modelList.add(waterModel);
         }
         BlockModelDefinition blockModelDefinition = Registries.getInstance().getBlockState(namespacedId);
-        if (!blockModelDefinition.isMultiPart()) {
+        if (blockModelDefinition.isMultiPart()) {
+            MultiPart multipart = blockModelDefinition.getMultiPart();
+            for (Selector selector : multipart.getSelectors()) {
+                Predicate<BlockState> predicate = selector.getPredicate(blockState);
+                if (predicate.test(blockState)) {
+                    Variant variant = chooseRandomVariant(selector.getVariant().getVariants());
+                    modelList.add(variant);
+                }
+            }
+        } else {
             Map<String, MultiVariant> variants = blockModelDefinition.getVariants();
             for (Map.Entry<String, MultiVariant> entry : variants.entrySet()) {
                 String variantName = entry.getKey();
@@ -421,15 +430,6 @@ public class SchematicRendererController {
                     Variant variant = chooseRandomVariant(entry.getValue().getVariants());
                     modelList.add(variant);
                     return modelList;
-                }
-            }
-        } else if (blockModelDefinition.isMultiPart()) {
-            MultiPart multipart = blockModelDefinition.getMultiPart();
-            for (Selector selector : multipart.getSelectors()) {
-                Predicate<BlockState> predicate = selector.getPredicate(blockState);
-                if (predicate.test(blockState)) {
-                    Variant variant = chooseRandomVariant(selector.getVariant().getVariants());
-                    modelList.add(variant);
                 }
             }
         }
