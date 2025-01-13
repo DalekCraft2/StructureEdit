@@ -19,9 +19,11 @@ package me.dalekcraft.structureedit.ui;
 import javafx.fxml.FXML;
 import javafx.scene.control.ChoiceDialog;
 import javafx.scene.control.Dialog;
+import javafx.scene.image.Image;
 import javafx.scene.paint.Color;
 import javafx.stage.DirectoryChooser;
 import javafx.stage.FileChooser;
+import javafx.stage.Stage;
 import me.dalekcraft.structureedit.StructureEditApplication;
 import me.dalekcraft.structureedit.assets.Registries;
 import me.dalekcraft.structureedit.schematic.container.Schematic;
@@ -244,6 +246,8 @@ public class MainController {
     @FXML
     public void selectLogLevel() {
         ChoiceDialog<Level> dialog = new ChoiceDialog<>(LogManager.getRootLogger().getLevel(), Level.values());
+        Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png"))));
         dialog.setTitle(Language.LANGUAGE.getString("ui.menu_bar.settings_menu.log_level.title"));
         dialog.setContentText(Language.LANGUAGE.getString("ui.menu_bar.settings_menu.log_level.label"));
         dialog.getDialogPane().getScene().getWindow().setOnCloseRequest(event -> dialog.close());
@@ -259,6 +263,8 @@ public class MainController {
     public void showControlsDialog() {
         rendererController.pause();
         Dialog<?> dialog = new Dialog<>();
+        Stage stage = (Stage) dialog.getDialogPane().getScene().getWindow();
+        stage.getIcons().add(new Image(Objects.requireNonNull(getClass().getResourceAsStream("/icon.png"))));
         dialog.setTitle(Language.LANGUAGE.getString("ui.menu_bar.help_menu.controls.title"));
         dialog.setContentText(Language.LANGUAGE.getString("ui.menu_bar.help_menu.controls.dialog"));
         dialog.getDialogPane().getScene().getWindow().setOnCloseRequest(event -> dialog.close());
