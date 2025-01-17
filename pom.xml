@@ -322,6 +322,12 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <!-- Generate dependency graph for GitHub repository -->
+                <groupId>com.github.ferstl</groupId>
+                <artifactId>depgraph-maven-plugin</artifactId>
+                <version>4.0.3</version>
+            </plugin>
         </plugins>
     </build>
 </project>
