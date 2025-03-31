@@ -78,7 +78,7 @@ public final class LegacyMapper {
     private void loadFromResource() throws IOException {
         GsonBuilder gsonBuilder = new GsonBuilder();
         Gson gson = gsonBuilder.disableHtmlEscaping().create();
-        URL url = getClass().getResource("/legacy.json");
+        URL url = getClass().getResource("/registry/legacy.json");
         if (url == null) {
             throw new IOException("Could not find legacy.json");
         }

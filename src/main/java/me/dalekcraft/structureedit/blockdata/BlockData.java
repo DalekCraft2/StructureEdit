@@ -75,7 +75,7 @@ public final class BlockData {
         gsonBuilder.registerTypeAdapter(Color.class, new ColorAdapter());
         Gson gson = gsonBuilder.create();
         // URL url = BundledRegistries.loadRegistry("blocks");
-        URL url = getClass().getResource("/blocks.1214.json");
+        URL url = getClass().getResource("/registry/blocks.1214.json");
         LOGGER.debug("Using {} for bundled block data.", url);
         String data = Resources.toString(url, Charset.defaultCharset());
         List<BlockEntry> entries = gson.fromJson(data, new TypeToken<>() {
