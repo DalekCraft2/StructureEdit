@@ -209,7 +209,7 @@
     </repositories>
 
     <build>
-        <defaultGoal>clean package</defaultGoal>
+        <defaultGoal>clean verify</defaultGoal>
         <resources>
             <resource>
                 <directory>${project.basedir}/src/main/resources</directory>
