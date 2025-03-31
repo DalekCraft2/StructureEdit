@@ -72,7 +72,7 @@ public class Registries {
         animationMetadataSections.clear();
         models.clear();
         blockStates.clear();
-        String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
+        String protocol = Objects.requireNonNull(getClass().getResource("/icon.png")).getProtocol();
         if ("jar".equals(protocol)) {
             // run in .jar
             try (FileSystem fileSystem = FileSystems.newFileSystem(Path.of(getClass().getProtectionDomain().getCodeSource().getLocation().toURI()))) {

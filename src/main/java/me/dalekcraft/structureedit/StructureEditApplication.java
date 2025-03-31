@@ -99,7 +99,9 @@ public class StructureEditApplication extends Application {
             }
         }
 
-        String protocol = Objects.requireNonNull(getClass().getResource("")).getProtocol();
+        // This used to work by calling getClass().getResource("") instead of getClass().getResource("/icon.png"),
+        // but the former returns null when running the gluonfx:nativerun Maven task.
+        String protocol = Objects.requireNonNull(getClass().getResource("/icon.png")).getProtocol();
         LOGGER.log(Level.DEBUG, Language.LANGUAGE.getString("log.internal_resource_protocol"), protocol);
 
         // Preload both data registries

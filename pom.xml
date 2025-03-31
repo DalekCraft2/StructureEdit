@@ -235,6 +235,28 @@
                 <configuration>
                     <release>${maven.compiler.release}</release>
                 </configuration>
+                <executions>
+                    <execution>
+                        <id>log4j-plugin-processor</id>
+                        <goals>
+                            <goal>compile</goal>
+                        </goals>
+                        <phase>process-classes</phase>
+                        <configuration>
+                            <proc>only</proc>
+                            <annotationProcessorPaths>
+                                <annotationProcessorPath>
+                                    <groupId>org.apache.logging.log4j</groupId>
+                                    <artifactId>log4j-core</artifactId>
+                                    <version>${log4j2.version}</version>
+                                </annotationProcessorPath>
+                            </annotationProcessorPaths>
+                            <annotationProcessors>
+                                <annotationProcessor>org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor</annotationProcessor>
+                            </annotationProcessors>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
             <plugin>
                 <!-- Attach sources -->
@@ -265,22 +287,276 @@
                 </executions>
             </plugin>
             <plugin>
+                <!-- Set the main class -->
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.4.2</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <classpathPrefix>${libPrefix}</classpathPrefix>
+                            <!--<classpathLayoutType>repository</classpathLayoutType>-->
+                            <mainClass>${mainClass}</mainClass>
+                            <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+                            <addDefaultSpecificationEntries>true</addDefaultSpecificationEntries>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-install-plugin</artifactId>
+                <version>3.1.4</version>
+                <configuration>
+                    <!-- This is an app, so we don't want to install it in the local Maven repository -->
+                    <skip>true</skip>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>3.8.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <!--<useRepositoryLayout>true</useRepositoryLayout>-->
+                            <outputDirectory>${libDirectory}</outputDirectory>
+                            <overWriteReleases>false</overWriteReleases>
+                            <overWriteSnapshots>false</overWriteSnapshots>
+                            <overWriteIfNewer>true</overWriteIfNewer>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <!-- Add module-info.class files to the dependencies what lack them -->
+                <groupId>org.moditect</groupId>
+                <artifactId>moditect-maven-plugin</artifactId>
+                <version>1.2.2.Final</version>
+                <executions>
+                    <execution>
+                        <id>add-module-infos</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>add-module-info</goal>
+                        </goals>
+                        <configuration>
+                            <modules>
+                                <!-- JavaFX -->
+                                <module>
+                                    <artifact>
+                                        <!-- JavaFX Base -->
+                                        <groupId>org.openjfx</groupId>
+                                        <artifactId>javafx-base</artifactId>
+                                        <version>${javafx.version}</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module javafx.baseEmpty {}
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <!-- JavaFX Graphics -->
+                                        <groupId>org.openjfx</groupId>
+                                        <artifactId>javafx-graphics</artifactId>
+                                        <version>${javafx.version}</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module javafx.graphicsEmpty {}
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <!-- JavaFX Controls -->
+                                        <groupId>org.openjfx</groupId>
+                                        <artifactId>javafx-controls</artifactId>
+                                        <version>${javafx.version}</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module javafx.controlsEmpty {}
+                                    </moduleInfoSource>
+                                </module>
+                                <!-- <module>
+                                    <artifact>
+                                        &lt;!&ndash; JavaFX FXML &ndash;&gt;
+                                        <groupId>org.openjfx</groupId>
+                                        <artifactId>javafx-fxml</artifactId>
+                                        <version>${javafx.version}</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module javafx.fxmlEmpty {}
+                                    </moduleInfoSource>
+                                </module> -->
+                                <module>
+                                    <artifact>
+                                        <!-- RichTextFX -->
+                                        <groupId>org.fxmisc.richtext</groupId>
+                                        <artifactId>richtextfx</artifactId>
+                                        <version>0.11.4</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module org.fxmisc.richtext {}
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.fxmisc.wellbehaved</groupId>
+                                        <artifactId>wellbehavedfx</artifactId>
+                                        <version>0.3.3</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module wellbehavedfx {}
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.fxmisc.flowless</groupId>
+                                        <artifactId>flowless</artifactId>
+                                        <version>0.7.3</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module org.fxmisc.flowless {}
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.fxmisc.undo</groupId>
+                                        <artifactId>undofx</artifactId>
+                                        <version>2.1.1</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module org.fxmisc.undo {}
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>org.reactfx</groupId>
+                                        <artifactId>reactfx</artifactId>
+                                        <version>2.0-M5</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module reactfx {}
+                                    </moduleInfoSource>
+                                </module>
+
+                                <!-- Other -->
+                                <module>
+                                    <artifact>
+                                        <!-- DataFixerUpper -->
+                                        <groupId>com.mojang</groupId>
+                                        <artifactId>datafixerupper</artifactId>
+                                        <version>8.0.16</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module datafixerupper {}
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <!-- Brigadier -->
+                                        <groupId>com.mojang</groupId>
+                                        <artifactId>brigadier</artifactId>
+                                        <version>1.3.10</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module brigadier {}
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>it.unimi.dsi</groupId>
+                                        <artifactId>fastutil</artifactId>
+                                        <version>8.5.12</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module it.unimi.dsi.fastutil {}
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <!-- Querz/NBT -->
+                                        <groupId>com.github.Querz</groupId>
+                                        <artifactId>NBT</artifactId>
+                                        <version>6.1</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module NBT {}
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>com.google.guava</groupId>
+                                        <artifactId>listenablefuture</artifactId>
+                                        <version>9999.0-empty-to-avoid-conflict-with-guava</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module listenablefuture {}
+                                    </moduleInfoSource>
+                                </module>
+                                <module>
+                                    <artifact>
+                                        <groupId>com.google.code.findbugs</groupId>
+                                        <artifactId>jsr305</artifactId>
+                                        <version>3.0.2</version>
+                                    </artifact>
+                                    <moduleInfoSource>
+                                        module jsr305 {}
+                                    </moduleInfoSource>
+                                </module>
+                            </modules>
+                            <outputDirectory>${libDirectory}</outputDirectory>
+                            <overwriteExistingFiles>true</overwriteExistingFiles>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.openjfx</groupId>
                 <artifactId>javafx-maven-plugin</artifactId>
                 <version>0.0.8</version>
                 <configuration>
                     <mainClass>${mainModule}/${mainClass}</mainClass>
+                    <jlinkImageName>jlink</jlinkImageName>
+                    <jmodsPath>${libDirectory}</jmodsPath>
+                    <jlinkVerbose>true</jlinkVerbose>
                 </configuration>
             </plugin>
             <plugin>
-                <!-- GraalVM must be installed for this to work. -->
-                <!-- It works with the GRAALVM_HOME environment variable set to the installation directory. -->
-                <!-- This has to be run from the x64 Native Tools Command Prompt for Visual Studio. -->
+                <!-- Prerequisites for running GluonFX Maven Plugin on Windows: https://docs.gluonhq.com/#platforms_windows -->
+                <!-- To build an executable, open "x64 Native Tools Command Prompt for VS 2022",
+                navigate to this project's directory, and run "mvn gluonfx:build". -->
+                <!-- To build an MSI file, install WiX Toolset 3.0 or higher (but not 4.0 or higher).
+                Then, run "mvn gluonfx:package"; it doesn't have to run in the x64 Native Tools Command Prompt like before. -->
+                <!-- I'd like it if Gluon would update Substrate so it can use newer WiX versions... -->
                 <groupId>com.gluonhq</groupId>
                 <artifactId>gluonfx-maven-plugin</artifactId>
                 <version>1.0.26</version>
                 <configuration>
                     <mainClass>${mainModule}/${mainClass}</mainClass>
+                    <!-- These linkerArgs are a workaround for https://github.com/gluonhq/substrate/issues/1163 -->
+                    <linkerArgs>
+                        <arg>management_ext.lib</arg>
+                        <arg>psapi.lib</arg>
+                    </linkerArgs>
+                    <verbose>true</verbose>
+                    <javaStaticSdkVersion>21.0.5</javaStaticSdkVersion>
+                    <!-- I'd love to use a more modern version of JavaFX 21 here,
+                    but GluonHQ hasn't uploaded newer versions of it on their website. -->
+                    <javafxStaticSdkVersion>21.0.1</javafxStaticSdkVersion>
+                    <releaseConfiguration>
+                        <description>${project.description}</description>
+                        <vendor>${vendor}</vendor>
+                        <version>
+                            ${parsedVersion.majorVersion}.${parsedVersion.minorVersion}.${parsedVersion.incrementalVersion}.${parsedVersion.buildNumber}
+                        </version>
+                        <versionName>${project.version}</versionName>
+                    </releaseConfiguration>
                 </configuration>
             </plugin>
             <plugin>
